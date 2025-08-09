@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 
-import { LocaleProvider } from "./LocaleProvider";
+import { SessionProvider } from "@/components/SessionContext";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
+import '@/lib/fontawesome';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+
+import LayoutWrapper from "./LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,27 +22,34 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ISEPBANDS",
+  title: {
+    template: '%s | ISEPBANDS',
+    default: 'ISEPBANDS',
+  },
   description: "Site web d'isep bands",
 };
-
 
 export default async function LocaleLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }>) {
 
-  const resolvedParams = await params;
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const { locale } = await params;
 
   return (
-    <html lang={resolvedParams.locale}>
+    <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <LocaleProvider locale={resolvedParams.locale}>
-          {children}
-        </LocaleProvider>
+        <SessionProvider session={session}>
+          <LayoutWrapper session={session} locale={locale}>
+            {children}
+          </LayoutWrapper>
+        </SessionProvider>
       </body>
     </html>
   );
