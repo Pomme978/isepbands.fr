@@ -10,4 +10,10 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true, 
     }, 
+
+    trustedOrigins: [
+    "http://localhost:3000",
+    "https://nextjs--main--isepbands-web--pomme978--tk0bt2ansaois.pit-1.try.coder.app",
+    "https://*.try.coder.app",
+  ],
 });
