@@ -1,0 +1,21 @@
+{
+  "navigation": {},
+  "auth": {
+    "login": {
+      "email": "Email",
+      "login": "Login",
+      "password": "Password"
+    }
+  },
+  "forms": {
+    "placeholders": {
+      "email": "anma63865@eleve.isep.fr"
+    }
+  },
+  "home": {
+    "title": "Home"
+  },
+  "welcome": "Welcome, {name}!",
+  "signOut": "Sign Out",
+  "signIn": "Sign In"
+}
