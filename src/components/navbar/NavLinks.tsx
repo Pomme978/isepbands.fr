@@ -10,9 +10,14 @@ const links = [
 
 export default function NavLinks() {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 md:flex-row flex-col w-full md:w-auto">
       {links.map((link) => (
-        <Button key={link.href} asChild variant="ghost" className="px-3 py-2 text-base font-medium">
+        <Button
+          key={link.href}
+          asChild
+          variant="ghost"
+          className="px-3 py-2 text-base font-medium w-full md:w-auto justify-start md:justify-center"
+        >
           <LangLink href={link.href}>{link.label}</LangLink>
         </Button>
       ))}
