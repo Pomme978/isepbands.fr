@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { loginSchema } from '@/validation/auth';
 import { useI18n } from '@/locales/client';
 import { useAuth } from '@/lib/auth-client';
-import BackButton from '@/components/ui/BackButton';
+import BackButton from '@/components/ui/back-button';
 import LoginFormCard from '@/components/login/LoginFormCard';
 import LoginFormFields from '@/components/login/LoginFormFields';
 import LoginFormActions from '@/components/login/LoginFormActions';

@@ -41,17 +41,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
             required
           />
         </div>
-        <div className="flex-1 space-y-1">
-          <Label htmlFor="username">Pseudo</Label>
-          <Input
-            id="username"
-            type="text"
-            autoComplete="username"
-            value={data.username}
-            onChange={(e) => onChange({ username: e.target.value })}
-            required
-          />
-        </div>
       </div>
       <div className="space-y-1">
         <Label htmlFor="email">Email</Label>

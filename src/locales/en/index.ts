@@ -42,12 +42,14 @@ const en = {
     register: {
       title: 'ISEPBANDS - REGISTRATION',
       title_top: 'Registration',
-      step1: { title: 'REGISTRATION FORM' },
-      step2: { title: 'ADDITIONAL INFORMATION' },
-      step3: { title: 'STAND OUT!' },
-      step4: { title: 'WHICH INSTRUMENT(S) DO YOU PLAY?' },
-      step5: { title: 'AND FINALLY, A LITTLE PHOTO?' },
-      step6: { title: 'SUMMARY' },
+      steps: {
+        basicInfo: 'REGISTRATION FORM',
+        additionalInfo: 'ADDITIONAL INFORMATION',
+        motivation: 'STAND OUT!',
+        instruments: 'WHICH INSTRUMENT(S) DO YOU PLAY?',
+        photo: 'AND FINALLY, A LITTLE PHOTO?',
+        confirmation: 'SUMMARY',
+      },
       firstName: 'First Name',
       lastName: 'Last Name',
       email: 'Email',
@@ -84,6 +86,8 @@ const en = {
     next: 'Next',
     none: 'None',
     loading: 'Loading…',
+    step: 'Step',
+    of: 'of',
   },
   page: {
     home: {
