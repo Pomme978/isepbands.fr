@@ -14,12 +14,12 @@ export default function Navbar() {
   const t = useI18n();
 
   return (
-    <header className="top-0 left-0 w-full z-50 backdrop-blur bg-white/80 border-b">
+    <header className="relative left-0 pt-1 pb-1 top-4 rounded-lg z-50 backdrop-blur bg-white">
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-2 gap-8">
         {/* Desktop Navigation */}
         <div className="hidden md:contents">
           <Logo />
-          <div className="flex-1 flex justify-left">
+          <div className="flex-1 flex justify-center">
             <NavLinks />
           </div>
           <div className="flex items-center gap-4">

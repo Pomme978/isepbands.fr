@@ -94,8 +94,8 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+    <footer className="bg-white bottom-4 relative rounded-lg">
+      <div className="px-6 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div className="col-span-1 mb-4">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
