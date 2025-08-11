@@ -11,6 +11,7 @@ import LoginFormFields from '@/components/login/LoginFormFields';
 import LoginFormActions from '@/components/login/LoginFormActions';
 
 import { PendingValidationOnLogin } from '@/components/login/PendingValidationOnLogin';
+import LoginFormLinks from '@/components/login/LoginFormLinks';
 
 export default function LoginPage() {
   const t = useI18n();
