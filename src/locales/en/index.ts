@@ -31,7 +31,7 @@ const en = {
       noAccount: 'Not registered yet?',
       alreadyAccount: 'Already registered?',
       register: 'Join the association',
-      forgot: 'Forgot password',
+      forgot: 'Forgot password ?',
       errors: {
         emailVerification: 'Email has not been verified.',
         inactive: 'Your account is not yet active. Please wait for validation.',

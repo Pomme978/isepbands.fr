@@ -55,6 +55,7 @@ export default function LoginPage() {
               setPassword={setPassword}
               rememberMe={rememberMe}
               setRememberMe={setRememberMe}
+              lang={lang}
             />
             <LoginFormActions loading={loading} error={error} />
           </form>
