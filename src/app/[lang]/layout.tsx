@@ -5,5 +5,5 @@ import '../../styles/globals.css';
 import { Providers } from '@/providers';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return <Providers>{children}</Providers>;Test
+  return <Providers>{children}</Providers>;
 }
