@@ -22,8 +22,8 @@ const fr = {
     logIn: 'Se connecter',
     logOut: 'Se déconnecter',
     login: {
-      title: 'FORMULAIRE DE CONNEXION',
-      subtitle: 'FORMULAIRE DE CONNEXION',
+      title: 'Bienvenue de nouveau !',
+      subtitle: 'Veuillez vous connecter à votre compte.',
       remember: 'Se souvenir de moi',
       email: 'Email',
       button: 'Se Connecter',
@@ -31,7 +31,7 @@ const fr = {
       noAccount: "Tu n'es pas inscris ?",
       alreadyAccount: 'Déjà inscrit ?',
       register: "Rejoint l'asso",
-      forgot: 'Mot de passe oublié',
+      forgot: 'Mot de passe oublié ?',
       errors: {
         emailVerification: "Le mail n'a pas été vérifié.",
         inactive: "Votre compte n'est pas encore activé. Veuillez attendre la validation.",

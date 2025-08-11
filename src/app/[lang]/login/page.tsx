@@ -38,16 +38,17 @@ export default function LoginPage() {
   return (
     <>
       <PendingValidationOnLogin />
-      <div className="flex min-h-screen items-center justify-center md:bg-gray-50 bg-white relative">
+      <div className="flex min-h-screen items-center flex-col justify-center md:bg-gray-50 bg-white relative">
         <div className="absolute top-6 left-6">
           <BackButton variant="ghost" />
         </div>
         <LoginFormCard>
           <div className="text-center h-50 md:h-20 md:mt-5 -mb-10 md:mb-0">
-            <h1 className="md:text-2xl text-3xl font-bold">{t('title')}</h1>
+            <h1 className="md:text-xl text-3xl font-bold">{t('title')}</h1>
             <h2 className="text-1xl">{t('auth.login.title')}</h2>
+            <h2 className="text-sm">{t('auth.login.subtitle')}</h2>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-3">
             <LoginFormFields
               email={email}
               setEmail={setEmail}
@@ -55,11 +56,23 @@ export default function LoginPage() {
               setPassword={setPassword}
               rememberMe={rememberMe}
               setRememberMe={setRememberMe}
+              lang={lang}
             />
             <LoginFormActions loading={loading} error={error} />
           </form>
           <LoginFormLinks lang={lang} />
         </LoginFormCard>
+        <p className="text-xs text-gray-500 mt-4 w-80 text-center">
+          By clicking continue, you agree to our{' '}
+          <a href={`/${lang}/terms`} className="hover:text-gray-700 underline">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href={`/${lang}/privacy`} className="hover:text-gray-700 underline">
+            Privacy Policy
+          </a>
+          .
+        </p>
       </div>
     </>
   );
