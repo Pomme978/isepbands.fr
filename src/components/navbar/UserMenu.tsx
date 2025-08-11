@@ -37,9 +37,7 @@ export default function UserMenu() {
     );
   }
 
-  const displayName = (user.username || user.email || '').replace(/\b([a-z])/g, (c: string) =>
-    c.toUpperCase(),
-  );
+  const displayName = (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
   const band = user.band;
 
   return (

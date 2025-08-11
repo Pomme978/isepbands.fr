@@ -16,7 +16,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
   // States d'erreur par champ
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
-  const [usernameError, setUsernameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
@@ -28,10 +27,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
     return '';
   };
   const validateLastName = (value: string) => {
-    if (!value.trim()) return t('validator.required');
-    return '';
-  };
-  const validateUsername = (value: string) => {
     if (!value.trim()) return t('validator.required');
     return '';
   };
@@ -66,7 +61,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
     let valid = true;
     setFirstNameError(validateFirstName(data.firstName));
     setLastNameError(validateLastName(data.lastName));
-    setUsernameError(validateUsername(data.username));
     setEmailError(validateEmail(data.email));
     setPasswordError(validatePassword(data.password));
     setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, data.password));
@@ -74,7 +68,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
     if (
       validateFirstName(data.firstName) ||
       validateLastName(data.lastName) ||
-      validateUsername(data.username) ||
       validateEmail(data.email) ||
       validatePassword(data.password) ||
       validateConfirmPassword(data.confirmPassword, data.password) ||
@@ -123,21 +116,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
             required
           />
           {lastNameError && <div className="text-red-500 text-xs mt-1">{lastNameError}</div>}
-        </div>
-        <div className="flex-1 space-y-1">
-          <Label htmlFor="username">Pseudo</Label>
-          <Input
-            id="username"
-            type="text"
-            autoComplete="username"
-            value={data.username}
-            onChange={(e) => {
-              onChange({ username: e.target.value });
-              setUsernameError(validateUsername(e.target.value));
-            }}
-            required
-          />
-          {usernameError && <div className="text-red-500 text-xs mt-1">{usernameError}</div>}
         </div>
       </div>
       <div className="space-y-1">

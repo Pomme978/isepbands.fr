@@ -6,7 +6,6 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const firstName = formData.get('firstName') as string;
   const lastName = formData.get('lastName') as string;
-  const username = formData.get('username') as string;
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const cycle = formData.get('cycle') as string;
@@ -29,7 +28,6 @@ export async function POST(req: NextRequest) {
     data: {
       name: firstName,
       surname: lastName,
-      username,
       promotion: cycle,
       birthDate: new Date(birthDate),
       phone: phone || null,

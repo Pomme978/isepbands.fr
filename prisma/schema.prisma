@@ -56,7 +56,6 @@ model User {
     id                            String               @id @default(uuid())
     name                          String
     surname                       String
-    username                      String               @unique
     promotion                     String
     birthDate                     DateTime
     biography                     String?

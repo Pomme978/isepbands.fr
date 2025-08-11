@@ -28,7 +28,6 @@ const instrumentKeys = [
 const initialData: RegistrationData = {
   firstName: '',
   lastName: '',
-  username: '',
   email: '',
   password: '',
   confirmPassword: '',
