@@ -9,11 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useSession, signOut } from '../../lib/auth-client';
+import { useSession, useAuth } from '../../lib/auth-client';
+import { useRouter } from 'next/navigation';
 import LangLink from '../common/LangLink';
 
 export default function UserMenu() {
   const { user } = useSession();
+  const { signOut } = useAuth();
+  const router = useRouter();
 
   if (!user) {
     return (
@@ -60,7 +63,9 @@ export default function UserMenu() {
         <DropdownMenuItem>Tableau de bord admin</DropdownMenuItem>
         <DropdownMenuItem>Paramètres</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>Se déconnecter</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut(() => router.push('/login'))}>
+          Se déconnecter
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
