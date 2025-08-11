@@ -111,7 +111,6 @@ export default function RegisterPage() {
       <div className="absolute top-6 left-6">
         <BackButton variant="ghost" />
       </div>
-<<<<<<< HEAD
       {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} />}
       {step === 2 && (
         <Step2AdditionalInfo
@@ -153,73 +152,6 @@ export default function RegisterPage() {
         <div className="mt-6 text-center text-muted-foreground">{t('register.loading')}</div>
       )}
       {error && <div className="mt-2 text-center text-red-500">{error}</div>}
-=======
-      <RegisterFormCard>
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">{t('register.title')}</h1>
-            <h2 className="text-1xl">{t('register.title')}</h2>
-            <span className="text-sm text-muted-foreground">
-              {t('common.step')} {step} {t('common.of')} 6
-            </span>
-          </div>
-
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {t(stepTitles[step - 1])}
-              </span>
-            </div>
-            <Progress value={progressPercentage} className="h-2" />
-          </div>
-        </div>
-
-        {/* Contenu des étapes */}
-        <div className="p-6">
-          {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} />}
-          {step === 2 && (
-            <Step2AdditionalInfo
-              data={data}
-              onChange={handleChange}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
-          )}
-          {step === 3 && (
-            <Step3Motivation
-              data={data}
-              onChange={handleChange}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
-          )}
-          {step === 4 && (
-            <Step4Instruments
-              data={data}
-              onChange={handleChange}
-              onNext={handleNext}
-              onBack={handleBack}
-              availableInstruments={availableInstruments}
-            />
-          )}
-          {step === 5 && (
-            <Step5Photo onChange={handleChange} onNext={handleNext} onBack={handleBack} />
-          )}
-          {step === 6 && (
-            <Step6Confirmation
-              data={data}
-              onBack={handleBack}
-              onSubmit={handleSubmit}
-              availableInstruments={availableInstruments}
-            />
-          )}
-          {loading && (
-            <div className="mt-6 text-center text-muted-foreground">{t('register.loading')}</div>
-          )}
-          {error && <div className="mt-2 text-center text-red-500">{error}</div>}
-        </div>
-      </RegisterFormCard>
->>>>>>> 524d1fa03ea559a5a4b0e69dd4c29496335116c1
     </div>
   );
 }
