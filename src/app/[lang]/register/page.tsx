@@ -51,6 +51,7 @@ export default function RegisterPage() {
   const handleSubmit = async () => {
     const parsed = registerSchema.safeParse(data);
     if (!parsed.success) {
+      console.error('Register validation errors:', parsed.error);
       toast.error(t('register.error.submit'));
       return;
     }
@@ -124,7 +125,9 @@ export default function RegisterPage() {
           availableInstruments={availableInstruments}
         />
       )}
-      {step === 5 && <Step5Photo onChange={handleChange} onNext={handleNext} onBack={handleBack} />}
+      {step === 5 && (
+        <Step5Photo data={data} onChange={handleChange} onNext={handleNext} onBack={handleBack} />
+      )}
       {step === 6 && (
         <Step6Confirmation
           data={data}
