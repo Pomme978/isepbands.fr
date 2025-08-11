@@ -38,6 +38,7 @@ export default function Step4Instruments({
 
   const translateSkillLevel = (key: string) =>
     t(`user.skillLevels.${key}` as Parameters<typeof t>[0]);
+
   const handleInstrumentChange = (
     index: number,
     field: 'instrumentId' | 'skillLevel',
@@ -47,6 +48,7 @@ export default function Step4Instruments({
     updated[index] = { ...updated[index], [field]: value };
     onChange({ instruments: updated });
   };
+
   const addInstrument = () => {
     onChange({
       instruments: [
@@ -55,19 +57,23 @@ export default function Step4Instruments({
       ],
     });
   };
+
   const removeInstrument = (index: number) => {
     const updated = [...data.instruments];
     updated.splice(index, 1);
     onChange({ instruments: updated });
   };
+
   const validateInstruments = () => {
     if (!data.instruments || data.instruments.length === 0) return t('validator.selectInstrument');
     return '';
   };
+
   const validateAll = () => {
     setInstrumentsError(validateInstruments());
     return !validateInstruments();
   };
+
   return (
     <form
       className="space-y-6"
@@ -76,10 +82,17 @@ export default function Step4Instruments({
         if (validateAll()) onNext();
       }}
     >
-      {data.instruments.map((inst, i) => (
-        <div key={i} className="flex gap-2 items-end">
-          <div className="flex-1 space-y-1">
-            <Label>{t('auth.register.instrument')}</Label>
+      {/* Header Labels */}
+      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-0">
+        <Label className="text-sm font-medium">{t('auth.register.instrument')}</Label>
+        <Label className="text-sm font-medium">{t('auth.register.level')}</Label>
+        <div className="w-24"></div> {/* Spacer for remove button */}
+      </div>
+
+      {/* Instruments List */}
+      <div className="space-y-3">
+        {data.instruments.map((inst, i) => (
+          <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
             <Select
               value={inst.instrumentId.toString()}
               onValueChange={(val) => handleInstrumentChange(i, 'instrumentId', Number(val))}
@@ -95,9 +108,7 @@ export default function Step4Instruments({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex-1 space-y-1">
-            <Label>{t('auth.register.level')}</Label>
+
             <Select
               value={inst.skillLevel}
               onValueChange={(val) => handleInstrumentChange(i, 'skillLevel', val as SkillLevel)}
@@ -113,16 +124,29 @@ export default function Step4Instruments({
                 ))}
               </SelectContent>
             </Select>
+
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() => removeInstrument(i)}
+              className="w-24"
+            >
+              {t('auth.register.removeInstrument')}
+            </Button>
           </div>
-          <Button type="button" variant="destructive" onClick={() => removeInstrument(i)}>
-            {t('auth.register.removeInstrument')}
-          </Button>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      {/* Add Instrument Button */}
       <Button type="button" className="w-full" variant="secondary" onClick={addInstrument}>
         {t('auth.register.addInstrument')}
       </Button>
+
+      {/* Error Message */}
       {instrumentsError && <div className="text-red-500 text-xs mt-1">{instrumentsError}</div>}
+
+      {/* Navigation Buttons */}
       <div className="flex justify-between gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onBack}>
           {t('common.goback')}
