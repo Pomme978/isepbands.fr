@@ -60,7 +60,7 @@ export default function LoginFormFields({
           onChange={(e) => setRememberMe(e.target.checked)}
           className="accent-primary"
         />
-        <Label className="mt-4" htmlFor="rememberMe">
+        <Label className="mt-3" htmlFor="rememberMe">
           {t('auth.login.remember')}
         </Label>
       </div>

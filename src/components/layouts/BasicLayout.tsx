@@ -19,9 +19,13 @@ export default function BasicLayout({
 }: BasicLayoutProps) {
   return (
     <Providers>
-      {showNavbar && <Navbar />}
-      {children}
-      {showFooter && <Footer />}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          {showNavbar && <Navbar />}
+          {children}
+          {showFooter && <Footer />}
+        </div>
+      </div>
     </Providers>
   );
 }
