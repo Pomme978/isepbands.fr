@@ -37,7 +37,7 @@ export default function Step4Instruments({
   const [instrumentsError, setInstrumentsError] = useState('');
 
   const translateSkillLevel = (key: string) =>
-    t(`auth.register.skillLevels.${key}` as Parameters<typeof t>[0]);
+    t(`user.skillLevels.${key}` as Parameters<typeof t>[0]);
   const handleInstrumentChange = (
     index: number,
     field: 'instrumentId' | 'skillLevel',

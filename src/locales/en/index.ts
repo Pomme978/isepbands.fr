@@ -67,12 +67,6 @@ const en = {
       experiencePlaceholder: 'Describe your musical experience...',
       instrument: 'Instrument',
       level: 'Level',
-      skillLevels: {
-        beginner: 'Beginner',
-        intermediate: 'Intermediate',
-        advanced: 'Advanced',
-        expert: 'Expert',
-      },
       removeInstrument: 'Remove',
       addInstrument: 'Add an instrument',
       confirm: 'Confirm registration',
@@ -80,6 +74,12 @@ const en = {
   },
   user: {
     profile: 'Profile',
+    skillLevels: {
+      beginner: 'Beginner',
+      intermediate: 'Intermediate',
+      advanced: 'Advanced',
+      expert: 'Expert',
+    },
   },
   common: {
     goback: 'Go Back',
