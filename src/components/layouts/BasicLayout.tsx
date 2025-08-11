@@ -1,13 +1,19 @@
 'use client';
+
 import { ReactNode } from 'react';
 import Navbar from '../navbar/Navbar';
 import { Providers } from '../../providers';
 import '../../styles/globals.css';
 
-export default function BasicLayout({ children }: { children: ReactNode }) {
+interface BasicLayoutProps {
+  children: ReactNode;
+  showNavbar?: boolean;
+}
+
+export default function BasicLayout({ children, showNavbar = true }: BasicLayoutProps) {
   return (
     <Providers>
-      <Navbar />
+      {showNavbar && <Navbar />}
       {children}
     </Providers>
   );
