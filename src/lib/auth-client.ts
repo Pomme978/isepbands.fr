@@ -46,6 +46,7 @@ export type SessionUser = {
   name?: string;
   surname?: string;
   band?: string | null;
+  status?: 'ACTIVE' | 'INACTIVE';
 } | null;
 
 export function useSession(onAutoLogout?: () => void) {

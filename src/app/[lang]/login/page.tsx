@@ -9,7 +9,8 @@ import BackButton from '@/components/ui/BackButton';
 import LoginFormCard from '@/components/login/LoginFormCard';
 import LoginFormFields from '@/components/login/LoginFormFields';
 import LoginFormActions from '@/components/login/LoginFormActions';
-import LoginFormLinks from '@/components/login/LoginFormLinks';
+
+import { PendingValidationOnLogin } from '@/components/login/PendingValidationOnLogin';
 
 export default function LoginPage() {
   const t = useI18n();
@@ -34,28 +35,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 relative">
-      <div className="absolute top-6 left-6">
-        <BackButton variant="ghost" />
-      </div>
-      <LoginFormCard>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <h2 className="text-1xl">{t('auth.login.title')}</h2>
+    <>
+      <PendingValidationOnLogin />
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 relative">
+        <div className="absolute top-6 left-6">
+          <BackButton variant="ghost" />
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <LoginFormFields
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            rememberMe={rememberMe}
-            setRememberMe={setRememberMe}
-          />
-          <LoginFormActions loading={loading} error={error} />
-        </form>
-        <LoginFormLinks lang={lang} />
-      </LoginFormCard>
-    </div>
+        <LoginFormCard>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">{t('title')}</h1>
+            <h2 className="text-1xl">{t('auth.login.title')}</h2>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <LoginFormFields
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              rememberMe={rememberMe}
+              setRememberMe={setRememberMe}
+            />
+            <LoginFormActions loading={loading} error={error} />
+          </form>
+          <LoginFormLinks lang={lang} />
+        </LoginFormCard>
+      </div>
+    </>
   );
 }

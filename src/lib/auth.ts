@@ -46,6 +46,7 @@ export async function getSessionUser(req: NextRequest) {
         username: true,
         name: true,
         surname: true,
+        status: true,
         groupMemberships: {
           select: {
             group: {
@@ -64,6 +65,7 @@ export async function getSessionUser(req: NextRequest) {
       name: user.name,
       surname: user.surname,
       band,
+      status: user.status,
     };
   } catch {
     return null;
