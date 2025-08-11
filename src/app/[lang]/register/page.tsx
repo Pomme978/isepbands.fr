@@ -13,6 +13,9 @@ import Step4Instruments from '@/components/register/Step4Instruments';
 import Step5Photo from '@/components/register/Step5Photo';
 import Step6Confirmation from '@/components/register/Step6Confirmation';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
+import BackButton from '@/components/ui/back-button';
+import RegisterFormCard from '@/components/register/RegisterFormCard';
 
 const instrumentKeys = [
   { id: 1, key: 'guitar' },
@@ -38,16 +41,29 @@ const initialData: RegistrationData = {
   profilePhoto: null,
 };
 
+// Configuration des étapes
+const stepTitles = [
+  'auth.register.steps.basicInfo',
+  'auth.register.steps.additionalInfo',
+  'auth.register.steps.motivation',
+  'auth.register.steps.instruments',
+  'auth.register.steps.photo',
+  'auth.register.steps.confirmation',
+] as const;
+
 export default function RegisterPage() {
   const t = useI18n();
   const [step, setStep] = useState<RegistrationStep>(1);
   const [data, setData] = useState<RegistrationData>(initialData);
   const router = useRouter();
   const { register: registerUser, loading, error } = useAuth();
+
   const handleChange = (fields: Partial<RegistrationData>) =>
     setData((prev) => ({ ...prev, ...fields }));
+
   const handleNext = () => setStep((s) => (s < 6 ? ((s + 1) as RegistrationStep) : s));
   const handleBack = () => setStep((s) => (s > 1 ? ((s - 1) as RegistrationStep) : s));
+
   const handleSubmit = async () => {
     const parsed = registerSchema.safeParse(data);
     if (!parsed.success) {
@@ -74,6 +90,7 @@ export default function RegisterPage() {
       toast.error(err instanceof Error ? err.message : t('register.error.submit'));
     }
   };
+
   const availableInstruments = instrumentKeys.map(({ id, key }) => ({
     id,
     name: t(
@@ -86,19 +103,15 @@ export default function RegisterPage() {
     ),
   }));
 
+  // Calcul du pourcentage de progression
+  const progressPercentage = (step / stepTitles.length) * 100;
+
   return (
-    <div className="max-w-xl mx-auto py-10">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('register.title')}</h1>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div
-              key={n}
-              className={`w-3 h-3 rounded-full ${step === n ? 'bg-primary' : 'bg-muted'}`}
-            />
-          ))}
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 relative">
+      <div className="absolute top-6 left-6">
+        <BackButton variant="ghost" />
       </div>
+<<<<<<< HEAD
       {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} />}
       {step === 2 && (
         <Step2AdditionalInfo
@@ -140,6 +153,73 @@ export default function RegisterPage() {
         <div className="mt-6 text-center text-muted-foreground">{t('register.loading')}</div>
       )}
       {error && <div className="mt-2 text-center text-red-500">{error}</div>}
+=======
+      <RegisterFormCard>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">{t('register.title')}</h1>
+            <h2 className="text-1xl">{t('register.title')}</h2>
+            <span className="text-sm text-muted-foreground">
+              {t('common.step')} {step} {t('common.of')} 6
+            </span>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                {t(stepTitles[step - 1])}
+              </span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+          </div>
+        </div>
+
+        {/* Contenu des étapes */}
+        <div className="p-6">
+          {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} />}
+          {step === 2 && (
+            <Step2AdditionalInfo
+              data={data}
+              onChange={handleChange}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
+          {step === 3 && (
+            <Step3Motivation
+              data={data}
+              onChange={handleChange}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
+          {step === 4 && (
+            <Step4Instruments
+              data={data}
+              onChange={handleChange}
+              onNext={handleNext}
+              onBack={handleBack}
+              availableInstruments={availableInstruments}
+            />
+          )}
+          {step === 5 && (
+            <Step5Photo onChange={handleChange} onNext={handleNext} onBack={handleBack} />
+          )}
+          {step === 6 && (
+            <Step6Confirmation
+              data={data}
+              onBack={handleBack}
+              onSubmit={handleSubmit}
+              availableInstruments={availableInstruments}
+            />
+          )}
+          {loading && (
+            <div className="mt-6 text-center text-muted-foreground">{t('register.loading')}</div>
+          )}
+          {error && <div className="mt-2 text-center text-red-500">{error}</div>}
+        </div>
+      </RegisterFormCard>
+>>>>>>> 524d1fa03ea559a5a4b0e69dd4c29496335116c1
     </div>
   );
 }

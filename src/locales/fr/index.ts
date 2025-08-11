@@ -42,12 +42,14 @@ const fr = {
     register: {
       title: 'ISEPBANDS - INSCRIPTION',
       title_top: 'Inscription',
-      step1: { title: "FORMULAIRE D'INSCRIPTION" },
-      step2: { title: 'INFORMATIONS SUPPLÉMENTAIRES' },
-      step3: { title: 'DÉMARQUE-TOI !' },
-      step4: { title: 'DE QUEL(S) INSTRUMENT(S) JOUES-TU ?' },
-      step5: { title: 'ET ENFIN, UNE PETITE PHOTO ?' },
-      step6: { title: 'RÉCAPITULATIF' },
+      steps: {
+        basicInfo: "FORMULAIRE D'INSCRIPTION",
+        additionalInfo: 'INFORMATIONS COMPLÉMENTAIRES',
+        motivation: 'DÉMARQUEZ-VOUS !',
+        instruments: 'QUEL(S) INSTRUMENT(S) JOUEZ-VOUS ?',
+        photo: 'ET POUR FINIR, UNE PETITE PHOTO ?',
+        confirmation: 'RÉCAPITULATIF',
+      },
       firstName: 'Prénom',
       lastName: 'Nom',
       email: 'Email',
@@ -84,6 +86,8 @@ const fr = {
     next: 'Suivant',
     none: 'Aucune',
     loading: 'Chargement…',
+    step: 'Étape',
+    of: 'sur',
   },
   page: {
     home: {
