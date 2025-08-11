@@ -1,0 +1,142 @@
+// Footer.tsx
+'use client';
+
+import { FooterColumn } from './FooterColumn';
+import { Newsletter } from './Newsletter';
+import { SocialIcons } from './SocialIcons';
+import { useI18n } from '@/locales/client';
+import { siFacebook, siInstagram, siX, siGithub, siYoutube } from 'simple-icons';
+
+const footerColumns = [
+  {
+    title: 'Solutions',
+    links: [
+      { label: 'Marketing', href: '/marketing' },
+      { label: 'Analytics', href: '/analytics' },
+      { label: 'Automation', href: '/automation' },
+      { label: 'Commerce', href: '/commerce' },
+      { label: 'Insights', href: '/insights' },
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      { label: 'Submit ticket', href: '/support' },
+      { label: 'Documentation', href: '/docs' },
+      { label: 'Guides', href: '/guides' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Jobs', href: '/jobs' },
+      { label: 'Press', href: '/press' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Terms of service', href: '/terms' },
+      { label: 'Privacy policy', href: '/privacy' },
+      { label: 'License', href: '/license' },
+    ],
+  },
+];
+
+const socialLinks = [
+  {
+    name: 'Facebook',
+    href: 'https://facebook.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siFacebook.path} />
+      </svg>
+    ),
+  },
+  {
+    name: 'Instagram',
+    href: 'https://instagram.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siInstagram.path} />
+      </svg>
+    ),
+  },
+  {
+    name: 'X',
+    href: 'https://x.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siX.path} />
+      </svg>
+    ),
+  },
+  {
+    name: 'GitHub',
+    href: 'https://github.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siGithub.path} />
+      </svg>
+    ),
+  },
+  {
+    name: 'YouTube',
+    href: 'https://youtube.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siYoutube.path} />
+      </svg>
+    ),
+  },
+];
+
+export default function Footer() {
+  const t = useI18n();
+  const currentYear = new Date().getFullYear();
+
+  const handleNewsletterSubmit = (email: string) => {
+    console.log('Newsletter subscription:', email);
+  };
+
+  return (
+    <footer className="bg-white">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+          <div className="col-span-1 mb-4">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-5 h-5 bg-white rounded-sm transform rotate-12"></div>
+            </div>
+          </div>
+
+          <div className="col-span-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {footerColumns.map((column) => (
+              <FooterColumn key={column.title} title={column.title} links={column.links} />
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 py-8">
+          <Newsletter
+            title="Subscribe to our newsletter"
+            description="The latest news, articles, and resources, sent to your inbox weekly."
+            placeholder="Enter your email"
+            buttonText="Subscribe"
+            onSubmit={handleNewsletterSubmit}
+          />
+        </div>
+
+        <div className="border-t border-gray-200 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-600 text-sm">
+              © {currentYear} ISEPBANDS, {t('footer.all_rights_reserved')}
+            </p>
+            <SocialIcons links={socialLinks} />
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

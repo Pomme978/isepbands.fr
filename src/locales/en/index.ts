@@ -81,6 +81,9 @@ const en = {
       expert: 'Expert',
     },
   },
+  footer: {
+    all_rights_reserved: 'All rights reserved.',
+  },
   common: {
     goback: 'Go Back',
     next: 'Next',
