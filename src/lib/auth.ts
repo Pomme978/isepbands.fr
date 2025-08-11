@@ -43,8 +43,8 @@ export async function getSessionUser(req: NextRequest) {
       select: {
         id: true,
         email: true,
-        name: true,
-        surname: true,
+        firstName: true,
+        lastName: true,
         status: true,
         groupMemberships: {
           select: {
@@ -60,8 +60,8 @@ export async function getSessionUser(req: NextRequest) {
     return {
       id: user.id,
       email: user.email,
-      name: user.name,
-      surname: user.surname,
+      firstName: user.firstName,
+      lastName: user.lastName,
       band,
       status: user.status,
     };

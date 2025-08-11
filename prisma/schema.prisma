@@ -54,8 +54,8 @@ enum EventType {
 // --- Modèle Utilisateur (User) ---
 model User {
     id                            String               @id @default(uuid())
-    name                          String
-    surname                       String
+    firstName                     String               @default("Prénom")
+    lastName                      String               @default("Nom")
     promotion                     String
     birthDate                     DateTime
     biography                     String?
@@ -69,6 +69,8 @@ model User {
     photoUrl                      String?
     status                        UserStatus           @default(INACTIVE)
     isLookingForGroup             Boolean              @default(false)
+    createdAt                     DateTime             @default(now())
+    updatedAt                     DateTime?            @default(now()) @updatedAt
     instruments                   UserInstrument[]
     roles                         UserRole[]
     groupMemberships              GroupMembership[]
