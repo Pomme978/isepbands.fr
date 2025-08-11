@@ -38,13 +38,13 @@ export default function LoginPage() {
   return (
     <>
       <PendingValidationOnLogin />
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 relative">
+      <div className="flex min-h-screen items-center justify-center md:bg-gray-50 bg-white relative">
         <div className="absolute top-6 left-6">
           <BackButton variant="ghost" />
         </div>
         <LoginFormCard>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">{t('title')}</h1>
+          <div className="text-center h-50 md:h-20 md:mt-5 -mb-10 md:mb-0">
+            <h1 className="md:text-2xl text-3xl font-bold">{t('title')}</h1>
             <h2 className="text-1xl">{t('auth.login.title')}</h2>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">

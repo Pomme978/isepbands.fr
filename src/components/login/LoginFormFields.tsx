@@ -34,7 +34,7 @@ export default function LoginFormFields({
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <div>
+      <div className="mt-5">
         <Label htmlFor="password">{t('auth.login.password')}</Label>
         <Input
           id="password"

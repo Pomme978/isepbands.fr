@@ -23,13 +23,13 @@ export default function UserMenu() {
       <div className="flex items-center gap-2 md:flex-row flex-col w-full md:w-auto">
         <LangLink
           href="/login"
-          className="px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition w-full md:w-auto text-center"
+          className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition w-full md:w-auto text-center"
         >
           Se connecter
         </LangLink>
         <LangLink
           href="/register"
-          className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 border border-primary transition w-full md:w-auto text-center"
+          className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 border border-primary transition w-full md:w-auto text-center"
         >
           Rejoindre
         </LangLink>

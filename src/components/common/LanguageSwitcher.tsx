@@ -19,9 +19,9 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className={isFr ? 'font-bold' : 'text-muted-foreground'}>FR</span>
+      <span className={isFr ? 'text-sm font-bold' : 'text-sm text-muted-foreground'}>FR</span>
       <Switch checked={!isFr} onCheckedChange={handleLangChange} aria-label="Switch language" />
-      <span className={!isFr ? 'font-bold' : 'text-muted-foreground'}>EN</span>
+      <span className={!isFr ? 'text-sm font-bold' : 'text-sm text-muted-foreground'}>EN</span>
     </div>
   );
 }

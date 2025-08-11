@@ -9,21 +9,13 @@ import { siFacebook, siInstagram, siX, siGithub, siYoutube } from 'simple-icons'
 
 const footerColumns = [
   {
-    title: 'Solutions',
+    title: 'Ressources',
     links: [
-      { label: 'Marketing', href: '/marketing' },
-      { label: 'Analytics', href: '/analytics' },
-      { label: 'Automation', href: '/automation' },
-      { label: 'Commerce', href: '/commerce' },
-      { label: 'Insights', href: '/insights' },
-    ],
-  },
-  {
-    title: 'Support',
-    links: [
-      { label: 'Submit ticket', href: '/support' },
-      { label: 'Documentation', href: '/docs' },
-      { label: 'Guides', href: '/guides' },
+      { label: 'Accueil', href: '/' },
+      { label: "L'association", href: '/asso' },
+      { label: 'Bands', href: '/bands' },
+      { label: 'Les Evenements', href: '/events' },
+      { label: 'Le Bureau', href: '/team' },
     ],
   },
   {
@@ -104,14 +96,14 @@ export default function Footer() {
   return (
     <footer className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div className="col-span-1 mb-4">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
               <div className="w-5 h-5 bg-white rounded-sm transform rotate-12"></div>
             </div>
           </div>
 
-          <div className="col-span-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="col-span-3 flex-1 max-w-4xl grid grid-cols-2 md:grid-cols-3 gap-8">
             {footerColumns.map((column) => (
               <FooterColumn key={column.title} title={column.title} links={column.links} />
             ))}

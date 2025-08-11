@@ -45,7 +45,7 @@ export function Newsletter({
             className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             required
           />
-          <Button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white">
+          <Button type="submit" className="px-4 py-2 text-white">
             {buttonText}
           </Button>
         </form>
