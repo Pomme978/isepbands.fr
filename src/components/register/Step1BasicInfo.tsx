@@ -124,7 +124,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
           />
           {lastNameError && <div className="text-red-500 text-xs mt-1">{lastNameError}</div>}
         </div>
-<<<<<<< HEAD
         <div className="flex-1 space-y-1">
           <Label htmlFor="username">Pseudo</Label>
           <Input
@@ -140,8 +139,6 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
           />
           {usernameError && <div className="text-red-500 text-xs mt-1">{usernameError}</div>}
         </div>
-=======
->>>>>>> 524d1fa03ea559a5a4b0e69dd4c29496335116c1
       </div>
       <div className="space-y-1">
         <Label htmlFor="email">Email</Label>
