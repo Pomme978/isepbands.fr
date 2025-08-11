@@ -147,7 +147,7 @@ export default function RegisterPage() {
           availableInstruments={availableInstruments}
         />
       )}
-      {loading && (
+      {loading && step === 6 && (
         <div className="mt-6 text-center text-muted-foreground">{t('register.loading')}</div>
       )}
       {error && <div className="mt-2 text-center text-red-500">{error}</div>}
