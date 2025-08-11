@@ -9,6 +9,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
+import { useState } from 'react';
 
 interface Step4InstrumentsProps {
   data: RegistrationData;
@@ -33,6 +34,8 @@ export default function Step4Instruments({
   availableInstruments,
 }: Step4InstrumentsProps) {
   const t = useI18n();
+  const [instrumentsError, setInstrumentsError] = useState('');
+
   const translateSkillLevel = (key: string) =>
     t(`auth.register.skillLevels.${key}` as Parameters<typeof t>[0]);
   const handleInstrumentChange = (
@@ -57,8 +60,22 @@ export default function Step4Instruments({
     updated.splice(index, 1);
     onChange({ instruments: updated });
   };
+  const validateInstruments = () => {
+    if (!data.instruments || data.instruments.length === 0) return t('validator.selectInstrument');
+    return '';
+  };
+  const validateAll = () => {
+    setInstrumentsError(validateInstruments());
+    return !validateInstruments();
+  };
   return (
-    <div className="space-y-6">
+    <form
+      className="space-y-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (validateAll()) onNext();
+      }}
+    >
       {data.instruments.map((inst, i) => (
         <div key={i} className="flex gap-2 items-end">
           <div className="flex-1 space-y-1">
@@ -105,14 +122,13 @@ export default function Step4Instruments({
       <Button type="button" className="w-full" variant="secondary" onClick={addInstrument}>
         {t('auth.register.addInstrument')}
       </Button>
-      <div className="flex justify-between gap-2 pt-2">
+      {instrumentsError && <div className="text-red-500 text-xs mt-1">{instrumentsError}</div>}
+      <div className="flex justify-between gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onBack}>
           {t('common.goback')}
         </Button>
-        <Button type="button" onClick={onNext}>
-          {t('common.next')}
-        </Button>
+        <Button type="submit">{t('common.next')}</Button>
       </div>
-    </div>
+    </form>
   );
 }

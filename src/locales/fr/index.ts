@@ -112,6 +112,22 @@ const fr = {
     vocals: 'Chant',
     keyboard: 'Clavier',
   },
+  validator: {
+    required: 'Ce champ est requis.',
+    invalidEmail: 'Adresse email invalide.',
+    minLength: 'Ce champ est trop court.',
+    maxLength: 'Ce champ est trop long.',
+    passwordTooShort: 'Le mot de passe doit contenir au moins 8 caractères.',
+    passwordMismatch: 'Les mots de passe ne correspondent pas.',
+    invalidDate: 'Date invalide.',
+    invalidPhone: 'Numéro de téléphone invalide.',
+    selectInstrument: 'Sélectionne au moins un instrument.',
+    invalidFile: 'Fichier non valide.',
+    fileTooLarge: 'Le fichier est trop volumineux.',
+    invalidField: 'Valeur invalide.',
+    passwordComplexity:
+      'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.',
+  },
 };
 
 export default fr;

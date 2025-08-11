@@ -112,6 +112,22 @@ const en = {
     vocals: 'Vocals',
     keyboard: 'Keyboard',
   },
+  validator: {
+    required: 'This field is required.',
+    invalidEmail: 'Invalid email address.',
+    minLength: 'This field is too short.',
+    maxLength: 'This field is too long.',
+    passwordTooShort: 'Password must be at least 8 characters.',
+    passwordMismatch: 'Passwords do not match.',
+    invalidDate: 'Invalid date.',
+    invalidPhone: 'Invalid phone number.',
+    selectInstrument: 'Select at least one instrument.',
+    invalidFile: 'Invalid file.',
+    fileTooLarge: 'File is too large.',
+    invalidField: 'Invalid value.',
+    passwordComplexity:
+      'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a digit, and a special character.',
+  },
 };
 
 export default en;

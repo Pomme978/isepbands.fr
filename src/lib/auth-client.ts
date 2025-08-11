@@ -42,7 +42,6 @@ export async function signOut() {
 export type SessionUser = {
   id: string;
   email: string;
-  username?: string;
   name?: string;
   surname?: string;
   band?: string | null;
