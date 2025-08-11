@@ -1,0 +1,255 @@
+// Enum pour le statut utilisateur
+enum UserStatus {
+    INACTIVE
+    ACTIVE
+}
+
+// Configuration de la base de données
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+// Générateur du client Prisma
+generator client {
+    provider = "prisma-client-js"
+}
+
+// Enum pour le statut de demande d'inscription
+enum RegistrationStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+
+// --- Modèle Demande d'inscription (RegistrationRequest) ---
+model RegistrationRequest {
+    id         Int                @id @default(autoincrement())
+    userId     String             @unique
+    status     RegistrationStatus @default(PENDING)
+    createdAt  DateTime           @default(now())
+    motivation String?
+    experience String?
+    user       User               @relation(fields: [userId], references: [id])
+}
+
+// Enum pour le niveau d'instrument
+enum SkillLevel {
+    BEGINNER
+    INTERMEDIATE
+    ADVANCED
+    EXPERT
+}
+
+// Enum pour les types d'événements (plus robuste qu'un String)
+enum EventType {
+    CONCERT
+    JAM
+    REPETITION
+    VENTE
+    SHOWCASE
+    OTHER
+}
+
+// --- Modèle Utilisateur (User) ---
+model User {
+    id                            String               @id @default(uuid())
+    name                          String
+    surname                       String
+    username                      String               @unique
+    promotion                     String
+    birthDate                     DateTime
+    biography                     String?
+    phone                         String?
+    password                      String
+    email                         String               @unique
+    emailVerified                 Boolean              @default(false)
+    emailVerificationToken        String?
+    emailVerificationTokenExpires DateTime?
+    emailVerifiedAt               DateTime?
+    photoUrl                      String?
+    status                        UserStatus           @default(INACTIVE)
+    isLookingForGroup             Boolean              @default(false)
+    instruments                   UserInstrument[]
+    roles                         UserRole[]
+    groupMemberships              GroupMembership[]
+    ownedNews                     News[]
+    votes                         Vote[]
+    registrationRequest           RegistrationRequest?
+    storageObjects                StorageObject[]
+}
+
+// --- Modèle StorageObject (fichiers uploadés) ---
+model StorageObject {
+    id          String   @id @default(uuid())
+    key         String   @unique
+    url         String
+    size        Int
+    contentType String
+    uploadedAt  DateTime @default(now())
+    userId      String?
+    user        User?    @relation(fields: [userId], references: [id])
+}
+
+// --- Modèle Instrument ---
+model Instrument {
+    id                Int                     @id @default(autoincrement())
+    name              String
+    imageUrl          String?
+    users             UserInstrument[]
+    groupRequirements InstrumentRequirement[]
+}
+
+model UserInstrument {
+    userId       String
+    instrumentId Int
+    skillLevel   SkillLevel
+    user         User       @relation(fields: [userId], references: [id])
+    instrument   Instrument @relation(fields: [instrumentId], references: [id])
+
+    @@id([userId, instrumentId])
+}
+
+// --- Modèle Rôles et Permissions ---
+model Role {
+    id          Int              @id @default(autoincrement())
+    name        String
+    weight      Int
+    users       UserRole[]
+    permissions RolePermission[]
+}
+
+model Permission {
+    id    Int              @id @default(autoincrement())
+    name  String
+    roles RolePermission[]
+}
+
+model UserRole {
+    userId String
+    roleId Int
+    user   User   @relation(fields: [userId], references: [id])
+    role   Role   @relation(fields: [roleId], references: [id])
+
+    @@id([userId, roleId])
+}
+
+model RolePermission {
+    roleId       Int
+    permissionId Int
+    role         Role       @relation(fields: [roleId], references: [id])
+    permission   Permission @relation(fields: [permissionId], references: [id])
+
+    @@id([roleId, permissionId])
+}
+
+// --- Modèle Groupe (Group) ---
+model Group {
+    id                     Int                     @id @default(autoincrement())
+    name                   String
+    description            String?
+    imageUrl               String?
+    isVerified             Boolean                 @default(false) // Validé par le bureau
+    isLookingForMembers    Boolean                 @default(false) // Statut de recherche de musiciens
+    isInPreparation        Boolean                 @default(false) // Pour les concerts
+    // Relations
+    members                GroupMembership[]
+    instrumentRequirements InstrumentRequirement[]
+    events                 GroupEvent[]
+    setlists               Setlist[]
+}
+
+model GroupMembership {
+    userId  String
+    groupId Int
+    role    String? // Ex: "Membre", "Leader"
+    isAdmin Boolean @default(false)
+    user    User    @relation(fields: [userId], references: [id])
+    group   Group   @relation(fields: [groupId], references: [id])
+
+    @@id([userId, groupId])
+}
+
+model InstrumentRequirement {
+    groupId       Int
+    instrumentId  Int
+    requiredCount Int
+    currentCount  Int
+    group         Group      @relation(fields: [groupId], references: [id])
+    instrument    Instrument @relation(fields: [instrumentId], references: [id])
+
+    @@id([groupId, instrumentId])
+}
+
+// --- Modèle Événement (Event) ---
+model Event {
+    id           Int          @id @default(autoincrement())
+    name         String
+    type         EventType
+    date         DateTime
+    location     String?
+    description  String?
+    isPinned     Boolean      @default(false) // Épinglé sur l'accueil
+    isVisible    Boolean      @default(true) // Visible ou invisible
+    isArchived   Boolean      @default(false)
+    // Relations
+    groups       GroupEvent[]
+    setlists     Setlist[]
+    // Billetterie Hello-Asso
+    helloAssoUrl String?
+}
+
+model GroupEvent {
+    groupId Int
+    eventId Int
+    group   Group @relation(fields: [groupId], references: [id])
+    event   Event @relation(fields: [eventId], references: [id])
+
+    @@id([groupId, eventId])
+}
+
+// --- Modèle Setlist (pour les concerts) ---
+model Setlist {
+    id      Int           @id @default(autoincrement())
+    groupId Int
+    eventId Int
+    group   Group         @relation(fields: [groupId], references: [id])
+    event   Event         @relation(fields: [eventId], references: [id])
+    songs   SetlistSong[]
+
+    @@unique([groupId, eventId])
+}
+
+model SetlistSong {
+    id            Int     @id @default(autoincrement())
+    setlistId     Int
+    youtubeUrl    String?
+    spotifyUrl    String?
+    appleMusicUrl String?
+    title         String
+    artist        String
+    imageUrl      String?
+    votes         Vote[]
+    setlist       Setlist @relation(fields: [setlistId], references: [id])
+}
+
+model Vote {
+    userId String
+    songId Int
+    user   User        @relation(fields: [userId], references: [id])
+    song   SetlistSong @relation(fields: [songId], references: [id])
+
+    @@id([userId, songId])
+}
+
+// --- Modèle Actualités (News) ---
+model News {
+    id        Int      @id @default(autoincrement())
+    title     String
+    content   String
+    type      String
+    startDate DateTime
+    endDate   DateTime
+    authorId  String
+    author    User     @relation(fields: [authorId], references: [id])
+}

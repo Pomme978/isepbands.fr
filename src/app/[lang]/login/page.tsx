@@ -1,0 +1,61 @@
+'use client';
+
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { loginSchema } from '@/validation/auth';
+import { useI18n } from '@/locales/client';
+import { useAuth } from '@/lib/auth-client';
+import BackButton from '@/components/ui/BackButton';
+import LoginFormCard from '@/components/login/LoginFormCard';
+import LoginFormFields from '@/components/login/LoginFormFields';
+import LoginFormActions from '@/components/login/LoginFormActions';
+import LoginFormLinks from '@/components/login/LoginFormLinks';
+
+export default function LoginPage() {
+  const t = useI18n();
+  const params = useParams();
+  const lang =
+    typeof params.lang === 'string'
+      ? params.lang
+      : Array.isArray(params.lang)
+        ? params.lang[0]
+        : 'fr';
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+  const { signIn, loading, error } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = loginSchema.safeParse({ username: email, password });
+    if (!parsed.success) return;
+    await signIn(email, password, () => router.push('/' + lang));
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 relative">
+      <div className="absolute top-6 left-6">
+        <BackButton variant="ghost" />
+      </div>
+      <LoginFormCard>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
+          <h2 className="text-1xl">{t('auth.login.title')}</h2>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <LoginFormFields
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            rememberMe={rememberMe}
+            setRememberMe={setRememberMe}
+          />
+          <LoginFormActions loading={loading} error={error} />
+        </form>
+        <LoginFormLinks lang={lang} />
+      </LoginFormCard>
+    </div>
+  );
+}
