@@ -8,7 +8,11 @@ module.exports = {
     './src/styles/**/*.{css,scss}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        moranga: ['var(--font-moranga)', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

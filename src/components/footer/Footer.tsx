@@ -98,7 +98,7 @@ export default function Footer() {
       <div className="px-6 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div className="col-span-1 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <div className="w-5 h-5 bg-white rounded-sm transform rotate-12"></div>
             </div>
           </div>

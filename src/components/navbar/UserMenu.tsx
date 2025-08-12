@@ -29,7 +29,7 @@ export default function UserMenu() {
         </LangLink>
         <LangLink
           href="/register"
-          className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 border border-primary transition w-full md:w-auto text-center"
+          className="px-4 py-1.5 rounded-md text-primary bg-background text-sm hover:bg-background/80 border-2 border-primary transition w-full md:w-auto text-center"
         >
           Rejoindre
         </LangLink>

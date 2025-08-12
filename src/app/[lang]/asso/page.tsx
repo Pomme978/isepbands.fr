@@ -1,7 +1,7 @@
 'use client';
 
 import BasicLayout from '@/components/layouts/BasicLayout';
-import HeroBanner from '@/components/common/HeroBanner';
+import HeroBanner from '@/components/home/HomeHero';
 import heroImage from '@/assets/images/hero/asso-hero-min.jpg';
 
 export default function Asso() {
