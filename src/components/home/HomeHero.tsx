@@ -2,6 +2,29 @@ import { Button } from '@/components/ui/button';
 import NeonLogo from '@/components/common/NeonLogo'; // Adjust path as needed
 import isepbands_logo from '@/assets/images/isepbands-logo.svg';
 import { ChevronDown } from 'lucide-react';
+import { siFacebook, siGithub, siInstagram, siX, siYoutube } from 'simple-icons';
+import { SocialIcons } from '@/components/footer/SocialIcons';
+
+const socialLinks = [
+  {
+    name: 'Instagram',
+    href: 'https://instagram.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siInstagram.path} />
+      </svg>
+    ),
+  },
+  {
+    name: 'YouTube',
+    href: 'https://youtube.com',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d={siYoutube.path} />
+      </svg>
+    ),
+  },
+];
 
 const HomeHero = () => {
   return (
@@ -71,19 +94,27 @@ const HomeHero = () => {
           <div className="text-center lg:text-left">
             {/* Motto */}
             <h1 className=" text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
-              ISEPBANDS, LA MUSIQUE COMME LANGAGE COMMUN
+              ISEPBANDS, FOR THOSE WHO CAN’T STOP PLAYING
             </h1>
 
             {/* Button */}
-            <Button
-              size="lg"
-              className="relative shadow-md overflow-hidden bg-primary text-md py-6 text-primary-foreground
+            <div className="flex justify-between items-center">
+              <Button
+                size="lg"
+                className="relative shadow-md overflow-hidden bg-primary text-md py-6 text-primary-foreground
              transition-all duration-300 transform hover:scale-[1.02] hover:bg-primary/90
              before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent
              before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-in-out"
-            >
-              Rejoindre l&#39;Association
-            </Button>
+              >
+                Rejoindre l&#39;Association
+              </Button>
+              <SocialIcons
+                links={socialLinks}
+                defaultColor="text-white"
+                defaultHoverColor="text-gray-200"
+                defaultSize="w-8 h-8"
+              />
+            </div>
           </div>
           {/* Scroll hint */}
           <a href="#next" className="absolute left-1/2 bottom-4 -translate-x-1/2 z-20">
