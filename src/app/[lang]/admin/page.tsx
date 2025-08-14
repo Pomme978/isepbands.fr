@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layouts/AdminLayout';
 import DashboardStats from '@/components/admin/dashboard/DashboardStats';
 import RecentActivity from '@/components/admin/dashboard/RecentActivity';
 import PendingApprovals from '@/components/admin/dashboard/PendingApprovals';
+import UpcomingEventCard from '@/components/admin/dashboard/UpcomingEventCard';
 
 export default function Admin() {
   return (
@@ -17,6 +18,8 @@ export default function Admin() {
 
         {/* Stats Cards */}
         <DashboardStats />
+
+        <UpcomingEventCard />
 
         {/* Pending Approvals */}
         <PendingApprovals />

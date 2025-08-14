@@ -34,6 +34,12 @@ interface PendingUser {
   submittedAt: string;
 }
 
+interface BandMember {
+  userId: string;
+  name: string;
+  roles: string[]; // Array of roles like ['Guitariste', 'Chœurs']
+}
+
 interface PendingBand {
   id: string;
   type: 'band';
@@ -41,8 +47,10 @@ interface PendingBand {
   genre: string;
   description: string;
   motivation: string;
-  members: string[];
+  members: BandMember[]; // Updated structure
+  maxMembers: number;
   submittedAt: string;
+  createdBy: string; // User ID who created the band
 }
 
 type PendingItem = PendingUser | PendingBand;
@@ -123,13 +131,19 @@ const PENDING_BANDS: PendingBand[] = [
     description:
       "Nous sommes un groupe qui mélange rock alternatif et éléments électroniques. Notre style s'inspire de Muse, Linkin Park et Imagine Dragons. Nous cherchons à créer une musique énergique et moderne qui fera bouger les foules lors des concerts ISEP.",
     motivation:
-      "Nous voulons rejoindre ISEP Bands pour avoir accès à du matériel de qualité et pouvoir répéter régulièrement. Notre objectif est de composer nos propres morceaux et de les jouer lors des événements de l'école. Nous sommes motivés et déterminés à créer quelque chose d'unique qui représentera bien l'esprit ISEP.",
+      "Notre objectif est de composer nos propres morceaux et de les jouer lors des événements de l'école. Nous sommes motivés et déterminés à créer quelque chose d'unique qui représentera bien l'esprit ISEP.",
     members: [
-      'Paul Durand (Guitare/Chant)',
-      'Marie Leroy (Clavier/Synthé)',
-      'Lucas Martin (Basse)',
+      { userId: 'user_123', name: 'Paul Durand', roles: ['Guitariste', 'Chant'] },
+      {
+        userId: 'user_124',
+        name: 'Marie Leroy',
+        roles: ['Clavier', 'Synthétiseur'],
+      },
+      { userId: 'user_125', name: 'Lucas Martin', roles: ['Basse'] },
     ],
+    maxMembers: 5,
     submittedAt: 'il y a 3 heures',
+    createdBy: 'user_123',
   },
   {
     id: '2',
@@ -141,12 +155,14 @@ const PENDING_BANDS: PendingBand[] = [
     motivation:
       "Le jazz fusion demande beaucoup de technique et de cohésion. ISEP Bands nous donnerait l'opportunité de travailler ensemble régulièrement et d'accéder à un local de répétition adapté. Nous souhaitons aussi organiser des jam sessions ouvertes pour initier d'autres étudiants à ce style musical riche et complexe.",
     members: [
-      'Sophie Chen (Piano)',
-      'Antoine Moreau (Saxophone)',
-      'Karim Benali (Contrebasse)',
-      'Lisa Wang (Batterie)',
+      { userId: 'user_126', name: 'Sophie Chen', roles: ['Piano'] },
+      { userId: 'user_127', name: 'Antoine Moreau', roles: ['Saxophone'] },
+      { userId: 'user_128', name: 'Karim Benali', roles: ['Contrebasse'] },
+      { userId: 'user_129', name: 'Lisa Wang', roles: ['Batterie'] },
     ],
+    maxMembers: 6,
     submittedAt: 'il y a 1 jour',
+    createdBy: 'user_126',
   },
 ];
 
@@ -217,7 +233,7 @@ export default function PendingApprovals({
     id: band.id,
     name: band.name,
     type: 'band' as const,
-    genre: band.genre,
+    genre: `${band.genre} • ${band.members.length}/${band.maxMembers} membres`,
     submittedAt: band.submittedAt,
   }));
 

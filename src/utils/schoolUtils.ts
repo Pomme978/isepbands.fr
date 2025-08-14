@@ -20,19 +20,19 @@ export function calculateAge(dateOfBirth: string): number {
 
 /**
  * Get current academic year (e.g., "2024-2025")
- * Academic year starts in September
+ * Academic year starts on August 20
  * @returns Current academic year
  */
 export function getCurrentAcademicYear(): string {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth(); // 0-based (0 = January, 8 = September)
+  const currentMonth = now.getMonth(); // 0 = Jan, 7 = Aug
+  const currentDay = now.getDate();
 
-  if (currentMonth >= 8) {
-    // September or later
+  // If today is after or on August 20, switch to new academic year
+  if (currentMonth > 7 || (currentMonth === 7 && currentDay >= 20)) {
     return `${currentYear}-${currentYear + 1}`;
   } else {
-    // Before September
     return `${currentYear - 1}-${currentYear}`;
   }
 }

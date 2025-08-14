@@ -1,50 +1,127 @@
 'use client';
 
 import ActivityItem from './ActivityItem';
-import { CheckCircle, Clock, AlertTriangle, Music, LucideIcon } from 'lucide-react';
+import {
+  CheckCircle,
+  UserCheck,
+  UserX,
+  Megaphone,
+  Calendar,
+  Music,
+  AlertTriangle,
+  Settings,
+  LucideIcon,
+  Crown,
+} from 'lucide-react';
 
 interface ActivityData {
   id: string;
   title: string;
   description: string;
   timestamp: string;
-  type: 'success' | 'info' | 'warning' | 'default';
+  type: 'success' | 'info' | 'warning' | 'error' | 'default';
   icon: LucideIcon;
+  adminAction?: {
+    adminName: string;
+    adminRole?: string;
+  };
 }
 
-// This could come from an API call or props in the future
+// Mock data with proper admin tracking
 const ACTIVITY_DATA: ActivityData[] = [
   {
     id: '1',
-    title: 'New band registered',
-    description: '"The Electric Vibes" just joined the platform',
-    timestamp: '2 hours ago',
+    title: 'Utilisateur approuvé',
+    description: 'Alice Martin (A2) a été approuvée et peut maintenant accéder à la plateforme',
+    timestamp: 'il y a 2 heures',
     type: 'success',
-    icon: CheckCircle,
+    icon: UserCheck,
+    adminAction: {
+      adminName: 'Maxime Dubois',
+      adminRole: 'Président',
+    },
   },
   {
     id: '2',
-    title: 'Event approved',
-    description: '"Rock Night 2025" has been approved and published',
-    timestamp: '4 hours ago',
+    title: 'Groupe créé',
+    description: 'Le groupe "Electric Dreams" a été créé par Paul Durand avec 3 membres',
+    timestamp: 'il y a 3 heures',
     type: 'info',
-    icon: Music,
+    icon: Megaphone,
+    adminAction: {
+      adminName: 'Sarah Martin',
+      adminRole: 'Vice-présidente',
+    },
   },
   {
     id: '3',
-    title: 'Pending review',
-    description: '3 bands are waiting for approval',
-    timestamp: '6 hours ago',
+    title: 'Événement publié',
+    description:
+      '"Concert de mi-année 2025" a été publié et est maintenant visible par tous les membres',
+    timestamp: 'il y a 4 heures',
+    type: 'info',
+    icon: Calendar,
+    adminAction: {
+      adminName: 'Armand Leroy',
+      adminRole: 'Vice-président',
+    },
+  },
+  {
+    id: '4',
+    title: 'Demande refusée',
+    description: "L'inscription de Jean Dupont a été refusée (profil incomplet)",
+    timestamp: 'il y a 5 heures',
+    type: 'error',
+    icon: UserX,
+    adminAction: {
+      adminName: 'Maéva Rousseau',
+      adminRole: 'Secrétaire générale',
+    },
+  },
+  {
+    id: '5',
+    title: 'Groupe approuvé',
+    description: '"Midnight Sessions" (Jazz Fusion) a été approuvé avec 4 membres',
+    timestamp: 'il y a 6 heures',
+    type: 'success',
+    icon: Music,
+    adminAction: {
+      adminName: "Shane O'Connor",
+      adminRole: 'Trésorier',
+    },
+  },
+  {
+    id: '6',
+    title: 'Paramètres modifiés',
+    description:
+      "Les paramètres de l'association ont été mis à jour (nouveaux instruments disponibles)",
+    timestamp: 'il y a 8 heures',
+    type: 'info',
+    icon: Settings,
+    adminAction: {
+      adminName: 'Maxime Dubois',
+      adminRole: 'Président',
+    },
+  },
+  {
+    id: '7',
+    title: 'Approbations en attente',
+    description: '5 nouveaux utilisateurs et 2 groupes attendent une validation',
+    timestamp: 'il y a 12 heures',
     type: 'warning',
     icon: AlertTriangle,
   },
   {
-    id: '4',
-    title: 'Scheduled maintenance',
-    description: 'Server maintenance scheduled for tonight at 2 AM',
-    timestamp: '8 hours ago',
+    id: '8',
+    title: 'Jam session planifiée',
+    description: 'Nouvelle jam session programmée pour samedi 14h-18h en salle de répétition',
+    timestamp: 'il y a 1 jour',
     type: 'info',
-    icon: Clock,
+    icon: Music,
+    adminAction: {
+      adminName: 'Sarah Martin',
+      adminRole: 'Vice-présidente',
+    },
   },
 ];
 
@@ -64,6 +141,11 @@ const getActivityColors = (type: ActivityData['type']) => {
       return {
         iconColor: 'text-yellow-600',
         iconBgColor: 'bg-yellow-100',
+      };
+    case 'error':
+      return {
+        iconColor: 'text-red-600',
+        iconBgColor: 'bg-red-100',
       };
     default:
       return {
@@ -88,10 +170,10 @@ export default function RecentActivity({
     <div className="bg-card rounded-lg shadow border">
       <div className="px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-foreground">Recent Activity</h2>
+          <h2 className="text-lg font-medium text-foreground">Activité récente</h2>
           {activities.length > maxItems && (
             <button className="text-sm text-primary hover:text-primary/80 font-medium">
-              View all
+              Voir tout
             </button>
           )}
         </div>
@@ -102,11 +184,17 @@ export default function RecentActivity({
             <ul className="-my-5 divide-y divide-border">
               {displayedActivities.map((activity) => {
                 const colors = getActivityColors(activity.type);
+
+                // Enhanced description with admin info
+                const enhancedDescription = activity.adminAction
+                  ? `${activity.description} • Par ${activity.adminAction.adminName}${activity.adminAction.adminRole ? ` (${activity.adminAction.adminRole})` : ''}`
+                  : activity.description;
+
                 return (
                   <ActivityItem
                     key={activity.id}
                     title={activity.title}
-                    description={activity.description}
+                    description={enhancedDescription}
                     timestamp={activity.timestamp}
                     icon={activity.icon}
                     iconColor={colors.iconColor}
@@ -118,7 +206,7 @@ export default function RecentActivity({
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">No recent activity</p>
+            <p className="text-muted-foreground">Aucune activité récente</p>
           </div>
         )}
       </div>

@@ -11,9 +11,10 @@ import {
   GraduationCap,
   Star,
   MessageSquare,
-  Camera,
   Megaphone,
   Music,
+  Users as UsersIcon,
+  Crown,
 } from 'lucide-react';
 import { formatPromotion } from '@/utils/schoolUtils';
 
@@ -44,6 +45,12 @@ interface PendingUser {
   submittedAt: string;
 }
 
+interface BandMember {
+  userId: string;
+  name: string;
+  roles: string[]; // Array of roles like ['Guitariste', 'Chœurs']
+}
+
 interface PendingBand {
   id: string;
   type: 'band';
@@ -51,8 +58,10 @@ interface PendingBand {
   genre: string;
   description: string;
   motivation: string;
-  members: string[];
+  members: BandMember[];
+  maxMembers: number;
   submittedAt: string;
+  createdBy: string; // User ID who created the band
 }
 
 type PendingItem = PendingUser | PendingBand;
@@ -323,6 +332,13 @@ function BandDetails({ band }: { band: PendingBand }) {
       <div>
         <h3 className="text-2xl font-bold text-foreground">{band.name}</h3>
         <p className="text-lg text-muted-foreground mt-1">{band.genre}</p>
+        <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+          <span>
+            {band.members.length}/{band.maxMembers} membres
+          </span>
+          <span>•</span>
+          <span>Créé par {band.members.find((m) => m.userId === band.createdBy)?.name}</span>
+        </div>
       </div>
 
       {/* Description */}
@@ -338,11 +354,32 @@ function BandDetails({ band }: { band: PendingBand }) {
       {/* Members */}
       {band.members.length > 0 && (
         <div>
-          <h4 className="text-lg font-semibold text-foreground mb-3">Membres</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
+            <UsersIcon className="w-5 h-5" />
+            <span>Membres</span>
+          </h4>
+          <div className="space-y-3">
             {band.members.map((member, index) => (
-              <div key={index} className="p-3 bg-accent/50 rounded-lg">
-                <span className="font-medium">{member}</span>
+              <div
+                key={index}
+                className="flex items-center justify-between p-4 bg-accent/50 rounded-lg"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-sm">
+                      {member.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{member.name}</span>
+                      {member.userId === band.createdBy && (
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{member.roles.join(' • ')}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
