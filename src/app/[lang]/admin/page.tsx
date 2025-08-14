@@ -3,6 +3,7 @@
 import AdminLayout from '@/components/layouts/AdminLayout';
 import DashboardStats from '@/components/admin/dashboard/DashboardStats';
 import RecentActivity from '@/components/admin/dashboard/RecentActivity';
+import PendingApprovals from '@/components/admin/dashboard/PendingApprovals';
 
 export default function Admin() {
   return (
@@ -16,6 +17,9 @@ export default function Admin() {
 
         {/* Stats Cards */}
         <DashboardStats />
+
+        {/* Pending Approvals */}
+        <PendingApprovals />
 
         {/* Recent Activity */}
         <RecentActivity />
