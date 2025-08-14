@@ -1,0 +1,10 @@
+import { ReactNode } from 'react';
+import BasicLayout from '@/components/layouts/BasicLayout';
+
+export default function ProfileLayout({ children }: { children: ReactNode }) {
+  return (
+    <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
+      {children}
+    </BasicLayout>
+  );
+}

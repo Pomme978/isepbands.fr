@@ -1,16 +1,18 @@
 // app/[locale]/profile/[[...slug]]/page.tsx
 'use client';
 
-import { useSession } from '@/lib/auth-client';
-import { useI18n } from '@/locales/client';
-import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import BackButton from '@/components/ui/back-button';
-import { User, Mail, Calendar, Camera, Edit2, Save, X } from 'lucide-react';
+import { Guitar, Piano, Mic, X, Edit2 } from 'lucide-react';
+import { formatPromotion } from '@/utils/schoolUtils'; // Import ajouté
+
+// Import profile components
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import EventBanner from '@/components/profile/EventBanner';
+import InstrumentsSection from '@/components/profile/InstrumentsSection';
+import GroupsSection from '@/components/profile/GroupsSection';
 
 interface ProfilePageProps {
   params: {
@@ -19,303 +21,319 @@ interface ProfilePageProps {
   };
 }
 
+type Pronouns = 'he/him' | 'she/her' | 'they/them' | 'other';
+
 interface UserProfile {
   id: string;
-  name: string;
+  username: string;
   email: string;
-  image?: string;
+  image: string;
   createdAt: string;
   emailVerified: boolean;
+  currentLevel: string; // Nouveau champ
+  dateOfBirth: string; // Nouveau champ
+  isOutOfSchool: boolean; // Nouveau champ
+  promotion: string; // Sera calculé automatiquement
+  role: string;
+  badges: string[];
+  bio: string;
+  pronouns: Pronouns;
+  isLookingForGroup: boolean;
+  totalGroups: number;
+  eventsAttended: number;
+  activeGroups: number;
+  memberSince: string;
+  instrumentCount: number; // Ajouté
+  concertsPlayed: number; // Ajouté
+}
+
+interface Instrument {
+  id: string;
+  name: string;
+  level: string;
+  icon: React.ComponentType<{ className?: string }>;
+  isPrimary: boolean;
+  yearsPlaying?: number;
+}
+
+interface GroupRole {
+  role: string;
+  isPrimary: boolean;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  image: string;
+  roles: GroupRole[];
+  joinDate: string;
+  isActive: boolean;
+  inactiveSince?: string;
+  memberCount: number;
+  maxMembers: number;
+  slug: string;
+  concertCount: number;
+  genre?: string;
+  nextEvent?: {
+    type: 'concert' | 'rehearsal' | 'jam';
+    date: string;
+    venue?: string;
+  };
+  isRecruiting?: boolean;
 }
 
 export default function ProfilePage({ params }: ProfilePageProps) {
-  const t = useI18n();
   const router = useRouter();
-  const { data: session, isPending } = useSession();
-  const [profileUser, setProfileUser] = useState<UserProfile | null>(null);
+  const is_user_profile = true; // Set based on auth comparison
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [editedBio, setEditedBio] = useState('');
+  const [profileImage, setProfileImage] = useState('');
 
-  // Extract username from slug if viewing someone else's profile
-  const targetUsername = params.slug?.[0];
-  const isOwnProfile = !targetUsername;
+  // Mock data mis à jour
+  const [profileUser, setProfileUser] = useState<UserProfile>({
+    id: '1',
+    username: 'NOM Prénom',
+    email: 'nom.prenom@isep.fr',
+    image:
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    createdAt: '2023-09-15',
+    emailVerified: true,
+    currentLevel: 'I2', // Nouveau
+    dateOfBirth: '2005-12-24', // Nouveau
+    isOutOfSchool: false, // Nouveau
+    promotion: '', // Sera calculé
+    role: 'Vice-President',
+    badges: ['Bureau 24-25'],
+    bio: "Guitariste passionné depuis 8 ans, j'adore le rock alternatif et je cherche toujours à explorer de nouveaux styles musicaux. Disponible pour des projets créatifs !",
+    pronouns: 'he/him',
+    eventsAttended: 14,
+    isLookingForGroup: true,
+    totalGroups: 3,
+    activeGroups: 1,
+    memberSince: 'Septembre 2023',
+    instrumentCount: 0, // Sera calculé
+    concertsPlayed: 0, // Sera calculé
+  });
 
-  useEffect(() => {
-    // If not logged in and trying to access own profile, redirect to login
-    if (!isPending && !session && isOwnProfile) {
-      router.push(`/${params.locale}/login`);
-      return;
-    }
+  const [instruments, setInstruments] = useState<Instrument[]>([
+    { id: '1', name: 'Guitare', level: 'Avancé', icon: Guitar, isPrimary: true, yearsPlaying: 8 },
+    {
+      id: '2',
+      name: 'Piano',
+      level: 'Intermédiaire',
+      icon: Piano,
+      isPrimary: false,
+      yearsPlaying: 3,
+    },
+    { id: '3', name: 'Chant', level: 'Débutant', icon: Mic, isPrimary: false, yearsPlaying: 1 },
+    {
+      id: '4',
+      name: 'Basse',
+      level: 'Intermédiaire',
+      icon: Guitar,
+      isPrimary: false,
+      yearsPlaying: 2,
+    },
+  ]);
 
-    if (session) {
-      if (isOwnProfile) {
-        // Show current user's profile
-        setProfileUser(session.user);
-        setEditedName(session.user.name || '');
-      } else {
-        // Fetch other user's profile
-        fetchUserProfile(targetUsername);
-      }
-    }
-  }, [session, isPending, targetUsername, isOwnProfile, router, params.locale]);
+  const [groups, setGroups] = useState<Group[]>([
+    {
+      id: '1',
+      name: 'Les Meilleurs',
+      image:
+        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=80&h=80&fit=crop&crop=center',
+      roles: [
+        { role: 'Guitariste', isPrimary: true },
+        { role: 'Chœurs', isPrimary: false },
+      ],
+      joinDate: '27/07/2024',
+      isActive: true,
+      memberCount: 5,
+      maxMembers: 6,
+      slug: 'les-meilleurs',
+      genre: 'Rock Alternatif',
+      nextEvent: {
+        type: 'concert',
+        date: '15/12/2024',
+        venue: 'Salle des Fêtes ISEP',
+      },
+      isRecruiting: false,
+      concertCount: 8,
+    },
+    {
+      id: '2',
+      name: 'Les Nuls',
+      image:
+        'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=80&h=80&fit=crop&crop=center',
+      roles: [{ role: 'Bassiste', isPrimary: true }],
+      joinDate: '26/07/2023',
+      isActive: false,
+      inactiveSince: '15/03/2024',
+      memberCount: 3,
+      maxMembers: 5,
+      concertCount: 4,
+      slug: 'les-nuls',
+      genre: 'Pop Rock',
+    },
+    {
+      id: '3',
+      name: 'Jazz Collective',
+      image:
+        'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=80&h=80&fit=crop&crop=center',
+      roles: [{ role: 'Pianiste', isPrimary: true }],
+      joinDate: '10/01/2024',
+      isActive: false,
+      inactiveSince: '20/06/2024',
+      memberCount: 4,
+      maxMembers: 5,
+      concertCount: 3,
+      slug: 'jazz-collective',
+      genre: 'Jazz',
+    },
+  ]);
 
-  const fetchUserProfile = async (username: string) => {
-    try {
-      setLoading(true);
-      // You'll need to create this API endpoint
-      const response = await fetch(`/api/users/${username}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError(t('profile.errors.userNotFound'));
-          return;
-        }
-        throw new Error('Failed to fetch user');
-      }
-      const userData = await response.json();
-      setProfileUser(userData);
-    } catch (err) {
-      setError(t('profile.errors.loadFailed'));
-      console.error('Error fetching user profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Calculs automatiques avec useMemo
+  const calculatedUser = useMemo(() => {
+    const instrumentCount = instruments.length;
+    const concertsPlayed = groups.reduce((total, group) => total + group.concertCount, 0);
+    const promotion = formatPromotion(
+      profileUser.currentLevel,
+      profileUser.dateOfBirth,
+      profileUser.isOutOfSchool,
+    );
 
-  const handleSaveProfile = async () => {
-    if (!session || !isOwnProfile) return;
+    return {
+      ...profileUser,
+      instrumentCount,
+      concertsPlayed,
+      promotion,
+    };
+  }, [profileUser, instruments, groups]);
 
-    try {
-      setLoading(true);
-      // You'll need to create this API endpoint
-      const response = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: editedName,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-
-      const updatedUser = await response.json();
-      setProfileUser(updatedUser);
+  // Event handlers
+  const handleEditToggle = () => {
+    if (isEditing) {
       setIsEditing(false);
-    } catch (err) {
-      setError(t('profile.errors.updateFailed'));
-      console.error('Error updating profile:', err);
-    } finally {
-      setLoading(false);
+      setEditedBio(calculatedUser.bio);
+      setProfileImage(calculatedUser.image);
+    } else {
+      setIsEditing(true);
+      setEditedBio(calculatedUser.bio);
+      setProfileImage(calculatedUser.image);
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSaveProfile = () => {
+    setProfileUser((prev) => ({ ...prev, bio: editedBio, image: profileImage }));
+    setIsEditing(false);
+    console.log('Saving profile:', {
+      bio: editedBio,
+      image: profileImage,
+      instruments: instruments,
+    });
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !isOwnProfile) return;
-
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append('image', file);
-
-      // You'll need to create this API endpoint
-      const response = await fetch('/api/profile/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const updatedUser = await response.json();
-      setProfileUser(updatedUser);
-    } catch (err) {
-      setError(t('profile.errors.imageUploadFailed'));
-      console.error('Error uploading image:', err);
-    } finally {
-      setLoading(false);
-    }
+    if (!file) return;
+    const imageUrl = URL.createObjectURL(file);
+    setProfileImage(imageUrl);
   };
 
-  if (isPending || loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>{t('common.status.loading')}</p>
-        </div>
-      </div>
-    );
-  }
+  const handleGroupClick = (groupSlug: string) => {
+    router.push(`/${params.locale}/groups/${groupSlug}`);
+  };
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md p-6 text-center">
-          <div className="text-red-500 mb-4">
-            <X className="mx-auto h-12 w-12 mb-2" />
-            <p className="text-lg font-semibold">{error}</p>
-          </div>
-          <Button onClick={() => router.back()} variant="outline">
-            {t('common.actions.goBack')}
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  const handleEventClick = (eventId: string) => {
+    router.push(`/${params.locale}/events/${eventId}`);
+  };
 
-  if (!profileUser) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>{t('profile.errors.noData')}</p>
-      </div>
+  const addInstrument = () => {
+    const newInstrument: Instrument = {
+      id: Date.now().toString(),
+      name: 'Guitare',
+      level: 'Débutant',
+      icon: Guitar,
+      isPrimary: false,
+    };
+    setInstruments([...instruments, newInstrument]);
+  };
+
+  const removeInstrument = (id: string) => {
+    setInstruments(instruments.filter((inst) => inst.id !== id));
+  };
+
+  const updateInstrument = (id: string, field: keyof Instrument, value: string | boolean) => {
+    setInstruments(
+      instruments.map((inst) => (inst.id === id ? { ...inst, [field]: value } : inst)),
     );
-  }
+  };
+
+  const instrumentOptions = [
+    'Guitare',
+    'Piano',
+    'Chant',
+    'Batterie',
+    'Basse',
+    'Violon',
+    'Flûte',
+    'Saxophone',
+  ];
+  const levelOptions = ['Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
+
+  const activeGroups = groups.filter((group) => group.isActive);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4">
-        {/* Back Button */}
-        <div className="mb-6">
-          <BackButton variant="ghost" />
-        </div>
-
-        {/* Profile Card */}
-        <Card className="p-8">
-          {/* Header with title and edit button */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">
-              {isOwnProfile ? t('profile.myProfile') : t('profile.userProfile')}
-            </h1>
-            {isOwnProfile && (
-              <Button
-                onClick={() => {
-                  if (isEditing) {
-                    setIsEditing(false);
-                    setEditedName(profileUser.name || '');
-                  } else {
-                    setIsEditing(true);
-                  }
-                }}
-                variant="outline"
-                size="sm"
-              >
-                {isEditing ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-              </Button>
-            )}
+    <div className="min-h-screen py-8">
+      <div className="max-w-7xl space-y-6">
+        <div className="flex items-center justify-between mb-8">
+          {/* Back Button */}
+          <div className="">
+            <BackButton variant="ghost" />
           </div>
 
-          {/* Profile Image Section */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                {profileUser.image ? (
-                  <img
-                    src={profileUser.image}
-                    alt={profileUser.name || 'Profile'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="h-16 w-16 text-gray-400" />
-                )}
-              </div>
-              {isOwnProfile && (
-                <label
-                  htmlFor="profile-image"
-                  className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
-                >
-                  <Camera className="h-4 w-4" />
-                  <input
-                    id="profile-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-          </div>
-
-          {/* Profile Information */}
-          <div className="space-y-6">
-            {/* Name */}
-            <div>
-              <Label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <User className="h-4 w-4" />
-                {t('profile.fields.name')}
-              </Label>
-              {isEditing ? (
-                <Input
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  placeholder={t('profile.placeholders.name')}
-                />
-              ) : (
-                <p className="text-lg font-semibold">{profileUser.name || t('profile.noName')}</p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <Label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Mail className="h-4 w-4" />
-                {t('profile.fields.email')}
-              </Label>
-              <p className="text-lg">{profileUser.email}</p>
-              {profileUser.emailVerified ? (
-                <span className="inline-block mt-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-                  {t('profile.emailVerified')}
-                </span>
-              ) : (
-                <span className="inline-block mt-1 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                  {t('profile.emailNotVerified')}
-                </span>
-              )}
-            </div>
-
-            {/* Join Date */}
-            <div>
-              <Label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="h-4 w-4" />
-                {t('profile.fields.joinDate')}
-              </Label>
-              <p className="text-lg">
-                {new Date(profileUser.createdAt).toLocaleDateString(params.locale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          {isOwnProfile && isEditing && (
-            <div className="flex gap-3 mt-8 pt-6 border-t">
-              <Button onClick={handleSaveProfile} disabled={loading} className="flex-1">
-                <Save className="h-4 w-4 mr-2" />
-                {loading ? t('common.status.saving') : t('common.actions.save')}
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditedName(profileUser.name || '');
-                }}
-                variant="outline"
-                className="flex-1"
-              >
-                {t('common.actions.cancel')}
+          {is_user_profile && (
+            <div className="">
+              <Button onClick={handleEditToggle} variant="outline" className="">
+                {isEditing ? <X className="h-4 w-4 mr-2" /> : <Edit2 className="h-4 w-4 mr-2" />}
+                {isEditing ? 'Annuler' : 'Modifier'}
               </Button>
             </div>
           )}
-        </Card>
+        </div>
+
+        {/* Profile Header */}
+        <ProfileHeader
+          user={calculatedUser}
+          isEditing={isEditing}
+          isUserProfile={is_user_profile}
+          editedBio={editedBio}
+          profileImage={profileImage}
+          onSaveProfile={handleSaveProfile}
+          onBioChange={setEditedBio}
+          onImageUpload={handleImageUpload}
+        />
+
+        {/* Event Banner */}
+        <EventBanner groups={activeGroups} locale={params.locale} onEventClick={handleEventClick} />
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+          {/* Instruments Section */}
+          <InstrumentsSection
+            instruments={instruments}
+            isEditing={isEditing}
+            instrumentOptions={instrumentOptions}
+            levelOptions={levelOptions}
+            onAddInstrument={addInstrument}
+            onRemoveInstrument={removeInstrument}
+            onUpdateInstrument={updateInstrument}
+          />
+
+          {/* Groups Section */}
+          <GroupsSection groups={groups} onGroupClick={handleGroupClick} />
+        </div>
       </div>
     </div>
   );
