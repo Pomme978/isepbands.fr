@@ -1,8 +1,7 @@
 // @components/profile/InstrumentCard.tsx
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Star, Trash2, Guitar } from 'lucide-react';
+import { Star, Guitar } from 'lucide-react';
 import LevelBadge from './LevelBadge';
 import React from 'react';
 
@@ -17,11 +16,6 @@ interface Instrument {
 
 interface InstrumentCardProps {
   instrument: Instrument;
-  isEditing: boolean;
-  instrumentOptions: string[];
-  levelOptions: string[];
-  onUpdate: (field: keyof Instrument, value: string | boolean) => void;
-  onRemove: () => void;
 }
 
 const instrumentIcons = {
@@ -35,14 +29,7 @@ const instrumentIcons = {
   Saxophone: Guitar,
 };
 
-export default function InstrumentCard({
-  instrument,
-  isEditing,
-  instrumentOptions,
-  levelOptions,
-  onUpdate,
-  onRemove,
-}: InstrumentCardProps) {
+export default function InstrumentCard({ instrument }: InstrumentCardProps) {
   const IconComponent = instrumentIcons[instrument.name as keyof typeof instrumentIcons] || Guitar;
 
   return (
@@ -62,18 +49,6 @@ export default function InstrumentCard({
         </div>
       )}
 
-      {/* Delete button for editing */}
-      {isEditing && (
-        <Button
-          onClick={onRemove}
-          size="sm"
-          variant="ghost"
-          className="absolute top-2 right-2 h-6 w-6 p-0 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
-      )}
-
       <div className="text-center space-y-3">
         {/* Icon */}
         <div
@@ -88,56 +63,20 @@ export default function InstrumentCard({
 
         {/* Instrument info */}
         <div className="space-y-2">
-          {isEditing ? (
-            <div className="space-y-2">
-              <select
-                value={instrument.name}
-                onChange={(e) => onUpdate('name', e.target.value)}
-                className="w-full p-2 text-sm border border-gray-300 rounded-lg font-semibold text-center"
-              >
-                {instrumentOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={instrument.level}
-                onChange={(e) => onUpdate('level', e.target.value)}
-                className="w-full p-1 text-xs border border-gray-300 rounded"
-              >
-                {levelOptions.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-              <label className="flex items-center justify-center gap-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={instrument.isPrimary}
-                  onChange={(e) => onUpdate('isPrimary', e.target.checked)}
-                  className="rounded"
-                />
-                Principal
-              </label>
+          <>
+            <h4 className="font-bold text-gray-900 text-lg">{instrument.name}</h4>
+            <div className="space-y-1">
+              <LevelBadge level={instrument.level} />
+              {instrument.yearsPlaying && (
+                <p className="text-xs text-gray-500">
+                  {instrument.yearsPlaying} ans d&apos;expérience
+                </p>
+              )}
+              {instrument.isPrimary && (
+                <p className="text-xs text-purple-600 font-medium">Instrument principal</p>
+              )}
             </div>
-          ) : (
-            <>
-              <h4 className="font-bold text-gray-900 text-lg">{instrument.name}</h4>
-              <div className="space-y-1">
-                <LevelBadge level={instrument.level} />
-                {instrument.yearsPlaying && (
-                  <p className="text-xs text-gray-500">
-                    {instrument.yearsPlaying} ans d&apos;expérience
-                  </p>
-                )}
-                {instrument.isPrimary && (
-                  <p className="text-xs text-purple-600 font-medium">Instrument principal</p>
-                )}
-              </div>
-            </>
-          )}
+          </>
         </div>
       </div>
     </div>

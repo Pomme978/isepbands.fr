@@ -73,7 +73,29 @@ const en = {
     },
   },
   user: {
-    profile: 'Profile',
+    profile: {
+      promotion_year: 'Promotion year',
+      member_since: 'Member since',
+      pronouns: {
+        hehim: 'he/him',
+        sheher: 'she/her',
+        theythem: 'they/them',
+        other: 'other',
+      },
+      instruments: {
+        title: 'Instruments',
+        empty_title: 'No instrument added',
+        empty_description: 'Add your instruments so groups can find you!',
+        years_experience: 'years experience',
+        primary_label: 'Primary instrument',
+      },
+      groups: {
+        title: 'Groups',
+        inactive_label: 'Inactive Groups',
+        empty_title: "Hasn't joined any group yet",
+        empty_description: 'Groups will appear here once joined!',
+      },
+    },
     skillLevels: {
       beginner: 'Beginner',
       intermediate: 'Intermediate',

@@ -7,6 +7,17 @@ const SESSION_COOKIE = 'session';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Ignore la gestion de la locale pour la route /api/auth/session
+  if (pathname.startsWith('/api/auth/session')) {
+    return NextResponse.next();
+  }
+
+  const locale = pathname.split('/')[1];
+  const response = NextResponse.next();
+  if (locale && !req.cookies.get('NEXT_LOCALE')) {
+    response.cookies.set('NEXT_LOCALE', locale, { path: '/' });
+  }
+
   if (pathname.match(/^\/[a-zA-Z-]+\/(login|register)/)) {
     const cookie = req.cookies.get(SESSION_COOKIE)?.value;
     if (cookie) {
@@ -17,5 +28,9 @@ export async function middleware(req: NextRequest) {
       } catch {}
     }
   }
-  return NextResponse.next();
+  return response;
 }
+
+export const config = {
+  matcher: ['/((?!_next|static|favicon.ico).*)'],
+};

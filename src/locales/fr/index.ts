@@ -73,12 +73,44 @@ const fr = {
     },
   },
   user: {
-    profile: 'Profil',
+    profileLabel: 'Profil',
     skillLevels: {
       beginner: 'Débutant',
       intermediate: 'Intermédiaire',
       advanced: 'Avancé',
       expert: 'Expert',
+    },
+    profile: {
+      notfound: {
+        title: 'Profil introuvable',
+        description: "L'utilisateur demandé n'existe pas ou n'est pas disponible.",
+        action: "Retour à l'accueil",
+      },
+      role: {
+        default: 'Membre',
+      },
+      promotion_year: 'Année de promo',
+      pronouns: 'Pronoms',
+      member_since: 'Membre depuis',
+      pronouns: {
+        hehim: 'il/lui',
+        sheher: 'elle/elle',
+        theythem: 'iel/ellui',
+        other: 'autre',
+      },
+      instruments: {
+        title: 'Instruments',
+        empty_title: 'Aucun instrument ajouté',
+        empty_description: 'Ajoutez vos instruments pour que les groupes puissent vous trouver !',
+        years_experience: "ans d'expérience",
+        primary_label: 'Instrument principal',
+      },
+      groups: {
+        title: 'Groupes',
+        inactive_label: 'Groupes Inactifs',
+        empty_title: "N'a rejoint aucun groupe pour le moment",
+        empty_description: 'Les groupes apparaîtront ici une fois rejoint !',
+      },
     },
   },
   footer: {

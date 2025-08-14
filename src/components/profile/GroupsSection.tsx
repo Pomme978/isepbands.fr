@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Users } from 'lucide-react';
 import GroupCard from './GroupCard';
 import EmptyState from './EmptyState';
+import { useI18n } from '@/locales/client';
 
 interface GroupRole {
   role: string;
@@ -38,19 +39,20 @@ interface GroupsSectionProps {
 }
 
 export default function GroupsSection({ groups, onGroupClick }: GroupsSectionProps) {
-  const activeGroups = groups.filter((group) => group.isActive);
-  const inactiveGroups = groups.filter((group) => !group.isActive);
+  const t = useI18n();
+  const activeGroups = groups.filter((group: Group) => group.isActive);
+  const inactiveGroups = groups.filter((group: Group) => !group.isActive);
 
   return (
     <Card className="p-6 border-0 h-fit">
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
-        Groupes
+        {t('user.profile.groups.title')}
       </h2>
 
       <div className="space-y-4">
         {/* Active Groups */}
-        {activeGroups.map((group) => (
+        {activeGroups.map((group: Group) => (
           <GroupCard key={group.id} group={group} onClick={() => onGroupClick(group.slug)} />
         ))}
 
@@ -59,22 +61,22 @@ export default function GroupsSection({ groups, onGroupClick }: GroupsSectionPro
           <div className="flex items-center my-6">
             <div className="flex-1 border-t border-gray-300"></div>
             <span className="px-3 py-1 text-xs text-gray-500 bg-gray-50 rounded">
-              Groupes Inactifs
+              {t('user.profile.groups.inactive_label')}
             </span>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
         )}
 
         {/* Inactive Groups */}
-        {inactiveGroups.map((group) => (
+        {inactiveGroups.map((group: Group) => (
           <GroupCard key={group.id} group={group} onClick={() => onGroupClick(group.slug)} />
         ))}
 
         {groups.length === 0 && (
           <EmptyState
             icon={Users}
-            title="N'a rejoint aucun groupe pour le moment"
-            description="Les groupes apparaîtront ici une fois rejoint !"
+            title={t('user.profile.groups.empty_title')}
+            description={t('user.profile.groups.empty_description')}
           />
         )}
       </div>
