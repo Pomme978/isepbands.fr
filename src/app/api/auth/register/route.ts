@@ -53,6 +53,14 @@ export async function POST(req: NextRequest) {
       skillLevel: string;
     }>;
     for (const inst of parsedInstruments) {
+      // Vérifier que l'instrument existe
+      const exists = await prisma.instrument.findUnique({ where: { id: inst.instrumentId } });
+      if (!exists) {
+        return NextResponse.json(
+          { error: `Instrument ID ${inst.instrumentId} n'existe pas.` },
+          { status: 400 },
+        );
+      }
       await prisma.userInstrument.create({
         data: {
           userId: user.id,

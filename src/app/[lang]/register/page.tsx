@@ -17,14 +17,14 @@ import { Progress } from '@/components/ui/progress';
 import BackButton from '@/components/ui/back-button';
 import RegisterFormCard from '@/components/register/RegisterFormCard';
 
-const instrumentKeys = [
-  { id: 1, key: 'guitar' },
-  { id: 2, key: 'bass' },
-  { id: 3, key: 'drums' },
-  { id: 4, key: 'vocals' },
-  { id: 5, key: 'keyboard' },
-];
+import { useEffect } from 'react';
 
+// Instruments dynamiques
+async function fetchInstruments() {
+  const res = await fetch('/api/instruments');
+  if (!res.ok) return [];
+  return await res.json();
+}
 const initialData: RegistrationData = {
   firstName: '',
   lastName: '',
@@ -54,8 +54,15 @@ export default function RegisterPage() {
   const t = useI18n();
   const [step, setStep] = useState<RegistrationStep>(1);
   const [data, setData] = useState<RegistrationData>(initialData);
+  const [availableInstruments, setAvailableInstruments] = useState<{ id: number; name: string }[]>(
+    [],
+  );
   const router = useRouter();
   const { register: registerUser, loading, error } = useAuth();
+
+  useEffect(() => {
+    fetchInstruments().then((instruments) => setAvailableInstruments(instruments));
+  }, []);
 
   const handleChange = (fields: Partial<RegistrationData>) =>
     setData((prev) => ({ ...prev, ...fields }));
@@ -89,18 +96,6 @@ export default function RegisterPage() {
       toast.error(err instanceof Error ? err.message : t('register.error.submit'));
     }
   };
-
-  const availableInstruments = instrumentKeys.map(({ id, key }) => ({
-    id,
-    name: t(
-      `instruments.${key}` as
-        | 'instruments.guitar'
-        | 'instruments.bass'
-        | 'instruments.drums'
-        | 'instruments.vocals'
-        | 'instruments.keyboard',
-    ),
-  }));
 
   // Calcul du pourcentage de progression
   const progressPercentage = (step / stepTitles.length) * 100;
