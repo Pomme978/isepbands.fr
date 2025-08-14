@@ -13,7 +13,9 @@ export default function Admin() {
         {/* Page Header */}
         <div className="border-b border-border pb-4">
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-2 text-muted-foreground">Welcome to the ISEP Bands admin panel</p>
+          <p className="mt-2 text-muted-foreground">
+            Bienvenue NOM PRENOM, nous somme le DD/MM/YYYY.
+          </p>
         </div>
 
         {/* Stats Cards */}

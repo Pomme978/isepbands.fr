@@ -138,7 +138,7 @@ export default function ApprovalModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-card rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center space-x-3">
@@ -162,7 +162,7 @@ export default function ApprovalModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        <div className="p-6">
           {item.type === 'user' ? <UserDetails user={item} /> : <BandDetails band={item} />}
         </div>
 

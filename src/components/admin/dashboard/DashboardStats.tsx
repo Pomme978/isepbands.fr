@@ -22,40 +22,24 @@ const STATS_DATA: StatData[] = [
     value: 42,
     icon: Users,
     iconBgColor: 'bg-blue-500',
-    trend: {
-      value: 8,
-      isPositive: true,
-    },
   },
   {
     title: 'Groupes actifs',
     value: 4,
     icon: Megaphone,
     iconBgColor: 'bg-green-500',
-    trend: {
-      value: 1,
-      isPositive: true,
-    },
   },
   {
     title: 'Événements cette année',
     value: 2,
     icon: Calendar,
     iconBgColor: 'bg-purple-500',
-    trend: {
-      value: 1,
-      isPositive: true,
-    },
   },
   {
     title: 'Jams organisées',
     value: 18,
     icon: Clock,
     iconBgColor: 'bg-orange-500',
-    trend: {
-      value: 6,
-      isPositive: true,
-    },
   },
 ];
 

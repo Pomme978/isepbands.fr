@@ -39,7 +39,7 @@ export default function SidebarLink({
         flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
         ${
           isActive
-            ? 'bg-blue-50 text-primary border-r-2 border-primary'
+            ? 'bg-primary/10 text-primary border-r-2 border-primary'
             : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
         }
       `}

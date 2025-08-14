@@ -65,17 +65,6 @@ export default function AdminUserInfo({
           </LangLink>
         </div>
       )}
-
-      {/* Quick Logout (when collapsed) */}
-      {!isExpanded && (
-        <LangLink
-          href="/logout"
-          className="mt-3 w-full flex items-center justify-center px-3 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <LogOut size={16} className="mr-1" />
-          Logout
-        </LangLink>
-      )}
     </div>
   );
 }

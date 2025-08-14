@@ -37,7 +37,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'success',
     icon: UserCheck,
     adminAction: {
-      adminName: 'Maxime Dubois',
+      adminName: 'Maxime LE ROY MEUNIER',
       adminRole: 'Président',
     },
   },
@@ -49,7 +49,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'info',
     icon: Megaphone,
     adminAction: {
-      adminName: 'Sarah Martin',
+      adminName: 'Sarah LEVY',
       adminRole: 'Vice-présidente',
     },
   },
@@ -62,7 +62,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'info',
     icon: Calendar,
     adminAction: {
-      adminName: 'Armand Leroy',
+      adminName: 'Armand OCTEAU',
       adminRole: 'Vice-président',
     },
   },
@@ -74,7 +74,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'error',
     icon: UserX,
     adminAction: {
-      adminName: 'Maéva Rousseau',
+      adminName: 'Maéva RONCEY',
       adminRole: 'Secrétaire générale',
     },
   },
@@ -86,7 +86,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'success',
     icon: Music,
     adminAction: {
-      adminName: "Shane O'Connor",
+      adminName: 'Shane PRADDER',
       adminRole: 'Trésorier',
     },
   },
@@ -99,7 +99,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'info',
     icon: Settings,
     adminAction: {
-      adminName: 'Maxime Dubois',
+      adminName: 'Maxime LE ROY MEUNIER',
       adminRole: 'Président',
     },
   },
@@ -119,7 +119,7 @@ const ACTIVITY_DATA: ActivityData[] = [
     type: 'info',
     icon: Music,
     adminAction: {
-      adminName: 'Sarah Martin',
+      adminName: 'Sarah LEVY',
       adminRole: 'Vice-présidente',
     },
   },
