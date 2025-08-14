@@ -10,18 +10,20 @@ interface BasicLayoutProps {
   children: ReactNode;
   showNavbar?: boolean;
   showFooter?: boolean;
+  navbarMode?: 'scroll' | 'static'; // Nouvelle propriété pour contrôler le mode de la navbar
 }
 
 export default function BasicLayout({
   children,
   showNavbar = true,
   showFooter = true,
+  navbarMode = 'scroll', // Par défaut, comportement au scroll
 }: BasicLayoutProps) {
   return (
     <Providers>
-      <div className="bg-gray-50">
+      <div className="bg-gray-100">
         <div className="max-w-7xl mx-auto">
-          {showNavbar && <Navbar />}
+          {showNavbar && <Navbar mode={navbarMode} />}
           {children}
           {showFooter && <Footer />}
         </div>

@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <>
       <PendingValidationOnLogin />
-      <div className="flex min-h-screen items-center flex-col justify-center bg-gray-50 relative">
+      <div className="flex min-h-screen items-center flex-col justify-center relative">
         <div className="absolute top-6 left-6">
           <BackButton variant="ghost" />
         </div>

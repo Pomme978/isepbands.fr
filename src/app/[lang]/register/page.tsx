@@ -106,7 +106,7 @@ export default function RegisterPage() {
   const progressPercentage = (step / stepTitles.length) * 100;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 relative">
+    <div className="flex min-h-screen items-center justify-center relative">
       <div className="absolute top-6 left-6">
         <BackButton variant="ghost" />
       </div>

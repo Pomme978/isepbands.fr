@@ -11,7 +11,8 @@ import {
 } from '../ui/dropdown-menu';
 import { useSession, useAuth } from '../../lib/auth-client';
 import { useRouter } from 'next/navigation';
-import LangLink from '../common/LangLink';
+import { Button } from '@/components/ui/button';
+import LangLink from '@/components/common/LangLink';
 
 export default function UserMenu() {
   const { user } = useSession();
@@ -21,18 +22,12 @@ export default function UserMenu() {
   if (!user) {
     return (
       <div className="flex items-center gap-2 md:flex-row flex-col w-full md:w-auto">
-        <LangLink
-          href="/login"
-          className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition w-full md:w-auto text-center"
-        >
-          Se connecter
-        </LangLink>
-        <LangLink
-          href="/register"
-          className="px-4 py-1.5 rounded-md text-primary bg-background text-sm hover:bg-background/80 border-2 border-primary transition w-full md:w-auto text-center"
-        >
-          Rejoindre
-        </LangLink>
+        <Button variant="default" size="sm" className="w-full md:w-auto" asChild>
+          <LangLink href="/login">Se connecter</LangLink>
+        </Button>
+        <Button variant="outline" size="sm" className="w-full md:w-auto" asChild>
+          <LangLink href="/register">Rejoindre</LangLink>
+        </Button>
       </div>
     );
   }

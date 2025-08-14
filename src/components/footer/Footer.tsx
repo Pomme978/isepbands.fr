@@ -57,24 +57,6 @@ const socialLinks = [
     ),
   },
   {
-    name: 'X',
-    href: 'https://x.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siX.path} />
-      </svg>
-    ),
-  },
-  {
-    name: 'GitHub',
-    href: 'https://github.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siGithub.path} />
-      </svg>
-    ),
-  },
-  {
     name: 'YouTube',
     href: 'https://youtube.com',
     icon: (
@@ -94,7 +76,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white bottom-4 relative rounded-lg">
+    <footer className="bg-white bottom-4 relative mt-6 rounded-lg">
       <div className="px-6 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div className="col-span-1 mb-4">

@@ -1,9 +1,25 @@
 'use client';
 
-import { useI18n } from '@/locales/client';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import DashboardStats from '@/components/admin/dashboard/DashboardStats';
+import RecentActivity from '@/components/admin/dashboard/RecentActivity';
 
 export default function Admin() {
-  const t = useI18n();
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="border-b border-border pb-4">
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-2 text-muted-foreground">Welcome to the ISEP Bands admin panel</p>
+        </div>
 
-  return <div></div>;
+        {/* Stats Cards */}
+        <DashboardStats />
+
+        {/* Recent Activity */}
+        <RecentActivity />
+      </div>
+    </AdminLayout>
+  );
 }

@@ -101,10 +101,7 @@ const HomeHero = () => {
             <div className="flex justify-between items-center">
               <Button
                 size="lg"
-                className="relative shadow-md overflow-hidden bg-primary text-md py-6 text-primary-foreground
-             transition-all duration-300 transform hover:scale-[1.02] hover:bg-primary/90
-             before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent
-             before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-in-out"
+                className="relative shadow-md overflow-hidden bg-primary text-md py-6 text-primary-foreground"
               >
                 Rejoindre l&#39;Association
               </Button>
