@@ -103,11 +103,6 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         icon: Send,
       },
       {
-        name: 'Messages',
-        href: '/admin/messages',
-        icon: MessageSquare,
-      },
-      {
         name: 'Notifications',
         href: '/admin/notifications',
         icon: Bell,
@@ -141,11 +136,6 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         name: 'Roles & Permissions',
         href: '/admin/roles',
         icon: Shield,
-      },
-      {
-        name: 'Moderators',
-        href: '/admin/moderators',
-        icon: UserCog,
       },
     ],
   },
