@@ -1,4 +1,4 @@
-// @components/profile/GroupCard.tsx
+// @components/settings/GroupCard.tsx
 'use client';
 
 import GroupRoles from './GroupRoles';

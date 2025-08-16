@@ -191,7 +191,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         }
       } catch (err) {
         setUser(null);
-        console.error('Erreur lors du fetch profile:', err);
+        console.error('Erreur lors du fetch settings:', err);
       } finally {
         setLoading(false);
       }
@@ -261,9 +261,9 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             />
           </svg>
           <h2 className="text-2xl font-bold mb-2 text-gray-800">
-            {t('user.profile.notfound.title')}
+            {t('user.settings.notfound.title')}
           </h2>
-          <p className="text-gray-500 mb-6">{t('user.profile.notfound.title')}</p>
+          <p className="text-gray-500 mb-6">{t('user.settings.notfound.title')}</p>
           <Button variant="outline" onClick={() => router.push('/')} />
         </div>
       </div>
@@ -287,7 +287,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             dateOfBirth: user.birthDate || '',
             isOutOfSchool: user.isOutOfSchool ?? false,
             promotion: user.promotion || '',
-            role: user.primaryRole || t('user.profile.role.default'),
+            role: user.primaryRole || t('user.settings.role.default'),
             badges: user.badges?.map((b) => b.name) || [],
             bio: user.biography || '',
             pronouns:

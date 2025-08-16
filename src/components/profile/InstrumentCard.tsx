@@ -1,4 +1,4 @@
-// @components/profile/InstrumentCard.tsx
+// @components/settings/InstrumentCard.tsx
 'use client';
 
 import { Star, Guitar } from 'lucide-react';

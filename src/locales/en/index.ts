@@ -125,7 +125,7 @@ const en = {
     loading: 'Registration in progress…',
     success: 'Your registration request has been sent',
     error: {
-      upload: 'Error uploading profile photo',
+      upload: 'Error uploading settings photo',
       submit: 'Error during registration request',
       network: 'Network error during registration request',
     },

@@ -1,4 +1,4 @@
-// @components/profile/ProfileStats.tsx
+// @components/settings/ProfileStats.tsx
 'use client';
 
 import { Users, Music, CalendarDays } from 'lucide-react';

@@ -1,4 +1,4 @@
-// @components/profile/EmptyState.tsx
+// @components/settings/EmptyState.tsx
 'use client';
 
 import { Button } from '@/components/ui/button';

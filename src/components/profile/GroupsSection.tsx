@@ -1,4 +1,4 @@
-// @components/profile/GroupsSection.tsx
+// @components/settings/GroupsSection.tsx
 'use client';
 
 import { Card } from '@/components/ui/card';
@@ -47,7 +47,7 @@ export default function GroupsSection({ groups, onGroupClick }: GroupsSectionPro
     <Card className="p-6 border-0 h-fit">
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
-        {t('user.profile.groups.title')}
+        {t('user.settings.groups.title')}
       </h2>
 
       <div className="space-y-4">
@@ -61,7 +61,7 @@ export default function GroupsSection({ groups, onGroupClick }: GroupsSectionPro
           <div className="flex items-center my-6">
             <div className="flex-1 border-t border-gray-300"></div>
             <span className="px-3 py-1 text-xs text-gray-500 bg-gray-50 rounded">
-              {t('user.profile.groups.inactive_label')}
+              {t('user.settings.groups.inactive_label')}
             </span>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
@@ -75,8 +75,8 @@ export default function GroupsSection({ groups, onGroupClick }: GroupsSectionPro
         {groups.length === 0 && (
           <EmptyState
             icon={Users}
-            title={t('user.profile.groups.empty_title')}
-            description={t('user.profile.groups.empty_description')}
+            title={t('user.settings.groups.empty_title')}
+            description={t('user.settings.groups.empty_description')}
           />
         )}
       </div>

@@ -1,4 +1,4 @@
-// @components/profile/LevelBadge.tsx
+// @components/settings/LevelBadge.tsx
 'use client';
 
 interface LevelBadgeProps {

@@ -1,4 +1,4 @@
-// @components/profile/ProfileHeader.tsx
+// @components/settings/ProfileHeader.tsx
 'use client';
 
 import { Card } from '@/components/ui/card';

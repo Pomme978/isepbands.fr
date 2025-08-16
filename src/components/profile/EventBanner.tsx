@@ -1,4 +1,4 @@
-// @components/profile/EventBanner.tsx
+// @components/settings/EventBanner.tsx
 'use client';
 
 import { Card } from '@/components/ui/card';

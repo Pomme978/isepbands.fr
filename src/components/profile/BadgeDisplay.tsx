@@ -1,4 +1,4 @@
-// @components/profile/BadgeDisplay.tsx
+// @components/settings/BadgeDisplay.tsx
 'use client';
 
 import { Star } from 'lucide-react';

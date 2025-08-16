@@ -1,4 +1,4 @@
-// @components/profile/InstrumentsSection.tsx
+// @components/settings/InstrumentsSection.tsx
 'use client';
 
 import { Card } from '@/components/ui/card';

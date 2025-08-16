@@ -1,4 +1,4 @@
-// @components/profile/StatusIndicator.tsx
+// @components/settings/StatusIndicator.tsx
 'use client';
 
 interface StatusIndicatorProps {

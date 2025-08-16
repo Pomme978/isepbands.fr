@@ -1,4 +1,4 @@
-// @components/profile/GroupRoles.tsx
+// @components/settings/GroupRoles.tsx
 'use client';
 
 interface GroupRoles {
