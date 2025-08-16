@@ -50,6 +50,11 @@ export default function Step4Instruments({
   };
 
   const addInstrument = () => {
+    if (availableInstruments.length === 0) {
+      setInstrumentsError("Aucun instrument disponible. Veuillez contacter l'administrateur.");
+      return;
+    }
+
     onChange({
       instruments: [
         ...data.instruments,
@@ -73,6 +78,32 @@ export default function Step4Instruments({
     setInstrumentsError(validateInstruments());
     return !validateInstruments();
   };
+
+  // Si aucun instrument n'est disponible, afficher un message d'erreur
+  if (availableInstruments.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <p className="text-muted-foreground mb-4">
+            Aucun instrument n&#39;est disponible pour le moment.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Veuillez contacter l&#39;administrateur pour résoudre ce problème.
+          </p>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onBack}>
+            {t('common.goback')}
+          </Button>
+          <Button type="button" onClick={onNext} disabled={data.instruments.length === 0}>
+            {t('common.next')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -139,7 +170,13 @@ export default function Step4Instruments({
       </div>
 
       {/* Add Instrument Button */}
-      <Button type="button" className="w-full" variant="secondary" onClick={addInstrument}>
+      <Button
+        type="button"
+        className="w-full"
+        variant="secondary"
+        onClick={addInstrument}
+        disabled={availableInstruments.length === 0}
+      >
         {t('auth.register.addInstrument')}
       </Button>
 
