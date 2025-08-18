@@ -27,21 +27,23 @@ export default function Home() {
 
   return (
     <BasicLayout navbarMode="scroll">
-      <main className="flex flex-col items-center justify-center min-h-screen p-6">
+      <main className="flex flex-col items-center justify-center min-h-screen">
         <HeroBanner />
-        <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 flex flex-col items-center gap-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('page.home.title')}</h1>
-          <p className="text-gray-700 text-center mb-4">{t('navigation.home')}</p>
-          <div className="flex gap-4">
-            {user ? (
-              <Button type="button" onClick={handleLogout} disabled={loading}>
-                {t('auth.logOut')}
-              </Button>
-            ) : (
-              <Button asChild>
-                <LangLink href={`/${lang}/login`}>{t('auth.logIn')}</LangLink>
-              </Button>
-            )}
+        <div className="bg-gray-100 w-screen z-50">
+          <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center items-center flex-col">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('page.home.title')}</h1>
+            <p className="text-gray-700 text-center mb-4">{t('navigation.home')}</p>
+            <div className="flex gap-4">
+              {user ? (
+                <Button type="button" onClick={handleLogout} disabled={loading}>
+                  {t('auth.logOut')}
+                </Button>
+              ) : (
+                <Button asChild>
+                  <LangLink href={`/${lang}/login`}>{t('auth.logIn')}</LangLink>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </main>

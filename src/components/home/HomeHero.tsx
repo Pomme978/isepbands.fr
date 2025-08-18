@@ -4,6 +4,9 @@ import isepbands_logo from '@/assets/images/isepbands-logo.svg';
 import { ChevronDown } from 'lucide-react';
 import { siFacebook, siGithub, siInstagram, siX, siYoutube } from 'simple-icons';
 import { SocialIcons } from '@/components/footer/SocialIcons';
+import StageLights from '@/components/home/StageLights';
+import Crowd from '@/components/home/Crowd';
+import MusicNotes from '@/components/home/MusicNotes';
 
 const socialLinks = [
   {
@@ -30,9 +33,12 @@ const HomeHero = () => {
   return (
     <div className="w-full h-screen">
       {/* Custom Background Color */}
-      <div className="absolute inset-0" style={{ backgroundColor: '#442284' }} />
+      <div className="absolute inset-0 z-0" style={{ backgroundColor: '#2E135F' }} />
+      <MusicNotes />
+      <StageLights />
+      <Crowd />
 
-      {/* Animated Circles - Now contained within viewport */}
+      {/* Animated Circles - Now contained within viewport
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute rounded-full animate-float-1"
@@ -72,10 +78,10 @@ const HomeHero = () => {
             transform: 'translateX(-50%)',
           }}
         />
-      </div>
+      </div>*/}
 
       {/* Content Container - Allow glow to show */}
-      <div className="relative z-10  -top-5 flex items-center justify-center h-full text-white px-6 overflow-visible">
+      <div className="relative z-40  -top-5 flex items-center justify-center h-full text-white px-6 overflow-visible">
         <div className="flex justify-center items-center w-full max-w-6xl mx-auto gap-8 text-center lg:text-left overflow-visible">
           {/* Logo Section - Allow glow overflow */}
           <div className="flex justify-center flex-shrink-0 p-4 overflow-visible">
@@ -86,24 +92,24 @@ const HomeHero = () => {
               height={300}
               className="w-24 h-24 sm:w-32 sm:h-32 md:w-80 md:h-80"
               neon={true}
-              color="#D061FC"
+              intensity={0.3}
             />
           </div>
 
           {/* Content Section */}
-          <div className="text-center lg:text-left">
+          <div className="text-center lg:text-left max-w-6/12">
             {/* Motto */}
-            <h1 className=" text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
-              ISEPBANDS, FOR THOSE WHO CAN’T STOP PLAYING
+            <h1 className=" text-2xl sm:text-4xl md:text-5xl text-justify  font-bold mb-8">
+              FOR THOSE WHO CAN’T STOP PLAYING
             </h1>
 
             {/* Button */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between w-full items-center">
               <Button
                 size="lg"
-                className="relative shadow-md overflow-hidden bg-primary text-md py-6 text-primary-foreground"
+                className="relative shadow-md overflow-hidden bg-primary text-md py-6 px-12 text-primary-foreground"
               >
-                Rejoindre l&#39;Association
+                Join Us
               </Button>
               <SocialIcons
                 links={socialLinks}

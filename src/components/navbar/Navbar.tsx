@@ -84,10 +84,6 @@ export default function Navbar({ mode = 'scroll' }: NavbarProps) {
   return (
     <div className={mode === 'static' ? '' : 'relative'}>
       <header className={getNavbarClasses()}>
-        <div className="absolute -left-1 -top-6 -z-20 md:block hidden">
-          <GuitarBodySVG className="w-auto h-26 text-white " />
-        </div>
-
         <nav className="flex items-center relative justify-between pl-4 pr-6 py-2 z-50 gap-8">
           {/* Desktop Navigation */}
           <div className="hidden md:contents">
