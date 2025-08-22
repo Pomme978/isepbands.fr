@@ -73,10 +73,10 @@ export default function Navbar({ mode = 'scroll' }: NavbarProps) {
   // Classes conditionnelles selon le mode
   const getNavbarClasses = () => {
     if (mode === 'static') {
-      return `relative top-7 mb-10 left-0 transform-none w-full max-w-none py-0.5 z-50 transition-all duration-300 rounded-lg backdrop-blur bg-white ease-in-out opacity-100 translate-y-0`;
+      return `relative top-3 z-100 mb-10 left-0 transform-none w-full max-w-none py-0.5 z-50 transition-all duration-300 rounded-lg backdrop-blur bg-white ease-in-out opacity-100 translate-y-0`;
     }
 
-    return `fixed left-1/2 transform -translate-x-1/2 top-7 py-0.5 drop-shadow-lg transition-all z-50 duration-300 rounded-lg backdrop-blur bg-white ease-in-out ${
+    return `fixed left-1/2 z-100 transform -translate-x-1/2 top-3 py-0.5 drop-shadow-lg transition-all z-50 duration-300 rounded-lg backdrop-blur bg-white ease-in-out ${
       isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
     } w-[calc(100%-2rem)] max-w-7xl`;
   };

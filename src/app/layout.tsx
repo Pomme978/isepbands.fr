@@ -7,10 +7,12 @@ export const metadata = {
 };
 
 import { moranga } from '@/lib/fonts';
+import { outfit } from '@/lib/fonts';
+import { ubuntu } from '@/lib/fonts';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={moranga.variable}>
+    <html lang="en" className={moranga.variable + ' ' + outfit.variable + ' ' + ubuntu.variable}>
       <body>{children}</body>
     </html>
   );
