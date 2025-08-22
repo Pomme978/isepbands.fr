@@ -1,8 +1,7 @@
 // page.tsx
 import React from 'react';
-import { StringLights } from '@/components/board/StringLights';
-import { MemberCard } from '@/components/board/MemberCard';
 import { VisionNote } from '@/components/board/VisionNote';
+import { Garland } from '@/components/board/Garland';
 
 interface User {
   id: string;
@@ -137,59 +136,11 @@ const Page = () => {
           </div>
         </div>
       </div>
-
       {/* Membres exécutifs */}
-      <div className="relative mb-20">
-        <StringLights
-          className="absolute top-0 left-0 w-full"
-          cardCount={executiveRoles.length}
-          spacing="wide"
-          lightType="yellow"
-        />
-        <div className="pt-16 px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 max-w-6xl mx-auto">
-            {executiveRoles.map((roleInfo) => {
-              const user = getUserByRole(roleInfo.role);
-              return (
-                <div key={roleInfo.role} className="relative flex justify-center">
-                  <MemberCard
-                    user={user}
-                    roleDisplay={roleInfo.displayName}
-                    className=""
-                    variant={roleInfo.variant}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <Garland users={placeholderUsers} roleInfos={executiveRoles} lightType="yellow" />
 
       {/* Autres membres */}
-      <div className="relative mb-20">
-        <StringLights
-          className="absolute top-0 left-0 w-full"
-          cardCount={otherRoles.length}
-          spacing="normal"
-          lightType="yellow"
-        />
-        <div className="pt-16 px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 max-w-4xl mx-auto">
-            {otherRoles.map((roleInfo) => {
-              const user = getUserByRole(roleInfo.role);
-              return (
-                <div key={roleInfo.role} className="relative flex justify-center">
-                  <MemberCard
-                    user={user}
-                    roleDisplay={roleInfo.displayName}
-                    className="transform hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <Garland users={placeholderUsers} roleInfos={otherRoles} lightType="yellow" />
 
       {/* Section "Sans oublier nos responsables pôles" */}
       <div className="text-center mb-8">
@@ -199,31 +150,7 @@ const Page = () => {
       </div>
 
       {/* Pôles */}
-      <div className="relative mb-20">
-        <StringLights
-          className="absolute top-0 left-0 w-full"
-          cardCount={poleRoles.length}
-          spacing="normal"
-          lightType="blue"
-        />
-        <div className="pt-16 px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 max-w-6xl mx-auto">
-            {poleRoles.map((roleInfo) => {
-              const user = getUserByRole(roleInfo.role);
-              return (
-                <div key={roleInfo.role} className="relative flex justify-center">
-                  <MemberCard
-                    user={user}
-                    roleDisplay={roleInfo.displayName}
-                    className="transform hover:scale-105 transition-transform duration-300"
-                    variant={roleInfo.variant}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <Garland users={placeholderUsers} roleInfos={poleRoles} lightType="blue" className="mb-20" />
 
       {/* Vision Note */}
       <div className="flex justify-center mb-20 px-4">
