@@ -1,7 +1,6 @@
 // page.tsx
 import React from 'react';
 import { StringLights } from '@/components/board/StringLights';
-import { Clothespin } from '@/components/board/Clothespin';
 import { MemberCard } from '@/components/board/MemberCard';
 import { VisionNote } from '@/components/board/VisionNote';
 
@@ -34,7 +33,7 @@ const Page = () => {
       lastName: 'LEVY',
       email: 'sarah.levy@student.isep.fr',
       motto: 'Toujours prête à relever les défis !',
-      profilePhoto: '/placeholder-photos/sarah.jpg',
+      profilePhoto: '/placeholder/maere.jpg',
       role: 'vice_president_1',
     },
     {
@@ -123,7 +122,7 @@ const Page = () => {
   const poleRoles = roleMapping.filter((r) => r.section === 'pole');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 relative overflow-hidden">
+    <div className="min-h-screen bg-[#2E135F] relative overflow-hidden">
       {/* Header */}
       <div className="text-center py-12 relative z-10">
         <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 tracking-wider">LE BUREAU</h1>
@@ -153,11 +152,10 @@ const Page = () => {
               const user = getUserByRole(roleInfo.role);
               return (
                 <div key={roleInfo.role} className="relative flex justify-center">
-                  <Clothespin className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20" />
                   <MemberCard
                     user={user}
                     roleDisplay={roleInfo.displayName}
-                    className="transform hover:scale-105 transition-transform duration-300"
+                    className=""
                     variant={roleInfo.variant}
                   />
                 </div>
@@ -181,7 +179,6 @@ const Page = () => {
               const user = getUserByRole(roleInfo.role);
               return (
                 <div key={roleInfo.role} className="relative flex justify-center">
-                  <Clothespin className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20" />
                   <MemberCard
                     user={user}
                     roleDisplay={roleInfo.displayName}
@@ -215,7 +212,6 @@ const Page = () => {
               const user = getUserByRole(roleInfo.role);
               return (
                 <div key={roleInfo.role} className="relative flex justify-center">
-                  <Clothespin className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20" />
                   <MemberCard
                     user={user}
                     roleDisplay={roleInfo.displayName}

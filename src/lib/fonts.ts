@@ -147,3 +147,14 @@ export const ubuntu = localFont({
   ],
   variable: '--font-ubuntu',
 });
+
+export const deliciousHandrawn = localFont({
+  src: [
+    {
+      path: '../assets/fonts/DeliciousHandrawn/DeliciousHandrawn-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-handrawn',
+});
