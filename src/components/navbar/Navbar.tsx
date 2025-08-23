@@ -73,8 +73,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
 
   // Container classes selon le mode - FLEXBOX APPROACH
   const getContainerClasses = () => {
-    const baseClasses = `w-full flex justify-center z-50 transition-all duration-300 ease-in-out`;
-
+    const baseClasses = `flex justify-center items-center z-50 w-full max-w-7xl transition-all duration-300 ease-in-out`;
     if (mode === 'static') {
       return `absolute top-3 ${baseClasses} ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`;
     }
@@ -94,7 +93,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
       {/* Flexbox container that spans full width */}
       <div className={getContainerClasses() + ` ${className || ''}`}>
         {/* Centered navbar with max-width constraint */}
-        <header className="w-full max-w-7xl rounded-lg backdrop-blur bg-white drop-shadow-lg">
+        <header className="w-full rounded-lg backdrop-blur bg-white drop-shadow-lg">
           <nav className="flex items-center justify-between px-4 lg:px-6 py-2 gap-2 lg:gap-8 min-w-0">
             {/* Desktop Navigation */}
             <div className="hidden lg:contents">

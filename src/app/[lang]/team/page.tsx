@@ -115,7 +115,7 @@ const Page = () => {
   const poleRoles = roleMapping.filter((r) => r.section === 'pole');
 
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen">
       {/* Header */}
       <DecoratedText lightType="yellow" garlandWidth={1000} textClassName="">
         <div className="text-center py-12 relative z-10">
@@ -168,7 +168,7 @@ const Page = () => {
       <h5 className="text-xs text-white/50 relative max-w-7xl flex justify-center md:justify-end mx-auto py-4">
         Design de page réalisé par Sarah LEVY
       </h5>
-    </div>
+    </main>
   );
 };
 

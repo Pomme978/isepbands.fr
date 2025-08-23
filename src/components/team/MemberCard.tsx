@@ -37,7 +37,6 @@ const Clothespin: React.FC<{ className?: string }> = ({ className = '' }) => {
   );
 };
 
-// Composant de carte réutilisable pour éviter la duplication
 const CardContent: React.FC<{
   user: User | null;
   roleDisplay: string;
@@ -46,14 +45,35 @@ const CardContent: React.FC<{
   return (
     <>
       {showClothespin && (
-        <Clothespin className="absolute -top-8 z-20 transition-transform duration-300 group-hover:scale-105" />
+        <Clothespin className="absolute -top-8 z-20 transform-gpu will-change-transform transition-transform duration-300 group-hover:scale-105" />
       )}
 
-      <div className="absolute w-80 h-80 bg-[#914AAE] rounded-full blur-[100px] opacity-50 -z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+      {/* BIG YELLOW GLOW behind the card (Safari-friendly, no blur) */}
+      <span className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+        <span
+          className="
+      block w-[36rem] h-[26rem] rounded-full
+      opacity-0 group-hover:opacity-50 transition-opacity duration-300
+    "
+          style={{
+            background: 'rgba(250,204,21,0.8)',
+            filter: 'blur(80px)', // static blur, not animated
+          }}
+        />
+      </span>
 
-      {/* Carte polaroid */}
-      <div className="w-64 bg-white rounded-xl shadow-2xl p-4 pb-4 h-auto flex flex-col justify-center items-between border-2 border-transparent transition-all duration-300 group-hover:border-yellow-400 group-hover:shadow-yellow-200 group-hover:shadow-2xl group-hover:scale-105 transform">
-        {/* Zone photo - format carré avec inner shadow */}
+      {/* Card */}
+      <div
+        className="
+          relative w-64 bg-white rounded-xl shadow-md p-4 pb-4
+          h-auto flex flex-col justify-center items-between
+          border-[3px] border-transparent
+          transform-gpu will-change-transform
+          transition-transform transition-colors duration-300
+          group-hover:scale-105 group-hover:border-yellow-400
+        "
+      >
+        {/* Photo */}
         <div className="w-[90%] mx-auto aspect-square bg-gray-100 rounded-lg mb-3 flex flex-grow items-center justify-center overflow-hidden relative">
           {user?.profilePhoto ? (
             <Image
@@ -76,16 +96,14 @@ const CardContent: React.FC<{
           )}
         </div>
 
-        {/* Contenu textuel */}
+        {/* Text */}
         <div className="flex flex-col justify-center items-between flex-grow">
-          {/* Texte du rôle */}
           <div className="text-center mb-0">
             <h2 className="text-xl font-bold text-black tracking-wider uppercase leading-tight">
               {roleDisplay}
             </h2>
           </div>
 
-          {/* Nom */}
           <div className="text-center mb-1">
             <h3
               className="text-2xl !font-handrawn text-black leading-tight break-words text-center mt-1"
@@ -95,21 +113,19 @@ const CardContent: React.FC<{
             </h3>
           </div>
 
-          {/* Motto avec guillemets */}
           <div className="text-center mb-2">
             <p className="text-md italic font-handrawn text-gray-700 leading-tight break-words">
               &#34;{user?.motto || 'Motto à définir'}&#34;
             </p>
           </div>
 
-          {/* Email avec couleur primaire */}
           <div className="text-center">
             <p className="text-sm text-primary underline break-all leading-tight">
               {user?.email || 'email@eleve.isep.fr'}
             </p>
           </div>
 
-          <div className="absolute bottom-2 right-2 transition-transform duration-300 group-hover:scale-110">
+          <div className="absolute bottom-2 right-2 transform-gpu will-change-transform transition-transform duration-300 group-hover:scale-110">
             <ChevronRight className="w-6 h-6 text-black" />
           </div>
         </div>
@@ -124,9 +140,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   className = '',
   showClothespin = true,
 }) => {
-  const cardClassName = `relative flex justify-center cursor-pointer group ${className}`;
+  const cardClassName = `relative flex justify-center cursor-pointer group transform-gpu ${className}`;
 
-  // Si pas d'utilisateur, afficher la carte sans lien
   if (!user) {
     return (
       <div className={cardClassName}>
@@ -135,7 +150,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
     );
   }
 
-  // Si utilisateur existe, envelopper dans un Link
   return (
     <Link href={`/profile/${user.id}`} className={cardClassName}>
       <CardContent user={user} roleDisplay={roleDisplay} showClothespin={showClothespin} />
