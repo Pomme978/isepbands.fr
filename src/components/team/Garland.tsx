@@ -1,12 +1,12 @@
-// src/components/team/Garland.tsx
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { MemberCard } from './MemberCard';
 import { GarlandGenerator } from './GarlandGenerator';
+import { GarlandLoadingPlaceholder } from './GarlandLoadingPlaceholder';
 import { useGarlandLayout } from '@/hooks/useGarlandLayout';
 import { getCardPoints } from '@/utils/attachmentPoints';
-import { getCardYPosition } from '@/utils/svgGeneration';
+import { getCardYPosition, type Point } from '@/utils/svgGeneration';
 
 interface User {
   id: string;
@@ -32,22 +32,15 @@ interface GarlandProps {
   className?: string;
 }
 
-// Updated to match GarlandGenerator's callback type
 interface CurveData {
   crossingPoints: { x: number; y: number; index: number }[];
   cardPositions: { x: number; y: number; cardIndex?: number }[];
   amplitude: { min: number; max: number };
 }
 
-interface Point {
-  x: number;
-  y: number;
-}
-
-// This should match what getCardYPosition expects
 interface GarlandSystemData {
-  curve1: Point[];
-  curve2: Point[];
+  curve1: string;
+  curve2: string;
   lightPositions: Point[];
   width: number;
   numberOfCrossings: number;
@@ -56,16 +49,45 @@ interface GarlandSystemData {
   amplitude: { min: number; max: number };
 }
 
+const isCurveDataEqual = (a: CurveData, b: CurveData): boolean => {
+  if (a.crossingPoints.length !== b.crossingPoints.length) return false;
+  if (a.cardPositions.length !== b.cardPositions.length) return false;
+
+  for (let i = 0; i < a.crossingPoints.length; i++) {
+    const pointA = a.crossingPoints[i];
+    const pointB = b.crossingPoints[i];
+    if (pointA.x !== pointB.x || pointA.y !== pointB.y || pointA.index !== pointB.index) {
+      return false;
+    }
+  }
+
+  for (let i = 0; i < a.cardPositions.length; i++) {
+    const posA = a.cardPositions[i];
+    const posB = b.cardPositions[i];
+    if (posA.x !== posB.x || posA.y !== posB.y || posA.cardIndex !== posB.cardIndex) {
+      return false;
+    }
+  }
+
+  if (a.amplitude.min !== b.amplitude.min || a.amplitude.max !== b.amplitude.max) {
+    return false;
+  }
+
+  return true;
+};
+
 export const Garland: React.FC<GarlandProps> = ({
   users,
   roleInfos,
   lightType = 'yellow',
   className = '',
 }) => {
+  const [isClient, setIsClient] = useState(false);
+
   const [garlandData, setGarlandData] = useState<GarlandSystemData>({
-    curve1: null,
-    curve2: null,
-    lightPositions: [],
+    curve1: '',
+    curve2: '',
+    lightPositions: [] as Point[],
     width: 0,
     numberOfCrossings: 0,
     crossingPoints: [],
@@ -73,55 +95,70 @@ export const Garland: React.FC<GarlandProps> = ({
     amplitude: { min: 50, max: 50 },
   });
 
-  const [curveData, setCurveData] = useState<CurveData>({
-    crossingPoints: [],
-    cardPositions: [],
-    amplitude: { min: 50, max: 50 },
-  });
+  const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const lastCurveDataRef = useRef<CurveData | null>(null);
 
-  const [cardHeights, setCardHeights] = useState<{ [key: string]: number }>({});
-  const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const validUsers = roleInfos
-    .map((roleInfo) => {
-      const user = users.find((u) => u.role === roleInfo.role);
-      return user ? { user, roleInfo } : null;
-    })
-    .filter(Boolean) as { user: User; roleInfo: UserRole }[];
+  const validUsers = useMemo(
+    () =>
+      roleInfos
+        .map((roleInfo) => {
+          const user = users.find((u) => u.role === roleInfo.role);
+          return user ? { user, roleInfo } : null;
+        })
+        .filter(Boolean) as { user: User; roleInfo: UserRole }[],
+    [users, roleInfos],
+  );
 
   const { attachmentPoints, cardsPerRow, totalRows } = useGarlandLayout(
     validUsers.map((v) => v.user),
   );
 
-  const cardPoints = getCardPoints(attachmentPoints);
+  const cardPoints: Point[] = useMemo(
+    () =>
+      getCardPoints(attachmentPoints).map((point) => ({
+        x: point.x,
+        y: point.y,
+      })),
+    [attachmentPoints],
+  );
 
-  const handleCurveDataUpdate = React.useCallback((data: CurveData): void => {
-    setCurveData((prevData) => {
-      // Only update if data actually changed
-      if (JSON.stringify(prevData) !== JSON.stringify(data)) {
-        // Update garlandData for getCardYPosition compatibility
-        setGarlandData((prev) => ({
-          ...prev,
-          crossingPoints: data.crossingPoints,
-          cardPositions: data.cardPositions,
-          amplitude: data.amplitude,
-        }));
-        return data;
-      }
-      return prevData;
+  // SIMPLIFIED: Fixed spacing calculation - much more predictable
+  const calculateRowSpacing = useCallback((): number => {
+    // Fixed spacing regardless of row content - keeps it consistent
+    const baseSpacing = 180; // Reduced from complex calculation
+    const garlandHeight = 60; // Fixed garland height allowance
+    const cardBuffer = 40; // Fixed buffer for card variations
+
+    return baseSpacing + garlandHeight + cardBuffer; // Total: ~220px consistently
+  }, []); // No dependencies = no re-calculations causing jumps
+
+  const handleCurveDataUpdate = useCallback((data: CurveData): void => {
+    if (lastCurveDataRef.current && isCurveDataEqual(lastCurveDataRef.current, data)) {
+      return;
+    }
+
+    lastCurveDataRef.current = data;
+    requestAnimationFrame(() => {
+      setGarlandData((prev: GarlandSystemData) => ({
+        ...prev,
+        crossingPoints: data.crossingPoints,
+        cardPositions: data.cardPositions,
+        amplitude: data.amplitude,
+      }));
     });
   }, []);
 
   useEffect(() => {
     const measureCardHeights = () => {
-      const newHeights: { [key: string]: number } = {};
-
+      const newHeights: Record<string, number> = {};
       Object.entries(cardRefs.current).forEach(([userId, ref]) => {
-        if (ref) {
-          newHeights[userId] = ref.offsetHeight;
-        }
+        if (ref) newHeights[userId] = ref.offsetHeight;
       });
-
       setCardHeights(newHeights);
     };
 
@@ -129,45 +166,34 @@ export const Garland: React.FC<GarlandProps> = ({
     return () => clearTimeout(timeout);
   }, [validUsers]);
 
-  const calculateRowSpacing = React.useCallback(
-    (rowIndex: number): number => {
-      const baseSpacing = 20;
-      const amplitudeHeight = Math.abs(curveData.amplitude.max - curveData.amplitude.min);
-      const amplitudeInPixels = (amplitudeHeight / 100) * 240;
-      const rowCards = validUsers.slice(rowIndex * cardsPerRow, (rowIndex + 1) * cardsPerRow);
-      const maxCardHeight = Math.max(
-        ...rowCards.map((item) => cardHeights[item.user.id] || 180),
-        180,
-      );
+  const getCardRotation = useCallback(
+    (cardIndex: number, totalCardsInRow: number, rowIndex: number): number => {
+      if (totalCardsInRow === 1) {
+        const singleCardRotations = [-2, 3, -4, 2, -3, 4, -1, 3, -2, 1];
+        return singleCardRotations[rowIndex % singleCardRotations.length];
+      }
 
-      return baseSpacing + amplitudeInPixels + maxCardHeight + 5 - 150;
+      const rotations = [
+        [0],
+        [-3, 4],
+        [-5, 0, 3],
+        [-6, -2, 2, 5],
+        [-7, -3, 0, 2, 6],
+        [-8, -4, -1, 1, 4, 7],
+      ] as const;
+
+      const rotationSet = rotations[Math.min(totalCardsInRow - 1, rotations.length - 1)];
+      return rotationSet[cardIndex] ?? 0;
     },
-    [curveData.amplitude, validUsers, cardsPerRow, cardHeights],
+    [],
   );
 
-  const getCardRotation = (cardIndex: number, totalCardsInRow: number): number => {
-    if (totalCardsInRow === 1) return 0;
-
-    const rotations = [
-      [0],
-      [-3, 4],
-      [-5, 0, 3],
-      [-6, -2, 2, 5],
-      [-7, -3, 0, 2, 6],
-      [-8, -4, -1, 1, 4, 7],
-    ];
-
-    const rotationSet = rotations[Math.min(totalCardsInRow - 1, rotations.length - 1)];
-    return rotationSet[cardIndex] || 0;
-  };
-
-  const renderGarlandRow = React.useCallback(
+  const renderGarlandRow = useCallback(
     (startIndex: number, cardsInRow: number) => {
       const rowCards = validUsers.slice(startIndex, startIndex + cardsInRow);
       const rowCardPoints = cardPoints.slice(startIndex, startIndex + cardsInRow);
       const rowIndex = Math.floor(startIndex / cardsPerRow);
-
-      const dynamicSpacing = calculateRowSpacing(rowIndex);
+      const fixedSpacing = calculateRowSpacing(); // Now returns consistent value
 
       const rowAttachmentPoints = attachmentPoints.filter(
         (point) =>
@@ -180,30 +206,28 @@ export const Garland: React.FC<GarlandProps> = ({
       return (
         <div
           key={`row-${startIndex}`}
-          className="relative w-full md:mb-0 mb-100"
-          style={{ marginBottom: `${dynamicSpacing}px` }}
+          className="relative w-full" // Removed conflicting margin classes
+          style={{ marginBottom: `${fixedSpacing}px` }} // Consistent spacing
+          suppressHydrationWarning={true}
         >
-          {/* Full width garland background */}
           <GarlandGenerator
             attachmentPoints={rowAttachmentPoints}
             lightType={lightType}
             className="absolute top-0 left-0 z-0"
             onCurveDataUpdate={handleCurveDataUpdate}
+            garlandIndex={rowIndex}
           />
 
-          {/* Cards container with max-width constraint */}
           <div className="max-w-[130rem] mx-auto relative">
             <div className="relative z-10">
               <div className="relative">
                 {rowCards.map((item, cardIndex) => {
                   const cardPoint = rowCardPoints[cardIndex];
-
                   if (!cardPoint) return null;
 
-                  const actualCardIndex = startIndex + cardIndex;
                   const cardYPosition = getCardYPosition(garlandData, cardPoint.x);
                   const cardTopOffset = -80 + ((cardYPosition - 50) / 50) * 80;
-                  const rotation = getCardRotation(cardIndex, cardsInRow);
+                  const rotation = getCardRotation(cardIndex, cardsInRow, rowIndex);
 
                   return (
                     <div
@@ -246,20 +270,22 @@ export const Garland: React.FC<GarlandProps> = ({
       attachmentPoints,
       lightType,
       handleCurveDataUpdate,
-      curveData,
+      garlandData,
+      getCardRotation,
     ],
   );
 
-  if (validUsers.length === 0) {
-    return null;
+  if (validUsers.length === 0) return null;
+
+  if (!isClient) {
+    return <GarlandLoadingPlaceholder className={className} />;
   }
 
   return (
     <div className={`relative ${className}`}>
-      {Array.from({ length: totalRows }, (unused, rowIndex) => {
+      {Array.from({ length: totalRows }, (_, rowIndex) => {
         const startIndex = rowIndex * cardsPerRow;
         const cardsInThisRow = Math.min(cardsPerRow, validUsers.length - startIndex);
-
         return renderGarlandRow(startIndex, cardsInThisRow);
       })}
     </div>

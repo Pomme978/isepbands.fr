@@ -72,7 +72,7 @@ const MusicNotes: React.FC<MusicNotesProps> = ({ className = '' }) => {
 
   return (
     <div
-      className={`absolute top-0 left-0 w-screen h-screen z-10 pointer-events-none overflow-hidden ${className}`}
+      className={`absolute top-0 left-0 w-full h-screen z-10 pointer-events-none overflow-hidden ${className}`}
       style={{ filter: 'blur(2px)' }}
     >
       <style>{`

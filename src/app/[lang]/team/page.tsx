@@ -165,7 +165,7 @@ const Page = () => {
         <VisionNote />
       </div>
 
-      <h5 className="text-xs text-white/50 relative max-w-7xl flex justify-center md:justify-end mx-auto py-4">
+      <h5 className="text-sm text-white/50 relative max-w-7xl flex font-handrawn justify-center md:justify-end mx-auto py-4">
         Design de page réalisé par Sarah LEVY
       </h5>
     </main>

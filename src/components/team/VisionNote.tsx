@@ -12,15 +12,15 @@ export const VisionNote: React.FC = () => {
       </div>
 
       {/* Post-it Note */}
-      <div className="bg-yellow-200 p-6 shadow-lg transform rotate-2 hover:rotate-1 transition-transform duration-300">
+      <div className="bg-yellow-200 p-6 shadow-lg font-handrawn transform rotate-2 hover:rotate-1 transition-transform duration-300">
         {/* Note header */}
         <div className="text-center mb-4">
-          <h3 className="font-bold text-lg text-yellow-900 underline">Notre Vision Pour</h3>
-          <h4 className="font-bold text-lg text-yellow-900 underline">L&#39;année 2025-2026 :</h4>
+          <h2 className="font-bold text-lg text-yellow-900 underline">Notre Vision Pour</h2>
+          <h3 className="font-bold text-lg text-yellow-900 underline">L&#39;année 2025-2026 :</h3>
         </div>
 
         {/* Vision content */}
-        <div className="space-y-3 text-sm text-yellow-900 leading-relaxed">
+        <div className="space-y-3 text-md text-yellow-900 leading-relaxed">
           <p>🎵 Rassembler les passionnés de musique</p>
           <p>🎸 Créer des expériences musicales inoubliables</p>
           <p>🤝 Renforcer les liens entre les étudiants</p>

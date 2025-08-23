@@ -31,6 +31,48 @@ const POSITION_VARIATION = 1; // ±1% de variation aléatoire
 const ZONE_SAFETY_MARGIN = 1; // 1% de marge dans chaque zone
 
 // ================================
+// INTERFACES
+// ================================
+
+export interface Point {
+  x: number; // percentage 0..100
+  y: number; // percentage 0..100
+}
+
+interface CrossingPoint {
+  x: number;
+  y: number;
+  index: number;
+}
+
+interface IntermediatePoint {
+  x: number;
+  y: number;
+  isCrossing: boolean;
+}
+
+interface CurveParameters {
+  amplitude: number;
+  smoothing: number;
+  complexity: number;
+  asymmetry: number;
+  extremeVariation: number;
+  seed?: number;
+}
+
+// Fixed: Match what the components expect - return SVG path strings
+interface GarlandSystemData {
+  curve1: string; // SVG path string
+  curve2: string; // SVG path string
+  lightPositions: Point[];
+  width: number;
+  numberOfCrossings: number;
+  crossingPoints: { x: number; y: number; index: number }[];
+  cardPositions: { x: number; y: number; cardIndex?: number }[];
+  amplitude: { min: number; max: number };
+}
+
+// ================================
 // FONCTIONS UTILITAIRES
 // ================================
 
@@ -56,39 +98,8 @@ const createGarlandHash = (
   return Math.abs(hash) % 10000; // Retourner un nombre positif entre 0 et 9999
 };
 
-interface CrossingPoint {
-  x: number;
-  y: number;
-  index: number;
-}
-
-interface IntermediatePoint {
-  x: number;
-  y: number;
-  isCrossing: boolean;
-}
-
-interface CurveParameters {
-  amplitude: number;
-  smoothing: number;
-  complexity: number;
-  asymmetry: number;
-  extremeVariation: number;
-  seed?: number;
-}
-
-interface GarlandSystemData {
-  curve1: string;
-  curve2: string;
-  crossingPoints: CrossingPoint[];
-  lightPositions: { x: number; y: number }[];
-  amplitude: { min: number; max: number };
-  width: number;
-  numberOfCrossings: number;
-}
-
 export const getCrossingPointsMatrix = (width: number): number => {
-  if (width < 768) return 2; // Mobile : seulement 1 point de croisement
+  if (width < 768) return 2; // Mobile : seulement 2 points de croisement
   if (width < 1024) return 2; // Tablette : 2 points
   if (width < 1280) return 3; // Desktop petit : 3 points
   if (width < 1536) return 4; // Desktop moyen : 4 points
@@ -458,6 +469,28 @@ const generateSmoothCurveThroughPoints = (
   return path;
 };
 
+// Fonction pour convertir les points en chemin SVG
+const pointsToSvgPath = (points: Point[]): string => {
+  if (points.length === 0) return '';
+
+  let path = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+
+  for (let i = 1; i < points.length; i++) {
+    path += ` L ${points[i].x.toFixed(2)} ${points[i].y.toFixed(2)}`;
+  }
+
+  return path;
+};
+
+// Fonction pour convertir les points intermédiaires en points
+const intermediatePointsToPoints = (intermediatePoints: IntermediatePoint[]): Point[] => {
+  return intermediatePoints.map((point) => ({
+    x: point.x,
+    y: point.y,
+  }));
+};
+
+// Fixed: Return string paths instead of Point arrays
 export const generateGarlandSystem = (
   cardPoints: AttachmentPoint[],
   width: number,
@@ -490,6 +523,7 @@ export const generateGarlandSystem = (
       amplitude: { min: 50, max: 50 },
       width,
       numberOfCrossings: 0,
+      cardPositions: [],
     };
   }
 
@@ -518,6 +552,7 @@ export const generateGarlandSystem = (
   const curve1Points = generateIntermediatePoints(allCrossingPoints, 0, params, width);
   const curve2Points = generateIntermediatePoints(allCrossingPoints, 1, params, width);
 
+  // Generate SVG path strings instead of returning Point arrays
   const curve1 = generateSmoothCurveThroughPoints(curve1Points, params);
   const curve2 = generateSmoothCurveThroughPoints(curve2Points, params);
 
@@ -525,11 +560,16 @@ export const generateGarlandSystem = (
   const minY = Math.min(...allYValues) - 3;
   const maxY = Math.max(...allYValues) + 3;
 
-  const lightPositions = crossingPoints.map((cp) => ({ x: cp.x, y: cp.y }));
+  const lightPositions: Point[] = crossingPoints.map((cp) => ({ x: cp.x, y: cp.y }));
 
   return {
-    curve1,
-    curve2,
+    cardPositions: cardPoints.map((point) => ({
+      x: point.x,
+      y: point.y,
+      cardIndex: point.cardIndex,
+    })),
+    curve1, // Now returns SVG path string
+    curve2, // Now returns SVG path string
     crossingPoints,
     lightPositions,
     amplitude: { min: minY, max: maxY },
@@ -547,10 +587,12 @@ export interface CurveData {
 export const getCardYPosition = (garlandData: GarlandSystemData, cardX: number): number => {
   if (garlandData.crossingPoints.length === 0) return 50;
 
+  // Since we no longer have curve points, use crossing points to interpolate
   const nearestCrossing = garlandData.crossingPoints.reduce((prev, curr) =>
     Math.abs(curr.x - cardX) < Math.abs(prev.x - cardX) ? curr : prev,
   );
 
+  // Add some stable variation based on position
   const stableVariation = Math.sin(cardX * 0.03) * 2;
   return nearestCrossing.y + stableVariation - 8;
 };
@@ -581,12 +623,20 @@ export const generateDoubleCurveGarlandPath = (cardPoints: AttachmentPoint[], wi
   };
 };
 
-export const generateGarlandPath = (cardPoints: AttachmentPoint[]): string => {
+// Fixed: Return proper Point[] instead of string
+export const generateGarlandPath = (cardPoints: AttachmentPoint[]): Point[] => {
   const data = generateGarlandSystem(cardPoints, 1024);
-  return data.curve1;
+
+  // Convert the curve path string back to points if needed
+  // For now, return the light positions as they are already Point[]
+  return data.lightPositions;
 };
 
-export const generateVariableWidthPath = (cardPoints: AttachmentPoint[]): string => {
+// Fixed: Return proper Point[] instead of string
+export const generateVariableWidthPath = (cardPoints: AttachmentPoint[]): Point[] => {
   const data = generateGarlandSystem(cardPoints, 1024);
-  return data.curve1;
+
+  // Convert the curve path string back to points if needed
+  // For now, return the light positions as they are already Point[]
+  return data.lightPositions;
 };

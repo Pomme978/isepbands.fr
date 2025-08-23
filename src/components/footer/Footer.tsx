@@ -76,7 +76,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white bottom-4 relative mt-6 rounded-lg w-full max-w-7xl mx-auto">
+    <footer className="bg-white md:bottom-4 relative mt-6 rounded-t-lg md:rounded-lg w-full max-w-7xl mx-auto">
       <div className="px-6 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div className="col-span-1 mb-4">

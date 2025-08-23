@@ -19,21 +19,21 @@ export function Home({ lang }: HomeProps) {
 
   return (
     <>
-      <div className="relative bg-gray-100 w-screen z-60">
+      <div className="relative bg-gray-100 w-full z-60">
         <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center items-center flex-col">
           <div className="flex items-center justify-center flex-col">
             {/* Left floating guitar */}
-            <div className="absolute left-0 top-20 z-10 hidden lg:inline">
+            <div className="absolute -left-30 top-20 z-10 hidden lg:inline">
               <Image
                 src={purpleGuitar}
                 alt="Purple Guitar"
-                className={'w-60 h-auto rotate-20'}
+                className={'w-60 h-auto -rotate-20'}
                 priority={false}
               />
             </div>
 
             {/* Right floating synth */}
-            <div className="absolute right-10 top-40 z-10 hidden lg:inline">
+            <div className="absolute -right-30 top-40 z-10 hidden lg:inline">
               <Image
                 src={synth}
                 alt="Synthesizer"

@@ -1,7 +1,7 @@
 // src/components/board/TextGarland.tsx
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 import starYellow from '@/assets/svg/star_yellow.svg';
@@ -38,16 +38,34 @@ const TextGarland: React.FC<TextGarlandProps> = ({
   className = '',
   animationDelay = 0,
   // Custom parameters with defaults
-  amplitude = 15, // Increased default amplitude
+  amplitude = 15,
   smoothing = 0.95,
-  complexity = 0.8, // Increased default complexity
-  asymmetry = 0.5, // Increased default asymmetry
-  extremeVariation = 8, // Increased default variation
+  complexity = 0.8,
+  asymmetry = 0.5,
+  extremeVariation = 8,
   minLights = 2,
   maxLights = 3,
 }) => {
+  // Fix hydration issue by ensuring consistent rendering
+  const [isClient, setIsClient] = useState(false);
+  const [uniqueId] = useState(() => Math.random().toString(36).substr(2, 9));
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Generate two crossing wires that go from center to edge
   const garlandData = React.useMemo(() => {
+    // Only generate on client to avoid hydration issues
+    if (!isClient) {
+      return {
+        wire1Path: '',
+        wire2Path: '',
+        crossingPoints: [],
+        lightRotations: [],
+      };
+    }
+
     const seed = side === 'left' ? 12345 : 67890;
 
     const seedRandom = (seedValue: number) => {
@@ -84,7 +102,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
 
         crossings.push({
           x,
-          y: Math.max(25, Math.min(95, baseY + yOffset)), // Increased Y range
+          y: Math.max(25, Math.min(95, baseY + yOffset)),
           index: i,
         });
       }
@@ -94,7 +112,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
 
     const crossingPoints = generateCrossingPoints();
 
-    // Generate intermediate points for smooth curves (like your main system)
+    // Generate intermediate points for smooth curves
     const generateIntermediatePoints = (wireIndex: number) => {
       const allPoints = [];
 
@@ -105,7 +123,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
 
       allPoints.push({
         x: startX,
-        y: Math.max(20, Math.min(100, startY + startVariation)), // Increased Y range
+        y: Math.max(20, Math.min(100, startY + startVariation)),
         isCrossing: false,
       });
 
@@ -161,7 +179,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
               yVariation *= 1 + extremeVariation * 0.1 * (randomFactor - 0.7);
             }
 
-            const finalY = Math.max(15, Math.min(105, baseY + yVariation)); // Much larger Y range
+            const finalY = Math.max(15, Math.min(105, baseY + yVariation));
 
             allPoints.push({
               x,
@@ -179,14 +197,14 @@ const TextGarland: React.FC<TextGarlandProps> = ({
 
       allPoints.push({
         x: endX,
-        y: Math.max(20, Math.min(100, endY + endVariation)), // Increased Y range
+        y: Math.max(20, Math.min(100, endY + endVariation)),
         isCrossing: false,
       });
 
       return allPoints;
     };
 
-    // Generate smooth SVG path from points (like your main system)
+    // Generate smooth SVG path from points
     const generateSmoothPath = (points: Point[]) => {
       if (points.length === 0) return '';
 
@@ -202,7 +220,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
         const following = i < points.length - 2 ? points[i + 2] : next;
 
         const distance = Math.abs(next.x - current.x);
-        const controlDistance = distance * smoothing * 0.4; // Use custom smoothing
+        const controlDistance = distance * smoothing * 0.4;
 
         const currentTangentX = (next.x - prev.x) / 2;
         const currentTangentY = (next.y - prev.y) / 2;
@@ -237,7 +255,18 @@ const TextGarland: React.FC<TextGarlandProps> = ({
         (_, i) => seedRandom(seed + i + 100) * 360,
       ),
     };
-  }, [side, width]);
+  }, [
+    isClient,
+    side,
+    width,
+    amplitude,
+    smoothing,
+    complexity,
+    asymmetry,
+    extremeVariation,
+    minLights,
+    maxLights,
+  ]);
 
   const Light: React.FC<{
     position: { x: number; y: number; index: number };
@@ -266,8 +295,8 @@ const TextGarland: React.FC<TextGarlandProps> = ({
         className="absolute z-10"
         style={{
           left: `${position.x}%`,
-          top: `${(position.y / 120) * 140}px`, // Adjusted for new height
-          transform: `translate(-50%, -50%) rotate(${garlandData.lightRotations[index]}deg)`,
+          top: `${(position.y / 120) * 140}px`,
+          transform: `translate(-50%, -50%) rotate(${garlandData.lightRotations[index] || 0}deg)`,
           animationDelay: `${animationDelay + index * 0.2}s`,
         }}
       >
@@ -286,6 +315,16 @@ const TextGarland: React.FC<TextGarlandProps> = ({
     );
   };
 
+  // Show loading state during hydration - completely static
+  if (!isClient) {
+    return (
+      <div className={`relative ${className}`} style={{ width: `${width}px`, height: '140px' }}>
+        {/* Completely static placeholder - no animations */}
+        <div className="w-full h-full bg-gray-50 rounded opacity-50" />
+      </div>
+    );
+  }
+
   return (
     <div className={`relative ${className}`} style={{ width: `${width}px`, height: '140px' }}>
       {/* Two Crossing Wires */}
@@ -298,7 +337,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
       >
         <defs>
           <filter
-            id={`text-wire-glow-${side}-${width}`}
+            id={`text-wire-glow-${uniqueId}`}
             filterUnits="userSpaceOnUse"
             primitiveUnits="userSpaceOnUse"
             x="-50"
@@ -322,7 +361,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter={`url(#text-wire-glow-${side}-${width})`}
+          filter={`url(#text-wire-glow-${uniqueId})`}
           opacity="0.98"
           vectorEffect="non-scaling-stroke"
         />
@@ -335,7 +374,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter={`url(#text-wire-glow-${side}-${width})`}
+          filter={`url(#text-wire-glow-${uniqueId})`}
           opacity="0.98"
           vectorEffect="non-scaling-stroke"
         />
@@ -344,11 +383,7 @@ const TextGarland: React.FC<TextGarlandProps> = ({
       {/* Lights at crossing points ONLY */}
       <div className="absolute inset-0 w-full h-full z-0">
         {garlandData.crossingPoints.map((crossingPoint, index) => (
-          <Light
-            key={`text-light-${side}-${width}-${index}`}
-            position={crossingPoint}
-            index={index}
-          />
+          <Light key={`light-${uniqueId}-${index}`} position={crossingPoint} index={index} />
         ))}
       </div>
     </div>

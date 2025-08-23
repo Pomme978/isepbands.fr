@@ -322,7 +322,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         />
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
           <InstrumentsSection instruments={instruments} />
-          <InstrumentsSection instruments={instruments} />
           <GroupsSection
             groups={groups.map((g) => ({
               ...g,

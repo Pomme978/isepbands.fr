@@ -16,7 +16,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   const t = useI18n();
 
   return (
-    <div className="bg-gray-100 w-screen">
+    <div className="bg-gray-100 w-full">
       <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center items-center flex-col">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Bonjour {user.name || user.email} ! 👋

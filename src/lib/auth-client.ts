@@ -44,16 +44,26 @@ export type SessionUser = {
   email: string;
   name?: string;
   surname?: string;
+  firstName?: string;
+  lastName?: string;
   band?: string | null;
   status?: 'ACTIVE' | 'INACTIVE';
 } | null;
 
 export function useSession(onAutoLogout?: () => void) {
   const [user, setUser] = useState<SessionUser>(null);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    async function fetchSession() {
+    setMounted(true);
+  }, []);
+
+  const fetchSession = useCallback(async () => {
+    if (!mounted) return;
+
+    try {
       const res = await fetch('/api/auth/session');
       if (res.status === 401) {
         setUser(null);
@@ -66,18 +76,36 @@ export function useSession(onAutoLogout?: () => void) {
       } else {
         setUser(null);
       }
+    } catch (error) {
+      console.error('Session fetch error:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    fetchSession();
-  }, [onAutoLogout, pathname]);
-  return { user };
+  }, [mounted, onAutoLogout]);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchSession();
+    }
+  }, [fetchSession, pathname]);
+
+  return { user, loading, isLoading: loading };
 }
 
 export function useAuth(onAutoLogout?: () => void) {
   const [user, setUser] = useState<SessionUser>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const refresh = useCallback(async () => {
+    if (!mounted) return;
+
     setLoading(true);
     setError(null);
     try {
@@ -93,17 +121,20 @@ export function useAuth(onAutoLogout?: () => void) {
       } else {
         setUser(null);
       }
-    } catch {
+    } catch (err) {
+      console.error('Auth refresh error:', err);
       setUser(null);
       setError('Erreur de session');
     } finally {
       setLoading(false);
     }
-  }, [onAutoLogout]);
+  }, [onAutoLogout, mounted]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (mounted) {
+      refresh();
+    }
+  }, [refresh, mounted]);
 
   const wrappedSignIn = useCallback(
     async (email: string, password: string, cb?: () => void) => {
@@ -165,5 +196,6 @@ export function useAuth(onAutoLogout?: () => void) {
     register: wrappedRegister,
     refresh,
     getMe,
+    isLoading: loading,
   };
 }

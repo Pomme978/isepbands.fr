@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import {
   DropdownMenu,
@@ -9,21 +10,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useSession, useAuth } from '../../lib/auth-client';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import LangLink from '@/components/common/LangLink';
+import { useSession, useAuth } from '@/lib/auth-client';
+import { useRouter, useParams } from 'next/navigation';
 
 export default function UserMenu() {
   const { user } = useSession();
   const { signOut } = useAuth();
   const router = useRouter();
+  const params = useParams();
+
+  // Get the current language from params (assuming it's stored as 'lang' or 'locale')
+  const currentLang = params?.lang || params?.locale || 'fr'; // default to 'fr' if not found
 
   if (!user) {
     return (
-      <div className="flex items-center gap-2 md:flex-row flex-col w-full md:w-auto">
-        <Button variant="default" size="sm" className="w-full md:w-auto" asChild>
-          <LangLink href="/login">Se connecter</LangLink>
+      <div className="flex items-center justify-end h-10 min-w-0 flex-shrink-0">
+        <Button variant="default" size="sm" asChild>
+          <a href={`/${currentLang}/login`}>Se connecter</a>
         </Button>
       </div>
     );
@@ -32,31 +35,66 @@ export default function UserMenu() {
   const displayName = (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
   const band = user.band;
 
+  const handleProfileClick = () => {
+    router.push(`/${currentLang}/profile`);
+  };
+
+  const handleSettingsClick = () => {
+    router.push(`/${currentLang}/profile/settings`);
+  };
+
+  const handleAdminClick = () => {
+    router.push(`/${currentLang}/admin`);
+  };
+
+  const handleGroupSpaceClick = () => {
+    // Assuming you have a group space route
+    router.push(`/${currentLang}/group`);
+  };
+
+  const handleSignOut = () => {
+    signOut(() => router.push(`/${currentLang}/login`));
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-3 cursor-pointer select-none">
-          <div className="flex flex-col items-end">
-            <span className="font-semibold text-sm text-gray-900">{displayName}</span>
-            {band && <span className="text-xs text-gray-500">{band}</span>}
-          </div>
-          <Avatar>
-            <AvatarFallback>{displayName[0] || user.email[0]}</AvatarFallback>
-          </Avatar>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Mon profil</DropdownMenuItem>
-        <DropdownMenuItem>Mon espace groupe</DropdownMenuItem>
-        <DropdownMenuItem>Tableau de bord admin</DropdownMenuItem>
-        <DropdownMenuItem>Paramètres</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut(() => router.push('/login'))}>
-          Se déconnecter
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center justify-end h-10 min-w-0 flex-shrink-0">
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center gap-3 p-1 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 h-10">
+            <div className="flex flex-col items-end min-w-0">
+              <span className="font-semibold text-sm text-gray-900 truncate max-w-[120px] leading-tight">
+                {displayName}
+              </span>
+              {band && (
+                <span className="text-xs text-gray-500 truncate max-w-[120px] leading-tight">
+                  {band}
+                </span>
+              )}
+            </div>
+            <Avatar className="h-8 w-8 flex-shrink-0">
+              <AvatarFallback className="text-xs">{displayName[0] || user.email[0]}</AvatarFallback>
+            </Avatar>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-60 z-[500] border-0 rounded-none !rounded-b-lg"
+          sideOffset={0}
+          alignOffset={-24}
+          avoidCollisions={true}
+          side="bottom"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleProfileClick}>Mon profil</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleGroupSpaceClick}>Mon espace groupe</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleAdminClick}>Tableau de bord admin</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettingsClick}>Paramètres</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>Se déconnecter</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

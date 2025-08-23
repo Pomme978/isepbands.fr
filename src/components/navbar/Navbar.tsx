@@ -9,6 +9,7 @@ import UserMenu from './UserMenu';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/locales/client';
 import GuitarBodySVG from './GuitarBody';
+import { useAuth } from '../../lib/auth-client';
 
 interface NavbarProps {
   mode?: 'scroll' | 'static' | 'fixed';
@@ -19,7 +20,13 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(mode === 'static' || mode === 'fixed');
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const { loading: authLoading } = useAuth();
   const t = useI18n();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Si mode static ou fixed, on n'écoute pas le scroll
@@ -88,12 +95,15 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
     }`;
   };
 
+  // Don't render navbar content until auth has loaded to prevent flash
+  const showContent = mounted && !authLoading;
+
   return (
     <>
       {/* Flexbox container that spans full width */}
       <div className={getContainerClasses() + ` ${className || ''}`}>
         {/* Centered navbar with max-width constraint */}
-        <header className="w-full rounded-lg backdrop-blur bg-white drop-shadow-lg">
+        <header className="w-full rounded-lg backdrop-blur bg-white">
           <nav className="flex items-center justify-between px-4 lg:px-6 py-2 gap-2 lg:gap-8 min-w-0">
             {/* Desktop Navigation */}
             <div className="hidden lg:contents">
@@ -105,7 +115,11 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
               </div>
               <div className="flex items-center gap-4 flex-shrink-0">
                 <LanguageSwitcher />
-                <UserMenu />
+                {showContent ? (
+                  <UserMenu />
+                ) : (
+                  <div className="h-10 w-32 animate-pulse bg-gray-200 rounded"></div>
+                )}
               </div>
             </div>
 
@@ -150,7 +164,11 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
 
                 {/* User Menu / Auth Buttons */}
                 <div className="pt-4 border-t space-y-3">
-                  <UserMenu />
+                  {showContent ? (
+                    <UserMenu />
+                  ) : (
+                    <div className="h-10 w-full animate-pulse bg-gray-200 rounded"></div>
+                  )}
                 </div>
 
                 {/* Language Switcher */}

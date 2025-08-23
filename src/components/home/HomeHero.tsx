@@ -33,7 +33,7 @@ const HomeHero = () => {
   return (
     <div className="w-full h-screen overflow-hidden">
       {/* Custom Background Color */}
-      <div className="absolute inset-0 z-0" style={{ backgroundColor: '#2E135F' }} />
+      <div className="absolute inset-0 z-0 w-full" style={{ backgroundColor: '#2E135F' }} />
       <MusicNotes />
       <StageLights />
       <Crowd />

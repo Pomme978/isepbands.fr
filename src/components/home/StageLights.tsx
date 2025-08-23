@@ -21,7 +21,9 @@ const StageLights: React.FC<StageLightsProps> = ({ className = '' }) => {
   }, []);
 
   return (
-    <div className={`absolute top-0 left-0 w-screen h-screen z-30 opacity-60 ${className}`}>
+    <div
+      className={`absolute top-0 left-0 w-full h-screen z-30 opacity-60 overflow-hidden ${className}`}
+    >
       {/* Left Light */}
       <div className="absolute -top-20 -left-20">
         <div className={`origin-top-left ${isAnimated ? 'animate-gentle-rotate-left' : ''}`}>

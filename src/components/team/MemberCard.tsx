@@ -44,6 +44,7 @@ const CardContent: React.FC<{
 }> = ({ user, roleDisplay, showClothespin }) => {
   return (
     <>
+      <div className="h-80 w-80 overflow-hidden rounded-full blur-[100px] opacity-50 bg-[#914AAE] absolute "></div>
       {showClothespin && (
         <Clothespin className="absolute -top-8 z-20 transform-gpu will-change-transform transition-transform duration-300 group-hover:scale-105" />
       )}
