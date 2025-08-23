@@ -25,9 +25,6 @@ export default function UserMenu() {
         <Button variant="default" size="sm" className="w-full md:w-auto" asChild>
           <LangLink href="/login">Se connecter</LangLink>
         </Button>
-        <Button variant="outline" size="sm" className="w-full md:w-auto" asChild>
-          <LangLink href="/register">Rejoindre</LangLink>
-        </Button>
       </div>
     );
   }

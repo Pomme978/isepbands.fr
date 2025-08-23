@@ -1,4 +1,4 @@
-// src/components/board/Garland.tsx
+// src/components/team/Garland.tsx
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -32,7 +32,25 @@ interface GarlandProps {
   className?: string;
 }
 
+// Updated to match GarlandGenerator's callback type
 interface CurveData {
+  crossingPoints: { x: number; y: number; index: number }[];
+  cardPositions: { x: number; y: number; cardIndex?: number }[];
+  amplitude: { min: number; max: number };
+}
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+// This should match what getCardYPosition expects
+interface GarlandSystemData {
+  curve1: Point[];
+  curve2: Point[];
+  lightPositions: Point[];
+  width: number;
+  numberOfCrossings: number;
   crossingPoints: { x: number; y: number; index: number }[];
   cardPositions: { x: number; y: number; cardIndex?: number }[];
   amplitude: { min: number; max: number };
@@ -44,6 +62,17 @@ export const Garland: React.FC<GarlandProps> = ({
   lightType = 'yellow',
   className = '',
 }) => {
+  const [garlandData, setGarlandData] = useState<GarlandSystemData>({
+    curve1: null,
+    curve2: null,
+    lightPositions: [],
+    width: 0,
+    numberOfCrossings: 0,
+    crossingPoints: [],
+    cardPositions: [],
+    amplitude: { min: 50, max: 50 },
+  });
+
   const [curveData, setCurveData] = useState<CurveData>({
     crossingPoints: [],
     cardPositions: [],
@@ -66,8 +95,21 @@ export const Garland: React.FC<GarlandProps> = ({
 
   const cardPoints = getCardPoints(attachmentPoints);
 
-  const handleCurveDataUpdate = React.useCallback((data: CurveData) => {
-    setCurveData(data);
+  const handleCurveDataUpdate = React.useCallback((data: CurveData): void => {
+    setCurveData((prevData) => {
+      // Only update if data actually changed
+      if (JSON.stringify(prevData) !== JSON.stringify(data)) {
+        // Update garlandData for getCardYPosition compatibility
+        setGarlandData((prev) => ({
+          ...prev,
+          crossingPoints: data.crossingPoints,
+          cardPositions: data.cardPositions,
+          amplitude: data.amplitude,
+        }));
+        return data;
+      }
+      return prevData;
+    });
   }, []);
 
   useEffect(() => {
@@ -98,7 +140,7 @@ export const Garland: React.FC<GarlandProps> = ({
         180,
       );
 
-      return baseSpacing + amplitudeInPixels + maxCardHeight + 5;
+      return baseSpacing + amplitudeInPixels + maxCardHeight + 5 - 150;
     },
     [curveData.amplitude, validUsers, cardsPerRow, cardHeights],
   );
@@ -138,49 +180,59 @@ export const Garland: React.FC<GarlandProps> = ({
       return (
         <div
           key={`row-${startIndex}`}
-          className="relative -mb-20"
+          className="relative w-full md:mb-0 mb-100"
           style={{ marginBottom: `${dynamicSpacing}px` }}
         >
+          {/* Full width garland background */}
           <GarlandGenerator
             attachmentPoints={rowAttachmentPoints}
             lightType={lightType}
-            className="absolute top-0 left-0 w-full z-0"
+            className="absolute top-0 left-0 z-0"
             onCurveDataUpdate={handleCurveDataUpdate}
           />
 
-          <div className="relative z-10">
-            <div className="relative ">
-              {rowCards.map((item, cardIndex) => {
-                const cardPoint = rowCardPoints[cardIndex];
+          {/* Cards container with max-width constraint */}
+          <div className="max-w-[130rem] mx-auto relative">
+            <div className="relative z-10">
+              <div className="relative">
+                {rowCards.map((item, cardIndex) => {
+                  const cardPoint = rowCardPoints[cardIndex];
 
-                if (!cardPoint) return null;
+                  if (!cardPoint) return null;
 
-                const actualCardIndex = startIndex + cardIndex;
-                const cardYPosition = getCardYPosition(curveData, cardPoint.x);
-                const cardTopOffset = -80 + ((cardYPosition - 50) / 50) * 80;
-                const rotation = getCardRotation(cardIndex, cardsInRow);
+                  const actualCardIndex = startIndex + cardIndex;
+                  const cardYPosition = getCardYPosition(garlandData, cardPoint.x);
+                  const cardTopOffset = -80 + ((cardYPosition - 50) / 50) * 80;
+                  const rotation = getCardRotation(cardIndex, cardsInRow);
 
-                return (
-                  <div
-                    key={item.user.id}
-                    ref={(el) => (cardRefs.current[item.user.id] = el)}
-                    className="absolute z-20"
-                    style={{
-                      left: `${cardPoint.x}%`,
-                      top: `${cardTopOffset}px`,
-                      transform: `translateX(-50%) rotate(${rotation}deg)`,
-                      transformOrigin: 'center top',
-                    }}
-                  >
-                    <MemberCard
-                      user={item.user}
-                      roleDisplay={item.roleInfo.displayName}
-                      variant={item.roleInfo.variant}
-                      className="transform hover:scale-105 transition-transform duration-300 relative z-30"
-                    />
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={item.user.id}
+                      ref={(el) => {
+                        if (el) {
+                          cardRefs.current[item.user.id] = el;
+                        } else {
+                          delete cardRefs.current[item.user.id];
+                        }
+                      }}
+                      className="absolute z-20"
+                      style={{
+                        left: `${cardPoint.x}%`,
+                        top: `${cardTopOffset}px`,
+                        transform: `translateX(-50%) rotate(${rotation}deg)`,
+                        transformOrigin: 'center top',
+                      }}
+                    >
+                      <MemberCard
+                        user={item.user}
+                        roleDisplay={item.roleInfo.displayName}
+                        variant={item.roleInfo.variant}
+                        className="relative z-30"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -194,7 +246,7 @@ export const Garland: React.FC<GarlandProps> = ({
       attachmentPoints,
       lightType,
       handleCurveDataUpdate,
-      curveData.cardPositions,
+      curveData,
     ],
   );
 

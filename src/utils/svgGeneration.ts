@@ -1,6 +1,60 @@
-// src/components/board/utils/svgGeneration.ts
+// src/components/team/utils/svgGeneration.ts
 
 import { AttachmentPoint } from './attachmentPoints';
+
+// ================================
+// CONFIGURATION DES ZONES D'ÉVITEMENT
+// ================================
+
+// Zone interdite autour de chaque carte (en % de l'écran)
+const CARD_AVOIDANCE_ZONE = 3; // ±3% de chaque côté des cartes
+
+// Largeur minimale d'une zone libre pour placer une lumière (en %)
+const MIN_FREE_ZONE_WIDTH = 4; // Zone doit faire au moins 4% de largeur
+
+// Espacement minimum entre les lumières (en %)
+const MIN_LIGHT_SPACING = 3; // Au moins 3% entre chaque lumière
+
+// Zone de vérification pour les positions par défaut (en %)
+const DEFAULT_POSITION_CHECK = 2; // ±2% pour vérifier les positions par défaut
+
+// Pourcentage minimum de lumières à placer avant d'utiliser l'algorithme de fallback
+const MIN_LIGHTS_THRESHOLD = 0.7; // 70% des lumières doivent être placées
+
+// Pourcentage minimum pour déclencher le fallback complet
+const FALLBACK_THRESHOLD = 0.6; // Si moins de 60%, utiliser l'algorithme par défaut
+
+// Variation maximale pour le positionnement aléatoire (en %)
+const POSITION_VARIATION = 1; // ±1% de variation aléatoire
+
+// Marge de sécurité pour les bords de zones (en %)
+const ZONE_SAFETY_MARGIN = 1; // 1% de marge dans chaque zone
+
+// ================================
+// FONCTIONS UTILITAIRES
+// ================================
+
+// Fonction pour créer un hash unique basé sur les paramètres d'entrée
+const createGarlandHash = (
+  cardPoints: AttachmentPoint[],
+  width: number,
+  customParams?: Partial<CurveParameters>,
+): number => {
+  // Créer une chaîne unique basée sur les paramètres
+  const cardPositions = cardPoints.map((p) => `${p.x.toFixed(2)}-${p.cardIndex || 0}`).join('|');
+  const paramsString = customParams ? JSON.stringify(customParams) : '';
+  const inputString = `${cardPositions}-${width}-${paramsString}`;
+
+  // Générer un hash simple mais déterministe
+  let hash = 0;
+  for (let i = 0; i < inputString.length; i++) {
+    const char = inputString.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convertir en 32bit
+  }
+
+  return Math.abs(hash) % 10000; // Retourner un nombre positif entre 0 et 9999
+};
 
 interface CrossingPoint {
   x: number;
@@ -20,6 +74,7 @@ interface CurveParameters {
   complexity: number;
   asymmetry: number;
   extremeVariation: number;
+  seed?: number;
 }
 
 interface GarlandSystemData {
@@ -33,44 +88,188 @@ interface GarlandSystemData {
 }
 
 export const getCrossingPointsMatrix = (width: number): number => {
-  if (width < 768) return 2;
-  if (width < 1024) return 3;
-  if (width < 1280) return 4;
-  if (width < 1536) return 5;
-  return 6;
+  if (width < 768) return 2; // Mobile : seulement 1 point de croisement
+  if (width < 1024) return 2; // Tablette : 2 points
+  if (width < 1280) return 3; // Desktop petit : 3 points
+  if (width < 1536) return 4; // Desktop moyen : 4 points
+  return 5; // Desktop large : maximum 5 points
 };
 
-const generateStablePositions = (numberOfCrossings: number): number[] => {
-  if (numberOfCrossings === 2) return [30, 70];
-  if (numberOfCrossings === 3) return [25, 50, 75];
-  if (numberOfCrossings === 4) return [20, 40, 60, 80];
-  if (numberOfCrossings === 5) return [18, 35, 50, 65, 82];
-  if (numberOfCrossings === 6) return [15, 30, 45, 55, 70, 85];
+// Fonction pour calculer des positions optimales en évitant les cartes
+const generateOptimalPositions = (
+  numberOfCrossings: number,
+  cardPoints: AttachmentPoint[],
+  seed: number = 0,
+): number[] => {
+  const seedRandom = (seedValue: number) => {
+    const x = Math.sin(seedValue) * 10000;
+    return x - Math.floor(x);
+  };
+
+  // Créer des zones interdites autour des cartes
+  const forbiddenZones = cardPoints.map((card) => ({
+    start: Math.max(5, card.x - CARD_AVOIDANCE_ZONE),
+    end: Math.min(95, card.x + CARD_AVOIDANCE_ZONE),
+  }));
+
+  // Calculer les zones libres disponibles
+  const freeZones: { start: number; end: number; width: number }[] = [];
+  let currentStart = 10;
+
+  // Trier les zones interdites par position
+  const sortedForbiddenZones = forbiddenZones.sort((a, b) => a.start - b.start);
+
+  for (const forbidden of sortedForbiddenZones) {
+    if (currentStart < forbidden.start) {
+      const width = forbidden.start - currentStart;
+      if (width > MIN_FREE_ZONE_WIDTH) {
+        freeZones.push({ start: currentStart, end: forbidden.start, width });
+      }
+    }
+    currentStart = Math.max(currentStart, forbidden.end);
+  }
+
+  // Ajouter la zone finale si elle existe
+  if (currentStart < 90) {
+    const width = 90 - currentStart;
+    if (width > MIN_FREE_ZONE_WIDTH) {
+      freeZones.push({ start: currentStart, end: 90, width });
+    }
+  }
 
   const positions: number[] = [];
-  const baseStep = 70 / (numberOfCrossings - 1);
 
-  for (let i = 0; i < numberOfCrossings; i++) {
-    const variation = Math.sin(i * 1.3) * baseStep * 0.1;
-    const basePos = 15 + baseStep * i;
-    const finalPos = Math.max(10, Math.min(90, basePos + variation));
-    positions.push(finalPos);
+  // Distribuer les points dans les zones libres de manière plus permissive
+  if (freeZones.length > 0) {
+    // Calculer combien de points on peut placer
+    const totalAvailableWidth = freeZones.reduce((sum, zone) => sum + zone.width, 0);
+    const pointsWeCanFit = Math.min(
+      numberOfCrossings,
+      Math.floor(totalAvailableWidth / MIN_LIGHT_SPACING),
+    );
+
+    // Si on peut placer la plupart des points, distribuer intelligemment
+    if (pointsWeCanFit >= numberOfCrossings * MIN_LIGHTS_THRESHOLD) {
+      // Distribuer proportionnellement selon la largeur des zones
+      let pointsToPlace = numberOfCrossings;
+
+      for (let i = 0; i < freeZones.length && pointsToPlace > 0; i++) {
+        const zone = freeZones[i];
+        const zoneRatio = zone.width / totalAvailableWidth;
+        const pointsInZone = Math.max(1, Math.round(numberOfCrossings * zoneRatio));
+        const actualPointsInZone = Math.min(
+          pointsInZone,
+          pointsToPlace,
+          Math.floor(zone.width / MIN_LIGHT_SPACING),
+        );
+
+        for (let j = 0; j < actualPointsInZone; j++) {
+          const ratio = (j + 1) / (actualPointsInZone + 1);
+          const basePos = zone.start + zone.width * ratio;
+          const variation =
+            seedRandom(seed + i * 10 + j + 100) * (POSITION_VARIATION * 2) - POSITION_VARIATION;
+          const position = Math.max(
+            zone.start + ZONE_SAFETY_MARGIN,
+            Math.min(zone.end - ZONE_SAFETY_MARGIN, basePos + variation),
+          );
+          positions.push(position);
+        }
+
+        pointsToPlace -= actualPointsInZone;
+      }
+    }
+  }
+
+  // Si on n'a pas assez de points, utiliser l'algorithme par défaut avec vérification légère
+  if (positions.length < numberOfCrossings * FALLBACK_THRESHOLD) {
+    const defaultPositions = [15, 25, 35, 45, 55, 65, 75, 85];
+    const neededPoints = numberOfCrossings - positions.length;
+
+    for (let i = 0; i < defaultPositions.length && positions.length < numberOfCrossings; i++) {
+      const pos = defaultPositions[i];
+      // Vérification plus permissive
+      const isTooClose = forbiddenZones.some(
+        (zone) =>
+          pos >= zone.start + DEFAULT_POSITION_CHECK && pos <= zone.end - DEFAULT_POSITION_CHECK,
+      );
+
+      if (!isTooClose) {
+        const variation =
+          seedRandom(seed + i + 200) * (POSITION_VARIATION * 4) - POSITION_VARIATION * 2;
+        const finalPos = Math.max(10, Math.min(90, pos + variation));
+        positions.push(finalPos);
+      }
+    }
   }
 
   return positions.sort((a, b) => a - b);
 };
 
-const generateStableCrossingPoints = (width: number): CrossingPoint[] => {
+const generateStablePositions = (
+  numberOfCrossings: number,
+  cardPoints: AttachmentPoint[],
+  seed: number = 0,
+): number[] => {
+  // Si pas de cartes, utiliser l'algorithme original
+  if (cardPoints.length === 0) {
+    const seedRandom = (seedValue: number) => {
+      const x = Math.sin(seedValue) * 10000;
+      return x - Math.floor(x);
+    };
+
+    let positions: number[] = [];
+
+    if (numberOfCrossings === 2) {
+      positions = [30, 70];
+    } else if (numberOfCrossings === 3) {
+      positions = [25, 50, 75];
+    } else if (numberOfCrossings === 4) {
+      positions = [20, 40, 60, 80];
+    } else if (numberOfCrossings === 5) {
+      positions = [18, 35, 50, 65, 82];
+    } else if (numberOfCrossings === 6) {
+      positions = [15, 30, 45, 55, 70, 85];
+    } else {
+      const baseStep = 70 / (numberOfCrossings - 1);
+      for (let i = 0; i < numberOfCrossings; i++) {
+        const variation = Math.sin(i * 1.3 + seed) * baseStep * 0.1;
+        const basePos = 15 + baseStep * i;
+        const finalPos = Math.max(10, Math.min(90, basePos + variation));
+        positions.push(finalPos);
+      }
+    }
+
+    return positions.map((pos, index) => {
+      const variation = seedRandom(seed + index + 50) * 6 - 3;
+      return Math.max(10, Math.min(90, pos + variation));
+    });
+  }
+
+  // Utiliser l'algorithme optimisé qui évite les cartes
+  return generateOptimalPositions(numberOfCrossings, cardPoints, seed);
+};
+
+const generateStableCrossingPoints = (
+  width: number,
+  cardPoints: AttachmentPoint[],
+  seed: number = 0,
+): CrossingPoint[] => {
   const numberOfCrossings = getCrossingPointsMatrix(width);
-  const positions = generateStablePositions(numberOfCrossings);
+  const positions = generateStablePositions(numberOfCrossings, cardPoints, seed);
+
+  const seedRandom = (seedValue: number) => {
+    const x = Math.sin(seedValue) * 10000;
+    return x - Math.floor(x);
+  };
 
   const baseY = 50;
-  const yVariation = 6;
+  const yVariation = 8; // Augmenté pour plus de variation
 
   return positions.map((x, index) => {
-    const sineVariation = Math.sin(index * 1.2 + x * 0.02) * yVariation * 0.7;
-    const cosVariation = Math.cos(index * 0.8 + x * 0.015) * yVariation * 0.3;
-    const yOffset = sineVariation + cosVariation;
+    const sineVariation = Math.sin(index * 1.2 + x * 0.02 + seed) * yVariation * 0.7;
+    const cosVariation = Math.cos(index * 0.8 + x * 0.015 + seed) * yVariation * 0.3;
+    const seedVariation = seedRandom(seed + index + 200) * yVariation * 0.4 - yVariation * 0.2;
+    const yOffset = sineVariation + cosVariation + seedVariation;
 
     return {
       x,
@@ -84,8 +283,15 @@ const generateIntermediatePoints = (
   crossingPoints: CrossingPoint[],
   wireIndex: number,
   params: CurveParameters,
+  width: number, // Ajouter la largeur pour adaptation
 ): IntermediatePoint[] => {
+  const seedRandom = (seedValue: number) => {
+    const x = Math.sin(seedValue) * 10000;
+    return x - Math.floor(x);
+  };
+
   const allPoints: IntermediatePoint[] = [];
+  const seed = params.seed || 0;
 
   for (let i = 0; i < crossingPoints.length - 1; i++) {
     const currentCrossing = crossingPoints[i];
@@ -98,7 +304,40 @@ const generateIntermediatePoints = (
     });
 
     const distance = nextCrossing.x - currentCrossing.x;
-    const numIntermediatePoints = Math.max(2, Math.min(3, Math.floor(distance / 8)));
+
+    // Contrôler le nombre de points intermédiaires selon la distance ET la largeur d'écran
+    let numIntermediatePoints = 0;
+
+    // Adapter selon la taille d'écran
+    const isMobile = width < 768;
+    const isTablet = width >= 768 && width < 1024;
+
+    if (isMobile) {
+      // Mobile : très peu de points pour éviter le chaos
+      if (distance >= 30) {
+        numIntermediatePoints = 1;
+      } else {
+        numIntermediatePoints = 0;
+      }
+    } else if (isTablet) {
+      // Tablette : points modérés
+      if (distance >= 25) {
+        numIntermediatePoints = 2;
+      } else if (distance >= 15) {
+        numIntermediatePoints = 1;
+      } else {
+        numIntermediatePoints = 0;
+      }
+    } else {
+      // Desktop : points normaux
+      if (distance >= 20) {
+        numIntermediatePoints = 2;
+      } else if (distance >= 12) {
+        numIntermediatePoints = 1;
+      } else {
+        numIntermediatePoints = 0;
+      }
+    }
 
     for (let j = 1; j <= numIntermediatePoints; j++) {
       const ratio = j / (numIntermediatePoints + 1);
@@ -107,27 +346,37 @@ const generateIntermediatePoints = (
       const baseY = currentCrossing.y + (nextCrossing.y - currentCrossing.y) * ratio;
 
       let yVariation = 0;
+      const randomFactor = seedRandom(seed + i * 10 + j * 100 + wireIndex * 1000);
 
       if (wireIndex === 0) {
-        const bellShape = Math.sin(ratio * Math.PI) * params.amplitude * 0.6;
-        const microWave = Math.sin(ratio * Math.PI * 3) * params.amplitude * 0.2;
+        const bellShape = Math.sin(ratio * Math.PI) * params.amplitude * (0.4 + randomFactor * 0.2); // Réduit l'amplitude
+        const microWave = Math.sin(ratio * Math.PI * 2 + seed) * params.amplitude * 0.1; // Moins de micro-ondulations
         yVariation = bellShape + microWave;
 
         if (j === Math.floor(numIntermediatePoints / 2)) {
-          yVariation *= Math.sin(i * 1.5) > 0 ? 1.3 : -1.2;
+          const extremeVariation = seedRandom(seed + i * 50 + 300);
+          yVariation *=
+            extremeVariation > 0.5 ? 1.1 + randomFactor * 0.2 : -(1.1 + randomFactor * 0.2); // Moins extrême
         }
       } else {
-        const gentleWave = Math.sin(ratio * Math.PI * 1.3) * params.amplitude * 0.5;
-        const subWave = Math.cos(ratio * Math.PI * 2) * params.amplitude * 0.3;
+        const gentleWave =
+          Math.sin(ratio * Math.PI * 1.2 + seed * 0.5) *
+          params.amplitude *
+          (0.4 + randomFactor * 0.1); // Plus doux
+        const subWave = Math.cos(ratio * Math.PI * 1.5 + seed) * params.amplitude * 0.15; // Moins d'ondulations
         yVariation = -(gentleWave + subWave);
 
         if (j === Math.floor(numIntermediatePoints * 0.6)) {
-          yVariation *= Math.cos(i * 1.8) > 0 ? 1.2 : -1.1;
+          const extremeVariation = seedRandom(seed + i * 50 + 400);
+          yVariation *=
+            extremeVariation > 0.5 ? 1.1 + randomFactor * 0.1 : -(1.05 + randomFactor * 0.1); // Plus subtil
         }
       }
 
       const asymmetryFactor =
-        wireIndex === 0 ? 1 + params.asymmetry * 0.3 : 1 - params.asymmetry * 0.3;
+        wireIndex === 0
+          ? 1 + params.asymmetry * (0.2 + randomFactor * 0.1)
+          : 1 - params.asymmetry * (0.2 + randomFactor * 0.1); // Moins d'asymétrie
       yVariation *= asymmetryFactor;
 
       const finalY = Math.max(20, Math.min(80, baseY + yVariation));
@@ -165,6 +414,13 @@ const generateSmoothCurveThroughPoints = (
     return path;
   }
 
+  const seedRandom = (seedValue: number) => {
+    const x = Math.sin(seedValue) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const seed = params.seed || 0;
+
   for (let i = 0; i < points.length - 1; i++) {
     const current = points[i];
     const next = points[i + 1];
@@ -180,17 +436,21 @@ const generateSmoothCurveThroughPoints = (
     const nextTangentX = (following.x - current.x) / 2;
     const nextTangentY = (following.y - current.y) / 2;
 
-    const controlDistance = distance * 0.4 * params.smoothing;
+    const randomVariation = seedRandom(seed + i * 25 + 500);
+    const controlDistance = distance * (0.5 * params.smoothing + randomVariation * 0.05); // Plus de contrôle, moins de variation
 
     const currentLength =
       Math.sqrt(currentTangentX * currentTangentX + currentTangentY * currentTangentY) || 1;
     const nextLength = Math.sqrt(nextTangentX * nextTangentX + nextTangentY * nextTangentY) || 1;
 
     const cp1x = current.x + (currentTangentX / currentLength) * controlDistance;
-    const cp1y = current.y + (currentTangentY / currentLength) * controlDistance * 0.8;
+    const cp1y =
+      current.y +
+      (currentTangentY / currentLength) * controlDistance * (0.9 + randomVariation * 0.1); // Moins de variation Y
 
     const cp2x = next.x - (nextTangentX / nextLength) * controlDistance;
-    const cp2y = next.y - (nextTangentY / nextLength) * controlDistance * 0.8;
+    const cp2y =
+      next.y - (nextTangentY / nextLength) * controlDistance * (0.9 + randomVariation * 0.1);
 
     path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
   }
@@ -204,15 +464,22 @@ export const generateGarlandSystem = (
   customParams?: Partial<CurveParameters>,
 ): GarlandSystemData => {
   const defaultParams: CurveParameters = {
-    amplitude: 12,
-    smoothing: 0.9,
-    complexity: 0.6,
-    asymmetry: 0.4,
-    extremeVariation: 8,
+    amplitude: 10, // Augmenté légèrement pour plus d'expression
+    smoothing: 0.95, // Gardé pour la fluidité
+    complexity: 0.5, // Augmenté un peu
+    asymmetry: 0.4, // Augmenté pour plus de caractère
+    extremeVariation: 5, // Augmenté légèrement
+    seed: 0,
   };
 
-  const params = { ...defaultParams, ...customParams };
-  const crossingPoints = generateStableCrossingPoints(width);
+  // Créer un seed unique basé sur les paramètres d'entrée
+  const uniqueHash = createGarlandHash(cardPoints, width, customParams);
+
+  // Utiliser le seed fourni ou le hash généré
+  const finalSeed = customParams?.seed !== undefined ? customParams.seed : uniqueHash;
+
+  const params = { ...defaultParams, ...customParams, seed: finalSeed };
+  const crossingPoints = generateStableCrossingPoints(width, cardPoints, params.seed);
 
   if (crossingPoints.length === 0) {
     return {
@@ -226,11 +493,21 @@ export const generateGarlandSystem = (
     };
   }
 
+  const seedRandom = (seedValue: number) => {
+    const x = Math.sin(seedValue) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const seed = params.seed || 0;
   const startY = crossingPoints[0]?.y || 50;
   const endY = crossingPoints[crossingPoints.length - 1]?.y || 50;
 
-  const startPoint = { x: -20, y: startY };
-  const endPoint = { x: 120, y: endY };
+  // Ajouter de la variation aux points de début et fin
+  const startVariation = seedRandom(seed + 600) * 6 - 3;
+  const endVariation = seedRandom(seed + 700) * 6 - 3;
+
+  const startPoint = { x: -20, y: Math.max(30, Math.min(70, startY + startVariation)) };
+  const endPoint = { x: 120, y: Math.max(30, Math.min(70, endY + endVariation)) };
 
   const allCrossingPoints = [
     { x: startPoint.x, y: startPoint.y, index: -1 },
@@ -238,8 +515,8 @@ export const generateGarlandSystem = (
     { x: endPoint.x, y: endPoint.y, index: 999 },
   ];
 
-  const curve1Points = generateIntermediatePoints(allCrossingPoints, 0, params);
-  const curve2Points = generateIntermediatePoints(allCrossingPoints, 1, params);
+  const curve1Points = generateIntermediatePoints(allCrossingPoints, 0, params, width);
+  const curve2Points = generateIntermediatePoints(allCrossingPoints, 1, params, width);
 
   const curve1 = generateSmoothCurveThroughPoints(curve1Points, params);
   const curve2 = generateSmoothCurveThroughPoints(curve2Points, params);
@@ -261,7 +538,13 @@ export const generateGarlandSystem = (
   };
 };
 
-export const getCardYPosition = (garlandData: CurveData, cardX: number): number => {
+export interface CurveData {
+  crossingPoints: { x: number; y: number; index: number }[];
+  cardPositions: { x: number; y: number; cardIndex?: number }[];
+  amplitude: { min: number; max: number };
+}
+
+export const getCardYPosition = (garlandData: GarlandSystemData, cardX: number): number => {
   if (garlandData.crossingPoints.length === 0) return 50;
 
   const nearestCrossing = garlandData.crossingPoints.reduce((prev, curr) =>

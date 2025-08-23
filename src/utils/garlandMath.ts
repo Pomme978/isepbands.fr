@@ -1,4 +1,4 @@
-// src/components/board/utils/garlandMath.ts
+// src/components/team/utils/garlandMath.ts
 
 /**
  * Calcule le nombre de cartes par ligne selon la largeur d'écran

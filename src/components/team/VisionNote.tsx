@@ -1,9 +1,16 @@
 // components/VisionNote.tsx
 import React from 'react';
+import Image from 'next/image';
+import pinIcon from '@/assets/svg/pin.svg';
 
 export const VisionNote: React.FC = () => {
   return (
     <div className="relative max-w-md mx-auto">
+      {/* Pin */}
+      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20">
+        <Image src={pinIcon} alt="Pin" width={34} height={42} className="drop-shadow-md" />
+      </div>
+
       {/* Post-it Note */}
       <div className="bg-yellow-200 p-6 shadow-lg transform rotate-2 hover:rotate-1 transition-transform duration-300">
         {/* Note header */}
@@ -21,9 +28,6 @@ export const VisionNote: React.FC = () => {
           <p>🌟 Faire rayonner l&#39;ISEP par la musique</p>
           <p className="text-center font-bold mt-4 text-yellow-800">#IsepBands2026</p>
         </div>
-
-        {/* Tape effect */}
-        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-16 h-6 bg-white/80 rounded shadow-sm"></div>
 
         {/* Paper texture lines */}
         <div className="absolute inset-0 pointer-events-none opacity-20">

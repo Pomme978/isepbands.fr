@@ -29,7 +29,7 @@ const Crowd: React.FC<CrowdProps> = ({ className = '', crowdHeight = 200 }) => {
 
   return (
     <div
-      className={`absolute -bottom-5 left-0 w-screen opacity-40 blur-xs z-20 ${className}`}
+      className={`absolute bottom-0 left-0 w-screen opacity-40 overflow-hidden blur-xs z-10 ${className}`}
       style={{
         height: `${crowdHeight}px`,
         visibility: mounted ? 'visible' : 'hidden', // Prevent flash during hydration

@@ -1,4 +1,4 @@
-// src/components/board/hooks/useGarlandLayout.ts
+// src/components/team/hooks/useGarlandLayout.ts
 'use client';
 
 import { useMemo } from 'react';

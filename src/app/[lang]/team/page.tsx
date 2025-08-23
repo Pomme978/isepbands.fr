@@ -1,7 +1,10 @@
 // page.tsx
 import React from 'react';
-import { VisionNote } from '@/components/board/VisionNote';
-import { Garland } from '@/components/board/Garland';
+import { VisionNote } from '@/components/team/VisionNote';
+import { Garland } from '@/components/team/Garland';
+import DecoratedText from '@/components/team/DecoratedText';
+import GroupPhoto from '@/components/team/GroupPhoto';
+import wallpaperImage from '../../../../public/placeholder/wallpaper.jpeg';
 
 interface User {
   id: string;
@@ -21,9 +24,6 @@ interface UserRole {
 }
 
 const Page = () => {
-  // TODO: Replace with actual API call
-  // const { users, loading } = useUsers();
-
   // PLACEHOLDER DATA - Remove when backend is ready
   const placeholderUsers: User[] = [
     {
@@ -101,7 +101,7 @@ const Page = () => {
 
     // Other members section
     { role: 'secretary_general', displayName: 'SECRÉTAIRE GÉNÉRALE', section: 'other' },
-    { role: 'treasurer', displayName: 'TRÉSORIÈRE', section: 'other' },
+    { role: 'treasurer', displayName: 'TRÉSORIER', section: 'other' },
 
     // Pole section
     { role: 'pole_bands', displayName: 'PÔLE BANDS', section: 'pole', variant: 'pole' },
@@ -109,53 +109,65 @@ const Page = () => {
     { role: 'pole_creation', displayName: 'PÔLE CRÉA', section: 'pole', variant: 'pole' },
   ];
 
-  // Function to get user by role
-  const getUserByRole = (role: string): User | null => {
-    return placeholderUsers.find((user) => user.role === role) || null;
-    // TODO: Replace with: return users?.find(user => user.role === role) || null;
-  };
-
   // Group roles by section
   const executiveRoles = roleMapping.filter((r) => r.section === 'executive');
   const otherRoles = roleMapping.filter((r) => r.section === 'other');
   const poleRoles = roleMapping.filter((r) => r.section === 'pole');
 
   return (
-    <div className="min-h-screen bg-[#2E135F] relative overflow-hidden">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="text-center py-12 relative z-10">
-        <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 tracking-wider">LE BUREAU</h1>
-        <p className="text-2xl md:text-3xl text-white/80 font-light">2025 - 2026</p>
-      </div>
-
-      {/* Photo de groupe - TODO: Add actual group photo */}
-      <div className="flex justify-center mb-16 px-4">
-        <div className="relative">
-          <div className="w-full max-w-4xl h-64 bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl flex items-center justify-center">
-            <p className="text-white/70 text-lg">Photo de groupe à venir</p>
-          </div>
+      <DecoratedText lightType="yellow" garlandWidth={1000} textClassName="">
+        <div className="text-center py-12 relative z-10">
+          <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 tracking-wider text-glow text-glow-[#F4E0FF]">
+            LE BUREAU
+          </h1>
+          <h2 className="text-5xl md:text-3xl text-white font-bold text-glow text-glow-[#F4E0FF]">
+            2025 - 2026
+          </h2>
         </div>
-      </div>
+      </DecoratedText>
+
+      {/* Group Photo - Using imported image */}
+      <GroupPhoto
+        src={wallpaperImage}
+        alt="Bureau ISEP 2025-2026"
+        scotchCount={2}
+        className="mt-10"
+      />
+
       {/* Membres exécutifs */}
-      <Garland users={placeholderUsers} roleInfos={executiveRoles} lightType="yellow" />
+      <Garland
+        users={placeholderUsers}
+        roleInfos={executiveRoles}
+        lightType="yellow"
+        className="mb-0"
+      />
 
       {/* Autres membres */}
-      <Garland users={placeholderUsers} roleInfos={otherRoles} lightType="yellow" />
+      <Garland
+        users={placeholderUsers}
+        roleInfos={otherRoles}
+        lightType="yellow"
+        className="mb-100"
+      />
 
       {/* Section "Sans oublier nos responsables pôles" */}
-      <div className="text-center mb-8">
-        <div className="inline-block bg-white/10 backdrop-blur-sm rounded-full px-6 py-3">
-          <p className="text-white text-lg font-medium">→ Sans oublier nos responsables pôles ←</p>
-        </div>
+      <div className="text-center mb-8 w-full text-4xl md:text-3xl text-white font-bold text-glow text-glow-[#F4E0FF]">
+        Sans oublier nos responsables pôles
       </div>
 
       {/* Pôles */}
-      <Garland users={placeholderUsers} roleInfos={poleRoles} lightType="blue" className="mb-20" />
+      <Garland users={placeholderUsers} roleInfos={poleRoles} lightType="blue" className="mb-100" />
 
       {/* Vision Note */}
       <div className="flex justify-center mb-20 px-4">
         <VisionNote />
       </div>
+
+      <h5 className="text-xs text-white/50 relative max-w-7xl flex justify-center md:justify-end mx-auto py-4">
+        Design de page réalisé par Sarah LEVY
+      </h5>
     </div>
   );
 };

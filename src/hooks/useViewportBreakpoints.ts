@@ -1,4 +1,4 @@
-// src/components/board/hooks/useViewportBreakpoints.ts
+// src/components/team/hooks/useViewportBreakpoints.ts
 'use client';
 
 import { useState, useEffect } from 'react';

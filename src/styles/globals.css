@@ -56,7 +56,7 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.559 0.238 307.331);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.559 0.238 307.331);
+  --secondary: oklch(0.28 0.125 292.671);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -129,4 +129,72 @@
   h3 {
     @apply font-outfit;
   }
+}
+
+/* Base neon glow utility that accepts any color via CSS custom properties */
+.text-glow {
+  text-shadow:
+    0 0 3px var(--glow-color, rgba(255, 255, 255, 0.7)),
+    0 0 6px var(--glow-color, rgba(255, 255, 255, 0.5)),
+    0 0 9px var(--glow-color, rgba(255, 255, 255, 0.3)),
+    0 0 12px var(--glow-color, rgba(255, 255, 255, 0.2));
+}
+
+.text-glow-softer {
+  text-shadow:
+    0 0 2px var(--glow-color, rgba(255, 255, 255, 0.6)),
+    0 0 4px var(--glow-color, rgba(255, 255, 255, 0.4)),
+    0 0 6px var(--glow-color, rgba(255, 255, 255, 0.2)),
+    0 0 8px var(--glow-color, rgba(255, 255, 255, 0.1));
+}
+
+.text-glow-intense {
+  text-shadow:
+    0 0 5px var(--glow-color, rgba(255, 255, 255, 0.8)),
+    0 0 10px var(--glow-color, rgba(255, 255, 255, 0.6)),
+    0 0 15px var(--glow-color, rgba(255, 255, 255, 0.4)),
+    0 0 20px var(--glow-color, rgba(255, 255, 255, 0.3)),
+    0 0 30px var(--glow-color, rgba(255, 255, 255, 0.2));
+}
+
+/* Predefined color variants for common use */
+.text-glow-white {
+  --glow-color: rgba(255, 255, 255, 0.8);
+}
+
+.text-glow-blue {
+  --glow-color: rgba(59, 130, 246, 0.8);
+}
+
+.text-glow-purple {
+  --glow-color: rgba(147, 51, 234, 0.8);
+}
+
+.text-glow-pink {
+  --glow-color: rgba(236, 72, 153, 0.8);
+}
+
+.text-glow-green {
+  --glow-color: rgba(34, 197, 94, 0.8);
+}
+
+.text-glow-yellow {
+  --glow-color: rgba(234, 179, 8, 0.8);
+}
+
+.text-glow-red {
+  --glow-color: rgba(239, 68, 68, 0.8);
+}
+
+.text-glow-cyan {
+  --glow-color: rgba(6, 182, 212, 0.8);
+}
+
+/* CSS variables for primary and secondary colors */
+.text-glow-primary {
+  --glow-color: var(--color-primary, rgba(59, 130, 246, 0.8));
+}
+
+.text-glow-secondary {
+  --glow-color: var(--color-secondary, rgba(147, 51, 234, 0.8));
 }

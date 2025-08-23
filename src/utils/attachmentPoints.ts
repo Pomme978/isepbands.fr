@@ -1,4 +1,4 @@
-// src/components/board/utils/attachmentPoints.ts
+// src/components/team/utils/attachmentPoints.ts
 
 import { getCardPositionsForRow, getTotalRows } from './garlandMath';
 

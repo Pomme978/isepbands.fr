@@ -129,7 +129,7 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
     items: [
       {
         name: 'Board Members',
-        href: '/admin/board',
+        href: '/admin/team',
         icon: Crown,
       },
       {
