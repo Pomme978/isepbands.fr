@@ -36,17 +36,7 @@ export function PrivacySettings() {
             <Switch id="profile-public" defaultChecked />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="show-instruments" className="text-base font-medium">
-                Afficher mes instruments
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Les autres membres peuvent voir vos instruments
-              </p>
-            </div>
-            <Switch id="show-instruments" defaultChecked />
-          </div>
+          {/* Removed "Afficher mes instruments" */}
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -72,38 +62,7 @@ export function PrivacySettings() {
         </CardContent>
       </Card>
 
-      {/* Contact et recrutement */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Contact et recrutement</CardTitle>
-          <CardDescription>Gérez comment les autres peuvent vous contacter</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="allow-contact" className="text-base font-medium">
-                Autoriser les messages
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Les autres membres peuvent vous envoyer des messages
-              </p>
-            </div>
-            <Switch id="allow-contact" defaultChecked />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="band-invitations" className="text-base font-medium">
-                Invitations de groupes
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Les groupes peuvent vous inviter à les rejoindre
-              </p>
-            </div>
-            <Switch id="band-invitations" defaultChecked />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Removed "Contact et recrutement" section entirely */}
 
       {/* Gestion des données */}
       <Card>
@@ -140,20 +99,19 @@ export function PrivacySettings() {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              La suppression de votre compte est définitive et ne peut pas être annulée. Toutes vos
-              données seront perdues.
+              La suppression de votre compte est définitive et ne peut pas être annulée. Vous serez
+              retiré·e de l’association et de tous vos rôles, et l’ensemble de votre historique
+              associé (groupes, activités, événements) sera effacé, ainsi que vos données.
             </AlertDescription>
           </Alert>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">
-              Que se passe-t-il quand vous supprimez votre compte :
-            </p>
+            <p className="text-sm font-medium">Concrètement, la suppression entraîne :</p>
             <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-              <li>• Votre profil et vos informations sont supprimés</li>
-              <li>• Vous êtes retiré de tous vos groupes</li>
-              <li>• Votre historique d&#39;événements est effacé</li>
-              <li>• Cette action est irréversible</li>
+              <li>• Suppression de votre profil et de vos informations</li>
+              <li>• Retrait de l’association et de tous les rôles/adhésions</li>
+              <li>• Effacement de l’historique lié (groupes, activités, événements)</li>
+              <li>• Action irréversible</li>
             </ul>
           </div>
 

@@ -2,9 +2,7 @@
 
 import { ProfileSettings } from './ProfileSettings';
 import { MusicSettings } from './MusicSettings';
-import { NotificationsSettings } from './NotificationsSettings';
 import { PrivacySettings } from './PrivacySettings';
-import { PreferencesSettings } from './PreferencesSettings';
 
 interface SettingsContentProps {
   activeSection: string;
@@ -19,14 +17,8 @@ export function SettingsContent({ activeSection }: SettingsContentProps) {
       case 'music':
         return <MusicSettings />;
 
-      case 'notifications':
-        return <NotificationsSettings />;
-
       case 'privacy':
         return <PrivacySettings />;
-
-      case 'preferences':
-        return <PreferencesSettings />;
 
       default:
         return <ProfileSettings />;

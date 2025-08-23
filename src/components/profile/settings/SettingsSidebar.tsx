@@ -27,16 +27,6 @@ const settingsItems: SettingsItem[] = [
     icon: Music,
   },
   {
-    id: 'notifications',
-    title: 'Notifications',
-    icon: Bell,
-  },
-  {
-    id: 'preferences',
-    title: 'Préférences',
-    icon: Settings,
-  },
-  {
     id: 'privacy',
     title: 'Confidentialité',
     icon: Shield,
@@ -55,10 +45,11 @@ export function SettingsSidebar({ activeSection, onSectionChange }: SettingsSide
           {settingsItems.map((item) => (
             <Button
               key={item.id}
-              variant={activeSection === item.id ? 'secondary' : 'ghost'}
+              variant={activeSection === item.id ? 'primary' : 'ghost'}
               className={cn(
-                'w-full justify-start h-12',
-                activeSection === item.id && 'bg-secondary text-secondary-foreground',
+                'w-full justify-start h-12 hover:bg-primary/50 hover:text-white',
+                activeSection === item.id &&
+                  'bg-primary text-primary-foreground hover:bg-primary/80',
               )}
               onClick={() => onSectionChange(item.id)}
             >
