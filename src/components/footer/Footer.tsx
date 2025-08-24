@@ -12,7 +12,7 @@ const footerColumns = [
     title: 'Ressources',
     links: [
       { label: 'Accueil', href: '/' },
-      { label: "L'association", href: '/asso' },
+      { label: "L'association", href: '/club' },
       { label: 'Bands', href: '/bands' },
       { label: 'Les Evenements', href: '/events' },
       { label: 'Le Bureau', href: '/team' },

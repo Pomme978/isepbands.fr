@@ -30,7 +30,7 @@ const fr = {
       password: 'Mot de passe',
       noAccount: "Tu n'es pas inscris ?",
       alreadyAccount: 'Déjà inscrit ?',
-      register: "Rejoint l'asso",
+      register: "Rejoint l'club",
       forgot: 'Mot de passe oublié ?',
       errors: {
         emailVerification: "Le mail n'a pas été vérifié.",

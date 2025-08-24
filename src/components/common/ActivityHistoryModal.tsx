@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { ActivityType } from '@/types/activity';
+import type { ActivityType } from '@/types/activity';
 import { RecentActivity } from '@/components/home/RecentActivity';
 import { ArrowLeft, Search, Filter, X } from 'lucide-react';
 import {
@@ -29,6 +29,7 @@ interface ActivityHistoryModalProps {
   activities: ActivityType[];
   isOpen: boolean;
   onClose: () => void;
+  title?: string;
 }
 
 type FilterPeriod = 'all' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'lastYear' | 'custom';
@@ -38,14 +39,13 @@ export const ActivityHistoryModal = ({
   activities,
   isOpen,
   onClose,
+  title = 'Historique complet des activités',
 }: ActivityHistoryModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [periodFilter, setPeriodFilter] = useState<FilterPeriod>('all');
   const [typeFilter, setTypeFilter] = useState<ActivityTypeFilter>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-
-  // Filtres avancés
   const [showFilters, setShowFilters] = useState(false);
 
   const filteredActivities = useMemo(() => {
@@ -110,7 +110,6 @@ export const ActivityHistoryModal = ({
       );
     }
 
-    // Tri par date décroissante (plus récent en premier)
     return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }, [activities, searchQuery, periodFilter, typeFilter, customStartDate, customEndDate]);
 
@@ -122,7 +121,6 @@ export const ActivityHistoryModal = ({
     setCustomEndDate('');
   };
 
-  // Regroupement par mois pour l'affichage
   const activitiesByMonth = useMemo(() => {
     const groups: { [key: string]: ActivityType[] } = {};
 
@@ -142,19 +140,15 @@ export const ActivityHistoryModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 sm:rounded-lg">
-        {/* Header - Sticky sur mobile */}
-        <DialogHeader className="sticky top-0 bg-white border-b px-6 py-4 z-10">
+      <DialogContent className="max-w-7xl max-h-[95vh] h-[95vh] p-0 sm:rounded-lg flex flex-col z-100">
+        <DialogHeader className="flex-shrink-0 bg-white border-b px-6 py-4 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {/* Bouton retour pour mobile */}
               <Button variant="ghost" size="sm" onClick={onClose} className="md:hidden p-2">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <DialogTitle className="text-xl font-semibold">
-                  Historique complet des activités
-                </DialogTitle>
+                <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
                 <p className="text-sm text-gray-500 mt-1">
                   {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
                   trouvée{filteredActivities.length !== 1 ? 's' : ''}
@@ -162,13 +156,11 @@ export const ActivityHistoryModal = ({
               </div>
             </div>
 
-            {/* Bouton fermer pour desktop */}
             <Button variant="ghost" size="sm" onClick={onClose} className="hidden md:flex p-2">
               <X className="h-5 w-5" />
             </Button>
           </div>
 
-          {/* Barre de recherche */}
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -179,7 +171,6 @@ export const ActivityHistoryModal = ({
             />
           </div>
 
-          {/* Filtres */}
           <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <div className="flex-1">
               <Select
@@ -231,7 +222,6 @@ export const ActivityHistoryModal = ({
             </Button>
           </div>
 
-          {/* Filtres personnalisés */}
           {showFilters && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium text-sm mb-3">Filtres avancés</h4>
@@ -268,8 +258,7 @@ export const ActivityHistoryModal = ({
           )}
         </DialogHeader>
 
-        {/* Contenu scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
           {activitiesByMonth.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 mb-4">Aucune activité trouvée avec ces filtres</p>
@@ -281,15 +270,12 @@ export const ActivityHistoryModal = ({
             <div className="space-y-8">
               {activitiesByMonth.map(({ month, activities }) => (
                 <div key={month}>
-                  {/* Séparateur de mois */}
                   <div className="flex items-center mb-6">
                     <div className="flex-1 border-t border-gray-200"></div>
                     <span className="px-4 text-sm font-medium text-gray-500 bg-white">{month}</span>
                     <div className="flex-1 border-t border-gray-200"></div>
                   </div>
-
-                  {/* Activités du mois */}
-                  <RecentActivity activities={activities} />
+                  <RecentActivity activities={activities} showHistoryButton={false} />
                 </div>
               ))}
             </div>

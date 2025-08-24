@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 
 const links = [
   { label: 'Accueil', href: '/' },
-  { label: "L'Association", href: '/asso' },
+  { label: "L'Association", href: '/club' },
   { label: 'Bands', href: '/bands' },
   { label: 'Les Événements', href: '/events' },
   { label: 'Le Bureau', href: '/team' },

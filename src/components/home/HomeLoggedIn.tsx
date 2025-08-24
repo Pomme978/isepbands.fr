@@ -7,7 +7,9 @@ import { useI18n } from '@/locales/client';
 import LangLink from '@/components/common/LangLink';
 import { User } from 'next-auth';
 import { RecentActivity } from '@/components/home/RecentActivity';
-import { ActivityType } from '@/types/activity';
+import type { ActivityType } from '@/types/activity';
+import { useActivityHistory } from '@/hooks/useActivityHistory';
+import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 
 interface HomeLoggedInProps {
   user: User;
@@ -20,24 +22,23 @@ export const mockActivities: ActivityType[] = [
   // Message système - nouveau membre
   {
     id: '1',
-    type: 'new_member',
-    timestamp: new Date('2025-10-16'),
-    description: 'Hier nous avons tondu le gazon de NDL ! C\'était incroyable, merci isep bandssss',
+    type: 'post',
+    timestamp: new Date('2025-08-16'),
+    description: "Hier nous avons tondu le gazon de NDL ! C'était incroyable, merci isep bandssss",
     user: {
       name: 'Sarah LÉVY',
       avatar: '/avatars/sarah.jpg',
-      role: 'Vice Présidente'
+      role: 'Vice Présidente',
     },
-    isSystemMessage: true
   },
 
   // Message système - nouveau membre
   {
     id: '2',
     type: 'new_member',
-    timestamp: new Date('2025-10-16T12:30:00'),
+    timestamp: new Date('2025-08-16T12:30:00'),
     description: 'Solène DIE vient de rejoindre ISEP BANDS',
-    isSystemMessage: true
+    isSystemMessage: true,
   },
 
   // Post d'un membre du bureau avec images
@@ -47,14 +48,11 @@ export const mockActivities: ActivityType[] = [
     user: {
       name: 'Sarah LÉVY',
       avatar: '/avatars/sarah.jpg',
-      role: 'Vice Présidente'
+      role: 'Vice Présidente',
     },
-    timestamp: new Date('2025-10-16T22:30:00'),
-    description: 'Mangez, c\'est bon de manger.',
-    images: [
-      '/posts/food1.jpg',
-      '/posts/food2.jpg'
-    ]
+    timestamp: new Date('2025-08-16T22:30:00'),
+    description: "Mangez, c'est bon de manger.",
+    images: ['/posts/food1.jpg', '/posts/food2.jpg'],
   },
 
   // Message système - nouveau groupe créé
@@ -64,7 +62,7 @@ export const mockActivities: ActivityType[] = [
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
     description: 'Un nouveau groupe "Jazz Ensemble" a été créé',
     groupName: 'Jazz Ensemble',
-    isSystemMessage: true
+    isSystemMessage: true,
   },
 
   // Post du président
@@ -74,10 +72,11 @@ export const mockActivities: ActivityType[] = [
     user: {
       name: 'Julie LAMBERT',
       avatar: '/avatars/julie.jpg',
-      role: 'Présidente'
+      role: 'Présidente',
     },
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    description: 'Rappel important : les répétitions se terminent à 22h maximum. Merci de respecter les horaires pour les voisins !'
+    description:
+      'Rappel important : les répétitions se terminent à 22h maximum. Merci de respecter les horaires pour les voisins !',
   },
 
   // Message système - nouvel événement
@@ -86,10 +85,9 @@ export const mockActivities: ActivityType[] = [
     type: 'event',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
     description: 'Un nouvel événement "Concert de Fin d\'Année 2024" a été programmé',
-    eventTitle: 'Concert de Fin d\'Année 2024',
-    isSystemMessage: true
+    eventTitle: "Concert de Fin d'Année 2024",
+    isSystemMessage: true,
   },
-
 
   // Post du trésorier
   {
@@ -98,10 +96,11 @@ export const mockActivities: ActivityType[] = [
     user: {
       name: 'Alex MARTIN',
       avatar: '/avatars/alex.jpg',
-      role: 'Trésorier'
+      role: 'Trésorier',
     },
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-    description: 'Les cotisations pour le semestre sont maintenant ouvertes. N\'oubliez pas de payer avant la fin du mois pour garder votre accès aux studios.'
+    description:
+      "Les cotisations pour le semestre sont maintenant ouvertes. N'oubliez pas de payer avant la fin du mois pour garder votre accès aux studios.",
   },
 
   // Message système - nouveau membre
@@ -109,9 +108,9 @@ export const mockActivities: ActivityType[] = [
     id: '10',
     type: 'new_member',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-    description: 'Thomas BERNARD a rejoint l\'association',
-    isSystemMessage: true
-  }
+    description: "Thomas BERNARD a rejoint l'association",
+    isSystemMessage: true,
+  },
 ];
 
 // Les rôles possibles pour les membres du bureau qui peuvent poster
@@ -122,11 +121,17 @@ export const BUREAU_ROLES = [
   'Trésorier',
   'Responsable Événements',
   'Responsable Communication',
-  'Responsable Matériel'
+  'Responsable Matériel',
 ];
 
 export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLoggedInProps) {
   const t = useI18n();
+
+  // Hook pour gérer l'historique des activités
+  const activityHistory = useActivityHistory({
+    activities: mockActivities,
+    title: 'Historique des activités - Accueil',
+  });
 
   return (
     <div className="min-h-screen ">
@@ -147,9 +152,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                 <div className="flex items-center space-x-4 mb-6">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={user.image || '/avatars/default.jpg'} />
-                    <AvatarFallback className="">
-                      {user.name?.charAt(0) || 'S'}
-                    </AvatarFallback>
+                    <AvatarFallback className="">{user.name?.charAt(0) || 'S'}</AvatarFallback>
                   </Avatar>
                   <div>
                     <h3 className="font-semibold text-lg">{user.name || 'Sarah LÉVY'}</h3>
@@ -217,11 +220,19 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
             <Card>
               <CardContent className="p-6">
                 <h4 className="font-semibold text-gray-900 mb-6">Dernières Activités</h4>
-                <RecentActivity activities={mockActivities} />
+                <RecentActivity
+                  activities={mockActivities}
+                  onShowHistory={activityHistory.openHistory}
+                  showHistoryButton={true}
+                  maxItems={6}
+                />
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Modal d'historique */}
+        <ActivityHistoryModal {...activityHistory.modalProps} />
       </div>
     </div>
   );
