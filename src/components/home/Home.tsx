@@ -19,7 +19,7 @@ export function Home({ lang }: HomeProps) {
 
   return (
     <>
-      <div className="relative bg-gray-100 w-full z-60">
+      <div className="relative bg-gray-100 w-full">
         <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center items-center flex-col">
           <div className="flex items-center justify-center flex-col">
             {/* Left floating guitar */}
