@@ -3,6 +3,8 @@ export type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
 export interface RegistrationInstrument {
   instrumentId: number;
   skillLevel: SkillLevel;
+  yearsPlaying?: number;
+  isPrimary: boolean;
 }
 
 export interface RegistrationData {
@@ -17,6 +19,7 @@ export interface RegistrationData {
   motivation: string;
   experience: string;
   instruments: RegistrationInstrument[];
+  preferredGenres: string[];
   profilePhoto: File | null;
 }
 

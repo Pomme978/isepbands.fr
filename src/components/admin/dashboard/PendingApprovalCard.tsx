@@ -1,6 +1,7 @@
 'use client';
 
 import { Clock, Eye, LucideIcon } from 'lucide-react';
+import Avatar from '@/components/common/Avatar';
 
 interface PendingItem {
   id: string;
@@ -62,11 +63,12 @@ export default function PendingApprovalCard({
                 className="flex items-center justify-between p-4 bg-accent/30 rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">
-                      {item.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  <Avatar 
+                    src={item.avatar}
+                    name={item.name}
+                    alt={item.name}
+                    size="md"
+                  />
                   <div>
                     <h4 className="font-medium text-foreground">{item.name}</h4>
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">

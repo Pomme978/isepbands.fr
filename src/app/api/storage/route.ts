@@ -61,10 +61,25 @@ export async function POST(req: NextRequest) {
   try {
     const dbFile = await uploadToStorage(file, Number(sessionUser.id));
     return NextResponse.json({ success: true, file: dbFile });
-  } catch {
+  } catch (error) {
+    console.error('Storage upload error:', error);
     const lang = detectLangFromRequest(req);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Provide more specific error messages based on the error type
+    let userMessage;
+    if (errorMessage.includes('ENOENT') || errorMessage.includes('EACCES')) {
+      userMessage = 'Erreur de permissions fichier';
+    } else if (errorMessage.includes('ENOSPC')) {
+      userMessage = 'Espace disque insuffisant';
+    } else if (errorMessage.includes('EMFILE') || errorMessage.includes('ENFILE')) {
+      userMessage = 'Trop de fichiers ouverts';
+    } else {
+      userMessage = await getErrorMessage('unableToWrite', lang);
+    }
+    
     return NextResponse.json(
-      { error: await getErrorMessage('unableToWrite', lang) },
+      { error: userMessage, details: errorMessage },
       { status: 500 },
     );
   }
@@ -86,12 +101,38 @@ export async function DELETE(req: NextRequest) {
     const lang = detectLangFromRequest(req);
     return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
   }
-  const isOwner = sessionUser.id && file.userId && Number(sessionUser.id) === Number(file.userId);
-  if (!isOwner) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // Check ownership - user IDs are strings, not numbers
+  const isOwner = sessionUser.id && file.userId && sessionUser.id === file.userId;
+  
+  // Check admin status - multiple ways to be admin
+  const hasAdminRole = sessionUser.roles?.some((r: any) => 
+    ['president', 'vice_president', 'secretary', 'treasurer'].includes(r.role?.name)
+  );
+  const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot || hasAdminRole;
+  
+  console.log('DELETE request:', {
+    userId: sessionUser.id,
+    fileOwnerId: file.userId,
+    isOwner,
+    isAdmin,
+    isFullAccess: sessionUser.isFullAccess,
+    isRoot: sessionUser.isRoot,
+    hasAdminRole,
+    roles: sessionUser.roles?.map((r: any) => r.role?.name)
+  });
+  
+  if (!isOwner && !isAdmin) {
+    console.log('DELETE DENIED - Not owner or admin');
+    return NextResponse.json({ error: 'Forbidden - You do not have permission to delete this file' }, { status: 403 });
+  }
+  
   try {
+    console.log('Deleting file from storage:', id);
     await deleteFromStorage(id);
+    console.log('File deleted successfully:', id);
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Error deleting file:', error);
     const lang = detectLangFromRequest(req);
     return NextResponse.json(
       { error: await getErrorMessage('fileNotFound', lang) },
@@ -115,8 +156,15 @@ export async function PUT(req: NextRequest) {
     const lang = detectLangFromRequest(req);
     return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
   }
-  const isOwner = sessionUser.id && file.userId && Number(sessionUser.id) === Number(file.userId);
-  if (!isOwner) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // Check ownership - user IDs are strings, not numbers
+  const isOwner = sessionUser.id && file.userId && sessionUser.id === file.userId;
+  // Also allow admins to delete any file
+  const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot;
+  
+  if (!isOwner && !isAdmin) {
+    console.log('Access forbidden - Not owner or admin. User:', sessionUser.id, 'File owner:', file.userId);
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
   try {
     const data = await req.arrayBuffer();
     await updateStorageFile(id, data);

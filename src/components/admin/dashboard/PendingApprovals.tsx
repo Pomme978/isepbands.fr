@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PendingApprovalCard from './PendingApprovalCard';
 import ApprovalModal from './ApprovalModal';
 import { Users, Megaphone } from 'lucide-react';
@@ -55,8 +55,23 @@ interface PendingBand {
 
 type PendingItem = PendingUser | PendingBand;
 
-// Mock data - replace with actual API calls
-const PENDING_USERS: PendingUser[] = [
+// Real data fetching functions
+const fetchPendingUsers = async (): Promise<PendingUser[]> => {
+  try {
+    const response = await fetch('/api/admin/pending-users');
+    if (!response.ok) {
+      throw new Error('Failed to fetch pending users');
+    }
+    const data = await response.json();
+    return data.users || [];
+  } catch (error) {
+    console.error('Error fetching pending users:', error);
+    return [];
+  }
+};
+
+// Temporarily keep mock data for development
+const MOCK_PENDING_USERS: PendingUser[] = [
   {
     id: '1',
     type: 'user',
@@ -122,7 +137,8 @@ const PENDING_USERS: PendingUser[] = [
   },
 ];
 
-const PENDING_BANDS: PendingBand[] = [
+// Groups will be implemented later - return empty array for now
+const MOCK_PENDING_BANDS: PendingBand[] = [
   {
     id: '1',
     type: 'band',
@@ -167,8 +183,6 @@ const PENDING_BANDS: PendingBand[] = [
 ];
 
 interface PendingApprovalsProps {
-  pendingUsers?: PendingUser[];
-  pendingBands?: PendingBand[];
   onApproveUser?: (id: string) => void;
   onRejectUser?: (id: string, reason: string) => void;
   onApproveBand?: (id: string) => void;
@@ -176,8 +190,6 @@ interface PendingApprovalsProps {
 }
 
 export default function PendingApprovals({
-  pendingUsers = PENDING_USERS,
-  pendingBands = PENDING_BANDS,
   onApproveUser = (id) => console.log('Approve user:', id),
   onRejectUser = (id, reason) => console.log('Reject user:', id, 'Reason:', reason),
   onApproveBand = (id) => console.log('Approve band:', id),
@@ -185,6 +197,30 @@ export default function PendingApprovals({
 }: PendingApprovalsProps) {
   const [selectedItem, setSelectedItem] = useState<PendingItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [pendingBands, setPendingBands] = useState<PendingBand[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPendingItems = async () => {
+      setIsLoading(true);
+      try {
+        const users = await fetchPendingUsers();
+        setPendingUsers(users);
+        // Groups will be implemented later
+        setPendingBands([]);
+      } catch (error) {
+        console.error('Failed to load pending items:', error);
+        // Use empty array if API fails
+        setPendingUsers([]);
+        setPendingBands([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPendingItems();
+  }, []);
 
   const handleViewDetails = (item: PendingItem) => {
     setSelectedItem(item);
@@ -212,10 +248,29 @@ export default function PendingApprovals({
     }
   };
 
-  // Don't render if no pending approvals
-  if (pendingUsers.length === 0 && pendingBands.length === 0) {
-    return null;
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg p-6 animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg p-6 animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  // Always render the approval cards, even if empty
 
   // Transform data for the cards
   const userItems = pendingUsers.map((user) => {
@@ -226,6 +281,7 @@ export default function PendingApprovals({
       type: 'user' as const,
       email: `${promotion.split(',')[0]} - ${user.email}`, // Show promotion + email
       submittedAt: user.submittedAt,
+      avatar: user.profilePhoto,
     };
   });
 
@@ -241,36 +297,29 @@ export default function PendingApprovals({
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pending Users */}
-        {pendingUsers.length > 0 && (
-          <PendingApprovalCard
-            title="Nouveaux utilisateurs"
-            items={userItems}
-            onViewDetails={(item) => {
-              const user = pendingUsers.find((u) => u.id === item.id);
-              if (user) handleViewDetails(user);
-            }}
-            emptyMessage="Aucun utilisateur en attente"
-            icon={Users}
-            iconColor="text-blue-600"
-            iconBgColor="bg-blue-100"
-          />
-        )}
+        <PendingApprovalCard
+          title="Nouveaux utilisateurs"
+          items={userItems}
+          onViewDetails={(item) => {
+            const user = pendingUsers.find((u) => u.id === item.id);
+            if (user) handleViewDetails(user);
+          }}
+          emptyMessage="Aucun utilisateur en attente"
+          icon={Users}
+          iconColor="text-blue-600"
+          iconBgColor="bg-blue-100"
+        />
 
-        {/* Pending Bands */}
-        {pendingBands.length > 0 && (
-          <PendingApprovalCard
-            title="Nouveaux groupes"
-            items={bandItems}
-            onViewDetails={(item) => {
-              const band = pendingBands.find((b) => b.id === item.id);
-              if (band) handleViewDetails(band);
-            }}
-            emptyMessage="Aucun groupe en attente"
-            icon={Megaphone}
-            iconColor="text-purple-600"
-            iconBgColor="bg-purple-100"
-          />
-        )}
+        {/* Pending Bands - Placeholder for future implementation */}
+        <PendingApprovalCard
+          title="Nouveaux groupes"
+          items={[]} // Empty for now
+          onViewDetails={() => {}}
+          emptyMessage="Fonctionnalité sera implémentée prochainement"
+          icon={Megaphone}
+          iconColor="text-purple-600"
+          iconBgColor="bg-purple-100"
+        />
       </div>
 
       {/* Approval Modal */}

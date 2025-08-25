@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { loginSchema } from '@/validation/auth';
 import { useI18n } from '@/locales/client';
@@ -26,7 +26,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  const { signIn, loading, error } = useAuth();
+  const { signIn, loading, error, user } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user && !loading) {
+      router.push('/' + lang);
+    }
+  }, [user, loading, router, lang]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

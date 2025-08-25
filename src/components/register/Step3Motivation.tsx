@@ -39,35 +39,64 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
         if (validateAll()) onNext();
       }}
     >
-      <div className="space-y-1">
-        <Label htmlFor="motivation">Motivation</Label>
-        <Textarea
-          id="motivation"
-          value={data.motivation}
-          onChange={(e) => {
-            onChange({ motivation: e.target.value });
-            setMotivationError(validateMotivation(e.target.value));
-          }}
-        />
-        {motivationError && <div className="text-red-500 text-xs mt-1">{motivationError}</div>}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Motivation et expérience</h3>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Pourquoi souhaitez-vous rejoindre ISEP Bands ? *
+            </label>
+            <textarea
+              id="motivation"
+              placeholder="Parlez-nous de votre motivation à rejoindre notre association musicale. Qu'est-ce qui vous attire dans l'expérience musicale collective ? Quels sont vos objectifs ?"
+              value={data.motivation}
+              onChange={(e) => {
+                onChange({ motivation: e.target.value });
+                setMotivationError(validateMotivation(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+              rows={5}
+              required
+            />
+            {motivationError && <div className="text-red-500 text-xs mt-1">{motivationError}</div>}
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Décrivez votre expérience musicale *
+            </label>
+            <textarea
+              id="experience"
+              placeholder="Racontez-nous votre parcours musical : depuis quand jouez-vous ? Avez-vous déjà joué en groupe ? Quels styles de musique pratiquez-vous ? Autodidacte ou formation ? Toute expérience est la bienvenue !"
+              value={data.experience}
+              onChange={(e) => {
+                onChange({ experience: e.target.value });
+                setExperienceError(validateExperience(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+              rows={5}
+              required
+            />
+            {experienceError && <div className="text-red-500 text-xs mt-1">{experienceError}</div>}
+          </div>
+        </div>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="experience">Expérience</Label>
-        <Textarea
-          id="experience"
-          value={data.experience}
-          onChange={(e) => {
-            onChange({ experience: e.target.value });
-            setExperienceError(validateExperience(e.target.value));
-          }}
-        />
-        {experienceError && <div className="text-red-500 text-xs mt-1">{experienceError}</div>}
+
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h4 className="font-medium text-blue-900 mb-2">Votre histoire musicale</h4>
+        <p className="text-sm text-blue-700">
+          Ces informations sont essentielles pour évaluer votre candidature et déterminer si vous pourrez 
+          rejoindre l'association. Elles nous permettent aussi de vous proposer des groupes adaptés. Soyez authentique !
+        </p>
       </div>
+
       <div className="flex justify-between gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="px-6 py-2">
           Retour
         </Button>
-        <Button type="submit">Suivant</Button>
+        <Button type="submit" className="px-6 py-2">
+          Suivant
+        </Button>
       </div>
     </form>
   );

@@ -1,13 +1,39 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Info } from 'lucide-react';
+import CustomAvatar from '@/components/common/Avatar';
+import { Camera, Info, Upload, Loader2, CheckCircle, Trash2 } from 'lucide-react';
+import Loading from '@/components/ui/Loading';
+import { useRouter } from 'next/navigation';
+import { uploadImageToStorage, deleteImageFromStorage } from '@/utils/imageUpload';
+
+// Define interface for user profile data
+interface UserProfile {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  biography?: string;
+  photoUrl?: string | null;
+  isLookingForGroup?: boolean;
+  pronouns?: string | null;
+  promotion?: string | null;
+  status?: string;
+  isOutOfSchool?: boolean;
+}
+
+interface ProfileSettingsProps {
+  initialProfile?: UserProfile;
+  currentUserId?: string;
+  formData?: any;
+  onFormDataChange?: (data: any) => void;
+  onPendingPhotoChange?: (file: File | null) => void;
+}
 
 // Simple validators aligned with your register page
 const validatePassword = (value: string) => {
@@ -28,16 +54,70 @@ const validateConfirmPassword = (value: string, password: string) => {
   return '';
 };
 
-export function ProfileSettings() {
-  // TODO: hydrate from your user/session store
-  const readOnlyEmail = 'prenom.nom@isep.fr';
-  const currentStatus = 'Membre actuel';
-  const currentPromotion = '2027';
-
-  // Editable profile fields
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [bio, setBio] = useState('');
+export function ProfileSettings({ initialProfile, currentUserId, formData, onFormDataChange, onPendingPhotoChange }: ProfileSettingsProps) {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Loading states
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  
+  // Photo handling states
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [photoMarkedForDeletion, setPhotoMarkedForDeletion] = useState(false);
+  
+  // Editable profile fields - synchronized with formData or initialProfile
+  const [firstName, setFirstName] = useState(formData?.firstName || initialProfile?.firstName || '');
+  const [lastName, setLastName] = useState(formData?.lastName || initialProfile?.lastName || '');
+  const [bio, setBio] = useState(formData?.biography || initialProfile?.biography || '');
+  const [photoUrl, setPhotoUrl] = useState(formData?.photoUrl || initialProfile?.photoUrl || null);
+  
+  // Report changes to parent
+  const handleFieldChange = (field: string, value: any) => {
+    if (field === 'firstName') setFirstName(value);
+    if (field === 'lastName') setLastName(value);
+    if (field === 'biography') setBio(value);
+    if (field === 'photoUrl') setPhotoUrl(value);
+    
+    const updatedData = {
+      firstName: field === 'firstName' ? value : firstName,
+      lastName: field === 'lastName' ? value : lastName,
+      biography: field === 'biography' ? value : bio,
+      photoUrl: field === 'photoUrl' ? value : photoUrl,
+    };
+    
+    // Add special flags for photo operations
+    if (field === 'photoDeleted') {
+      updatedData.photoDeleted = value;
+    }
+    if (field === 'pendingPhoto') {
+      updatedData.pendingPhoto = value;
+    }
+    
+    onFormDataChange?.(updatedData);
+  };
+  
+  // Track unsaved changes (removed since parent handles it)
+  const hasUnsavedChanges = false;
+  
+  // Read-only fields from profile data
+  const readOnlyEmail = initialProfile?.email || 'prenom.nom@eleve.isep.fr';
+  const currentStatus = getStatusDisplay(initialProfile?.status, initialProfile?.isOutOfSchool);
+  const currentPromotion = initialProfile?.promotion || 'Non définie';
+  
+  // Helper function to get status display
+  function getStatusDisplay(status?: string, isOutOfSchool?: boolean): string {
+    if (isOutOfSchool) return 'Ancien élève';
+    switch (status) {
+      case 'CURRENT': return 'Membre actuel';
+      case 'FORMER': return 'Ancien membre';
+      case 'GRADUATED': return 'Diplômé';
+      case 'PENDING': return 'En attente';
+      default: return 'Membre';
+    }
+  }
 
   // Password flow
   const [newPassword, setNewPassword] = useState('');
@@ -61,10 +141,69 @@ export function ProfileSettings() {
     [newPassword],
   );
 
-  const handleSaveProfile = () => {
-    // TODO: call your API (firstName, lastName, bio)
-    // toast.success('Profil mis à jour');
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !currentUserId) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner un fichier image valide.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La taille du fichier ne doit pas dépasser 5 MB.');
+      return;
+    }
+
+    // Create preview URL and store file for later upload
+    const preview = URL.createObjectURL(file);
+    setPreviewUrl(preview);
+    setPendingPhotoFile(file);
+    
+    // Report change to parent to enable save button and provide the file
+    handleFieldChange('pendingPhoto', true);
+    onPendingPhotoChange?.(file);
   };
+  
+  const handleDeletePhoto = () => {
+    // Clear any pending photo upload
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setPendingPhotoFile(null);
+    onPendingPhotoChange?.(null);
+    
+    // Mark photo for deletion (staged deletion)
+    setPhotoMarkedForDeletion(true);
+    
+    // Update parent with both photoUrl null and photoDeleted flag
+    const updatedData = {
+      firstName,
+      lastName,
+      biography: bio,
+      photoUrl: null,
+      photoDeleted: true
+    };
+    
+    onFormDataChange?.(updatedData);
+  };
+
+  // Clear states after successful save (called by parent)
+  React.useEffect(() => {
+    // Clear pending photo state if the photoUrl has been updated externally
+    if (formData?.photoUrl && formData.photoUrl !== photoUrl && !formData.pendingPhoto) {
+      setPendingPhotoFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+      setPhotoUrl(formData.photoUrl);
+      setPhotoMarkedForDeletion(false);
+    }
+  }, [formData?.photoUrl, formData?.pendingPhoto]);
 
   const handleUpdatePassword = () => {
     const pErr = validatePassword(newPassword);
@@ -80,16 +219,16 @@ export function ProfileSettings() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
-          <p className="text-muted-foreground mt-1">
-            Gérez vos informations personnelles et vos préférences.
-          </p>
-        </div>
+    <div className="relative">
+      {/* Simple Header without background */}
+      <div className="pb-4 mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
+        <p className="text-muted-foreground mt-1">
+          Gérez vos informations personnelles et vos préférences.
+        </p>
       </div>
+
+      <div className="space-y-8">
 
       {/* Top grid: Avatar + Basic info */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -100,14 +239,56 @@ export function ProfileSettings() {
             <CardDescription>Représentez-vous auprès des autres membres.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src="" alt="Photo de profil" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <Button variant="outline" className="w-full">
-              <Camera className="mr-2 h-4 w-4" />
-              Changer la photo
-            </Button>
+            <CustomAvatar
+              src={photoMarkedForDeletion ? null : (previewUrl || photoUrl)}
+              alt="Photo de profil"
+              name={`${firstName || initialProfile?.firstName || ''} ${lastName || initialProfile?.lastName || ''}`}
+              size="xl"
+              className="h-24 w-24"
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingPhoto}
+              >
+                {isUploadingPhoto ? (
+                  <>
+                    <Loading text="" size="sm" centered={false} />
+                    Téléchargement...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="mr-2 h-4 w-4" />
+                    Changer la photo
+                  </>
+                )}
+              </Button>
+              {(photoUrl || previewUrl) && !photoMarkedForDeletion && (
+                <Button 
+                  variant="destructive" 
+                  className="w-full"
+                  onClick={handleDeletePhoto}
+                  disabled={isUploadingPhoto}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Supprimer la photo
+                </Button>
+              )}
+              {photoMarkedForDeletion && (
+                <div className="text-sm text-orange-600">
+                  Photo sera supprimée lors de la sauvegarde
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -125,7 +306,7 @@ export function ProfileSettings() {
                   id="firstName"
                   placeholder="Votre prénom"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e) => handleFieldChange('firstName', e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
@@ -134,7 +315,7 @@ export function ProfileSettings() {
                   id="lastName"
                   placeholder="Votre nom"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(e) => handleFieldChange('lastName', e.target.value)}
                 />
               </div>
             </div>
@@ -145,11 +326,12 @@ export function ProfileSettings() {
                 placeholder="Décrivez-vous en quelques mots..."
                 className="min-h-[100px]"
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => handleFieldChange('biography', e.target.value)}
               />
             </div>
-            <div className="flex justify-end">
-              <Button onClick={handleSaveProfile}>Enregistrer</Button>
+            {/* Note: Save button moved to sticky header */}
+            <div className="text-sm text-muted-foreground">
+              Les modifications seront sauvegardées avec le bouton en haut de la page.
             </div>
           </CardContent>
         </Card>
@@ -276,13 +458,26 @@ export function ProfileSettings() {
             </div>
           )}
 
-          <div className="flex justify-end">
-            <Button onClick={handleUpdatePassword} disabled={!showPasswordSection}>
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              {showPasswordSection ? (
+                'Complétez les champs pour changer votre mot de passe'
+              ) : (
+                'Commencez à taper pour changer votre mot de passe'
+              )}
+            </div>
+            <Button 
+              onClick={handleUpdatePassword} 
+              disabled={!showPasswordSection || passwordError !== '' || confirmPasswordError !== ''}
+              variant="default"
+              className={!showPasswordSection ? "opacity-50" : ""}
+            >
               Mettre à jour le mot de passe
             </Button>
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

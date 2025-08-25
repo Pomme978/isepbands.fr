@@ -47,7 +47,8 @@ export type SessionUser = {
   firstName?: string;
   lastName?: string;
   band?: string | null;
-  status?: 'ACTIVE' | 'INACTIVE';
+  status?: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
+  isFullAccess?: boolean;
 } | null;
 
 export function useSession(onAutoLogout?: () => void) {

@@ -65,16 +65,12 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
             <InfoRow label="Primary Role" value={formData.primaryRole} />
             <InfoRow 
               label="Full Access" 
-              value={formData.fullAccessOverride ? "Yes" : "No"} 
+              value={formData.isFullAccess ? "Yes" : "No"} 
             />
-            {!formData.fullAccessOverride && (
+            {!formData.isFullAccess && (
               <InfoRow 
                 label="Permissions" 
-                value={
-                  formData.permissions.length > 0 
-                    ? <span className="text-xs">{formData.permissions.length} selected</span>
-                    : "None"
-                } 
+                value="Based on role permissions"
               />
             )}
           </div>

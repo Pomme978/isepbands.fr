@@ -9,7 +9,7 @@ import UserMenu from './UserMenu';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/locales/client';
 import { useAuth, useSession } from '../../lib/auth-client';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import Avatar from '../common/Avatar';
 import { useRouter, useParams } from 'next/navigation';
 
 interface NavbarProps {
@@ -138,10 +138,16 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
   // Don't render navbar content until auth has loaded to prevent flash
   const showContent = mounted && !authLoading;
 
-  // Helper function to format display name like in UserMenu
+  // Helper function to get display name
   const getDisplayName = () => {
-    if (!user?.email) return '';
-    return user.email.replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    if (user?.email) {
+      // Fallback to email formatting if no first/last name
+      return user.email.replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
+    }
+    return '';
   };
 
   return (
@@ -211,11 +217,13 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
                         // Authenticated user menu items (matching desktop UserMenu)
                         <div className="space-y-2">
                           <div className="flex items-center gap-3 px-3 py-3 border-b pb-3">
-                            <Avatar className="h-10 w-10 flex-shrink-0">
-                              <AvatarFallback className="text-sm">
-                                {getDisplayName()[0] || user.email[0]}
-                              </AvatarFallback>
-                            </Avatar>
+                            <Avatar
+                              src={user?.photoUrl}
+                              alt={getDisplayName()}
+                              name={getDisplayName()}
+                              size="md"
+                              className="shadow-lg flex-shrink-0"
+                            />
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold text-gray-900 truncate">
                                 {getDisplayName()}
@@ -271,7 +279,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
                       )}
                     </div>
                   ) : (
-                    <div className="h-10 w-full animate-pulse bg-gray-200 rounded"></div>
+                    <div className="h-20 w-full"></div>
                   )}
                 </div>
 

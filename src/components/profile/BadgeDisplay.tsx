@@ -10,65 +10,74 @@ interface BadgeDisplayProps {
   badges: string[];
   isLookingForGroup: boolean;
   pronouns: Pronouns;
+  className?: string;
+  bgColor?: string;
+  textSize?: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
-const getDisplayRole = (role: string, pronouns: Pronouns): string => {
-  // Placeholder implementation - will be replaced by database query
-  const roleTranslations: Record<string, Record<string, string>> = {
-    President: {
-      'he/him': 'Président',
-      'she/her': 'Présidente',
-      'they/them': 'Président·e',
-      other: 'Président·e',
-    },
-    'Vice-President': {
-      'he/him': 'Vice-Président',
-      'she/her': 'Vice-Présidente',
-      'they/them': 'Vice-Président·e',
-      other: 'Vice-Président·e',
-    },
-    Secretary: {
-      'he/him': 'Secrétaire',
-      'she/her': 'Secrétaire',
-      'they/them': 'Secrétaire',
-      other: 'Secrétaire',
-    },
-    Treasurer: {
-      'he/him': 'Trésorier',
-      'she/her': 'Trésorière',
-      'they/them': 'Trésorier·ère',
-      other: 'Trésorier·ère',
-    },
-    Member: { 'he/him': 'Membre', 'she/her': 'Membre', 'they/them': 'Membre', other: 'Membre' },
-  };
-  return roleTranslations[role]?.[pronouns] || role;
-};
+// Role display name is now handled by the API based on user pronouns
 
 export default function BadgeDisplay({
   role,
   badges,
   isLookingForGroup,
   pronouns,
+  className = "",
+  bgColor = "bg-gradient-to-r from-secondary to-primary",
+  textSize = "text-sm",
+  size = "md",
 }: BadgeDisplayProps) {
+  
+  // Size configurations
+  const sizeConfig = {
+    xs: {
+      padding: "px-2 py-1",
+      text: "text-xs",
+      icon: "h-2 w-2",
+      gap: "gap-1"
+    },
+    sm: {
+      padding: "px-3 py-1",
+      text: "text-xs",
+      icon: "h-3 w-3",
+      gap: "gap-1"
+    },
+    md: {
+      padding: "px-4 py-2",
+      text: "text-sm",
+      icon: "h-3 w-3",
+      gap: "gap-2"
+    },
+    lg: {
+      padding: "px-5 py-2",
+      text: "text-base",
+      icon: "h-4 w-4",
+      gap: "gap-2"
+    }
+  };
+
+  const config = sizeConfig[size];
+  const finalTextSize = textSize !== "text-sm" ? textSize : config.text;
   return (
-    <div className="flex gap-2 flex-wrap">
-      <span className="px-4 py-2 bg-gradient-to-r from-secondary to-primary text-white rounded-full text-sm font-medium shadow-md hover:scale-95 transition-transform duration-200 ease-in-out">
-        {getDisplayRole(role, pronouns)}
+    <div className={`flex ${config.gap} flex-wrap ${className}`}>
+      <span className={`${config.padding} ${bgColor} text-white rounded-full ${finalTextSize} font-medium shadow-md hover:scale-95 transition-transform duration-200 ease-in-out`}>
+        {role}
       </span>
 
       {badges.map((badge, index) => (
         <span
           key={index}
-          className="px-3 py-1 bg-gray-200 text-gray-700 flex justify-center items-center rounded-full text-sm font-medium hover:scale-95 transition-transform duration-200 ease-in-out"
+          className={`${config.padding} bg-gray-200 text-gray-700 flex justify-center items-center rounded-full ${finalTextSize} font-medium hover:scale-95 transition-transform duration-200 ease-in-out`}
         >
           {badge}
         </span>
       ))}
 
       {isLookingForGroup && (
-        <span className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full text-sm font-medium shadow-md animate-pulse hover:scale-95 transition-transform duration-200 ease-in-out">
-          <span className="flex items-center gap-2">
-            <Star className="h-3 w-3" />
+        <span className={`${config.padding} bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full ${finalTextSize} font-medium shadow-md animate-pulse hover:scale-95 transition-transform duration-200 ease-in-out`}>
+          <span className={`flex items-center ${config.gap}`}>
+            <Star className={config.icon} />
             Prêt à rejoindre un groupe
           </span>
         </span>

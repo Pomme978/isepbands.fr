@@ -9,6 +9,7 @@ import CreateUserModal from './CreateUserModal';
 
 export default function UsersPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [filterValues, setFilterValues] = useState({
     search: '',
     sortBy: 'alphabetical',
@@ -65,6 +66,13 @@ export default function UsersPage() {
     setFilterValues(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleUserCreated = () => {
+    // Trigger refresh by incrementing the counter
+    setRefreshTrigger(prev => prev + 1);
+    // Close modal
+    setIsCreateModalOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -89,12 +97,13 @@ export default function UsersPage() {
       />
 
       {/* Users List */}
-      <UsersList filters={filterValues} />
+      <UsersList filters={filterValues} refreshTrigger={refreshTrigger} />
 
       {/* Create User Modal */}
       <CreateUserModal 
         isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+        onClose={() => setIsCreateModalOpen(false)}
+        onUserCreated={handleUserCreated}
       />
     </div>
   );

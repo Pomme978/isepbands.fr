@@ -12,12 +12,21 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import EventBanner from '@/components/profile/EventBanner';
 import InstrumentsSection from '@/components/profile/InstrumentsSection';
 import GroupsSection from '@/components/profile/GroupsSection';
+import ProfileLoadingSkeleton from '@/components/profile/ProfileLoadingSkeleton';
+import { InstrumentsDisplay } from '@/components/profile/shared/InstrumentsDisplay';
+import MusicGenresSection from '@/components/profile/MusicGenresSection';
 import { useI18n } from '@/locales/client';
 import { Button } from '@/components/ui/button';
+import { PendingValidationProfile } from '@/components/profile/PendingValidationProfile';
 
 // ---- API types (same as your first file) ----
 interface ApiInstrument {
-  instrument: { id: string; name: string };
+  instrument: { 
+    id: string; 
+    name?: string;
+    nameFr?: string;
+    nameEn?: string;
+  };
   skillLevel: string;
   yearsPlaying?: number;
   isPrimary: boolean;
@@ -105,7 +114,7 @@ interface Group {
 export default function ProfilePage() {
   const { user: authUser, loading: authLoading } = useAuth();
   const [user, setUser] = useState<ApiUserData | null>(null);
-  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [instruments, setInstruments] = useState<ApiInstrument[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -138,17 +147,8 @@ export default function ProfilePage() {
           const data: ApiUserData = result.data;
           setUser(data);
 
-          // map instruments
-          setInstruments(
-            (data.instruments || []).map((inst: ApiInstrument) => ({
-              id: inst.instrument.id,
-              name: inst.instrument.name,
-              level: inst.skillLevel,
-              icon: Guitar,
-              isPrimary: inst.isPrimary,
-              yearsPlaying: inst.yearsPlaying,
-            })),
-          );
+          // Store raw instruments for the shared component
+          setInstruments(data.instruments || []);
 
           // map groups (same as first file)
           setGroups(
@@ -192,38 +192,7 @@ export default function ProfilePage() {
   if (!mounted || authLoading || loading) {
     return (
       <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-full max-w-4xl space-y-8">
-            <div className="flex items-center mb-8">
-              <Skeleton className="h-10 w-32 rounded" />
-            </div>
-            <div className="flex gap-6 items-center">
-              <Skeleton className="h-24 w-24 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start mt-8">
-              <div className="space-y-4">
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-              <div className="space-y-4">
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-              <div className="space-y-4">
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </div>
-          </div>
-          <div className="w-full text-center mt-8 text-gray-500">{t('common.loading')}</div>
-        </div>
+        <ProfileLoadingSkeleton />
       </BasicLayout>
     );
   }
@@ -264,6 +233,24 @@ export default function ProfilePage() {
 
   const activeGroups = groups.filter((g) => g.isActive);
 
+  // Show pending validation profile for PENDING users
+  if (user.status === 'PENDING') {
+    return (
+      <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
+        <PendingValidationProfile 
+          user={{
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            photoUrl: user.photoUrl,
+            createdAt: user.createdAt.toString()
+          }}
+          lang={lang}
+        />
+      </BasicLayout>
+    );
+  }
+
   return (
     <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
       <div className="min-h-screen py-8">
@@ -292,8 +279,11 @@ export default function ProfilePage() {
               totalGroups: user.totalGroups ?? user.groupMemberships?.length ?? 0,
               eventsAttended: user.eventsAttended ?? 0,
               activeGroups: user.activeGroups ?? activeGroups.length,
-              memberSince: new Date(user.createdAt).toISOString(),
-              instrumentCount: user.instrumentCount ?? instruments.length,
+              memberSince: new Date(user.createdAt).toLocaleDateString('fr-FR', { 
+                year: 'numeric', 
+                month: 'long' 
+              }),
+              instrumentCount: user.instrumentCount ?? (instruments?.length || 0),
               concertsPlayed:
                 user.concertsPlayed ?? groups.reduce((acc, g) => acc + g.concertCount, 0),
             }}
@@ -317,9 +307,13 @@ export default function ProfilePage() {
             onEventClick={() => {}}
           />
 
-          {/* Same 3-column grid: 2x Instruments, 1x Groups */}
+          {/* 3-column grid: Instruments, Music Genres, Groups */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-            <InstrumentsSection instruments={instruments} />
+            <InstrumentsDisplay instruments={instruments} />
+            <MusicGenresSection 
+              genres={user.preferredGenres ? JSON.parse(user.preferredGenres) : []}
+              locale={lang}
+            />
             <GroupsSection
               groups={groups.map((g) => ({
                 ...g,

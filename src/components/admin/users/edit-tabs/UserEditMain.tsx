@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Upload, X, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Upload, X, Eye, EyeOff, Loader2 } from 'lucide-react';
+import Avatar from '@/components/common/Avatar';
 
 interface User {
   id: string;
@@ -22,34 +23,148 @@ interface UserEditMainProps {
   user: User;
   setUser: (user: User) => void;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
+  onPendingImageChange?: (file: File | null) => void;
 }
 
-export default function UserEditMain({ user, setUser, setHasUnsavedChanges }: UserEditMainProps) {
+export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPendingImageChange }: UserEditMainProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(user.avatar || null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Sync preview image with user avatar when it changes (e.g., after save or initial load)
+  useEffect(() => {
+    // Only update preview if there's no pending image file and we're not deleting
+    if (!pendingImageFile && user.avatar !== 'PENDING_UPLOAD' && !isDeleting) {
+      setPreviewImage(user.avatar || null);
+    }
+  }, [user.avatar, pendingImageFile, isDeleting]);
+  
+  // Remove auto-upload - we'll handle upload on save instead
 
-  const updateField = (field: keyof User, value: string) => {
+  const updateField = (field: keyof User, value: string | null) => {
     setUser({ ...user, [field]: value });
     setHasUnsavedChanges(true);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        setPreviewImage(imageUrl);
-        updateField('avatar', imageUrl);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner un fichier image valide.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La taille du fichier ne doit pas dépasser 5 MB.');
+      return;
+    }
+
+    // Create preview URL for immediate display (staged upload)
+    const previewUrl = URL.createObjectURL(file);
+    setPreviewImage(previewUrl);
+    
+    // Store the file for upload when save is clicked
+    setPendingImageFile(file);
+    
+    // Notify parent about pending image file
+    onPendingImageChange?.(file);
+    
+    // Just mark that we have unsaved changes, don't trigger upload
+    setHasUnsavedChanges(true);
+  };
+
+  // New function to handle actual upload during save
+  const uploadPendingImage = async (): Promise<string | null> => {
+    if (!pendingImageFile) return null;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', pendingImageFile);
+
+      const response = await fetch('/api/storage', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to upload file';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text or default message
+          errorMessage = response.statusText || `Error ${response.status}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error('Invalid server response');
+      }
+      
+      if (!result.success || !result.file?.id) {
+        throw new Error('Invalid response data');
+      }
+      
+      // The storage API returns the database object directly
+      // We need to construct the access URL
+      const photoUrl = `/api/storage?id=${result.file.id}`;
+      
+      // Clear pending file
+      setPendingImageFile(null);
+      
+      return photoUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
     }
   };
 
-  const removeImage = () => {
+  const removeImage = async () => {
+    console.log('removeImage called, current avatar:', user.avatar);
+    setIsDeleting(true);
+    
+    // If there's an existing photo URL, delete it from storage
+    if (user.avatar && user.avatar.includes('/api/storage?id=')) {
+      const photoId = user.avatar.split('/api/storage?id=')[1];
+      console.log('Attempting to delete photo with ID:', photoId);
+      
+      if (photoId) {
+        try {
+          const deleteResponse = await fetch(`/api/storage?id=${photoId}`, {
+            method: 'DELETE',
+          });
+          
+          if (!deleteResponse.ok) {
+            const errorText = await deleteResponse.text();
+            console.error('Failed to delete photo from storage. Status:', deleteResponse.status, 'Error:', errorText);
+          } else {
+            console.log('Photo deleted successfully from storage');
+          }
+        } catch (error) {
+          console.error('Error deleting photo:', error);
+        }
+      }
+    }
+    
+    console.log('Setting preview and avatar to null');
     setPreviewImage(null);
-    updateField('avatar', '');
+    setPendingImageFile(null);
+    onPendingImageChange?.(null);
+    updateField('avatar', null);
+    setHasUnsavedChanges(true);
+    
+    // Reset the deleting flag after a short delay to allow the state to update
+    setTimeout(() => setIsDeleting(false), 100);
   };
 
   const generatePassword = () => {
@@ -69,41 +184,75 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges }: Us
           <div className="flex items-center space-x-4">
             <div className="relative">
               {previewImage ? (
-                <div className="relative">
-                  <img
-                    src={previewImage}
-                    alt="Profile"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                  />
-                  <button
-                    onClick={removeImage}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
+                <img
+                  src={previewImage}
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-gray-400" />
-                </div>
+                <Avatar 
+                  name={`${user.firstName} ${user.lastName}`}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  size="lg"
+                  className="border-2 border-dashed border-gray-300"
+                />
               )}
             </div>
 
-            <div>
-              <input
-                type="file"
-                id="profilePhoto"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <label
-                htmlFor="profilePhoto"
-                className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                {previewImage ? 'Change Photo' : 'Upload Photo'}
-              </label>
+            <div className="space-y-2">
+              <div>
+                <input
+                  type="file"
+                  id="profilePhoto"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="profilePhoto"
+                  className={`inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg transition-colors ${
+                    uploadingImage ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 cursor-pointer'
+                  }`}
+                >
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {previewImage ? 'Change Photo' : 'Upload Photo'}
+                    </>
+                  )}
+                </label>
+                {pendingImageFile && !uploadingImage && (
+                  <p className="text-sm text-orange-600 mt-1">
+                    Image sera téléchargée lors de la sauvegarde
+                  </p>
+                )}
+              </div>
+              
+              {previewImage && (
+                <button
+                  onClick={removeImage}
+                  className="inline-flex items-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <X className="w-4 h-4 mr-2" />
+                      Delete Avatar
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -148,6 +297,21 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges }: Us
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               placeholder="+33 6 12 34 56 78"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Pronouns</label>
+            <select
+              value={user.pronouns || ''}
+              onChange={(e) => updateField('pronouns', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            >
+              <option value="">Select pronouns</option>
+              <option value="he/him">he/him (il/lui)</option>
+              <option value="she/her">she/her (elle/elle)</option>
+              <option value="they/them">they/them (iel/ellui)</option>
+              <option value="other">Other (autre)</option>
+            </select>
           </div>
 
           <div>

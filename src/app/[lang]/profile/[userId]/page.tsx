@@ -9,42 +9,59 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import EventBanner from '@/components/profile/EventBanner';
 import InstrumentsSection from '@/components/profile/InstrumentsSection';
 import GroupsSection from '@/components/profile/GroupsSection';
+import ProfileLoadingSkeleton from '@/components/profile/ProfileLoadingSkeleton';
+import { InstrumentsDisplay } from '@/components/profile/shared/InstrumentsDisplay';
 import { useI18n } from '@/locales/client';
 import { redirect, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { getSkillLevelFr } from '@/utils/skillLevelUtils';
+
+// Utility function to calculate age
+const calculateAge = (birthDate: string | null | undefined): number | null => {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
 
 // Types API - correspondent exactement à ce que retourne votre API
 interface ApiInstrument {
-  instrument: {
-    id: string;
-    name: string;
-  };
+  userId: string;
+  instrumentId: number;
   skillLevel: string;
   yearsPlaying?: number;
   isPrimary: boolean;
+  instrument: {
+    id: number;
+    name: string;
+    nameFr: string;
+    nameEn: string;
+    imageUrl?: string;
+  };
 }
 
 interface ApiGroupMembership {
-  group: {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  genre?: string;
+  isVerified: boolean;
+  isLookingForMembers: boolean;
+  memberCount: number;
+  events: {
     id: string;
     name: string;
-    imageUrl: string;
-    genre?: string;
-    isVerified: boolean;
-    isLookingForMembers: boolean;
-    members?: { userId: string }[];
-    events?: {
-      event: {
-        id: string;
-        name: string;
-        type: string;
-        date: string;
-        location?: string;
-      };
-    }[];
-  };
-  role?: string;
-  isAdmin: boolean;
+    type: string;
+    date: string;
+    location?: string;
+  }[];
 }
 
 interface ApiBadge {
@@ -52,11 +69,7 @@ interface ApiBadge {
 }
 
 interface ApiRole {
-  role: {
-    id: string;
-    name: string;
-    weight: number;
-  };
+  name: string;
 }
 
 interface ApiUserData {
@@ -74,9 +87,9 @@ interface ApiUserData {
   emailVerified?: boolean;
   pronouns?: string;
   isLookingForGroup?: boolean;
-  badges: ApiBadge[];
+  badges: string[]; // API returns array of strings
   instruments: ApiInstrument[];
-  roles: ApiRole[];
+  roles: string[]; // API returns array of strings  
   groupMemberships: ApiGroupMembership[];
   totalGroups?: number;
   instrumentCount?: number;
@@ -129,7 +142,7 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ params }: ProfilePageProps) {
   const [user, setUser] = useState<ApiUserData | null>(null);
-  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [instruments, setInstruments] = useState<ApiInstrument[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -153,39 +166,29 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           setUser(null);
         } else if (result.success && result.data) {
           setUser(result.data);
-          setInstruments(
-            (result.data.instruments || []).map((inst: ApiInstrument) => ({
-              id: inst.instrument.id,
-              name: inst.instrument.name,
-              level: inst.skillLevel,
-              icon: Guitar,
-              isPrimary: inst.isPrimary,
-              yearsPlaying: inst.yearsPlaying,
-            })),
-          );
+          // Store raw instruments for the shared component
+          setInstruments(result.data.instruments || []);
           setGroups(
             (result.data.groupMemberships || []).map((gm: ApiGroupMembership) => ({
-              id: gm.group.id,
-              name: gm.group.name,
-              image: gm.group.imageUrl || '',
-              roles: [{ role: gm.role || 'Membre', isPrimary: !!gm.isAdmin }],
+              id: gm.id,
+              name: gm.name,
+              image: gm.imageUrl || '',
+              roles: [{ role: 'Member', isPrimary: false }],
               joinDate: '',
-              isActive: gm.group.isVerified,
-              memberCount: gm.group.members?.length || 0,
+              isActive: gm.isVerified,
+              memberCount: gm.memberCount || 0,
               maxMembers: 0,
-              slug: gm.group.id,
-              concertCount:
-                gm.group.events?.filter((e) => e.event.type.toLowerCase() === 'concert').length ||
-                0,
-              genre: gm.group.genre,
-              nextEvent: gm.group.events?.[0]?.event
+              slug: gm.id,
+              concertCount: gm.events?.filter((e) => e.type.toLowerCase() === 'concert').length || 0,
+              genre: gm.genre,
+              nextEvent: gm.events?.[0]
                 ? {
-                    type: gm.group.events[0].event.type.toLowerCase(),
-                    date: gm.group.events[0].event.date,
-                    venue: gm.group.events[0].event.location,
+                    type: gm.events[0].type.toLowerCase(),
+                    date: gm.events[0].date,
+                    venue: gm.events[0].location,
                   }
                 : undefined,
-              isRecruiting: gm.group.isLookingForMembers,
+              isRecruiting: gm.isLookingForMembers,
             })),
           );
         }
@@ -206,40 +209,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const router = useRouter();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-full max-w-4xl space-y-8">
-          <div className="flex items-center mb-8">
-            <Skeleton className="h-10 w-32 rounded" />
-          </div>
-          <div className="flex gap-6 items-center">
-            <Skeleton className="h-24 w-24 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start mt-8">
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
-        </div>
-        <div className="w-full text-center mt-8 text-gray-500">{t('common.loading')}</div>
-      </div>
-    );
+    return <ProfileLoadingSkeleton />;
   }
   if (!user) {
     return (
@@ -288,8 +258,9 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             isOutOfSchool: user.isOutOfSchool ?? false,
             promotion: user.promotion || '',
             role: user.primaryRole || t('user.settings.role.default'),
-            badges: user.badges?.map((b) => b.name) || [],
+            badges: user.badges || [],
             bio: user.biography || '',
+            age: calculateAge(user.birthDate),
             pronouns:
               user.pronouns && ['he/him', 'she/her', 'they/them', 'other'].includes(user.pronouns)
                 ? (user.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other')
@@ -298,8 +269,11 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             totalGroups: user.totalGroups ?? user.groupMemberships?.length ?? 0,
             eventsAttended: user.eventsAttended ?? 0,
             activeGroups: user.activeGroups ?? activeGroups.length,
-            memberSince: new Date(user.createdAt).toISOString(),
-            instrumentCount: user.instrumentCount ?? instruments.length,
+            memberSince: new Date(user.createdAt).toLocaleDateString('fr-FR', { 
+              year: 'numeric', 
+              month: 'long' 
+            }),
+            instrumentCount: user.instrumentCount ?? (instruments?.length || 0),
             concertsPlayed:
               user.concertsPlayed ?? groups.reduce((acc, g) => acc + g.concertCount, 0),
           }}
@@ -321,7 +295,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           onEventClick={() => {}}
         />
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-          <InstrumentsSection instruments={instruments} />
+          <InstrumentsDisplay instruments={instruments} />
           <GroupsSection
             groups={groups.map((g) => ({
               ...g,

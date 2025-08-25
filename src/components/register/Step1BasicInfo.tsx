@@ -86,103 +86,194 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
         if (validateAll()) onNext();
       }}
     >
-      <div className="flex gap-4">
-        <div className="flex-1 space-y-1">
-          <Label htmlFor="firstName">Prénom</Label>
-          <Input
-            id="firstName"
-            type="text"
-            autoComplete="given-name"
-            value={data.firstName}
-            onChange={(e) => {
-              onChange({ firstName: e.target.value });
-              setFirstNameError(validateFirstName(e.target.value));
-            }}
-            required
-          />
-          {firstNameError && <div className="text-red-500 text-xs mt-1">{firstNameError}</div>}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Prénom *
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              autoComplete="given-name"
+              placeholder="Entrez votre prénom"
+              value={data.firstName}
+              onChange={(e) => {
+                onChange({ firstName: e.target.value });
+                setFirstNameError(validateFirstName(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            />
+            {firstNameError && <div className="text-red-500 text-xs mt-1">{firstNameError}</div>}
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nom *
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Entrez votre nom"
+              value={data.lastName}
+              onChange={(e) => {
+                onChange({ lastName: e.target.value });
+                setLastNameError(validateLastName(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            />
+            {lastNameError && <div className="text-red-500 text-xs mt-1">{lastNameError}</div>}
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email *
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="prenom.nom@eleve.isep.fr"
+              value={data.email}
+              onChange={(e) => {
+                onChange({ email: e.target.value });
+                setEmailError(validateEmail(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            />
+            {emailError && <div className="text-red-500 text-xs mt-1">{emailError}</div>}
+          </div>
         </div>
-        <div className="flex-1 space-y-1">
-          <Label htmlFor="lastName">Nom</Label>
-          <Input
-            id="lastName"
-            type="text"
-            autoComplete="family-name"
-            value={data.lastName}
-            onChange={(e) => {
-              onChange({ lastName: e.target.value });
-              setLastNameError(validateLastName(e.target.value));
-            }}
-            required
-          />
-          {lastNameError && <div className="text-red-500 text-xs mt-1">{lastNameError}</div>}
+      </div>
+
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Sécurité</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mot de passe *
+            </label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Créez un mot de passe sécurisé"
+              value={data.password}
+              onChange={(e) => {
+                onChange({ password: e.target.value });
+                setPasswordError(validatePassword(e.target.value));
+                setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            />
+            {passwordError && <div className="text-red-500 text-xs mt-1">{passwordError}</div>}
+            {data.password && (
+              <div className="mt-2 text-xs text-gray-600">
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <span className={`flex items-center ${data.password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-1">{data.password.length >= 8 ? '✓' : '○'}</span>
+                    8+ caractères
+                  </span>
+                  <span className={`flex items-center ${/[a-z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-1">{/[a-z]/.test(data.password) ? '✓' : '○'}</span>
+                    Minuscule
+                  </span>
+                  <span className={`flex items-center ${/[A-Z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-1">{/[A-Z]/.test(data.password) ? '✓' : '○'}</span>
+                    Majuscule
+                  </span>
+                  <span className={`flex items-center ${/\d/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-1">{/\d/.test(data.password) ? '✓' : '○'}</span>
+                    Chiffre
+                  </span>
+                  <span className={`flex items-center ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <span className="mr-1">{/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? '✓' : '○'}</span>
+                    Spécial
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirmer le mot de passe *
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Confirmez votre mot de passe"
+              value={data.confirmPassword}
+              onChange={(e) => {
+                onChange({ confirmPassword: e.target.value });
+                setConfirmPasswordError(validateConfirmPassword(e.target.value, data.password));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            />
+            {confirmPasswordError && (
+              <div className="text-red-500 text-xs mt-1">{confirmPasswordError}</div>
+            )}
+          </div>
         </div>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          value={data.email}
-          onChange={(e) => {
-            onChange({ email: e.target.value });
-            setEmailError(validateEmail(e.target.value));
-          }}
-          required
-        />
-        {emailError && <div className="text-red-500 text-xs mt-1">{emailError}</div>}
+
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Informations ISEP</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Promotion *
+            </label>
+            <select
+              id="cycle"
+              value={data.cycle}
+              onChange={(e) => {
+                onChange({ cycle: e.target.value });
+                setCycleError(validateCycle(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            >
+              <option value="">Sélectionnez votre promotion</option>
+              <option value="P1">P1 - Prépa intégrée 1ère année</option>
+              <option value="P2">P2 - Prépa intégrée 2ème année</option>
+              <option value="I1">I1 - Cycle intégré 1ère année</option>
+              <option value="I2">I2 - Cycle intégré 2ème année</option>
+              <option value="A1">A1 - Cycle ingénieur 1ère année</option>
+              <option value="A2">A2 - Cycle ingénieur 2ème année</option>
+              <option value="A3">A3 - Cycle ingénieur 3ème année</option>
+              <option value="B1">B1 - Bachelor 1ère année</option>
+              <option value="B2">B2 - Bachelor 2ème année</option>
+              <option value="B3">B3 - Bachelor 3ème année</option>
+              <option value="Graduate">Graduate - Diplômé</option>
+              <option value="Former">Former - Ancien étudiant (non diplômé)</option>
+            </select>
+            {cycleError && <div className="text-red-500 text-xs mt-1">{cycleError}</div>}
+          </div>
+        </div>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="password">Mot de passe</Label>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          value={data.password}
-          onChange={(e) => {
-            onChange({ password: e.target.value });
-            setPasswordError(validatePassword(e.target.value));
-            setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, e.target.value));
-          }}
-          required
-        />
-        {passwordError && <div className="text-red-500 text-xs mt-1">{passwordError}</div>}
+
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h4 className="font-medium text-blue-900 mb-2">Champs requis</h4>
+        <p className="text-sm text-blue-700">
+          Les champs marqués d'un * sont obligatoires. Assurez-vous de remplir au moins le prénom, 
+          le nom, l'email, le mot de passe et la promotion avant de passer à l'étape suivante.
+        </p>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          value={data.confirmPassword}
-          onChange={(e) => {
-            onChange({ confirmPassword: e.target.value });
-            setConfirmPasswordError(validateConfirmPassword(e.target.value, data.password));
-          }}
-          required
-        />
-        {confirmPasswordError && (
-          <div className="text-red-500 text-xs mt-1">{confirmPasswordError}</div>
-        )}
+
+      <div className="flex justify-end pt-4">
+        <Button type="submit" className="px-6 py-2">
+          Suivant
+        </Button>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="cycle">Cycle</Label>
-        <Input
-          id="cycle"
-          type="text"
-          value={data.cycle}
-          onChange={(e) => {
-            onChange({ cycle: e.target.value });
-            setCycleError(validateCycle(e.target.value));
-          }}
-          required
-        />
-        {cycleError && <div className="text-red-500 text-xs mt-1">{cycleError}</div>}
-      </div>
-      <Button type="submit" className="w-full">
-        Suivant
-      </Button>
     </form>
   );
 }

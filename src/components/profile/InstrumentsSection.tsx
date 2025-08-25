@@ -21,12 +21,9 @@ interface InstrumentsSectionProps {
 }
 
 export default function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
-  const getGridCols = (count: number) => {
-    if (count === 1) return 'grid-cols-1';
-    if (count === 2) return 'grid-cols-1 sm:grid-cols-2';
-    if (count === 3) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
-    if (count === 4) return 'grid-cols-2 lg:grid-cols-4';
-    return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+  const getGridCols = () => {
+    // Always use the same grid with max 4 columns, items will pile up from left
+    return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
   };
 
   return (
@@ -40,7 +37,7 @@ export default function InstrumentsSection({ instruments }: InstrumentsSectionPr
 
       {instruments.length > 0 ? (
         <div className="space-y-4">
-          <div className={`grid gap-4 ${getGridCols(instruments.length)}`}>
+          <div className={`grid gap-4 ${getGridCols()}`}>
             {instruments.map((instrument) => (
               <InstrumentCard key={instrument.id} instrument={instrument} />
             ))}

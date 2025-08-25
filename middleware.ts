@@ -7,8 +7,9 @@ const SESSION_COOKIE = 'session';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Ignore la gestion de la locale pour la route /api/auth/session
-  if (pathname.startsWith('/api/auth/session')) {
+  // Ignore la gestion de la locale pour toutes les routes API
+  if (pathname.startsWith('/api/')) {
+    console.log('Skipping middleware for API route:', pathname);
     return NextResponse.next();
   }
 
@@ -32,5 +33,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|static|favicon.ico).*)'],
+  matcher: ['/((?!_next|static|favicon.ico|api).*)'],
 };

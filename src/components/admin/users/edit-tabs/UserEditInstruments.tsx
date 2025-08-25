@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, X, Edit2 } from 'lucide-react';
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
+  instruments?: any[];
 }
 
 interface UserEditInstrumentsProps {
@@ -23,10 +24,7 @@ interface Instrument {
   primary: boolean;
 }
 
-const AVAILABLE_INSTRUMENTS = [
-  'Guitar', 'Bass', 'Drums', 'Piano/Keyboard', 'Vocals', 'Violin', 'Trumpet',
-  'Saxophone', 'Flute', 'Clarinet', 'Cello', 'Percussion', 'Harmonica', 'Other'
-];
+// All instruments are now fetched from database via API
 
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
 
@@ -35,54 +33,229 @@ const MUSIC_GENRES = [
   'Hip-Hop', 'R&B', 'Country', 'Metal', 'Punk', 'Reggae', 'World'
 ];
 
-// Mock data
-const MOCK_INSTRUMENTS: Instrument[] = [
-  { id: '1', name: 'Guitar', level: 'Advanced', yearsPlaying: 8, primary: true },
-  { id: '2', name: 'Piano/Keyboard', level: 'Intermediate', yearsPlaying: 3, primary: false }
-];
-
 export default function UserEditInstruments({ user, setUser, setHasUnsavedChanges }: UserEditInstrumentsProps) {
-  const [instruments, setInstruments] = useState<Instrument[]>(MOCK_INSTRUMENTS);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [availableInstruments, setAvailableInstruments] = useState<any[]>([]);
+  const [instrumentMapping, setInstrumentMapping] = useState<Record<string, number>>({});
   const [preferredGenres, setPreferredGenres] = useState<string[]>(['Rock', 'Pop', 'Blues']);
   const [totalExperience, setTotalExperience] = useState('8');
   const [isAddingInstrument, setIsAddingInstrument] = useState(false);
   const [editingInstrument, setEditingInstrument] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Load available instruments from database
+  useEffect(() => {
+    const fetchInstruments = async () => {
+      try {
+        const response = await fetch('/api/instruments');
+        const data = await response.json();
+        if (data.instruments) {
+          setAvailableInstruments(data.instruments);
+          // Create mapping from French name to ID
+          const mapping: Record<string, number> = {};
+          data.instruments.forEach((inst: any) => {
+            mapping[inst.nameFr] = inst.id;
+          });
+          setInstrumentMapping(mapping);
+          console.log('Loaded instruments:', data.instruments);
+          console.log('Created mapping:', mapping);
+          
+          // Set default instrument name
+          if (data.instruments.length > 0 && !newInstrument.name) {
+            setNewInstrument(prev => ({ ...prev, name: data.instruments[0].nameFr }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching instruments:', error);
+      }
+    };
+    fetchInstruments();
+  }, []);
+
+  // Load real user instruments when component mounts or user changes
+  useEffect(() => {
+    if (user?.instruments) {
+      console.log('Loading real user instruments:', user.instruments);
+      const userInstruments = user.instruments.map((inst: any) => ({
+        id: inst.instrumentId?.toString() || inst.id?.toString(),
+        name: inst.instrument?.nameFr || inst.instrument?.nameEn || inst.instrument?.name || 'Unknown',
+        level: inst.skillLevel || 'Beginner',
+        yearsPlaying: inst.yearsPlaying || 0,
+        primary: inst.isPrimary || false
+      }));
+      console.log('Mapped instruments:', userInstruments);
+      setInstruments(userInstruments);
+    } else {
+      console.log('No instruments found for user:', user);
+      setInstruments([]);
+    }
+  }, [user]);
   
   const [newInstrument, setNewInstrument] = useState({
-    name: 'Guitar',
+    name: '',
     level: 'Beginner',
     yearsPlaying: 0,
     primary: false
   });
 
   const addInstrument = () => {
+    setErrorMessage(null); // Clear previous errors
+    
+    // Check if instrument already exists by name
+    if (instruments.some(inst => inst.name === newInstrument.name)) {
+      setErrorMessage(`${newInstrument.name} est déjà dans la liste ! Chaque instrument ne peut être ajouté qu'une seule fois.`);
+      return;
+    }
+
+    // Also check if the instrumentId already exists (for database constraint)
+    const newInstrumentId = instrumentMapping[newInstrument.name];
+    if (!newInstrumentId) {
+      setErrorMessage(`Impossible de trouver l'instrument ${newInstrument.name} dans la base de données !`);
+      return;
+    }
+    if (instruments.some(inst => {
+      const existingId = instrumentMapping[inst.name] || parseInt(inst.id);
+      return existingId === newInstrumentId;
+    })) {
+      setErrorMessage(`Cet instrument est déjà ajouté sous un autre nom !`);
+      return;
+    }
+
     const instrument: Instrument = {
       id: Date.now().toString(),
       ...newInstrument
     };
-    setInstruments([...instruments, instrument]);
-    setNewInstrument({ name: 'Guitar', level: 'Beginner', yearsPlaying: 0, primary: false });
+    
+    // If this instrument is being set as primary, unset all others first
+    let updatedInstruments;
+    if (newInstrument.primary) {
+      // Unset primary on all existing instruments, then add new one as primary
+      updatedInstruments = [
+        ...instruments.map(inst => ({ ...inst, primary: false })), 
+        instrument
+      ];
+    } else {
+      // Just add the new instrument
+      updatedInstruments = [...instruments, instrument];
+    }
+    setInstruments(updatedInstruments);
+    
+    // Update the parent user object with the new instruments data
+    const updatedUserInstruments = updatedInstruments.map(inst => {
+      const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
+      const mapped = {
+        instrumentId: instrumentId,
+        skillLevel: inst.level.toUpperCase(),
+        yearsPlaying: inst.yearsPlaying || 0,
+        isPrimary: inst.primary,
+        instrument: {
+          id: instrumentId,
+          name: inst.name.toLowerCase(),
+          nameFr: inst.name,
+          nameEn: inst.name
+        }
+      };
+      console.log(`[ADD] Mapping instrument ${inst.name} (${inst.id}) to:`, mapped);
+      return mapped;
+    });
+    console.log('[ADD] Final user.instruments being set:', updatedUserInstruments);
+    setUser({ ...user, instruments: updatedUserInstruments });
+    
+    setNewInstrument({ 
+      name: availableInstruments.length > 0 ? availableInstruments[0].nameFr : '', 
+      level: 'Beginner', 
+      yearsPlaying: 0, 
+      primary: false 
+    });
     setIsAddingInstrument(false);
     setHasUnsavedChanges(true);
   };
 
   const removeInstrument = (id: string) => {
-    setInstruments(instruments.filter(inst => inst.id !== id));
+    const updatedInstruments = instruments.filter(inst => inst.id !== id);
+    setInstruments(updatedInstruments);
+    
+    // Update the parent user object with the new instruments data
+    const updatedUserInstruments = updatedInstruments.map(inst => {
+      const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
+      return {
+        instrumentId: instrumentId,
+        skillLevel: inst.level.toUpperCase(),
+        yearsPlaying: inst.yearsPlaying || 0,
+        isPrimary: inst.primary,
+        instrument: {
+          id: instrumentId,
+          name: inst.name.toLowerCase(),
+          nameFr: inst.name,
+          nameEn: inst.name
+        }
+      };
+    });
+    setUser({ ...user, instruments: updatedUserInstruments });
     setHasUnsavedChanges(true);
   };
 
   const updateInstrument = (id: string, updates: Partial<Instrument>) => {
-    setInstruments(instruments.map(inst => 
-      inst.id === id ? { ...inst, ...updates } : inst
-    ));
+    // If setting an instrument as primary, unset all others first
+    let updatedInstruments;
+    if (updates.primary === true) {
+      updatedInstruments = instruments.map(inst => 
+        inst.id === id 
+          ? { ...inst, ...updates }
+          : { ...inst, primary: false }
+      );
+    } else {
+      updatedInstruments = instruments.map(inst => 
+        inst.id === id ? { ...inst, ...updates } : inst
+      );
+    }
+    setInstruments(updatedInstruments);
+    
+    // Update the parent user object with the new instruments data
+    const updatedUserInstruments = updatedInstruments.map(inst => {
+      const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
+      return {
+        instrumentId: instrumentId,
+        skillLevel: inst.level.toUpperCase(),
+        yearsPlaying: inst.yearsPlaying,
+        isPrimary: inst.primary,
+        instrument: {
+          id: instrumentId,
+          name: inst.name.toLowerCase(),
+          nameFr: inst.name,
+          nameEn: inst.name
+        }
+      };
+    });
+    setUser({ ...user, instruments: updatedUserInstruments });
     setHasUnsavedChanges(true);
   };
 
   const setPrimaryInstrument = (id: string) => {
-    setInstruments(instruments.map(inst => ({
+    // Ensure only one instrument can be primary
+    const updatedInstruments = instruments.map(inst => ({
       ...inst,
-      primary: inst.id === id
-    })));
+      primary: inst.id === id // This will set the selected one to true, all others to false
+    }));
+    setInstruments(updatedInstruments);
+    
+    // Update the parent user object with the new instruments data
+    const updatedUserInstruments = updatedInstruments.map(inst => {
+      const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
+      return {
+        instrumentId: instrumentId,
+        skillLevel: inst.level.toUpperCase(),
+        yearsPlaying: inst.yearsPlaying || 0,
+        isPrimary: inst.primary,
+        instrument: {
+          id: instrumentId,
+          name: inst.name.toLowerCase(),
+          nameFr: inst.name,
+          nameEn: inst.name
+        }
+      };
+    });
+    setUser({ ...user, instruments: updatedUserInstruments });
     setHasUnsavedChanges(true);
   };
 
@@ -91,6 +264,9 @@ export default function UserEditInstruments({ user, setUser, setHasUnsavedChange
       ? preferredGenres.filter(g => g !== genre)
       : [...preferredGenres, genre];
     setPreferredGenres(newGenres);
+    
+    // Update the parent user object with preferred genres
+    setUser({ ...user, preferredGenres: newGenres });
     setHasUnsavedChanges(true);
   };
 
@@ -139,8 +315,12 @@ export default function UserEditInstruments({ user, setUser, setHasUnsavedChange
             </select>
             <input
               type="number"
-              value={instrument.yearsPlaying}
-              onChange={(e) => updateInstrument(instrument.id, { yearsPlaying: parseInt(e.target.value) || 0 })}
+              value={instrument.yearsPlaying || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                const numValue = value === '' ? 0 : parseInt(value) || 0;
+                updateInstrument(instrument.id, { yearsPlaying: numValue });
+              }}
               className="px-2 py-1 text-sm border border-gray-200 rounded"
               placeholder="Years"
               min="0"
@@ -166,7 +346,7 @@ export default function UserEditInstruments({ user, setUser, setHasUnsavedChange
         </div>
       ) : (
         <div className="text-sm text-gray-600">
-          <p>{instrument.level} • {instrument.yearsPlaying} years</p>
+          <p>{instrument.level}{instrument.yearsPlaying > 0 ? ` • ${instrument.yearsPlaying} years` : ''}</p>
           {!instrument.primary && (
             <button
               onClick={() => setPrimaryInstrument(instrument.id)}
@@ -199,14 +379,21 @@ export default function UserEditInstruments({ user, setUser, setHasUnsavedChange
         {isAddingInstrument && (
           <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-medium text-gray-900 mb-3">Add New Instrument</h4>
+            
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-800">{errorMessage}</p>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <select
                 value={newInstrument.name}
                 onChange={(e) => setNewInstrument({ ...newInstrument, name: e.target.value })}
                 className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               >
-                {AVAILABLE_INSTRUMENTS.map(instrument => (
-                  <option key={instrument} value={instrument}>{instrument}</option>
+                {availableInstruments.map(instrument => (
+                  <option key={instrument.id} value={instrument.nameFr}>{instrument.nameFr}</option>
                 ))}
               </select>
               
@@ -222,8 +409,12 @@ export default function UserEditInstruments({ user, setUser, setHasUnsavedChange
               
               <input
                 type="number"
-                value={newInstrument.yearsPlaying}
-                onChange={(e) => setNewInstrument({ ...newInstrument, yearsPlaying: parseInt(e.target.value) || 0 })}
+                value={newInstrument.yearsPlaying || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const numValue = value === '' ? 0 : parseInt(value) || 0;
+                  setNewInstrument({ ...newInstrument, yearsPlaying: numValue });
+                }}
                 placeholder="Years playing"
                 min="0"
                 className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
@@ -245,7 +436,13 @@ export default function UserEditInstruments({ user, setUser, setHasUnsavedChange
               <button
                 onClick={() => {
                   setIsAddingInstrument(false);
-                  setNewInstrument({ name: 'Guitar', level: 'Beginner', yearsPlaying: 0, primary: false });
+                  setErrorMessage(null);
+                  setNewInstrument({ 
+                    name: availableInstruments.length > 0 ? availableInstruments[0].nameFr : '', 
+                    level: 'Beginner', 
+                    yearsPlaying: 0, 
+                    primary: false 
+                  });
                 }}
                 className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
               >

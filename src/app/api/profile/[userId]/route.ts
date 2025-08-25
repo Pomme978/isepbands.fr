@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
+import { requireAuth } from '@/middlewares/auth';
+import { z } from 'zod';
+import { getBadgeDisplayName } from '@/utils/badgeUtils';
+
+// Schema for profile updates (limited fields for non-admin users)
+const updateProfileSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  biography: z.string().optional(),
+  photoUrl: z.string().nullable().optional(),
+  isLookingForGroup: z.boolean().optional(),
+  pronouns: z.string().nullable().optional(),
+});
 
 export async function GET(req: NextRequest) {
   const urlParts = req.nextUrl.pathname.split('/');
@@ -16,7 +29,7 @@ export async function GET(req: NextRequest) {
     where: { id: userId },
     include: {
       badges: true,
-      instruments: true,
+      instruments: { include: { instrument: true } },
       roles: { include: { role: true } },
       groupMemberships: {
         include: {
@@ -59,6 +72,16 @@ export async function GET(req: NextRequest) {
     user.roles[0],
   );
 
+  // Get role display name based on user pronouns
+  const getRoleDisplayName = (role: any, pronouns: string | null) => {
+    if (!role) return null;
+
+    const isFeminine = pronouns === 'she/her';
+    return isFeminine ? role.nameFrFemale : role.nameFrMale;
+  };
+
+  // Debug logging
+
   // Formatage de la réponse
   const response = {
     id: user.id,
@@ -76,7 +99,8 @@ export async function GET(req: NextRequest) {
     pronouns: user.pronouns,
     isLookingForGroup: user.isLookingForGroup,
     isOutOfSchool: user.isOutOfSchool,
-    badges: user.badges.map((b) => b.name),
+    preferredGenres: user.preferredGenres,
+    badges: user.badges.map((b) => getBadgeDisplayName(b.name, 'fr')),
     instruments: user.instruments,
     roles: user.roles.map((r) => r.role.name),
     totalGroups,
@@ -84,7 +108,7 @@ export async function GET(req: NextRequest) {
     activeGroups,
     eventsAttended,
     concertsPlayed,
-    primaryRole: primaryRole?.role?.name || null,
+    primaryRole: getRoleDisplayName(primaryRole?.role, user.pronouns) || null,
     groupMemberships: user.groupMemberships.map((gm) => ({
       id: gm.group.id,
       name: gm.group.name,
@@ -108,4 +132,117 @@ export async function GET(req: NextRequest) {
     message: 'User found',
     data: response,
   });
+}
+
+export async function PUT(req: NextRequest) {
+  const urlParts = req.nextUrl.pathname.split('/');
+  const userId = urlParts[urlParts.length - 1];
+
+  if (!userId) {
+    return NextResponse.json({
+      success: false,
+      code: 'missing_user_id',
+      message: 'Missing userId',
+      data: null,
+    });
+  }
+
+  // Check authentication
+  const auth = await requireAuth(req);
+  if (!auth.ok) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'unauthorized',
+        message: 'Authentication required',
+        data: null,
+      },
+      { status: 401 },
+    );
+  }
+
+  // Users can only update their own profile (unless they have admin access)
+  if (auth.user?.id !== userId && !auth.user?.isFullAccess) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'forbidden',
+        message: 'You can only update your own profile',
+        data: null,
+      },
+      { status: 403 },
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const validatedData = updateProfileSchema.parse(body);
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: 'user_not_found',
+          message: 'User not found',
+          data: null,
+        },
+        { status: 404 },
+      );
+    }
+
+    // Update the user profile
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...validatedData,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        biography: true,
+        photoUrl: true,
+        isLookingForGroup: true,
+        pronouns: true,
+        updatedAt: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      code: 'profile_updated',
+      message: 'Profile updated successfully',
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: 'validation_error',
+          message: 'Validation error',
+          data: error.errors,
+        },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'update_failed',
+        message: 'Failed to update profile',
+        data: null,
+      },
+      { status: 500 },
+    );
+  }
 }

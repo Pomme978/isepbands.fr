@@ -161,7 +161,7 @@ interface RecentActivityProps {
 }
 
 export default function RecentActivity({
-  activities = ACTIVITY_DATA,
+  activities = [], // Empty for now since we don't log activity yet
   maxItems = 10,
 }: RecentActivityProps) {
   const displayedActivities = activities.slice(0, maxItems);
@@ -206,7 +206,11 @@ export default function RecentActivity({
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">Aucune activité récente</p>
+            <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-muted-foreground mb-2">Aucune activité pour le moment</p>
+            <p className="text-sm text-gray-500">
+              Les actions administratives apparaîtront ici lorsque le système de logs sera activé
+            </p>
           </div>
         )}
       </div>

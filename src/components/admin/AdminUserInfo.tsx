@@ -1,27 +1,53 @@
 'use client';
 
 import LangLink from '@/components/common/LangLink';
+import Avatar from '@/components/common/Avatar';
 import { LogOut, User, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-client';
+import { getPrimaryRoleName } from '@/utils/roleUtils';
 
 interface AdminUserInfoProps {
   user?: {
-    name: string;
+    id: string;
     email: string;
-    role: string;
-    avatar?: string;
-    initials?: string;
+    firstName?: string;
+    lastName?: string;
+    photoUrl?: string;
+    pronouns?: string;
+    isFullAccess?: boolean;
+    isRoot?: boolean;
+    roles?: Array<{
+      role: {
+        id: number;
+        name: string;
+        nameFrMale: string;
+        nameFrFemale: string;
+        nameEnMale: string;
+        nameEnFemale: string;
+        weight: number;
+        isCore: boolean;
+      };
+    }>;
   };
 }
 
-export default function AdminUserInfo({
-  user = {
-    name: 'Admin User',
-    email: 'admin@isepbands.fr',
-    role: 'Administrateur',
-    initials: 'AD',
-  },
-}: AdminUserInfoProps) {
+export default function AdminUserInfo({ user }: AdminUserInfoProps) {
+  const { signOut } = useAuth();
+
+  // Get display name from first/last name, fallback to formatted email
+  const displayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : (user?.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
+
+  // Determine role display using utils
+  const roleDisplay = user?.isRoot
+    ? 'Root Admin'
+    : user?.roles && user.roles.length > 0
+      ? getPrimaryRoleName(user.roles, user.pronouns, 'fr')
+      : 'Member';
+
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -31,12 +57,16 @@ export default function AdminUserInfo({
         className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-          <span className="text-sm font-medium text-white">{user.initials}</span>
-        </div>
+        <Avatar
+          src={user?.photoUrl}
+          alt={displayName}
+          name={displayName}
+          size="sm"
+          className="shadow-lg flex-shrink-0"
+        />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-          <p className="text-xs text-gray-500 truncate">{user.role}</p>
+          <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
+          <p className="text-xs text-gray-500 truncate">{roleDisplay}</p>
         </div>
         <ChevronUp
           className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
@@ -49,20 +79,20 @@ export default function AdminUserInfo({
       {isExpanded && (
         <div className="mt-3 space-y-1">
           <LangLink
-            href="/admin/profile"
+            href="/profile"
             className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <User size={16} />
             <span>My Profile</span>
           </LangLink>
 
-          <LangLink
-            href="/logout"
-            className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          <button
+            onClick={() => signOut()}
+            className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
             <LogOut size={16} />
             <span>Logout</span>
-          </LangLink>
+          </button>
         </div>
       )}
     </div>

@@ -17,6 +17,9 @@ import {
   Crown,
 } from 'lucide-react';
 import { formatPromotion } from '@/utils/schoolUtils';
+import { MUSIC_GENRES, getMusicGenreDisplay } from '@/data/musicGenres';
+import { formatPhoneNumber } from '@/utils/phoneUtils';
+import Avatar from '@/components/common/Avatar';
 
 type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
 type Pronouns = 'he/him' | 'she/her' | 'they/them' | 'other';
@@ -24,7 +27,11 @@ type Pronouns = 'he/him' | 'she/her' | 'they/them' | 'other';
 interface RegistrationInstrument {
   instrumentId: number;
   instrumentName: string;
+  instrumentNameFr: string;
+  instrumentNameEn: string;
   skillLevel: SkillLevel;
+  yearsPlaying?: number;
+  isPrimary?: boolean;
 }
 
 interface PendingUser {
@@ -41,6 +48,7 @@ interface PendingUser {
   motivation: string;
   experience: string;
   instruments: RegistrationInstrument[];
+  preferredGenres?: string[];
   profilePhoto?: string;
   submittedAt: string;
 }
@@ -231,20 +239,12 @@ function UserDetails({ user }: { user: PendingUser }) {
     <div className="space-y-6">
       {/* Profile Header */}
       <div className="flex items-start space-x-6">
-        {user.profilePhoto ? (
-          <img
-            src={user.profilePhoto}
-            alt={`${user.firstName} ${user.lastName}`}
-            className="w-20 h-20 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-20 h-20 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">
-              {user.firstName.charAt(0)}
-              {user.lastName.charAt(0)}
-            </span>
-          </div>
-        )}
+        <Avatar 
+          src={user.profilePhoto} 
+          alt={`${user.firstName} ${user.lastName}`}
+          name={`${user.firstName} ${user.lastName}`}
+          size="xl"
+        />
         <div className="flex-1">
           <h3 className="text-2xl font-bold text-foreground">
             {user.firstName} {user.lastName}
@@ -259,7 +259,7 @@ function UserDetails({ user }: { user: PendingUser }) {
             </div>
             <div className="flex items-center space-x-2">
               <Phone className="w-4 h-4 text-muted-foreground" />
-              <span>{user.phone}</span>
+              <span>{formatPhoneNumber(user.phone)}</span>
             </div>
             <div className="flex items-center space-x-2">
               <GraduationCap className="w-4 h-4 text-muted-foreground" />
@@ -284,14 +284,29 @@ function UserDetails({ user }: { user: PendingUser }) {
             {user.instruments.map((instrument, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-accent/50 rounded-lg"
+                className={`p-3 rounded-lg border-2 ${instrument.isPrimary ? 'bg-yellow-50 border-yellow-200' : 'bg-accent/50 border-transparent'}`}
               >
-                <span className="font-medium">{instrument.instrumentName}</span>
-                <span
-                  className={`px-2 py-1 text-xs font-medium rounded-full ${skillLevelColors[instrument.skillLevel]}`}
-                >
-                  {skillLevelLabels[instrument.skillLevel]}
-                </span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium">{instrument.instrumentNameFr || instrument.instrumentName}</span>
+                    {instrument.isPrimary && (
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        <span className="text-xs font-medium text-yellow-700">Principal</span>
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${skillLevelColors[instrument.skillLevel]}`}
+                  >
+                    {skillLevelLabels[instrument.skillLevel]}
+                  </span>
+                </div>
+                {instrument.yearsPlaying && (
+                  <p className="text-xs text-muted-foreground">
+                    {instrument.yearsPlaying} année{instrument.yearsPlaying > 1 ? 's' : ''} d'expérience
+                  </p>
+                )}
               </div>
             ))}
           </div>

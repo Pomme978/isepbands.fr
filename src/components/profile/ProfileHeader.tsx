@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 // ...existing code...
 import ProfileStats from './ProfileStats';
 import BadgeDisplay from './BadgeDisplay';
-import Image from 'next/image';
+import Avatar from '../common/Avatar';
 import React from 'react';
 
 interface UserProfile {
@@ -30,6 +30,7 @@ interface UserProfile {
   memberSince: string;
   instrumentCount: number; // Ajouté
   concertsPlayed: number; // Ajouté
+  age?: number | null; // Age calculé
 }
 
 interface ProfileHeaderProps {
@@ -49,19 +50,17 @@ const getPronounDisplay = (pronouns: UserProfile['pronouns']): string => {
 
 export default function ProfileHeader({ user }: ProfileHeaderProps) {
   return (
-    <Card className="p-8 bg-gradient-to-r from-white to-gray-50 border-0">
+    <Card className="p-8 bg-gradient-to-r bg-white border-0">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* Profile Image */}
         <div className="relative">
-          <div className="w-42 h-42 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden shadow-lg">
-            <Image
-              src={user.image}
-              alt={user.username}
-              width={128}
-              height={128}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <Avatar
+            src={user.image}
+            alt={user.username}
+            name={user.username}
+            size="xl"
+            className="shadow-lg"
+          />
         </div>
 
         {/* Profile Info */}
@@ -71,13 +70,13 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
                 {user.username}
               </h1>
-              {/* Affiche la promo seulement si l'utilisateur n'est pas hors école et que la promo existe */}
-              {!user.isOutOfSchool && user.promotion && (
-                <p className="text-gray-600 text-lg">{user.promotion}</p>
-              )}
-              {/* Affiche la date de promo seulement si l'utilisateur n'est pas hors école et que la date existe */}
-              {!user.isOutOfSchool && user.dateOfBirth && (
-                <p className="text-gray-600 text-sm">Année de promo : {user.dateOfBirth}</p>
+              {/* Affiche la promo et l'âge sur la même ligne */}
+              {!user.isOutOfSchool && (user.promotion || user.age) && (
+                <p className="text-gray-600 text-lg">
+                  {user.promotion}
+                  {user.promotion && user.age && ', '}
+                  {user.age && `${user.age} ans`}
+                </p>
               )}
               <p className="text-sm text-gray-500">
                 Pronoms: {getPronounDisplay(user.pronouns)} • Membre depuis {user.memberSince}

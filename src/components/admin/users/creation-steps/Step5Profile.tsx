@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { UserFormData } from '../CreateUserModal';
+import { validateImageFile } from '@/utils/imageUpload';
 
 interface Step5ProfileProps {
   formData: UserFormData;
@@ -26,19 +27,29 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, profilePhoto: file });
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    
+    // Validate file before storing
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
     }
+    
+    // Store file for upload when user is created (not auto-upload)
+    setFormData({ ...formData, profilePhoto: file });
+    
+    // Create preview using URL.createObjectURL for better performance
+    const previewUrl = URL.createObjectURL(file);
+    setPreviewImage(previewUrl);
   };
 
   const removeImage = () => {
+    // Clean up preview URL if it exists
+    if (previewImage && previewImage.startsWith('blob:')) {
+      URL.revokeObjectURL(previewImage);
+    }
+    
     setFormData({ ...formData, profilePhoto: undefined });
     setPreviewImage(null);
   };
@@ -93,8 +104,13 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
                 {previewImage ? 'Change Photo' : 'Upload Photo'}
               </label>
               <p className="text-xs text-gray-500 mt-1">
-                Recommended: Square image, at least 200x200px
+                Recommended: Square image, at least 200x200px (max 5MB)
               </p>
+              {formData.profilePhoto && (
+                <p className="text-xs text-orange-600 mt-1">
+                  Image sera téléchargée lors de la création
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -105,31 +121,35 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
             Bio
           </label>
           <textarea
-            value={formData.bioFR}
-            onChange={(e) => updateField('bioFR', e.target.value)}
+            value={formData.bio}
+            onChange={(e) => updateField('bio', e.target.value)}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
             placeholder="A short biography..."
             rows={4}
           />
         </div>
 
-        <div className="flex items-start space-x-3 mt-4">
-          <input
-            type="checkbox"
-            id="publicProfile"
-            checked={formData.publicProfile}
-            onChange={(e) => updateField('publicProfile', e.target.checked)}
-            className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
-          />
-          <div>
-            <label htmlFor="publicProfile" className="text-sm font-medium text-gray-700">
-              Public Profile
-            </label>
-            <p className="text-xs text-gray-500">
-              Make this profile visible to all association members
-            </p>
-          </div>
+        {/* Pronouns Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Pronouns
+          </label>
+          <select
+            value={formData.pronouns}
+            onChange={(e) => updateField('pronouns', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+          >
+            <option value="">Select pronouns</option>
+            <option value="he/him">he/him (il/lui)</option>
+            <option value="she/her">she/her (elle/elle)</option>
+            <option value="they/them">they/them (iel/ellui)</option>
+            <option value="other">Other (autre)</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            This will be displayed on the user's profile
+          </p>
         </div>
+
       </div>
 
       <div>
@@ -214,7 +234,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
         <ul className="text-sm text-indigo-700 space-y-1">
           <li>• Profile information can be updated later by the user</li>
           <li>• Email preferences can be changed at any time in user settings</li>
-          <li>• Public profiles are visible in the member directory</li>
+          <li>• All profiles are visible to association members</li>
           <li>• Bio information appears on the user's profile page</li>
         </ul>
       </div>

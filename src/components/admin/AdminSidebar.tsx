@@ -1,12 +1,27 @@
 'use client';
 
 import LangLink from '@/components/common/LangLink';
+
+interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isFullAccess?: boolean;
+  isRoot?: boolean;
+}
+
+interface AdminSidebarProps {
+  user?: User;
+}
 import SidebarLink from './SidebarLink';
 import SidebarSection from './SidebarSection';
 import AdminUserInfo from './AdminUserInfo';
 import {
   // Main sections
   Home,
+  Activity,
+  Newspaper,
 
   // Content Management
   Users,
@@ -56,6 +71,11 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         href: '/admin',
         icon: Home,
         isExact: true,
+      },
+      {
+        name: 'Club Feed',
+        href: '/admin/clubfeed',
+        icon: Newspaper,
       },
     ],
   },
@@ -161,7 +181,7 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ user }: AdminSidebarProps = {}) {
   return (
     <div className="w-64 bg-white shadow-lg flex flex-col">
       {/* Logo Section */}
@@ -191,7 +211,7 @@ export default function AdminSidebar() {
       </nav>
 
       {/* User Info Section */}
-      <AdminUserInfo />
+      <AdminUserInfo user={user} />
     </div>
   );
 }

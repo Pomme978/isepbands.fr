@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import Avatar from '../common/Avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +32,10 @@ export default function UserMenu() {
     );
   }
 
-  const displayName = (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
+  // Get display name from first/last name, fallback to formatted email
+  const displayName = user.firstName && user.lastName 
+    ? `${user.firstName} ${user.lastName}`
+    : (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
   const band = user.band;
 
   const handleProfileClick = () => {
@@ -71,9 +74,13 @@ export default function UserMenu() {
                 </span>
               )}
             </div>
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarFallback className="text-xs">{displayName[0] || user.email[0]}</AvatarFallback>
-            </Avatar>
+            <Avatar
+              src={user.photoUrl}
+              alt={displayName}
+              name={displayName}
+              size="sm"
+              className="shadow-lg flex-shrink-0"
+            />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

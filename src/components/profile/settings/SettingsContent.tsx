@@ -4,24 +4,76 @@ import { ProfileSettings } from './ProfileSettings';
 import { MusicSettings } from './MusicSettings';
 import { PrivacySettings } from './PrivacySettings';
 
-interface SettingsContentProps {
-  activeSection: string;
+interface UserProfile {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  biography?: string;
+  photoUrl?: string | null;
+  isLookingForGroup?: boolean;
+  pronouns?: string | null;
+  promotion?: string | null;
+  status?: string;
+  isOutOfSchool?: boolean;
 }
 
-export function SettingsContent({ activeSection }: SettingsContentProps) {
+interface SettingsContentProps {
+  activeSection: string;
+  userProfile?: UserProfile;
+  currentUserId?: string;
+  formData?: any;
+  onFormDataChange?: (section: string, data: any) => void;
+  onPendingPhotoChange?: (file: File | null) => void;
+}
+
+export function SettingsContent({ 
+  activeSection, 
+  userProfile, 
+  currentUserId,
+  formData,
+  onFormDataChange,
+  onPendingPhotoChange
+}: SettingsContentProps) {
   const renderContent = () => {
     switch (activeSection) {
       case 'profile':
-        return <ProfileSettings />;
+        return (
+          <ProfileSettings 
+            initialProfile={userProfile}
+            currentUserId={currentUserId}
+            formData={formData?.profile}
+            onFormDataChange={(data) => onFormDataChange?.('profile', data)}
+            onPendingPhotoChange={onPendingPhotoChange}
+          />
+        );
 
       case 'music':
-        return <MusicSettings />;
+        return (
+          <MusicSettings 
+            formData={formData?.music}
+            onFormDataChange={(data) => onFormDataChange?.('music', data)}
+          />
+        );
 
       case 'privacy':
-        return <PrivacySettings />;
+        return (
+          <PrivacySettings 
+            formData={formData?.privacy}
+            onFormDataChange={(data) => onFormDataChange?.('privacy', data)}
+          />
+        );
 
       default:
-        return <ProfileSettings />;
+        return (
+          <ProfileSettings 
+            initialProfile={userProfile}
+            currentUserId={currentUserId}
+            formData={formData?.profile}
+            onFormDataChange={(data) => onFormDataChange?.('profile', data)}
+            onPendingPhotoChange={onPendingPhotoChange}
+          />
+        );
     }
   };
 

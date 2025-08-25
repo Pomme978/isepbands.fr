@@ -65,6 +65,36 @@ export default function Step6Confirmation({
           </ul>
         </div>
         <div className="md:col-span-2">
+          <Label>Genres musicaux préférés</Label>
+          <div>
+            {data.preferredGenres?.length > 0 ? (
+              data.preferredGenres.map((genreId, index) => {
+                // Map genre IDs to display names
+                const genreNames: Record<string, string> = {
+                  'rock': 'Rock',
+                  'pop': 'Pop',
+                  'jazz': 'Jazz',
+                  'blues': 'Blues',
+                  'metal': 'Métal',
+                  'punk': 'Punk',
+                  'reggae': 'Reggae',
+                  'funk': 'Funk',
+                  'country': 'Country',
+                  'electro': 'Électro',
+                  'classical': 'Classique',
+                  'hip-hop': 'Hip-Hop',
+                  'rnb': 'R&B',
+                  'folk': 'Folk',
+                  'alternative': 'Alternatif'
+                };
+                return genreNames[genreId] || genreId;
+              }).join(', ')
+            ) : (
+              'Aucun genre sélectionné'
+            )}
+          </div>
+        </div>
+        <div className="md:col-span-2">
           <Label>{t('auth.register.profilePhoto')}</Label>
           <div>{data.profilePhoto ? data.profilePhoto.name : t('common.none')}</div>
         </div>

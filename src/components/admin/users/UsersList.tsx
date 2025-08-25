@@ -1,19 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminExpandableSection from '../common/AdminExpandableSection';
 import UserCard from './UserCard';
+import { calculateAge } from '@/utils/schoolUtils';
+import { getPrimaryRoleName } from '@/utils/roleUtils';
+import Loading from '@/components/ui/Loading';
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  avatar?: string;
   promotion: string;
-  role: string;
-  joinDate: string;
-  status: 'current' | 'former' | 'pending' | 'graduated';
+  birthDate: string;
+  status: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
+  photoUrl?: string;
+  createdAt: string;
+  isOutOfSchool: boolean;
+  pronouns?: string;
+  biography?: string;
+  phone?: string;
+  instruments: Array<{
+    name: string;
+    skillLevel: string;
+    yearsPlaying?: number;
+    isPrimary: boolean;
+  }>;
+  roles: Array<{
+    role: {
+      id: number;
+      name: string;
+      nameFrMale: string;
+      nameFrFemale: string;
+      nameEnMale: string;
+      nameEnFemale: string;
+      weight: number;
+      isCore: boolean;
+    };
+  }>;
+  groups: Array<{
+    id: number;
+    name: string;
+    role?: string;
+    isAdmin: boolean;
+  }>;
+  badges: string[];
+}
+
+interface UsersApiResponse {
+  users: User[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  };
 }
 
 interface UsersListProps {
@@ -23,137 +67,280 @@ interface UsersListProps {
     memberStatus: string;
     dateSort: string;
   };
+  refreshTrigger?: number; // Add refresh trigger
 }
 
-// Placeholder data
-const MOCK_USERS: User[] = [
-  {
-    id: '1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@isep.fr',
-    avatar: '/avatars/john.jpg',
-    promotion: 'I3',
-    role: 'President',
-    joinDate: '2024-09-01',
-    status: 'current'
-  },
-  {
-    id: '2',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane@isep.fr',
-    avatar: '/avatars/jane.jpg',
-    promotion: 'A2',
-    role: 'Member',
-    joinDate: '2024-09-02',
-    status: 'current'
-  },
-  {
-    id: '3',
-    firstName: 'Paul',
-    lastName: 'Martin',
-    email: 'paul@isep.fr',
-    promotion: 'I2',
-    role: 'Vice-President',
-    joinDate: '2024-09-01',
-    status: 'current'
-  },
-  {
-    id: '4',
-    firstName: 'Sarah',
-    lastName: 'Wilson',
-    email: 'sarah@isep.fr',
-    promotion: 'Graduate',
-    role: 'Former Member',
-    joinDate: '2023-09-01',
-    status: 'graduated'
-  },
-  {
-    id: '5',
-    firstName: 'Mike',
-    lastName: 'Johnson',
-    email: 'mike@isep.fr',
-    promotion: 'A1',
-    role: 'Member',
-    joinDate: '2024-12-15',
-    status: 'pending'
-  }
-];
+export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-export default function UsersList({ filters }: UsersListProps) {
-  // Filter and sort users based on filters
-  const filteredUsers = MOCK_USERS.filter(user => {
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      return (
-        user.firstName.toLowerCase().includes(searchTerm) ||
-        user.lastName.toLowerCase().includes(searchTerm) ||
-        user.email.toLowerCase().includes(searchTerm) ||
-        user.promotion.toLowerCase().includes(searchTerm)
-      );
-    }
-    return true;
+  // Fetch current user session
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/auth/session');
+        if (response.ok) {
+          const session = await response.json();
+          setCurrentUserId(session.user?.id || null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch current user:', err);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrevious: false,
   });
 
-  const currentMembers = filteredUsers.filter(user => user.status === 'current');
-  const formerMembers = filteredUsers.filter(user => user.status === 'former' || user.status === 'graduated');
-  const pendingMembers = filteredUsers.filter(user => user.status === 'pending');
+  useEffect(() => {
+    fetchUsers();
+  }, [filters, refreshTrigger]);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const statusValue = mapMemberStatusToDBStatus(filters.memberStatus);
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '50',
+        ...(filters.search && { search: filters.search }),
+        ...(statusValue && { status: statusValue }),
+        sortBy: mapSortByToField(filters.sortBy),
+        sortOrder: filters.dateSort === 'oldest' ? 'asc' : 'desc',
+      });
+
+      const response = await fetch(`/api/admin/users?${params}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: UsersApiResponse = await response.json();
+      setUsers(data.users);
+      setPagination(data.pagination);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapSortByToField = (sortBy: string): string => {
+    switch (sortBy) {
+      case 'alphabetical':
+        return 'firstName';
+      case 'recent':
+        return 'createdAt';
+      case 'promotion':
+        return 'promotion';
+      default:
+        return 'firstName';
+    }
+  };
+
+  const mapMemberStatusToDBStatus = (memberStatus: string): string | null => {
+    switch (memberStatus) {
+      case 'current':
+        return 'CURRENT';
+      case 'former':
+        return 'FORMER';
+      case 'pending':
+        return 'PENDING';
+      case 'graduated':
+        return 'GRADUATED';
+      case 'board':
+        return null; // Special case: will be handled differently
+      default:
+        return null;
+    }
+  };
+
+  // Transform API user data to match UserCard interface
+  const transformUser = (user: User) => {
+    console.log(`=== TRANSFORM DEBUG for ${user.firstName} ${user.lastName} ===`);
+
+    // Check if user has roles and get the appropriate display name
+    let roleDisplay = 'Membre'; // Default for users with no roles
+    console.log('Initial roleDisplay:', roleDisplay);
+
+    if (user.roles && user.roles.length > 0) {
+      console.log('User has roles:', user.roles.length, 'roles');
+      try {
+        roleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
+        console.log('getPrimaryRoleName returned:', roleDisplay);
+      } catch (error) {
+        console.error('Error getting role display name:', error);
+        roleDisplay = 'Membre';
+      }
+    } else {
+      console.log('User has no roles');
+    }
+
+    console.log('Final roleDisplay before object creation:', roleDisplay);
+
+    const result = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      avatar: user.photoUrl,
+      promotion: user.promotion,
+      role: roleDisplay,
+      joinDate: new Date(user.createdAt).toISOString().split('T')[0],
+      status: user.status.toLowerCase() as 'current' | 'former' | 'pending' | 'graduated',
+      age: calculateAge(user.birthDate),
+      instruments: user.instruments.map((i) => i.name),
+      groups: user.groups.map((g) => g.name),
+      badges: user.badges,
+    };
+
+    console.log('Final result object role field:', result.role);
+    console.log('=== END TRANSFORM DEBUG ===');
+
+    return result;
+  };
+
+  // Group users by status
+  const currentMembers = users.filter((user) => user.status === 'CURRENT').map(transformUser);
+  const formerMembers = users
+    .filter((user) => user.status === 'FORMER' || user.status === 'GRADUATED')
+    .map(transformUser);
+  const pendingMembers = users.filter((user) => user.status === 'PENDING').map(transformUser);
+  const boardMembers = users
+    .filter((user) => {
+      // Board members are those with high weight roles (president, vice-president, etc.)
+      return (
+        user.roles &&
+        user.roles.length > 0 &&
+        user.roles.some((role: any) => role.role?.weight && role.role.weight >= 80)
+      );
+    })
+    .map(transformUser);
+
+  // Determine which sections to show based on filter
+  const shouldShowCurrentMembers =
+    filters.memberStatus === 'all' || filters.memberStatus === 'current';
+  const shouldShowFormerMembers =
+    filters.memberStatus === 'all' || filters.memberStatus === 'former';
+  const shouldShowPendingMembers =
+    filters.memberStatus === 'all' || filters.memberStatus === 'pending';
+  const shouldShowBoardMembers = filters.memberStatus === 'board';
+
+  // For board filter, only show board members in a special section
+  const displayCurrentMembers = shouldShowBoardMembers ? boardMembers : currentMembers;
+  const displayFormerMembers = shouldShowBoardMembers ? [] : formerMembers;
+  const displayPendingMembers = shouldShowBoardMembers ? [] : pendingMembers;
+
+  if (loading) {
+    return (
+      <div className="py-12">
+        <Loading text="Loading users..." size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-600 mb-2">Error loading users</div>
+        <div className="text-gray-500 mb-4">{error}</div>
+        <button
+          onClick={fetchUsers}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // Check if any sections will be shown
+  const hasAnyResults =
+    (shouldShowCurrentMembers && displayCurrentMembers.length > 0) ||
+    (shouldShowFormerMembers && displayFormerMembers.length > 0) ||
+    (shouldShowPendingMembers && displayPendingMembers.length > 0);
 
   return (
     <div className="space-y-6">
-      {/* Pending Members - Always show if any */}
-      {pendingMembers.length > 0 && (
+      {/* Pending Members - Show only if filter allows */}
+      {shouldShowPendingMembers && displayPendingMembers.length > 0 && (
         <AdminExpandableSection
           title="Pending Approval"
-          count={pendingMembers.length}
+          count={displayPendingMembers.length}
           defaultExpanded={true}
         >
-          {pendingMembers.length === 0 ? (
+          <div className="space-y-4">
+            {displayPendingMembers.map((user) => {
+              console.log(
+                'Passing to UserCard:',
+                user.firstName,
+                user.lastName,
+                'with role:',
+                user.role,
+              );
+              return <UserCard key={user.id} user={user} currentUserId={currentUserId} />;
+            })}
+          </div>
+        </AdminExpandableSection>
+      )}
+
+      {/* Current Members or Board Members */}
+      {shouldShowCurrentMembers && (
+        <AdminExpandableSection
+          title={shouldShowBoardMembers ? 'Board Members' : 'Current Members'}
+          count={displayCurrentMembers.length}
+          defaultExpanded={true}
+        >
+          {displayCurrentMembers.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No users found in this category.</p>
           ) : (
             <div className="space-y-4">
-              {pendingMembers.map(user => (
-                <UserCard key={user.id} user={user} />
-              ))}
+              {displayCurrentMembers.map((user) => {
+                console.log(
+                  'Passing to UserCard (current):',
+                  user.firstName,
+                  user.lastName,
+                  'with role:',
+                  user.role,
+                );
+                return <UserCard key={user.id} user={user} currentUserId={currentUserId} />;
+              })}
             </div>
           )}
         </AdminExpandableSection>
       )}
 
-      {/* Current Members */}
-      <AdminExpandableSection
-        title="Current Members"
-        count={currentMembers.length}
-        defaultExpanded={true}
-      >
-        {currentMembers.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No users found in this category.</p>
-        ) : (
+      {/* Former Members - Show only if filter allows */}
+      {shouldShowFormerMembers && displayFormerMembers.length > 0 && (
+        <AdminExpandableSection
+          title="Former Members & Graduates"
+          count={displayFormerMembers.length}
+          defaultExpanded={false}
+        >
           <div className="space-y-4">
-            {currentMembers.map(user => (
-              <UserCard key={user.id} user={user} />
+            {displayFormerMembers.map((user) => (
+              <UserCard key={user.id} user={user} currentUserId={currentUserId} />
             ))}
           </div>
-        )}
-      </AdminExpandableSection>
+        </AdminExpandableSection>
+      )}
 
-      {/* Former Members */}
-      <AdminExpandableSection
-        title="Former Members & Graduates"
-        count={formerMembers.length}
-        defaultExpanded={false}
-      >
-        {formerMembers.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No users found in this category.</p>
-        ) : (
-          <div className="space-y-4">
-            {formerMembers.map(user => (
-              <UserCard key={user.id} user={user} />
-            ))}
-          </div>
-        )}
-      </AdminExpandableSection>
+      {/* Pagination Info */}
+      {pagination.total > 0 && (
+        <div className="text-sm text-gray-500 text-center">
+          Showing {users.length} of {pagination.total} users
+        </div>
+      )}
     </div>
   );
 }

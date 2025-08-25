@@ -1,12 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getRoleDisplayName } from '@/utils/roleUtils';
+import Loading from '@/components/ui/Loading';
+
+interface Role {
+  id: number;
+  name: string;
+  nameFrMale: string;
+  nameFrFemale: string;
+  nameEnMale: string;
+  nameEnFemale: string;
+  weight: number;
+  isCore: boolean;
+  permissions?: {
+    permission: {
+      id: number;
+      name: string;
+      nameFr: string;
+      nameEn: string;
+      description: string;
+    };
+  }[];
+}
+
+interface Permission {
+  id: number;
+  name: string;
+  nameFr: string;
+  nameEn: string;
+  description?: string;
+}
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
-  role: string;
+  roles?: {
+    role: Role;
+  }[];
+  isFullAccess?: boolean;
   // Add other properties as needed
 }
 
@@ -16,52 +49,102 @@ interface UserEditPermissionsProps {
   setHasUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-const AVAILABLE_ROLES = [
-  { value: 'Member', label: 'Member', description: 'Basic member permissions' },
-  { value: 'President', label: 'President', description: 'Full access to all systems' },
-  { value: 'Vice-President', label: 'Vice-President', description: 'Administrative access' },
-  { value: 'Secretary', label: 'Secretary', description: 'Administrative access + documents' },
-  { value: 'Treasurer', label: 'Treasurer', description: 'Financial permissions' },
-  { value: 'Communications', label: 'Communications', description: 'Communication tools' },
-  { value: 'Former-Member', label: 'Former Member', description: 'Limited access' }
-];
-
-const AVAILABLE_PERMISSIONS = [
-  { id: 'admin_dashboard', label: 'Admin Dashboard Access', description: 'Access to admin panel' },
-  { id: 'user_management', label: 'User Management', description: 'Manage user accounts' },
-  { id: 'band_management', label: 'Band Management', description: 'Manage bands and groups' },
-  { id: 'event_creation', label: 'Event Creation', description: 'Create new events' },
-  { id: 'event_management', label: 'Event Management', description: 'Manage existing events' },
-  { id: 'newsletter_access', label: 'Newsletter Access', description: 'Send newsletters and communications' },
-  { id: 'content_management', label: 'Content Management', description: 'Edit site content' },
-  { id: 'media_library', label: 'Media Library Access', description: 'Manage site media' },
-  { id: 'files_access', label: 'Files Access (Restricted)', description: 'Access restricted files' }
-];
 
 export default function UserEditPermissions({ user, setUser, setHasUnsavedChanges }: UserEditPermissionsProps) {
-  const [fullAccessOverride, setFullAccessOverride] = useState(user.role === 'President');
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([
-    'admin_dashboard',
-    'user_management'
-  ]); // Mock selected permissions
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
+  const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(user.roles?.map(r => r.role?.id || r.roleId || r.id) || []);
+  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
+  const [isFullAccess, setIsFullAccess] = useState(user.isFullAccess || false);
 
-  const updateRole = (newRole: string) => {
-    setUser({ ...user, role: newRole });
-    setHasUnsavedChanges(true);
+  // Get current permissions from user roles
+  const getCurrentPermissions = (roles: typeof availableRoles, userRoles: User['roles']) => {
+    if (!userRoles || userRoles.length === 0) return new Set<number>();
     
-    // Auto-enable full access for President
-    if (newRole === 'President') {
-      setFullAccessOverride(true);
-    }
+    const permissionIds = new Set<number>();
+    
+    userRoles.forEach(userRole => {
+      const roleId = userRole.role?.id || userRole.roleId || userRole.id;
+      const fullRole = roles.find(r => r.id === roleId);
+      if (fullRole && fullRole.permissions) {
+        fullRole.permissions.forEach(p => {
+          permissionIds.add(p.permission.id);
+        });
+      }
+    });
+    
+    return permissionIds;
+  };
+
+  // Fetch available roles and permissions
+  useEffect(() => {
+    const fetchRolesAndPermissions = async () => {
+      try {
+        const [rolesResponse, permissionsResponse] = await Promise.all([
+          fetch('/api/admin/roles'),
+          fetch('/api/admin/permissions')
+        ]);
+
+        if (rolesResponse.ok && permissionsResponse.ok) {
+          const rolesData = await rolesResponse.json();
+          const permissionsData = await permissionsResponse.json();
+          const roles = rolesData.roles || [];
+          
+          setAvailableRoles(roles);
+          setAvailablePermissions(permissionsData.permissions || []);
+          
+          // Initialize current permissions from user roles
+          const currentPermissions = getCurrentPermissions(roles, user.roles);
+          setSelectedPermissions(Array.from(currentPermissions));
+        }
+      } catch (error) {
+        console.error('Error fetching roles and permissions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRolesAndPermissions();
+  }, [user.roles]);
+
+  if (loading) {
+    return (
+      <div className="py-8">
+        <Loading text="Loading permissions..." size="md" />
+      </div>
+    );
+  }
+
+  const updateRoles = (roleId: number) => {
+    const newSelectedRoles = selectedRoleIds.includes(roleId)
+      ? selectedRoleIds.filter(id => id !== roleId)
+      : [...selectedRoleIds, roleId];
+    
+    setSelectedRoleIds(newSelectedRoles);
+    
+    // Update the user object with new roles - keep original structure that matches API expectation
+    const newRoles = newSelectedRoles.map(id => {
+      const role = availableRoles.find(r => r.id === id);
+      return role ? { 
+        role: role  // Simplified structure that matches API expectation
+      } : null;
+    }).filter(Boolean);
+    
+    setUser({ ...user, roles: newRoles });
+    setHasUnsavedChanges(true);
   };
 
   const toggleFullAccess = () => {
-    const newValue = !fullAccessOverride;
-    setFullAccessOverride(newValue);
+    const newFullAccess = !isFullAccess;
+    setIsFullAccess(newFullAccess);
+    setUser({ ...user, isFullAccess: newFullAccess });
     setHasUnsavedChanges(true);
   };
 
-  const togglePermission = (permissionId: string) => {
+  // Full Access is now handled by togglePermission(6)
+
+  const togglePermission = (permissionId: number) => {
     const newPermissions = selectedPermissions.includes(permissionId)
       ? selectedPermissions.filter(p => p !== permissionId)
       : [...selectedPermissions, permissionId];
@@ -70,27 +153,34 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
     setHasUnsavedChanges(true);
   };
 
-  const getRoleRecommendedPermissions = (role: string) => {
-    switch (role) {
-      case 'President':
-        return AVAILABLE_PERMISSIONS.map(p => p.id);
-      case 'Vice-President':
-        return ['admin_dashboard', 'user_management', 'band_management', 'event_management', 'content_management'];
-      case 'Secretary':
-        return ['admin_dashboard', 'user_management', 'event_management', 'files_access'];
-      case 'Treasurer':
-        return ['admin_dashboard', 'event_management', 'files_access'];
-      case 'Communications':
-        return ['admin_dashboard', 'newsletter_access', 'content_management', 'media_library'];
-      default:
-        return [];
-    }
+  const applyRolePermissions = () => {
+    // Get all permissions from selected roles
+    const rolePermissions = new Set<number>();
+    selectedRoleIds.forEach(roleId => {
+      const role = availableRoles.find(r => r.id === roleId);
+      // Note: we'd need to fetch role permissions from API
+      // For now just clear individual permissions when applying role permissions
+    });
+    
+    setSelectedPermissions([]);
+    setHasUnsavedChanges(true);
   };
 
-  const applyRecommendedPermissions = () => {
-    const recommended = getRoleRecommendedPermissions(user.role);
-    setSelectedPermissions(recommended);
-    setHasUnsavedChanges(true);
+  const getCurrentRoleNames = () => {
+    return selectedRoleIds.map(roleId => {
+      const role = availableRoles.find(r => r.id === roleId);
+      return role ? getRoleDisplayName(role, user.pronouns, 'fr') : 'Unknown';
+    }).join(', ') || 'None';
+  };
+
+  const getPermissionSource = (permissionId: number) => {
+    // Check if this permission comes from any of the user's roles
+    const fromRoles = selectedRoleIds.some(roleId => {
+      const role = availableRoles.find(r => r.id === roleId);
+      return role?.permissions?.some(p => p.permission.id === permissionId);
+    });
+    
+    return fromRoles ? 'role' : 'individual';
   };
 
   return (
@@ -98,27 +188,29 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
       {/* Role Selection */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Association Role</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {AVAILABLE_ROLES.map((role) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {availableRoles.map((role) => (
             <div
-              key={role.value}
+              key={role.id}
               className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                user.role === role.value
+                selectedRoleIds.includes(role.id)
                   ? 'border-primary bg-primary/5'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => updateRole(role.value)}
+              onClick={() => updateRoles(role.id)}
             >
               <div className="flex items-center space-x-3">
                 <input
-                  type="radio"
-                  checked={user.role === role.value}
-                  onChange={() => updateRole(role.value)}
+                  type="checkbox"
+                  checked={selectedRoleIds.includes(role.id)}
+                  onChange={() => updateRoles(role.id)}
                   className="text-primary border-gray-300 focus:ring-primary/20"
                 />
                 <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{role.label}</h4>
-                  <p className="text-sm text-gray-600">{role.description}</p>
+                  <h4 className="font-medium text-gray-900">{getRoleDisplayName(role, user.pronouns, 'fr')}</h4>
+                  <p className="text-sm text-gray-600">
+                    Weight: {role.weight} • {role.isCore ? 'Core Role' : 'Custom Role'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -128,133 +220,69 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
 
       {/* Full Access Override */}
       <div className="border-t border-gray-200 pt-6">
-        <div className="flex items-start space-x-3">
-          <input
-            type="checkbox"
-            id="fullAccess"
-            checked={fullAccessOverride}
-            onChange={toggleFullAccess}
-            className="mt-1 h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary/20"
-          />
-          <div>
-            <label htmlFor="fullAccess" className="text-lg font-semibold text-gray-900">
-              Full Access Override
-            </label>
-            <p className="text-sm text-gray-600 mt-1">
-              Bypass all permission checks. This user will have access to all features regardless 
-              of individual permissions. Use with extreme caution - typically reserved for the President role only.
-            </p>
-            {fullAccessOverride && (
-              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-800 font-medium">
-                  ⚠️ Full Access is enabled. This user can access all admin functions.
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Access Override</h3>
+        <div className="space-y-4">
+          <div className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg">
+            <input
+              type="checkbox"
+              id="fullAccess"
+              checked={isFullAccess}
+              onChange={toggleFullAccess}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+            />
+            <div className="flex-1">
+              <label htmlFor="fullAccess" className="text-sm font-medium text-gray-700">
+                Full Access Override
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Grant complete administrative access, bypassing role-based permissions. Use with caution.
+              </p>
+            </div>
+          </div>
+
+          {isFullAccess && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-yellow-800">Full Access Enabled</h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    This user has complete access to all administrative functions, regardless of their role assignments.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Role Summary */}
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Role Summary</h3>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="text-sm space-y-2">
+            <div>
+              <span className="font-medium text-gray-700">Current Roles:</span>
+              <span className="ml-2 text-gray-900">{getCurrentRoleNames()}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Access Level:</span>
+              <span className={`ml-2 font-medium ${isFullAccess ? 'text-yellow-600' : 'text-gray-900'}`}>
+                {isFullAccess ? 'Full Access (Override Active)' : 'Role-based permissions'}
+              </span>
+            </div>
+            {isFullAccess && (
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-xs text-yellow-600">
+                  ⚠️ Full Access Override bypasses all role-based permission restrictions
                 </p>
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Individual Permissions */}
-      <div className="border-t border-gray-200 pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Individual Permissions</h3>
-          <button
-            onClick={applyRecommendedPermissions}
-            disabled={fullAccessOverride}
-            className={`text-sm font-medium transition-colors ${
-              fullAccessOverride 
-                ? 'text-gray-400 cursor-not-allowed' 
-                : 'text-primary hover:text-primary/80'
-            }`}
-          >
-            Apply Recommended for {user.role}
-          </button>
-        </div>
-
-        {fullAccessOverride && (
-          <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="text-sm text-gray-600">
-              Individual permissions are ignored when Full Access Override is enabled.
-            </p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {AVAILABLE_PERMISSIONS.map((permission) => (
-            <div
-              key={permission.id}
-              className={`flex items-start space-x-3 p-4 border rounded-lg transition-colors ${
-                fullAccessOverride
-                  ? 'bg-gray-50 border-gray-200'
-                  : selectedPermissions.includes(permission.id)
-                  ? 'bg-primary/5 border-primary/30'
-                  : 'bg-white border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              <input
-                type="checkbox"
-                id={permission.id}
-                checked={selectedPermissions.includes(permission.id)}
-                onChange={() => togglePermission(permission.id)}
-                disabled={fullAccessOverride}
-                className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50"
-              />
-              <div className="flex-1">
-                <label
-                  htmlFor={permission.id}
-                  className={`font-medium cursor-pointer ${
-                    fullAccessOverride ? 'text-gray-400' : 'text-gray-900'
-                  }`}
-                >
-                  {permission.label}
-                </label>
-                <p className={`text-sm ${
-                  fullAccessOverride ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  {permission.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Permission Summary */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Permission Summary</h3>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-gray-700">Current Role:</span>
-              <span className="ml-2 text-gray-900">{user.role}</span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Access Level:</span>
-              <span className="ml-2 text-gray-900">
-                {fullAccessOverride ? 'Full Access (All permissions)' : `${selectedPermissions.length} specific permissions`}
-              </span>
-            </div>
-          </div>
-          
-          {!fullAccessOverride && selectedPermissions.length > 0 && (
-            <div className="mt-3">
-              <span className="font-medium text-gray-700">Active Permissions:</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {selectedPermissions.map(permissionId => {
-                  const permission = AVAILABLE_PERMISSIONS.find(p => p.id === permissionId);
-                  return (
-                    <span
-                      key={permissionId}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                    >
-                      {permission?.label}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

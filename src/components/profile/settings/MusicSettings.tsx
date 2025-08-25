@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -31,6 +31,7 @@ interface Instrument {
   id: string;
   name: string;
   level: LevelKey;
+  yearsPlaying?: number;
 }
 interface UserMusicProfile {
   instruments: Instrument[];
@@ -48,15 +49,15 @@ export function MusicSettings() {
   };
 
   const catalog: Instrument[] = [
-    { id: 'guitar', name: 'Guitare', level: 'beginner' },
-    { id: 'bass', name: 'Basse', level: 'beginner' },
-    { id: 'drums', name: 'Batterie', level: 'beginner' },
-    { id: 'keys', name: 'Clavier/Piano', level: 'beginner' },
-    { id: 'vocal', name: 'Chant', level: 'beginner' },
-    { id: 'violin', name: 'Violon', level: 'beginner' },
-    { id: 'sax', name: 'Saxophone', level: 'beginner' },
-    { id: 'trumpet', name: 'Trompette', level: 'beginner' },
-    { id: 'other', name: 'Autre', level: 'beginner' },
+    { id: 'guitar', name: 'Guitare', level: 'beginner', yearsPlaying: 0 },
+    { id: 'bass', name: 'Basse', level: 'beginner', yearsPlaying: 0 },
+    { id: 'drums', name: 'Batterie', level: 'beginner', yearsPlaying: 0 },
+    { id: 'keys', name: 'Clavier/Piano', level: 'beginner', yearsPlaying: 0 },
+    { id: 'vocal', name: 'Chant', level: 'beginner', yearsPlaying: 0 },
+    { id: 'violin', name: 'Violon', level: 'beginner', yearsPlaying: 0 },
+    { id: 'sax', name: 'Saxophone', level: 'beginner', yearsPlaying: 0 },
+    { id: 'trumpet', name: 'Trompette', level: 'beginner', yearsPlaying: 0 },
+    { id: 'other', name: 'Autre', level: 'beginner', yearsPlaying: 0 },
   ];
 
   const fixedStyles = [
@@ -73,16 +74,38 @@ export function MusicSettings() {
     'Classique',
   ];
 
-  // ===== User state (mock; wire to API in your app) =====
+  // ===== User state =====
   const [userMusic, setUserMusic] = useState<UserMusicProfile>({
-    instruments: [
-      { id: 'guitar', name: 'Guitare', level: 'intermediate' },
-      { id: 'bass', name: 'Basse', level: 'beginner' },
-    ],
-    primaryInstrumentId: 'guitar',
+    instruments: [],
+    primaryInstrumentId: '',
     seekingBand: false,
-    styles: ['Rock', 'Pop'],
+    styles: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load user music data from API
+  useEffect(() => {
+    const loadUserMusicData = async () => {
+      try {
+        const response = await fetch('/api/profile/music');
+        if (response.ok) {
+          const data = await response.json();
+          setUserMusic({
+            instruments: data.instruments || [],
+            primaryInstrumentId: data.primaryInstrumentId || '',
+            seekingBand: data.seekingBand || false,
+            styles: data.styles || [],
+          });
+        }
+      } catch (error) {
+        console.error('Error loading user music data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserMusicData();
+  }, []);
 
   // ===== Derived =====
   const availableToAdd = useMemo(() => {
@@ -132,6 +155,13 @@ export function MusicSettings() {
     }));
   };
 
+  const updateYears = (id: string, years: number) => {
+    setUserMusic((prev) => ({
+      ...prev,
+      instruments: prev.instruments.map((i) => (i.id === id ? { ...i, yearsPlaying: years } : i)),
+    }));
+  };
+
   const toggleStyle = (style: string, checked: boolean) => {
     setUserMusic((prev) => {
       const set = new Set(prev.styles);
@@ -141,15 +171,65 @@ export function MusicSettings() {
     });
   };
 
-  const saveInstruments = () => {
-    // TODO: API call with userMusic.instruments + userMusic.primaryInstrumentId
+  const saveInstruments = async () => {
+    try {
+      const response = await fetch('/api/profile/music', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instruments: userMusic.instruments,
+          primaryInstrumentId: userMusic.primaryInstrumentId,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Instruments sauvegardés avec succès');
+      } else {
+        throw new Error('Failed to save instruments');
+      }
+    } catch (error) {
+      console.error('Error saving instruments:', error);
+      alert('Erreur lors de la sauvegarde des instruments');
+    }
   };
 
-  const savePreferences = () => {
-    // TODO: API call with userMusic.seekingBand + userMusic.styles
+  const savePreferences = async () => {
+    try {
+      const response = await fetch('/api/profile/music', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seekingBand: userMusic.seekingBand,
+          styles: userMusic.styles,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Préférences sauvegardées avec succès');
+      } else {
+        throw new Error('Failed to save preferences');
+      }
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      alert('Erreur lors de la sauvegarde des préférences');
+    }
   };
 
   // ===== Render (single column) =====
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">Musique</h1>
+          <p className="mt-1">Configurez vos instruments et vos préférences musicales.</p>
+        </div>
+        <div className="flex justify-center items-center p-8">
+          <div className="animate-pulse text-gray-500">Chargement des données musicales...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -247,7 +327,7 @@ export function MusicSettings() {
                       <Badge>{levelLabels[instrument.level]}</Badge>
                     </div>
 
-                    <div className="flex items-center gap-3 md:min-w-[360px]">
+                    <div className="flex flex-wrap items-center gap-3 md:min-w-[480px]">
                       {/* Level — shadcn Select */}
                       <div className="flex items-center gap-2">
                         <Label className="text-sm">Niveau</Label>
@@ -255,13 +335,33 @@ export function MusicSettings() {
                           value={instrument.level}
                           onValueChange={(v) => updateLevel(instrument.id, v as LevelKey)}
                         >
-                          <SelectTrigger className="w-[160px]">
+                          <SelectTrigger className="w-[140px]">
                             <SelectValue placeholder="Sélectionner" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="beginner">{levelLabels.beginner}</SelectItem>
                             <SelectItem value="intermediate">{levelLabels.intermediate}</SelectItem>
                             <SelectItem value="advanced">{levelLabels.advanced}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Years of practice */}
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm">Années</Label>
+                        <Select
+                          value={String(instrument.yearsPlaying || 0)}
+                          onValueChange={(v) => updateYears(instrument.id, parseInt(v))}
+                        >
+                          <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30].map((year) => (
+                              <SelectItem key={year} value={String(year)}>
+                                {year}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>

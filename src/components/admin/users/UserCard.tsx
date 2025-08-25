@@ -2,6 +2,8 @@
 
 import LangLink from '@/components/common/LangLink';
 import { Edit, Mail, User, Calendar, Clock } from 'lucide-react';
+import ViewProfileButton from '../common/ViewProfileButton';
+import Avatar from '@/components/common/Avatar';
 
 interface User {
   id: string;
@@ -12,14 +14,20 @@ interface User {
   promotion: string;
   role: string;
   joinDate: string;
-  status: 'current' | 'former' | 'pending' | 'graduated';
+  status: 'current' | 'former' | 'pending' | 'graduated' | 'refused';
+  age?: number;
+  instruments?: string[];
+  groups?: string[];
+  badges?: string[];
 }
 
 interface UserCardProps {
   user: User;
+  currentUserId?: string;
+  onReviewRequest?: (userId: string) => void;
 }
 
-export default function UserCard({ user }: UserCardProps) {
+export default function UserCard({ user, currentUserId, onReviewRequest }: UserCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'current':
@@ -30,6 +38,8 @@ export default function UserCard({ user }: UserCardProps) {
         return 'bg-blue-100 text-blue-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
+      case 'refused':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -54,28 +64,26 @@ export default function UserCard({ user }: UserCardProps) {
     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
       <div className="flex items-center space-x-4 flex-1">
         {/* Avatar */}
-        <div className="relative">
-          {user.avatar ? (
-            <img
-              src={user.avatar}
-              alt={`${user.firstName} ${user.lastName}`}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
-            </div>
-          )}
-        </div>
+        <Avatar 
+          src={user.avatar} 
+          alt={`${user.firstName} ${user.lastName}`}
+          name={`${user.firstName} ${user.lastName}`}
+          size="md"
+        />
 
         {/* User Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-3 mb-1">
             <h3 className="text-lg font-semibold text-gray-900 truncate">
               {user.firstName} {user.lastName}
+              {currentUserId === user.id && (
+                <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
+              )}
             </h3>
             <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
-            <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>{user.role}</span>
+            <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>
+              {user.role}
+            </span>
           </div>
 
           <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -100,23 +108,63 @@ export default function UserCard({ user }: UserCardProps) {
               ? 'Pending'
               : user.status === 'graduated'
                 ? 'Graduated'
-                : 'Former'}
+                : user.status === 'refused'
+                  ? 'Refused'
+                  : 'Former'}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center space-x-2 ml-4">
-        <LangLink
-          href={`/admin/users/${user.id}`}
-          className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-        >
-          <Edit className="w-3 h-3 mr-1" />
-          Edit
-        </LangLink>
-        <button className="inline-flex items-center px-3 py-1 text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
-          <Mail className="w-3 h-3 mr-1" />
-          Email
-        </button>
+        {user.status === 'pending' ? (
+          <>
+            <button
+              onClick={() => onReviewRequest?.(user.id)}
+              className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+            >
+              <Clock className="w-3 h-3 mr-1" />
+              Review Request
+            </button>
+            <LangLink
+              href={`/admin/users/${user.id}`}
+              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <Edit className="w-3 h-3 mr-1" />
+              Edit
+            </LangLink>
+          </>
+        ) : user.status === 'refused' ? (
+          <>
+            <LangLink
+              href={`/admin/users/${user.id}`}
+              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <Edit className="w-3 h-3 mr-1" />
+              Edit
+            </LangLink>
+            <button
+              onClick={() => {/* TODO: Restore function */}}
+              className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+            >
+              Restore
+            </button>
+          </>
+        ) : (
+          <>
+            <LangLink
+              href={`/admin/users/${user.id}`}
+              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <Edit className="w-3 h-3 mr-1" />
+              Edit
+            </LangLink>
+            <ViewProfileButton 
+              userId={user.id}
+              variant="button"
+              className="px-3 py-1 text-sm"
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import BasicLayout from '@/components/layouts/BasicLayout';
 import HeroBanner from '@/components/home/HomeHero';
 import { Home } from '@/components/home/Home';
 import HomeLoggedIn from '@/components/home/HomeLoggedIn';
+import { PendingValidationBanner } from '@/components/home/PendingValidationBanner';
 
 export default function HomePage() {
   const router = useRouter();
@@ -30,7 +31,14 @@ export default function HomePage() {
         <HeroBanner />
 
         {user ? (
-          <HomeLoggedIn user={user} lang={lang} onLogout={handleLogout} loading={loading} />
+          user.status === 'PENDING' ? (
+            <div className="w-full max-w-7xl mx-auto px-4 py-8">
+              <PendingValidationBanner />
+              <Home lang={lang} />
+            </div>
+          ) : (
+            <HomeLoggedIn user={user} lang={lang} onLogout={handleLogout} loading={loading} />
+          )
         ) : (
           <Home lang={lang} />
         )}

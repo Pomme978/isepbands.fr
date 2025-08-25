@@ -1,271 +1,302 @@
-// --- Modèle Badge ---
-model Badge {
-    id     Int    @id @default(autoincrement())
-    name   String
-    userId String
-    user   User   @relation(fields: [userId], references: [id])
-}
-
-// Enum pour le statut utilisateur
-enum UserStatus {
-    INACTIVE
-    ACTIVE
-}
-
-// Configuration de la base de données
-datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
-}
-
-// Générateur du client Prisma
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-// Enum pour le statut de demande d'inscription
-enum RegistrationStatus {
-    PENDING
-    ACCEPTED
-    REJECTED
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-// --- Modèle Demande d'inscription (RegistrationRequest) ---
+model Badge {
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Badge_userId_fkey")
+}
+
 model RegistrationRequest {
-    id         Int                @id @default(autoincrement())
-    userId     String             @unique
-    status     RegistrationStatus @default(PENDING)
-    createdAt  DateTime           @default(now())
-    motivation String?
-    experience String?
-    user       User               @relation(fields: [userId], references: [id])
+  id              Int                @id @default(autoincrement())
+  userId          String             @unique
+  status          RegistrationStatus @default(PENDING)
+  createdAt       DateTime           @default(now())
+  motivation      String?
+  experience      String?
+  rejectionReason String?
+  user            User               @relation(fields: [userId], references: [id])
 }
 
-// Enum pour le niveau d'instrument
-enum SkillLevel {
-    BEGINNER
-    INTERMEDIATE
-    ADVANCED
-    EXPERT
-}
-
-// Enum pour les types d'événements (plus robuste qu'un String)
-enum EventType {
-    CONCERT
-    JAM
-    REPETITION
-    VENTE
-    SHOWCASE
-    OTHER
-}
-
-// --- Modèle Utilisateur (User) ---
 model User {
-    id                            String     @id @default(uuid())
-    firstName                     String     @default("Prénom")
-    lastName                      String     @default("Nom")
-    promotion                     String
-    birthDate                     DateTime
-    biography                     String?
-    phone                         String?
-    password                      String
-    email                         String     @unique
-    emailVerified                 Boolean    @default(false)
-    emailVerificationToken        String?
-    emailVerificationTokenExpires DateTime?
-    emailVerifiedAt               DateTime?
-    photoUrl                      String?
-    status                        UserStatus @default(INACTIVE)
-    isLookingForGroup             Boolean    @default(false)
-    pronouns                      String? // Ajouté pour les pronoms
-    isOutOfSchool                 Boolean    @default(false) // Ajouté pour statut hors école
-
-    createdAt           DateTime             @default(now())
-    updatedAt           DateTime?            @default(now()) @updatedAt
-    instruments         UserInstrument[]
-    roles               UserRole[]
-    groupMemberships    GroupMembership[]
-    ownedNews           News[]
-    votes               Vote[]
-    registrationRequest RegistrationRequest?
-    storageObjects      StorageObject[]
-    badges              Badge[] // Ajouté pour les badges
+  id                            String               @id @default(uuid())
+  firstName                     String               @default("Prénom")
+  lastName                      String               @default("Nom")
+  promotion                     String
+  birthDate                     DateTime
+  biography                     String?
+  phone                         String?
+  password                      String
+  email                         String               @unique
+  emailVerified                 Boolean              @default(false)
+  emailVerificationToken        String?
+  emailVerificationTokenExpires DateTime?
+  emailVerifiedAt               DateTime?
+  photoUrl                      String?
+  status                        UserStatus           @default(PENDING)
+  isLookingForGroup             Boolean              @default(false)
+  pronouns                      String?
+  isOutOfSchool                 Boolean              @default(false)
+  isPublicProfile               Boolean              @default(false)
+  preferredGenres               String?
+  isFullAccess                  Boolean              @default(false)
+  createdAt                     DateTime             @default(now())
+  updatedAt                     DateTime?            @default(now()) @updatedAt
+  badges                        Badge[]
+  groupMemberships              GroupMembership[]
+  ownedNews                     News[]
+  registrationRequest           RegistrationRequest?
+  storageObjects                StorageObject[]
+  instruments                   UserInstrument[]
+  roles                         UserRole[]
+  votes                         Vote[]
+  activities                    Activity[]
 }
 
-// --- Modèle StorageObject (fichiers uploadés) ---
 model StorageObject {
-    id          String   @id @default(uuid())
-    key         String   @unique
-    url         String
-    size        Int
-    contentType String
-    uploadedAt  DateTime @default(now())
-    userId      String?
-    user        User?    @relation(fields: [userId], references: [id])
+  id          String   @id @default(uuid())
+  key         String   @unique
+  url         String
+  size        Int
+  contentType String
+  uploadedAt  DateTime @default(now())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "StorageObject_userId_fkey")
 }
 
-// --- Modèle Instrument ---
 model Instrument {
-    id                Int                     @id @default(autoincrement())
-    name              String
-    imageUrl          String?
-    users             UserInstrument[]
-    groupRequirements InstrumentRequirement[]
+  id                Int                     @id @default(autoincrement())
+  name              String
+  nameFr            String
+  nameEn            String
+  imageUrl          String?
+  groupRequirements InstrumentRequirement[]
+  users             UserInstrument[]
 }
 
 model UserInstrument {
-    userId       String
-    instrumentId Int
-    skillLevel   SkillLevel
-    yearsPlaying Int? // Ajouté pour l'expérience
-    isPrimary    Boolean    @default(false) // Ajouté pour l'instrument principal
-    user         User       @relation(fields: [userId], references: [id])
-    instrument   Instrument @relation(fields: [instrumentId], references: [id])
+  userId       String
+  instrumentId Int
+  skillLevel   SkillLevel
+  yearsPlaying Int?
+  isPrimary    Boolean    @default(false)
+  instrument   Instrument @relation(fields: [instrumentId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
 
-    @@id([userId, instrumentId])
+  @@id([userId, instrumentId])
+  @@index([instrumentId], map: "UserInstrument_instrumentId_fkey")
 }
 
-// --- Modèle Rôles et Permissions ---
 model Role {
-    id          Int              @id @default(autoincrement())
-    name        String
-    weight      Int
-    users       UserRole[]
-    permissions RolePermission[]
+  id           Int              @id @default(autoincrement())
+  name         String
+  nameFrMale   String
+  nameFrFemale String
+  nameEnMale   String
+  nameEnFemale String
+  weight       Int
+  isCore       Boolean          @default(false)
+  permissions  RolePermission[]
+  users        UserRole[]
 }
 
 model Permission {
-    id    Int              @id @default(autoincrement())
-    name  String
-    roles RolePermission[]
+  id          Int              @id @default(autoincrement())
+  name        String
+  nameFr      String
+  nameEn      String
+  description String?
+  roles       RolePermission[]
 }
 
 model UserRole {
-    userId String
-    roleId Int
-    user   User   @relation(fields: [userId], references: [id])
-    role   Role   @relation(fields: [roleId], references: [id])
+  userId String
+  roleId Int
+  role   Role   @relation(fields: [roleId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
-    @@id([userId, roleId])
+  @@id([userId, roleId])
+  @@index([roleId], map: "UserRole_roleId_fkey")
 }
 
 model RolePermission {
-    roleId       Int
-    permissionId Int
-    role         Role       @relation(fields: [roleId], references: [id])
-    permission   Permission @relation(fields: [permissionId], references: [id])
+  roleId       Int
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  role         Role       @relation(fields: [roleId], references: [id])
 
-    @@id([roleId, permissionId])
+  @@id([roleId, permissionId])
+  @@index([permissionId], map: "RolePermission_permissionId_fkey")
 }
 
-// --- Modèle Groupe (Group) ---
 model Group {
-    id                     Int                     @id @default(autoincrement())
-    name                   String
-    description            String?
-    imageUrl               String?
-    isVerified             Boolean                 @default(false) // Validé par le bureau
-    isLookingForMembers    Boolean                 @default(false) // Statut de recherche de musiciens
-    isInPreparation        Boolean                 @default(false) // Pour les concerts
-    genre                  String? // Ajouté pour le style musical
-    // Relations
-    members                GroupMembership[]
-    instrumentRequirements InstrumentRequirement[]
-    events                 GroupEvent[]
-    setlists               Setlist[]
+  id                     Int                     @id @default(autoincrement())
+  name                   String
+  description            String?
+  imageUrl               String?
+  isVerified             Boolean                 @default(false)
+  isLookingForMembers    Boolean                 @default(false)
+  isInPreparation        Boolean                 @default(false)
+  genre                  String?
+  events                 GroupEvent[]
+  members                GroupMembership[]
+  instrumentRequirements InstrumentRequirement[]
+  setlists               Setlist[]
 }
 
 model GroupMembership {
-    userId  String
-    groupId Int
-    role    String? // Ex: "Membre", "Leader"
-    isAdmin Boolean @default(false)
-    user    User    @relation(fields: [userId], references: [id])
-    group   Group   @relation(fields: [groupId], references: [id])
+  userId  String
+  groupId Int
+  role    String?
+  isAdmin Boolean @default(false)
+  group   Group   @relation(fields: [groupId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 
-    @@id([userId, groupId])
+  @@id([userId, groupId])
+  @@index([groupId], map: "GroupMembership_groupId_fkey")
 }
 
 model InstrumentRequirement {
-    groupId       Int
-    instrumentId  Int
-    requiredCount Int
-    currentCount  Int
-    group         Group      @relation(fields: [groupId], references: [id])
-    instrument    Instrument @relation(fields: [instrumentId], references: [id])
+  groupId       Int
+  instrumentId  Int
+  requiredCount Int
+  currentCount  Int
+  group         Group      @relation(fields: [groupId], references: [id])
+  instrument    Instrument @relation(fields: [instrumentId], references: [id])
 
-    @@id([groupId, instrumentId])
+  @@id([groupId, instrumentId])
+  @@index([instrumentId], map: "InstrumentRequirement_instrumentId_fkey")
 }
 
-// --- Modèle Événement (Event) ---
 model Event {
-    id           Int          @id @default(autoincrement())
-    name         String
-    type         EventType
-    date         DateTime
-    location     String?
-    description  String?
-    isPinned     Boolean      @default(false) // Épinglé sur l'accueil
-    isVisible    Boolean      @default(true) // Visible ou invisible
-    isArchived   Boolean      @default(false)
-    // Relations
-    groups       GroupEvent[]
-    setlists     Setlist[]
-    // Billetterie Hello-Asso
-    helloAssoUrl String?
+  id           Int          @id @default(autoincrement())
+  name         String
+  type         EventType
+  date         DateTime
+  location     String?
+  description  String?
+  isPinned     Boolean      @default(false)
+  isVisible    Boolean      @default(true)
+  isArchived   Boolean      @default(false)
+  helloAssoUrl String?
+  groups       GroupEvent[]
+  setlists     Setlist[]
 }
 
 model GroupEvent {
-    groupId Int
-    eventId Int
-    group   Group @relation(fields: [groupId], references: [id])
-    event   Event @relation(fields: [eventId], references: [id])
+  groupId Int
+  eventId Int
+  event   Event @relation(fields: [eventId], references: [id])
+  group   Group @relation(fields: [groupId], references: [id])
 
-    @@id([groupId, eventId])
+  @@id([groupId, eventId])
+  @@index([eventId], map: "GroupEvent_eventId_fkey")
 }
 
-// --- Modèle Setlist (pour les concerts) ---
 model Setlist {
-    id      Int           @id @default(autoincrement())
-    groupId Int
-    eventId Int
-    group   Group         @relation(fields: [groupId], references: [id])
-    event   Event         @relation(fields: [eventId], references: [id])
-    songs   SetlistSong[]
+  id      Int           @id @default(autoincrement())
+  groupId Int
+  eventId Int
+  event   Event         @relation(fields: [eventId], references: [id])
+  group   Group         @relation(fields: [groupId], references: [id])
+  songs   SetlistSong[]
 
-    @@unique([groupId, eventId])
+  @@unique([groupId, eventId])
+  @@index([eventId], map: "Setlist_eventId_fkey")
 }
 
 model SetlistSong {
-    id            Int     @id @default(autoincrement())
-    setlistId     Int
-    youtubeUrl    String?
-    spotifyUrl    String?
-    appleMusicUrl String?
-    title         String
-    artist        String
-    imageUrl      String?
-    votes         Vote[]
-    setlist       Setlist @relation(fields: [setlistId], references: [id])
+  id            Int     @id @default(autoincrement())
+  setlistId     Int
+  youtubeUrl    String?
+  spotifyUrl    String?
+  appleMusicUrl String?
+  title         String
+  artist        String
+  imageUrl      String?
+  setlist       Setlist @relation(fields: [setlistId], references: [id])
+  votes         Vote[]
+
+  @@index([setlistId], map: "SetlistSong_setlistId_fkey")
 }
 
 model Vote {
-    userId String
-    songId Int
-    user   User        @relation(fields: [userId], references: [id])
-    song   SetlistSong @relation(fields: [songId], references: [id])
+  userId String
+  songId Int
+  song   SetlistSong @relation(fields: [songId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
 
-    @@id([userId, songId])
+  @@id([userId, songId])
+  @@index([songId], map: "Vote_songId_fkey")
 }
 
-// --- Modèle Actualités (News) ---
 model News {
-    id        Int      @id @default(autoincrement())
-    title     String
-    content   String
-    type      String
-    startDate DateTime
-    endDate   DateTime
-    authorId  String
-    author    User     @relation(fields: [authorId], references: [id])
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  type      String
+  startDate DateTime
+  endDate   DateTime
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@index([authorId], map: "News_authorId_fkey")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   // 'user_joined', 'group_created', 'event_created', 'achievement', 'custom'
+  title       String
+  description String?  @db.Text
+  metadata    Json?    // Additional data specific to activity type
+  userId      String?  // User this activity is about
+  createdBy   String?  // Admin who created manual activity
+  createdAt   DateTime @default(now())
+  
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Activity_userId_fkey")
+  @@index([createdAt], map: "Activity_createdAt_idx")
+}
+
+enum UserStatus {
+  CURRENT
+  FORMER
+  GRADUATED
+  PENDING
+  REFUSED
+  DELETED
+}
+
+enum RegistrationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum EventType {
+  CONCERT
+  JAM
+  REPETITION
+  VENTE
+  SHOWCASE
+  OTHER
 }

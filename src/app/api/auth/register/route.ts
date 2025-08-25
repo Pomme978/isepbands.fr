@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToStorage } from '@/lib/storageService';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/prisma';
+import { setSession } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,8 +13,10 @@ export async function POST(req: NextRequest) {
     const cycle = formData.get('cycle') as string;
     const birthDate = formData.get('birthDate') as string;
     const phone = formData.get('phone') as string | null;
-    // motivation et experience non utilisés car non présents dans RegistrationRequest
+    const motivation = formData.get('motivation') as string | null;
+    const experience = formData.get('experience') as string | null;
     const instruments = formData.get('instruments') as string | null;
+    const preferredGenres = formData.get('preferredGenres') as string | null;
     const profilePhoto = formData.get('profilePhoto') as File | null;
 
     // Validation des champs requis
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         firstName: firstName,
-        lastName: lastName,
+        lastName: lastName.toUpperCase(),
         promotion: cycle,
         birthDate: new Date(birthDate),
         phone: phone || null,
@@ -56,6 +59,7 @@ export async function POST(req: NextRequest) {
         emailVerified: true, // TODO: temporaire, bypass vérification email
         photoUrl: photoUrl || null,
         isLookingForGroup: false,
+        preferredGenres: preferredGenres ? JSON.stringify(JSON.parse(preferredGenres)) : null,
       },
     });
 
@@ -63,6 +67,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         status: 'PENDING',
+        motivation: motivation || null,
+        experience: experience || null,
       },
     });
 
@@ -71,6 +77,8 @@ export async function POST(req: NextRequest) {
         const parsedInstruments = JSON.parse(instruments) as Array<{
           instrumentId: number;
           skillLevel: string;
+          yearsPlaying?: number;
+          isPrimary: boolean;
         }>;
 
         for (const inst of parsedInstruments) {
@@ -91,6 +99,8 @@ export async function POST(req: NextRequest) {
                 | 'INTERMEDIATE'
                 | 'ADVANCED'
                 | 'EXPERT',
+              yearsPlaying: inst.yearsPlaying || null,
+              isPrimary: inst.isPrimary || false,
             },
           });
         }
@@ -100,7 +110,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    // Set session to automatically log in the user
+    const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email } }, { status: 201 });
+    await setSession(res, { id: user.id, email: user.email });
+    return res;
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

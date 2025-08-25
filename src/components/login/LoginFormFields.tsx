@@ -30,7 +30,7 @@ export default function LoginFormFields({
           id="email"
           type="email"
           autoComplete="email"
-          placeholder="email@isep.fr"
+          placeholder="email@eleve.isep.fr"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}

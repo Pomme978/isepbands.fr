@@ -34,7 +34,7 @@ export default function InstrumentCard({ instrument }: InstrumentCardProps) {
 
   return (
     <div
-      className={`relative group ${
+      className={`relative group max-w-xs mx-auto ${
         instrument.isPrimary
           ? 'bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-300 shadow-sm hover:shadow-md'
           : 'bg-white border border-gray-200 hover:shadow-md'
@@ -67,9 +67,11 @@ export default function InstrumentCard({ instrument }: InstrumentCardProps) {
             <h4 className="font-bold text-gray-900 text-lg">{instrument.name}</h4>
             <div className="space-y-1">
               <LevelBadge level={instrument.level} />
-              {instrument.yearsPlaying && (
+              {instrument.yearsPlaying !== undefined && instrument.yearsPlaying !== null && instrument.yearsPlaying > 0 && (
                 <p className="text-xs text-gray-500">
-                  {instrument.yearsPlaying} ans d&apos;expérience
+                  {instrument.yearsPlaying === 1 
+                    ? "Depuis 1 an"
+                    : `Depuis ${instrument.yearsPlaying} ans`}
                 </p>
               )}
               {instrument.isPrimary && (
