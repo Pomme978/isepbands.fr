@@ -1,0 +1,126 @@
+'use client';
+
+import { UserFormData } from '../CreateUserModal';
+
+interface Step1PersonalProps {
+  formData: UserFormData;
+  setFormData: (data: UserFormData) => void;
+}
+
+export default function Step1Personal({ formData, setFormData }: Step1PersonalProps) {
+  const updateField = (field: keyof UserFormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              First Name *
+            </label>
+            <input
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => updateField('firstName', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              placeholder="Enter first name"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Last Name *
+            </label>
+            <input
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => updateField('lastName', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              placeholder="Enter last name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email *
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => updateField('email', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              placeholder="user@isep.fr"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Birth Date
+            </label>
+            <input
+              type="date"
+              value={formData.birthDate}
+              onChange={(e) => updateField('birthDate', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">ISEP Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Promotion *
+            </label>
+            <select
+              value={formData.promotion}
+              onChange={(e) => updateField('promotion', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            >
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="I1">I1</option>
+              <option value="I2">I2</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="A3">A3</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="B3">B3</option>
+              <option value="Graduate">Graduate</option>
+              <option value="Former">Former</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Student Status *
+            </label>
+            <select
+              value={formData.studentStatus}
+              onChange={(e) => updateField('studentStatus', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            >
+              <option value="current">Current Student</option>
+              <option value="graduate">Graduate</option>
+              <option value="former">Former</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h4 className="font-medium text-blue-900 mb-2">Required Fields</h4>
+        <p className="text-sm text-blue-700">
+          Fields marked with * are required. Make sure to fill in at least the first name, 
+          last name, email, and promotion before proceeding to the next step.
+        </p>
+      </div>
+    </div>
+  );
+}

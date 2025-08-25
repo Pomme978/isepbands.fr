@@ -1,0 +1,223 @@
+'use client';
+
+import { useState } from 'react';
+import { Upload, X } from 'lucide-react';
+import { UserFormData } from '../CreateUserModal';
+
+interface Step5ProfileProps {
+  formData: UserFormData;
+  setFormData: (data: UserFormData) => void;
+}
+
+export default function Step5Profile({ formData, setFormData }: Step5ProfileProps) {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const updateField = (field: keyof UserFormData, value: string | boolean) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const updateEmailPreferences = (preference: string, value: boolean) => {
+    const updatedPreferences = { 
+      ...formData.emailPreferences, 
+      [preference]: value 
+    };
+    setFormData({ ...formData, emailPreferences: updatedPreferences });
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, profilePhoto: file });
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData({ ...formData, profilePhoto: undefined });
+    setPreviewImage(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Information</h3>
+        
+        {/* Profile Photo */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Profile Photo
+          </label>
+          
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              {previewImage ? (
+                <div className="relative">
+                  <img
+                    src={previewImage}
+                    alt="Profile preview"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                  />
+                  <button
+                    onClick={removeImage}
+                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-gray-400" />
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <input
+                type="file"
+                id="profilePhoto"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <label
+                htmlFor="profilePhoto"
+                className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {previewImage ? 'Change Photo' : 'Upload Photo'}
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Recommended: Square image, at least 200x200px
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bio Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Bio
+          </label>
+          <textarea
+            value={formData.bioFR}
+            onChange={(e) => updateField('bioFR', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            placeholder="A short biography..."
+            rows={4}
+          />
+        </div>
+
+        <div className="flex items-start space-x-3 mt-4">
+          <input
+            type="checkbox"
+            id="publicProfile"
+            checked={formData.publicProfile}
+            onChange={(e) => updateField('publicProfile', e.target.checked)}
+            className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+          />
+          <div>
+            <label htmlFor="publicProfile" className="text-sm font-medium text-gray-700">
+              Public Profile
+            </label>
+            <p className="text-xs text-gray-500">
+              Make this profile visible to all association members
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Preferences</h3>
+        <div className="space-y-3">
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="newsletter"
+              checked={formData.emailPreferences.newsletter}
+              onChange={(e) => updateEmailPreferences('newsletter', e.target.checked)}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+            />
+            <div>
+              <label htmlFor="newsletter" className="text-sm font-medium text-gray-700">
+                Receive Newsletter
+              </label>
+              <p className="text-xs text-gray-500">
+                Monthly newsletter with association updates and events
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="events"
+              checked={formData.emailPreferences.events}
+              onChange={(e) => updateEmailPreferences('events', e.target.checked)}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+            />
+            <div>
+              <label htmlFor="events" className="text-sm font-medium text-gray-700">
+                Event Notifications
+              </label>
+              <p className="text-xs text-gray-500">
+                Notifications about upcoming events and registration reminders
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="groupInvitations"
+              checked={formData.emailPreferences.groupInvitations}
+              onChange={(e) => updateEmailPreferences('groupInvitations', e.target.checked)}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+            />
+            <div>
+              <label htmlFor="groupInvitations" className="text-sm font-medium text-gray-700">
+                Group Invitations
+              </label>
+              <p className="text-xs text-gray-500">
+                Invitations to join bands and musical groups
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="systemUpdates"
+              checked={formData.emailPreferences.systemUpdates}
+              onChange={(e) => updateEmailPreferences('systemUpdates', e.target.checked)}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+            />
+            <div>
+              <label htmlFor="systemUpdates" className="text-sm font-medium text-gray-700">
+                System Updates
+              </label>
+              <p className="text-xs text-gray-500">
+                Important announcements and system maintenance notifications
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-indigo-50 p-4 rounded-lg">
+        <h4 className="font-medium text-indigo-900 mb-2">Privacy & Communication</h4>
+        <ul className="text-sm text-indigo-700 space-y-1">
+          <li>• Profile information can be updated later by the user</li>
+          <li>• Email preferences can be changed at any time in user settings</li>
+          <li>• Public profiles are visible in the member directory</li>
+          <li>• Bio information appears on the user's profile page</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
