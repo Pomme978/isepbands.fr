@@ -20,7 +20,6 @@ interface UserProfile {
   emailVerified: boolean;
   currentLevel: string; // Nouveau champ
   dateOfBirth: string; // Nouveau champ
-  isOutOfSchool: boolean; // Nouveau champ
   promotion: string; // Calculé automatiquement
   role: string;
   badges: string[];
@@ -79,7 +78,7 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
                 )}
               </div>
               {/* Affiche la promo et l'âge sur la même ligne */}
-              {!user.isOutOfSchool && (user.promotion || user.age) && (
+              {(user.promotion || user.age) && (
                 <p className="text-gray-600 text-lg">
                   {user.promotion}
                   {user.promotion && user.age && ', '}

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Avatar from '@/components/common/Avatar';
-import { useI18n } from '@/locales/client';
 import LangLink from '@/components/common/LangLink';
 import { User } from 'next-auth';
 import { RecentActivity } from '@/components/home/RecentActivity';
@@ -135,7 +134,6 @@ interface UserProfile {
   photoUrl?: string;
   promotion?: string;
   birthDate?: string;
-  isOutOfSchool?: boolean;
   primaryRole?: string;
   badges?: string[];
   isLookingForGroup?: boolean;
@@ -240,7 +238,6 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
               photoUrl: data.data.photoUrl,
               promotion: data.data.promotion,
               birthDate: data.data.birthDate,
-              isOutOfSchool: data.data.isOutOfSchool,
               primaryRole: data.data.primaryRole,
               badges: data.data.badges || [],
               isLookingForGroup: data.data.isLookingForGroup,
