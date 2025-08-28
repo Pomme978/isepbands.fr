@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { UserFormData } from '../CreateUserModal';
 
@@ -13,9 +13,49 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
   const [showPassword, setShowPassword] = useState(false);
 
   const generateNewPassword = () => {
-    const newPassword = Math.random().toString(36).slice(-10);
-    setFormData({ ...formData, temporaryPassword: newPassword });
+    // Generate a stronger password that meets requirements
+    const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+    const uppercase = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+    const numbers = '23456789';
+    const specials = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+    let result = '';
+    // Ensure at least one of each type
+    result += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    result += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    result += specials.charAt(Math.floor(Math.random() * specials.length));
+
+    // Fill the rest randomly
+    const allChars = lowercase + uppercase + numbers + specials;
+    for (let i = 4; i < 12; i++) {
+      result += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+
+    // Shuffle the password
+    const shuffled = result
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
+    setFormData({ ...formData, temporaryPassword: shuffled });
   };
+
+  // Password validation
+  const passwordValidation = useMemo(
+    () => [
+      { label: 'Au moins 8 caractères', ok: formData.temporaryPassword.length >= 8 },
+      { label: 'Une lettre minuscule', ok: /[a-z]/.test(formData.temporaryPassword) },
+      { label: 'Une lettre majuscule', ok: /[A-Z]/.test(formData.temporaryPassword) },
+      { label: 'Un chiffre', ok: /\d/.test(formData.temporaryPassword) },
+      {
+        label: 'Un caractère spécial',
+        ok: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.temporaryPassword),
+      },
+    ],
+    [formData.temporaryPassword],
+  );
+
+  const isPasswordValid = passwordValidation.every((item) => item.ok);
 
   const updateAccountSetting = (field: string, value: boolean) => {
     setFormData({ ...formData, [field]: value });
@@ -32,7 +72,9 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
     <div className="flex justify-between items-start py-1">
       <span className="text-sm text-gray-600 font-medium">{label}:</span>
       <span className="text-sm text-gray-900 text-right flex-1 ml-4">
-        {typeof value === 'string' ? value || <em className="text-gray-400">Not specified</em> : value}
+        {typeof value === 'string'
+          ? value || <em className="text-gray-400">Not specified</em>
+          : value}
       </span>
     </div>
   );
@@ -42,8 +84,8 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
       <div className="text-center mb-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Review User Information</h3>
         <p className="text-gray-600">
-          Please review all information before creating the user account. 
-          You can go back to any step to make changes.
+          Please review all information before creating the user account. You can go back to any
+          step to make changes.
         </p>
       </div>
 
@@ -55,7 +97,6 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
             <InfoRow label="Email" value={formData.email} />
             <InfoRow label="Birth Date" value={formData.birthDate} />
             <InfoRow label="Promotion" value={formData.promotion} />
-            <InfoRow label="Student Status" value={formData.studentStatus} />
           </div>
         </InfoSection>
 
@@ -63,15 +104,9 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
         <InfoSection title="Role & Permissions">
           <div className="space-y-1">
             <InfoRow label="Primary Role" value={formData.primaryRole} />
-            <InfoRow 
-              label="Full Access" 
-              value={formData.isFullAccess ? "Yes" : "No"} 
-            />
+            <InfoRow label="Full Access" value={formData.isFullAccess ? 'Yes' : 'No'} />
             {!formData.isFullAccess && (
-              <InfoRow 
-                label="Permissions" 
-                value="Based on role permissions"
-              />
+              <InfoRow label="Permissions" value="Based on role permissions" />
             )}
           </div>
         </InfoSection>
@@ -79,22 +114,26 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
         {/* Instruments & Skills */}
         <InfoSection title="Instruments & Skills">
           <div className="space-y-1">
-            <InfoRow 
-              label="Instruments" 
+            <InfoRow
+              label="Instruments"
               value={
-                formData.instruments.length > 0 
-                  ? <span className="text-xs">{formData.instruments.length} instruments</span>
-                  : "None specified"
-              } 
+                formData.instruments.length > 0 ? (
+                  <span className="text-xs">{formData.instruments.length} instruments</span>
+                ) : (
+                  'None specified'
+                )
+              }
             />
             <InfoRow label="Experience" value={`${formData.yearsExperience || '0'} years`} />
-            <InfoRow 
-              label="Genres" 
+            <InfoRow
+              label="Genres"
               value={
-                formData.preferredGenres.length > 0 
-                  ? <span className="text-xs">{formData.preferredGenres.length} selected</span>
-                  : "None selected"
-              } 
+                formData.preferredGenres.length > 0 ? (
+                  <span className="text-xs">{formData.preferredGenres.length} selected</span>
+                ) : (
+                  'None selected'
+                )
+              }
             />
           </div>
         </InfoSection>
@@ -102,17 +141,19 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
         {/* Badges */}
         <InfoSection title="Badges & Recognition">
           <div className="space-y-1">
-            <InfoRow 
-              label="Achievement Badges" 
+            <InfoRow
+              label="Achievement Badges"
               value={
-                formData.achievementBadges.length > 0 
-                  ? <span className="text-xs">{formData.achievementBadges.length} badges</span>
-                  : "None selected"
-              } 
+                formData.achievementBadges.length > 0 ? (
+                  <span className="text-xs">{formData.achievementBadges.length} badges</span>
+                ) : (
+                  'None selected'
+                )
+              }
             />
-            <InfoRow 
-              label="Custom Badge" 
-              value={formData.customBadge ? formData.customBadge.name : "None"} 
+            <InfoRow
+              label="Custom Badge"
+              value={formData.customBadge ? formData.customBadge.name : 'None'}
             />
           </div>
         </InfoSection>
@@ -120,28 +161,30 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
         {/* Profile Information */}
         <InfoSection title="Profile Information">
           <div className="space-y-1">
-            <InfoRow 
-              label="Profile Photo" 
-              value={formData.profilePhoto ? "Uploaded" : "Not uploaded"} 
+            <InfoRow
+              label="Profile Photo"
+              value={formData.profilePhoto ? 'Uploaded' : 'Not uploaded'}
             />
-            <InfoRow 
-              label="Public Profile" 
-              value={formData.publicProfile ? "Yes" : "No"} 
-            />
-            <InfoRow 
-              label="Bio" 
-              value={formData.bio ? "Added" : "None"} 
-            />
+            <InfoRow label="Bio" value={formData.bio ? 'Added' : 'None'} />
           </div>
         </InfoSection>
 
         {/* Email Preferences */}
         <InfoSection title="Email Preferences">
           <div className="space-y-1">
-            <InfoRow label="Newsletter" value={formData.emailPreferences.newsletter ? "Yes" : "No"} />
-            <InfoRow label="Events" value={formData.emailPreferences.events ? "Yes" : "No"} />
-            <InfoRow label="Group Invitations" value={formData.emailPreferences.groupInvitations ? "Yes" : "No"} />
-            <InfoRow label="System Updates" value={formData.emailPreferences.systemUpdates ? "Yes" : "No"} />
+            <InfoRow
+              label="Newsletter"
+              value={formData.emailPreferences.newsletter ? 'Yes' : 'No'}
+            />
+            <InfoRow label="Events" value={formData.emailPreferences.events ? 'Yes' : 'No'} />
+            <InfoRow
+              label="Group Invitations"
+              value={formData.emailPreferences.groupInvitations ? 'Yes' : 'No'}
+            />
+            <InfoRow
+              label="System Updates"
+              value={formData.emailPreferences.systemUpdates ? 'Yes' : 'No'}
+            />
           </div>
         </InfoSection>
       </div>
@@ -149,7 +192,7 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
       {/* Account Setup */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-semibold text-blue-900 mb-4">Account Setup</h4>
-        
+
         <div className="space-y-4">
           <div className="flex items-start space-x-3">
             <input
@@ -176,7 +219,7 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
             <div className="flex items-center space-x-2">
               <div className="relative flex-1">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={formData.temporaryPassword}
                   onChange={(e) => setFormData({ ...formData, temporaryPassword: e.target.value })}
                   className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none pr-10"
@@ -197,6 +240,35 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Password validation display */}
+            <div
+              className={`mt-2 p-3 rounded-lg border ${
+                isPasswordValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+              }`}
+            >
+              <p
+                className={`text-sm font-medium mb-2 ${
+                  isPasswordValid ? 'text-green-800' : 'text-red-800'
+                }`}
+              >
+                Critères de sécurité du mot de passe {isPasswordValid ? '✓' : '✗'}
+              </p>
+              <ul className="grid grid-cols-2 gap-1 text-xs">
+                {passwordValidation.map((item) => (
+                  <li key={item.label} className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex h-2 w-2 rounded-full ${
+                        item.ok ? 'bg-green-500' : 'bg-red-400'
+                      }`}
+                    />
+                    <span className={item.ok ? 'text-green-700' : 'text-red-600'}>
+                      {item.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
@@ -226,7 +298,7 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
         <ul className="text-sm text-green-800 space-y-1">
           <li>✅ User account will be created with the specified information</li>
           {formData.sendWelcomeEmail && <li>📧 Welcome email will be sent to {formData.email}</li>}
-          <li>🔗 You'll receive a link to view the user's profile</li>
+          <li>🔗 You&lsquo;ll receive a link to view the user&lsquo;s profile</li>
           <li>👤 User can be added to groups if needed</li>
         </ul>
       </div>

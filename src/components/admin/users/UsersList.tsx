@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AdminExpandableSection from '../common/AdminExpandableSection';
 import UserCard from './UserCard';
 import { calculateAge } from '@/utils/schoolUtils';
@@ -100,11 +100,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     hasPrevious: false,
   });
 
-  useEffect(() => {
-    fetchUsers();
-  }, [filters, refreshTrigger]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -133,7 +129,11 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers, refreshTrigger]);
 
   const mapSortByToField = (sortBy: string): string => {
     switch (sortBy) {
@@ -222,7 +222,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       return (
         user.roles &&
         user.roles.length > 0 &&
-        user.roles.some((role: any) => role.role?.weight && role.role.weight >= 80)
+        user.roles.some((role) => role.role?.weight && role.role.weight >= 80)
       );
     })
     .map(transformUser);
@@ -269,6 +269,40 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     (shouldShowCurrentMembers && displayCurrentMembers.length > 0) ||
     (shouldShowFormerMembers && displayFormerMembers.length > 0) ||
     (shouldShowPendingMembers && displayPendingMembers.length > 0);
+
+  // Show "no users found" message if no results
+  if (!hasAnyResults && users.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+          <svg
+            className="w-12 h-12 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun utilisateur trouvé</h3>
+        <p className="text-gray-500 max-w-sm mx-auto mb-6">
+          Aucun utilisateur ne correspond aux critères de recherche actuels. Essayez de modifier vos
+          filtres ou ajoutez de nouveaux membres.
+        </p>
+        <button
+          onClick={fetchUsers}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+        >
+          Actualiser
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

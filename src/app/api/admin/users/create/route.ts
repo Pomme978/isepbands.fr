@@ -39,7 +39,22 @@ const createUserSchema = z.object({
   pronouns: z.string().optional(),
 
   // Account setup
-  temporaryPassword: z.string().min(6),
+  temporaryPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .refine(
+      (password) => /[a-z]/.test(password),
+      'Password must contain at least one lowercase letter',
+    )
+    .refine(
+      (password) => /[A-Z]/.test(password),
+      'Password must contain at least one uppercase letter',
+    )
+    .refine((password) => /\d/.test(password), 'Password must contain at least one number')
+    .refine(
+      (password) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
+      'Password must contain at least one special character',
+    ),
   sendWelcomeEmail: z.boolean().optional(),
   requirePasswordChange: z.boolean().optional(),
 });

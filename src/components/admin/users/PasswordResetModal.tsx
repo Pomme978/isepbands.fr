@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 interface PasswordResetModalProps {
@@ -24,20 +24,58 @@ export default function PasswordResetModal({
   const [requireChange, setRequireChange] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Password validation - must be before any early returns
+  const passwordValidation = useMemo(
+    () => [
+      { label: 'Au moins 8 caractères', ok: password.length >= 8 },
+      { label: 'Une lettre minuscule', ok: /[a-z]/.test(password) },
+      { label: 'Une lettre majuscule', ok: /[A-Z]/.test(password) },
+      { label: 'Un chiffre', ok: /\d/.test(password) },
+      { label: 'Un caractère spécial', ok: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) },
+    ],
+    [password],
+  );
+
+  const isPasswordValid = passwordValidation.every((item) => item.ok);
+
   if (!isOpen) return null;
 
   const generatePassword = () => {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    // Generate a stronger password that meets requirements
+    const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+    const uppercase = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+    const numbers = '23456789';
+    const specials = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
     let result = '';
-    for (let i = 0; i < 10; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Ensure at least one of each type
+    result += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    result += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    result += specials.charAt(Math.floor(Math.random() * specials.length));
+
+    // Fill the rest randomly
+    const allChars = lowercase + uppercase + numbers + specials;
+    for (let i = 4; i < 12; i++) {
+      result += allChars.charAt(Math.floor(Math.random() * allChars.length));
     }
-    setPassword(result);
+
+    // Shuffle the password
+    const shuffled = result
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
+    setPassword(shuffled);
   };
 
   const handleReset = async () => {
     if (!password.trim()) {
-      alert('Please enter a password');
+      alert('Veuillez saisir un mot de passe');
+      return;
+    }
+
+    if (!isPasswordValid) {
+      alert('Le mot de passe ne respecte pas les critères de sécurité');
       return;
     }
 
@@ -140,6 +178,27 @@ export default function PasswordResetModal({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+
+            {/* Password requirements */}
+            {password.length > 0 && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 mb-2">Exigences du mot de passe</p>
+                <ul className="grid grid-cols-2 gap-1 text-xs">
+                  {passwordValidation.map((item) => (
+                    <li key={item.label} className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex h-2 w-2 rounded-full ${
+                          item.ok ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      />
+                      <span className={item.ok ? 'text-green-700' : 'text-gray-500'}>
+                        {item.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Options */}
@@ -184,7 +243,7 @@ export default function PasswordResetModal({
             </button>
             <button
               onClick={handleReset}
-              disabled={isLoading || !password.trim()}
+              disabled={isLoading || !password.trim() || !isPasswordValid}
               className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {isLoading ? (
