@@ -33,6 +33,7 @@ interface UserProfile {
   instrumentCount: number; // Ajouté
   concertsPlayed: number; // Ajouté
   age?: number | null; // Age calculé
+  preferredGenres?: string[] | null; // Genres préférés
 }
 
 interface ProfileHeaderProps {
@@ -63,7 +64,7 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
 
         {/* Profile Info */}
         <div className="flex-1">
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
               <div className="flex flex-row justify-between items-center">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
@@ -88,6 +89,13 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
               <p className="text-sm text-gray-500">
                 Pronoms: {getPronounDisplay(user.pronouns)} • Membre depuis {user.memberSince}
               </p>
+              {/* Debug version temporaire - affiche même si vide */}
+              <p className="text-sm text-gray-500 mb-1">
+                Genres préférés:{' '}
+                {user.preferredGenres && user.preferredGenres.length > 0
+                  ? user.preferredGenres.join(', ')
+                  : 'Aucun genre défini'}
+              </p>
             </div>
 
             {/* Stats Row */}
@@ -98,16 +106,20 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
             />
 
             {/* Badges */}
-            <BadgeDisplay
-              role={user.role}
-              badges={user.badges}
-              isLookingForGroup={user.isLookingForGroup}
-              pronouns={user.pronouns}
-            />
+            <div className="mt-1">
+              <BadgeDisplay
+                role={user.role}
+                badges={user.badges}
+                isLookingForGroup={user.isLookingForGroup}
+                pronouns={user.pronouns}
+              />
+            </div>
 
             {/* Bio */}
             <div>
-              <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl">{user.bio}</p>
+              <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 italic rounded-xl">
+                {user.bio}
+              </p>
             </div>
           </div>
         </div>

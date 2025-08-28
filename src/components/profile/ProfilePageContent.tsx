@@ -94,6 +94,7 @@ interface ApiUserData {
   concertsPlayed?: number;
   primaryRole?: string | null;
   isOutOfSchool?: boolean;
+  preferredGenres?: string[] | string | null;
 }
 
 // ---- UI types ----
@@ -278,6 +279,13 @@ export default function ProfilePageContent({
 
   const activeGroups = groups.filter((g) => g.isActive);
 
+  // Debug: log genres préférés
+  console.log('Debug preferredGenres:', {
+    raw: user.preferredGenres,
+    type: typeof user.preferredGenres,
+    isArray: Array.isArray(user.preferredGenres),
+  });
+
   // Show pending validation profile for PENDING users
   if (user.status === 'PENDING') {
     const content = (
@@ -303,7 +311,7 @@ export default function ProfilePageContent({
 
   const content = (
     <div className="py-8">
-      <div className="max-w-7xl mx-auto px-4 space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {showBackButton && canGoBack && (
           <div className="flex items-center mb-8">
             <Button variant="ghost" onClick={() => router.back()}>
@@ -344,6 +352,16 @@ export default function ProfilePageContent({
             instrumentCount: user.instrumentCount ?? (instruments?.length || 0),
             concertsPlayed:
               user.concertsPlayed ?? groups.reduce((acc, g) => acc + g.concertCount, 0),
+            preferredGenres: user.preferredGenres
+              ? Array.isArray(user.preferredGenres)
+                ? user.preferredGenres
+                : typeof user.preferredGenres === 'string'
+                  ? user.preferredGenres
+                      .split(',')
+                      .map((g) => g.trim())
+                      .filter(Boolean)
+                  : null
+              : null,
           }}
           isUserProfile={authUser?.id === user.id}
         />
