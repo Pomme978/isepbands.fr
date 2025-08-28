@@ -51,7 +51,21 @@ const updateUserSchema = z.object({
       }),
     )
     .optional(),
-  preferredGenres: z.array(z.string()).optional(),
+  preferredGenres: z
+    .union([z.array(z.string()), z.string()])
+    .optional()
+    .transform((val) => {
+      if (!val) return val;
+      if (typeof val === 'string') {
+        try {
+          const parsed = JSON.parse(val);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+      return val;
+    }),
 });
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -82,6 +96,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         createdAt: true,
         updatedAt: true,
         emailVerified: true,
+        preferredGenres: true,
         instruments: {
           include: {
             instrument: {
@@ -246,6 +261,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         baseUpdateData.isLookingForGroup = validatedData.isLookingForGroup;
       if (validatedData.isFullAccess !== undefined)
         baseUpdateData.isFullAccess = validatedData.isFullAccess;
+      if (validatedData.preferredGenres !== undefined)
+        baseUpdateData.preferredGenres = JSON.stringify(validatedData.preferredGenres);
 
       const user = await tx.user.update({
         where: { id: userId },
@@ -394,6 +411,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         isLookingForGroup: true,
         isFullAccess: true,
         updatedAt: true,
+        preferredGenres: true,
         instruments: {
           include: {
             instrument: {

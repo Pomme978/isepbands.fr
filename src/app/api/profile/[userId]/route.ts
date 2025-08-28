@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
-import { requireAuth } from '@/middlewares/auth';
+import { getSessionUser } from '@/lib/auth';
 import { z } from 'zod';
 import { getBadgeDisplayName } from '@/utils/badgeUtils';
+import { parsePreferredGenres } from '@/utils/genreUtils';
 
 // Schema for profile updates (limited fields for non-admin users)
 const updateProfileSchema = z.object({
@@ -119,7 +120,7 @@ export async function GET(req: NextRequest) {
       emailVerified: user.emailVerified || false,
       pronouns: user.pronouns || null,
       isLookingForGroup: user.isLookingForGroup || false,
-      preferredGenres: user.preferredGenres || null,
+      preferredGenres: parsePreferredGenres(user.preferredGenres),
       badges: (user.badges || []).map((b) => getBadgeDisplayName(b.name, 'fr')).filter(Boolean),
       instruments: user.instruments || [],
       roles: (user.roles || []).map((r) => r.role?.name).filter(Boolean),
@@ -184,8 +185,8 @@ export async function PUT(req: NextRequest) {
   }
 
   // Check authentication
-  const auth = await requireAuth(req);
-  if (!auth.ok) {
+  const session = await getSessionUser(req);
+  if (!session?.id) {
     return NextResponse.json(
       {
         success: false,
@@ -198,7 +199,7 @@ export async function PUT(req: NextRequest) {
   }
 
   // Users can only update their own profile (unless they have admin access)
-  if (auth.user?.id !== userId && !auth.user?.isFullAccess) {
+  if (session.id !== userId && !session.isFullAccess) {
     return NextResponse.json(
       {
         success: false,

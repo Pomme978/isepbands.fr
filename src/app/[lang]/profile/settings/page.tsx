@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import LangLink from '@/components/common/LangLink';
 import BackButton from '@/components/ui/back-button';
 import { SettingsSidebar } from '@/components/profile/settings/SettingsSidebar';
 import { SettingsContent } from '@/components/profile/settings/SettingsContent';
@@ -10,7 +11,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadImageToStorage } from '@/utils/imageUpload';
-import Link from 'next/link';
 
 interface UserSession {
   user: {
@@ -35,6 +35,8 @@ interface UserProfile {
 }
 
 export default function ProfileSettingsPage() {
+  const params = useParams();
+  const locale = params.lang as string;
   const [activeSection, setActiveSection] = useState('profile');
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -111,13 +113,27 @@ export default function ProfileSettingsPage() {
       } catch (err) {
         console.error('Error fetching user data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
+
+        // Redirect to login page if session is invalid
+        if (
+          err instanceof Error &&
+          (err.message.includes('session') || err.message.includes('Unauthorized'))
+        ) {
+          window.location.href = `/${locale}/login`;
+          return;
+        }
+
+        // Redirect to home page for other errors after a delay
+        setTimeout(() => {
+          window.location.href = `/${locale}`;
+        }, 3000);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [locale]);
 
   // Update form data from child components
   const updateFormData = (section: string, data: Record<string, unknown>) => {
@@ -130,7 +146,14 @@ export default function ProfileSettingsPage() {
 
   // Global save function
   const handleSaveAll = async () => {
-    if (!userSession) return;
+    console.log('=== HANDLE SAVE ALL START ===');
+    console.log('User session before save:', userSession);
+    console.log('Form data to save:', formData);
+
+    if (!userSession) {
+      console.log('No user session, aborting save');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -170,30 +193,68 @@ export default function ProfileSettingsPage() {
         }
       }
 
-      // Combine all form data
-      const dataToSave = {
+      // Save profile data
+      const profileDataToSave = {
         firstName: formData.profile?.firstName,
         lastName: formData.profile?.lastName,
         biography: formData.profile?.biography,
         photoUrl: finalPhotoUrl,
-        isLookingForGroup: formData.music?.isLookingForGroup,
         pronouns: formData.privacy?.pronouns,
       };
 
-      const response = await fetch(`/api/profile/${userSession.user.id}`, {
+      console.log('=== SAVING PROFILE DATA ===');
+      console.log('Profile data to save:', profileDataToSave);
+      console.log('User ID:', userSession.user.id);
+
+      const profileResponse = await fetch(`/api/profile/${userSession.user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSave),
+        body: JSON.stringify(profileDataToSave),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save profile');
+      console.log('Profile response status:', profileResponse.status);
+      console.log('Profile response ok:', profileResponse.ok);
+
+      if (!profileResponse.ok) {
+        const profileError = await profileResponse.text();
+        console.log('Profile error:', profileError);
+        throw new Error(`Failed to save profile: ${profileError}`);
+      }
+
+      console.log('Profile saved successfully');
+
+      // Save music data if it exists
+      if (formData.music && Object.keys(formData.music).length > 0) {
+        console.log('=== SAVING MUSIC DATA ===');
+        console.log('Music data to save:', formData.music);
+
+        const musicResponse = await fetch('/api/profile/music', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData.music),
+          credentials: 'include', // Ensure cookies are sent
+        });
+
+        console.log('Music response status:', musicResponse.status);
+        console.log('Music response ok:', musicResponse.ok);
+
+        if (!musicResponse.ok) {
+          const musicError = await musicResponse.text();
+          console.log('Music save error:', musicError);
+          throw new Error(`Failed to save music settings: ${musicError}`);
+        }
+
+        console.log('Music saved successfully');
+      } else {
+        console.log('No music data to save or music data is empty');
       }
 
       // Update user profile and form data after successful save
-      setUserProfile((prev) => (prev ? { ...prev, ...dataToSave } : null));
+      setUserProfile((prev) => (prev ? { ...prev, ...profileDataToSave } : null));
       setFormData((prev) => ({
         ...prev,
         profile: {
@@ -208,14 +269,17 @@ export default function ProfileSettingsPage() {
       // Show success message with auto-hide
       setSaveSuccess(true);
       setSaveError(null);
+      console.log('=== SAVE COMPLETED SUCCESSFULLY ===');
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
+      console.error('=== SAVE FAILED ===');
       console.error('Error saving profile:', error);
       setSaveError("Erreur lors de l'enregistrement");
       setSaveSuccess(false);
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
+      console.log('=== HANDLE SAVE ALL END ===');
     }
   };
 
@@ -247,7 +311,7 @@ export default function ProfileSettingsPage() {
           <h2 className="text-xl font-semibold mb-2">Session expirée</h2>
           <p className="text-muted-foreground mb-4">Veuillez vous reconnecter.</p>
           <Button asChild>
-            <Link href="/login">Se connecter</Link>
+            <LangLink href="/login">Se connecter</LangLink>
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { prisma } from '../../lib/prisma';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { NextRequest, NextResponse } from 'next/server';
@@ -75,13 +75,20 @@ export async function setSession(res: NextResponse, user: { id: string; email: s
 }
 
 export async function getSessionUser(req: NextRequest) {
+  console.log('getSessionUser called');
   const cookie = req.cookies.get(SESSION_COOKIE)?.value;
-  if (!cookie) return null;
+  console.log('Session cookie found:', !!cookie);
+  if (!cookie) {
+    console.log('No session cookie found');
+    return null;
+  }
   try {
     const { payload } = await jwtVerify(cookie, new TextEncoder().encode(JWT_SECRET));
+    console.log('JWT payload:', payload);
 
     // Check if it's the root user
     if (payload.id === 'root') {
+      console.log('Root user detected');
       return {
         id: ROOT_USER.id,
         email: ROOT_USER.email,
@@ -95,6 +102,7 @@ export async function getSessionUser(req: NextRequest) {
     }
 
     // Regular database user
+    console.log('Searching for user in database with ID:', payload.id);
     const user = await prisma.user.findUnique({
       where: { id: payload.id as string },
       select: {
@@ -132,16 +140,30 @@ export async function getSessionUser(req: NextRequest) {
         },
       },
     });
-    if (!user) return null;
-
-    // Check if the session token was issued before the user's last update (password reset)
-    const tokenIssuedAt = payload.iat as number;
-    const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
-
-    if (tokenIssuedAt < userUpdatedAt) {
-      // Token was issued before the password reset, invalidate the session
+    console.log('Database user query result:', user ? 'User found' : 'User not found');
+    if (!user) {
+      console.log('User not found in database, returning null');
       return null;
     }
+
+    // Check if the session token was issued before the user's last update (password reset)
+    // NOTE: Only invalidate if there's a significant time difference (more than 5 minutes)
+    // to avoid invalidating sessions during normal profile updates
+    const tokenIssuedAt = payload.iat as number;
+    const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
+    const timeDifferenceMinutes = (userUpdatedAt - tokenIssuedAt) / 60;
+
+    console.log('Token issued at:', tokenIssuedAt, new Date(tokenIssuedAt * 1000));
+    console.log('User updated at:', userUpdatedAt, new Date(userUpdatedAt * 1000));
+    console.log('Time difference (minutes):', timeDifferenceMinutes);
+
+    if (timeDifferenceMinutes > 5) {
+      // Token was issued more than 5 minutes before the user update (likely password reset)
+      console.log('Token is significantly older than user update - invalidating session');
+      return null;
+    }
+
+    console.log('Token is valid, proceeding with session creation');
     const band = user.groupMemberships[0]?.group?.name || null;
 
     // Check if user has admin permissions
@@ -151,7 +173,7 @@ export async function getSessionUser(req: NextRequest) {
       ),
     );
 
-    return {
+    const sessionUser = {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
@@ -164,7 +186,11 @@ export async function getSessionUser(req: NextRequest) {
       isFullAccess: user.isFullAccess || hasAdminRole,
       isRoot: false,
     };
-  } catch {
+
+    console.log('Returning session user:', sessionUser.id, sessionUser.email);
+    return sessionUser;
+  } catch (error) {
+    console.error('Error in getSessionUser:', error);
     return null;
   }
 }

@@ -32,3 +32,7 @@
   ```bash
   npx prisma migrate dev
   ```
+
+Utilise toujours langlink pour les liens de page
+prisma est localisé à @/lib/prisma
+utiliser en priorité les components de @/components/common au lieu de shadcn si disponibles.

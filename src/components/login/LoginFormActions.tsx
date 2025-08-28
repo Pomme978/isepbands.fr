@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/locales/client';
+import Loading from '@/components/ui/Loading';
 
 interface LoginFormActionsProps {
   loading: boolean;
@@ -16,7 +17,7 @@ export default function LoginFormActions({ loading, error }: LoginFormActionsPro
         </div>
       )}
       <Button type="submit" disabled={loading} className="w-full">
-        {loading ? t('common.loading') : t('auth.login.button')}
+        {loading ? <Loading size="sm" /> : t('auth.login.button')}
       </Button>
     </>
   );

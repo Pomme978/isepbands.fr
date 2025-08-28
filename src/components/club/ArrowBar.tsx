@@ -45,7 +45,7 @@ export default function ArrowBar({
   widthPattern = 'up',
 
   height = 64,
-  bodyLength = 650,
+  // bodyLength = 650,
   bodyRadius = 0,
   tipLength = 50,
   tipOvershoot = 20,
@@ -127,8 +127,8 @@ export default function ArrowBar({
           y={topY + H / 2}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="fill-white font-semibold"
-          style={{ letterSpacing: '0.18em', fontSize: 14 }}
+          className="fill-white font-semibold text-2xl"
+          style={{ letterSpacing: '0.18em' }}
         >
           {title}
         </text>

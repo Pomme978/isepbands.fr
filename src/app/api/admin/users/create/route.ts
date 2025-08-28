@@ -37,6 +37,8 @@ const createUserSchema = z.object({
   // Profile
   bio: z.string().optional(),
   pronouns: z.string().optional(),
+  preferredGenres: z.array(z.string()).optional(),
+  photoUrl: z.string().optional(),
 
   // Account setup
   temporaryPassword: z
@@ -84,28 +86,23 @@ export async function POST(req: NextRequest) {
     // Hash the temporary password
     const hashedPassword = await bcrypt.hash(validatedData.temporaryPassword, 10);
 
-    // Map frontend role names to database role names
-    const roleMapping: Record<string, string> = {
-      member: 'member',
-      president: 'president',
-      'vice-president': 'vice_president',
-      treasurer: 'treasurer',
-      secretary: 'secretary',
-      communications: 'head_of_communication',
-      'former-member': 'former_member',
-    };
-
-    const dbRoleName = roleMapping[validatedData.primaryRole.toLowerCase()] || 'member';
-
-    // Find the role by name
+    // Find the role by matching the French male name (which is sent from frontend)
     const role = await prisma.role.findFirst({
-      where: { name: dbRoleName },
+      where: {
+        OR: [
+          { nameFrMale: validatedData.primaryRole },
+          { nameFrFemale: validatedData.primaryRole },
+          { nameEnMale: validatedData.primaryRole },
+          { nameEnFemale: validatedData.primaryRole },
+          { name: validatedData.primaryRole.toLowerCase() }, // fallback for direct technical names
+        ],
+      },
     });
 
     if (!role) {
       return NextResponse.json(
         {
-          error: `Role not found: ${validatedData.primaryRole}. Available roles: ${Object.keys(roleMapping).join(', ')}`,
+          error: `Role not found: ${validatedData.primaryRole}. Please check that the role exists in the database.`,
         },
         { status: 400 },
       );
@@ -151,6 +148,10 @@ export async function POST(req: NextRequest) {
           status: 'CURRENT',
           emailVerified: false,
           isFullAccess: validatedData.isFullAccess || false,
+          photoUrl: validatedData.photoUrl || null,
+          preferredGenres: validatedData.preferredGenres
+            ? JSON.stringify(validatedData.preferredGenres)
+            : null,
         },
       });
 

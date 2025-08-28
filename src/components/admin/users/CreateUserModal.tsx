@@ -260,6 +260,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
           level: inst.level.toUpperCase() as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT',
           isPrimary: inst.isPrimary || false,
         })),
+        preferredGenres: formData.preferredGenres || [],
         achievementBadges: formData.achievementBadges,
         bio: formData.bio || '',
         pronouns: formData.pronouns || undefined,

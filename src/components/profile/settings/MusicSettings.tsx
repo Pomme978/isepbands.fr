@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -24,9 +25,10 @@ import {
 } from '@/components/ui/select';
 
 import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { MUSIC_GENRES } from '@/data/musicGenres';
 
 // Types
-type LevelKey = 'beginner' | 'intermediate' | 'advanced';
+type LevelKey = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 interface Instrument {
   id: string;
   name: string;
@@ -40,39 +42,51 @@ interface UserMusicProfile {
   styles: string[];
 }
 
-export function MusicSettings() {
+interface MusicSettingsProps {
+  formData?: Record<string, unknown>;
+  onFormDataChange?: (data: Record<string, unknown>) => void;
+}
+
+export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
+  const params = useParams();
+  const locale = params.lang as string;
+
   // ===== Catalog / labels =====
   const levelLabels: Record<LevelKey, string> = {
     beginner: 'Débutant',
     intermediate: 'Intermédiaire',
     advanced: 'Avancé',
+    expert: 'Expert',
   };
 
-  const catalog: Instrument[] = [
-    { id: 'guitar', name: 'Guitare', level: 'beginner', yearsPlaying: 0 },
-    { id: 'bass', name: 'Basse', level: 'beginner', yearsPlaying: 0 },
-    { id: 'drums', name: 'Batterie', level: 'beginner', yearsPlaying: 0 },
-    { id: 'keys', name: 'Clavier/Piano', level: 'beginner', yearsPlaying: 0 },
-    { id: 'vocal', name: 'Chant', level: 'beginner', yearsPlaying: 0 },
-    { id: 'violin', name: 'Violon', level: 'beginner', yearsPlaying: 0 },
-    { id: 'sax', name: 'Saxophone', level: 'beginner', yearsPlaying: 0 },
-    { id: 'trumpet', name: 'Trompette', level: 'beginner', yearsPlaying: 0 },
-    { id: 'other', name: 'Autre', level: 'beginner', yearsPlaying: 0 },
-  ];
+  // Fetch available instruments from API instead of hardcoded catalog
+  const [availableInstruments, setAvailableInstruments] = useState<{ id: string; name: string }[]>(
+    [],
+  );
 
-  const fixedStyles = [
-    'Rock',
-    'Pop',
-    'Jazz',
-    'Blues',
-    'Métal',
-    'Punk',
-    'Reggae',
-    'Funk',
-    'Country',
-    'Électro',
-    'Classique',
-  ];
+  // Fetch instruments catalog from API
+  useEffect(() => {
+    const fetchInstruments = async () => {
+      try {
+        const response = await fetch('/api/instruments');
+        if (response.ok) {
+          const data = await response.json();
+          const instrumentsWithIds = (data.instruments || []).map(
+            (inst: { id: number; nameFr: string }) => ({
+              id: inst.id.toString(),
+              name: inst.nameFr,
+            }),
+          );
+          setAvailableInstruments(instrumentsWithIds);
+        }
+      } catch (error) {
+        console.error('Error fetching instruments:', error);
+      }
+    };
+    fetchInstruments();
+  }, []);
+
+  // Use MUSIC_GENRES from data file instead of hardcoded list
 
   // ===== User state =====
   const [userMusic, setUserMusic] = useState<UserMusicProfile>({
@@ -82,36 +96,68 @@ export function MusicSettings() {
     styles: [],
   });
   const [isLoading, setIsLoading] = useState(true);
-  
+
+  // Report changes to parent for save functionality
+  const handleMusicDataChange = (newData: Partial<UserMusicProfile>) => {
+    const updatedData = { ...userMusic, ...newData };
+    setUserMusic(updatedData);
+    onFormDataChange?.(updatedData);
+  };
+
   // Load user music data from API
   useEffect(() => {
     const loadUserMusicData = async () => {
       try {
         const response = await fetch('/api/profile/music');
+        console.log('API Response status:', response.status);
+
         if (response.ok) {
           const data = await response.json();
-          setUserMusic({
+          console.log('API Response data:', data);
+
+          const musicData = {
+            instruments: data.instruments || [],
+            primaryInstrumentId: data.primaryInstrumentId || '',
+            seekingBand: data.seekingBand || false,
+            styles: data.styles || [],
+          };
+          setUserMusic(musicData);
+          // Don't call onFormDataChange here to avoid triggering "unsaved changes" on load
+
+          console.log('User music set to:', {
             instruments: data.instruments || [],
             primaryInstrumentId: data.primaryInstrumentId || '',
             seekingBand: data.seekingBand || false,
             styles: data.styles || [],
           });
+        } else {
+          const errorText = await response.text();
+          console.error('API Error:', response.status, errorText);
+
+          // Redirect to login if unauthorized
+          if (response.status === 401) {
+            window.location.href = `/${locale}/login`;
+            return;
+          }
         }
       } catch (error) {
         console.error('Error loading user music data:', error);
+
+        // Redirect to login on network errors that might indicate session issues
+        window.location.href = `/${locale}/login`;
       } finally {
         setIsLoading(false);
       }
     };
 
     loadUserMusicData();
-  }, []);
+  }, [locale]);
 
   // ===== Derived =====
   const availableToAdd = useMemo(() => {
     const owned = new Set(userMusic.instruments.map((i) => i.id));
-    return catalog.filter((i) => !owned.has(i.id));
-  }, [userMusic.instruments]);
+    return availableInstruments.filter((i) => !owned.has(i.id));
+  }, [userMusic.instruments, availableInstruments]);
 
   // Combobox state
   const [openAdd, setOpenAdd] = useState(false);
@@ -120,100 +166,69 @@ export function MusicSettings() {
   // ===== Handlers =====
   const setPrimary = (id: string, checked: boolean) => {
     if (checked) {
-      setUserMusic((prev) => ({ ...prev, primaryInstrumentId: id }));
+      // Set this instrument as primary
+      handleMusicDataChange({ primaryInstrumentId: id });
+    } else {
+      // Remove primary status (no primary instrument)
+      handleMusicDataChange({ primaryInstrumentId: '' });
     }
   };
 
   const addInstrument = () => {
     if (!instrumentToAdd) return;
-    const found = catalog.find((i) => i.id === instrumentToAdd);
+    const found = availableInstruments.find((i) => i.id === instrumentToAdd);
     if (!found) return;
-    setUserMusic((prev) => {
-      const next = { ...prev, instruments: [...prev.instruments, { ...found }] };
-      if (!prev.primaryInstrumentId) next.primaryInstrumentId = found.id;
-      return next;
-    });
+
+    const newInstrument: Instrument = {
+      id: found.id,
+      name: found.name,
+      level: 'beginner',
+      yearsPlaying: 0,
+    };
+
+    const currentInstruments = [...userMusic.instruments, newInstrument];
+    const updates: Partial<UserMusicProfile> = {
+      instruments: currentInstruments,
+    };
+    if (!userMusic.primaryInstrumentId) {
+      updates.primaryInstrumentId = found.id;
+    }
+    handleMusicDataChange(updates);
     setInstrumentToAdd('');
     setOpenAdd(false);
   };
 
   const removeInstrument = (id: string) => {
-    setUserMusic((prev) => {
-      const nextInstruments = prev.instruments.filter((i) => i.id !== id);
-      let nextPrimary = prev.primaryInstrumentId;
-      if (prev.primaryInstrumentId === id) {
-        nextPrimary = nextInstruments[0]?.id ?? '';
-      }
-      return { ...prev, instruments: nextInstruments, primaryInstrumentId: nextPrimary };
-    });
+    const nextInstruments = userMusic.instruments.filter((i) => i.id !== id);
+    let nextPrimary = userMusic.primaryInstrumentId;
+    if (userMusic.primaryInstrumentId === id) {
+      nextPrimary = nextInstruments[0]?.id ?? '';
+    }
+    handleMusicDataChange({ instruments: nextInstruments, primaryInstrumentId: nextPrimary });
   };
 
   const updateLevel = (id: string, level: LevelKey) => {
-    setUserMusic((prev) => ({
-      ...prev,
-      instruments: prev.instruments.map((i) => (i.id === id ? { ...i, level } : i)),
-    }));
+    const updatedInstruments = userMusic.instruments.map((i) =>
+      i.id === id ? { ...i, level } : i,
+    );
+    handleMusicDataChange({ instruments: updatedInstruments });
   };
 
   const updateYears = (id: string, years: number) => {
-    setUserMusic((prev) => ({
-      ...prev,
-      instruments: prev.instruments.map((i) => (i.id === id ? { ...i, yearsPlaying: years } : i)),
-    }));
+    const updatedInstruments = userMusic.instruments.map((i) =>
+      i.id === id ? { ...i, yearsPlaying: years } : i,
+    );
+    handleMusicDataChange({ instruments: updatedInstruments });
   };
 
-  const toggleStyle = (style: string, checked: boolean) => {
-    setUserMusic((prev) => {
-      const set = new Set(prev.styles);
-      if (checked) set.add(style);
-      else set.delete(style);
-      return { ...prev, styles: Array.from(set) };
-    });
+  const toggleStyle = (genreId: string, checked: boolean) => {
+    const set = new Set(userMusic.styles);
+    if (checked) set.add(genreId);
+    else set.delete(genreId);
+    handleMusicDataChange({ styles: Array.from(set) });
   };
 
-  const saveInstruments = async () => {
-    try {
-      const response = await fetch('/api/profile/music', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          instruments: userMusic.instruments,
-          primaryInstrumentId: userMusic.primaryInstrumentId,
-        }),
-      });
-
-      if (response.ok) {
-        alert('Instruments sauvegardés avec succès');
-      } else {
-        throw new Error('Failed to save instruments');
-      }
-    } catch (error) {
-      console.error('Error saving instruments:', error);
-      alert('Erreur lors de la sauvegarde des instruments');
-    }
-  };
-
-  const savePreferences = async () => {
-    try {
-      const response = await fetch('/api/profile/music', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          seekingBand: userMusic.seekingBand,
-          styles: userMusic.styles,
-        }),
-      });
-
-      if (response.ok) {
-        alert('Préférences sauvegardées avec succès');
-      } else {
-        throw new Error('Failed to save preferences');
-      }
-    } catch (error) {
-      console.error('Error saving preferences:', error);
-      alert('Erreur lors de la sauvegarde des préférences');
-    }
-  };
+  // Save functions removed - handled by parent layout's save functionality
 
   // ===== Render (single column) =====
   if (isLoading) {
@@ -313,7 +328,12 @@ export function MusicSettings() {
           {/* List */}
           <div className="space-y-3">
             {userMusic.instruments.length === 0 ? (
-              <div>Ajoutez vos instruments pour commencer.</div>
+              <div className="text-center p-8 text-gray-500">
+                <p className="text-lg font-medium">Aucun instrument ajouté</p>
+                <p className="text-sm">
+                  Ajoutez vos instruments pour commencer à personnaliser votre profil musical.
+                </p>
+              </div>
             ) : (
               userMusic.instruments.map((instrument) => {
                 const isPrimary = instrument.id === userMusic.primaryInstrumentId;
@@ -342,6 +362,7 @@ export function MusicSettings() {
                             <SelectItem value="beginner">{levelLabels.beginner}</SelectItem>
                             <SelectItem value="intermediate">{levelLabels.intermediate}</SelectItem>
                             <SelectItem value="advanced">{levelLabels.advanced}</SelectItem>
+                            <SelectItem value="expert">{levelLabels.expert}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -392,10 +413,6 @@ export function MusicSettings() {
               })
             )}
           </div>
-
-          <div className="flex justify-end">
-            <Button onClick={saveInstruments}>Enregistrer mes instruments</Button>
-          </div>
         </CardContent>
       </Card>
 
@@ -414,35 +431,32 @@ export function MusicSettings() {
             <Switch
               id="seeking-band"
               checked={userMusic.seekingBand}
-              onCheckedChange={(v) =>
-                setUserMusic((prev) => ({ ...prev, seekingBand: Boolean(v) }))
-              }
+              onCheckedChange={(v) => handleMusicDataChange({ seekingBand: Boolean(v) })}
             />
           </div>
 
           <div className="space-y-2">
             <Label>Styles musicaux</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {fixedStyles.map((style) => {
-                const checked = userMusic.styles.includes(style);
+              {MUSIC_GENRES.map((genre) => {
+                const checked = userMusic.styles.includes(genre.id);
                 return (
-                  <div key={style} className="flex items-center space-x-2">
+                  <div key={genre.id} className="flex items-center space-x-2">
                     <Checkbox
-                      id={style}
+                      id={genre.id}
                       checked={checked}
-                      onCheckedChange={(v) => toggleStyle(style, Boolean(v))}
+                      onCheckedChange={(v) => toggleStyle(genre.id, Boolean(v))}
                     />
-                    <Label htmlFor={style} className="text-sm">
-                      {style}
+                    <Label
+                      htmlFor={genre.id}
+                      className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {genre.nameFr}
                     </Label>
                   </div>
                 );
               })}
             </div>
-          </div>
-
-          <div className="flex justify-end">
-            <Button onClick={savePreferences}>Enregistrer mes préférences</Button>
           </div>
         </CardContent>
       </Card>

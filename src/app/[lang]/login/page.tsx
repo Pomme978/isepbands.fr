@@ -6,6 +6,7 @@ import { loginSchema } from '@/validation/auth';
 import { useI18n } from '@/locales/client';
 import { useAuth, useSession } from '@/lib/auth-client';
 import BackButton from '@/components/ui/back-button';
+import Loading from '@/components/ui/Loading';
 import LoginFormCard from '@/components/login/LoginFormCard';
 import LoginFormFields from '@/components/login/LoginFormFields';
 import LoginFormActions from '@/components/login/LoginFormActions';
@@ -93,7 +94,7 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading text="Vérification de l'authentification..." size="lg" />
       </div>
     );
   }
@@ -102,7 +103,7 @@ export default function LoginPage() {
   if (user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading text="Redirection..." size="lg" />
       </div>
     );
   }

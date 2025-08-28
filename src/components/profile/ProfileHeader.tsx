@@ -10,6 +10,7 @@ import Avatar from '../common/Avatar';
 import React from 'react';
 import Link from 'next/link';
 import { useLang } from '@/hooks/useLang';
+import { formatPreferredGenres } from '@/utils/genreUtils';
 
 interface UserProfile {
   id: string;
@@ -33,7 +34,7 @@ interface UserProfile {
   instrumentCount: number; // Ajouté
   concertsPlayed: number; // Ajouté
   age?: number | null; // Age calculé
-  preferredGenres?: string[] | null; // Genres préférés
+  preferredGenres?: string[] | string | null; // Genres préférés (peut être JSON string ou array)
 }
 
 interface ProfileHeaderProps {
@@ -89,12 +90,8 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
               <p className="text-sm text-gray-500">
                 Pronoms: {getPronounDisplay(user.pronouns)} • Membre depuis {user.memberSince}
               </p>
-              {/* Debug version temporaire - affiche même si vide */}
               <p className="text-sm text-gray-500 mb-1">
-                Genres préférés:{' '}
-                {user.preferredGenres && user.preferredGenres.length > 0
-                  ? user.preferredGenres.join(', ')
-                  : 'Aucun genre défini'}
+                Genres préférés: {formatPreferredGenres(user.preferredGenres, 'fr')}
               </p>
             </div>
 

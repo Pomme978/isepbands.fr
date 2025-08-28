@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
   Save,
@@ -21,6 +22,16 @@ import LangLink from '@/components/common/LangLink';
 import ViewProfileButton from '../common/ViewProfileButton';
 import UnsavedChangesModal from '../common/UnsavedChangesModal';
 import Avatar from '@/components/common/Avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { getPrimaryRoleName, getAllRoleNames } from '@/utils/roleUtils';
 import { uploadImageToStorage } from '@/utils/imageUpload';
 import UserEditMain from './edit-tabs/UserEditMain';
@@ -91,6 +102,8 @@ const TABS = [
 ];
 
 export default function UserEditPage({ userId }: UserEditPageProps) {
+  const params = useParams();
+  const lang = params.lang as string;
   const [activeTab, setActiveTab] = useState('main');
   const [user, setUser] = useState<User | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -300,10 +313,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleViewProfile = () => {
     if (hasUnsavedChanges) {
-      setPendingNavigation(`/profile/${userId}`);
+      setPendingNavigation(`/${lang}/profile/${userId}`);
       setShowUnsavedModal(true);
     } else {
-      window.open(`/profile/${userId}`, '_blank');
+      window.open(`/${lang}/profile/${userId}`, '_blank');
     }
   };
 
@@ -480,7 +493,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   }
 
   // Get display names for roles using utils
-  const primaryRoleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
+  // const primaryRoleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
   const allRolesDisplay = getAllRoleNames(user.roles, user.pronouns, 'fr');
 
   return (
@@ -707,123 +720,109 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       />
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center mb-4">
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
                 <Trash2 className="w-5 h-5 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Delete User</h3>
-            </div>
-
-            <p className="text-gray-600 mb-6">
+              Delete User
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left">
               Are you sure you want to permanently delete{' '}
               <strong>
                 {user.firstName} {user.lastName}
               </strong>
               ? This action cannot be undone and will remove:
-            </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <ul className="text-sm text-red-800 space-y-1">
-                <li>• All user profile data</li>
-                <li>• Role assignments and permissions</li>
-                <li>• Group memberships</li>
-                <li>• Event participation history</li>
-                <li>• Badges and achievements</li>
-                <li>• Uploaded files and photos</li>
-              </ul>
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deleting}
-                className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteUser}
-                disabled={deleting}
-                className="inline-flex items-center px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-              >
-                {deleting ? (
-                  <>
-                    <Loading text="" size="sm" centered={false} />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Permanently
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <ul className="text-sm text-red-800 space-y-1">
+              <li>• All user profile data</li>
+              <li>• Role assignments and permissions</li>
+              <li>• Group memberships</li>
+              <li>• Event participation history</li>
+              <li>• Badges and achievements</li>
+              <li>• Uploaded files and photos</li>
+            </ul>
           </div>
-        </div>
-      )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? (
+                <>
+                  <Loading text="" size="sm" centered={false} />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Permanently
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Archive Confirmation Modal */}
-      {showArchiveConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center mb-4">
+      <AlertDialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
               <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
                 <Archive className="w-5 h-5 text-orange-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Archive User</h3>
-            </div>
-
-            <p className="text-gray-600 mb-6">
+              Archive User
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left">
               Are you sure you want to archive{' '}
               <strong>
                 {user.firstName} {user.lastName}
               </strong>
               ? Archiving will:
-            </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-              <ul className="text-sm text-orange-800 space-y-1">
-                <li>• Set user status to &quot;DELETED&quot;</li>
-                <li>• Prevent the user from logging in</li>
-                <li>• Keep all data for potential restoration</li>
-                <li>• Move user to archived users section</li>
-                <li>• This action can be reversed later</li>
-              </ul>
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowArchiveConfirm(false)}
-                disabled={deleting}
-                className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleArchiveUser}
-                disabled={deleting}
-                className="inline-flex items-center px-4 py-2 text-sm text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
-              >
-                {deleting ? (
-                  <>
-                    <Loading text="" size="sm" centered={false} />
-                    Archiving...
-                  </>
-                ) : (
-                  <>
-                    <Archive className="w-4 h-4 mr-2" />
-                    Archive User
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <ul className="text-sm text-orange-800 space-y-1">
+              <li>• Set user status to &quot;DELETED&quot;</li>
+              <li>• Prevent the user from logging in</li>
+              <li>• Keep all data for potential restoration</li>
+              <li>• Move user to archived users section</li>
+              <li>• This action can be reversed later</li>
+            </ul>
           </div>
-        </div>
-      )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleArchiveUser}
+              disabled={deleting}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {deleting ? (
+                <>
+                  <Loading text="" size="sm" centered={false} />
+                  Archiving...
+                </>
+              ) : (
+                <>
+                  <Archive className="w-4 h-4 mr-2" />
+                  Archive User
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

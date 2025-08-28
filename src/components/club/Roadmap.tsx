@@ -16,7 +16,7 @@ export default function Roadmap({
   items,
   title = 'NOTRE VISION',
   className = '',
-  colorClass = 'text-slate-900',
+  colorClass = 'text-slate-800',
 }: RoadmapProps) {
   // Base h-12 (48px) then +16px per item
   const BASE_DASH_PX = 48; // = Tailwind h-12
@@ -41,10 +41,10 @@ export default function Roadmap({
                 style={{ height: BASE_DASH_PX + i * STEP_DASH_PX }}
               />
               {/* carte carrée */}
-              <div className="w-full max-w-[220px] aspect-square rounded-xl bg-slate-900 text-white p-4 text-center shadow-lg flex flex-col items-center justify-center">
+              <div className="w-full max-w-[220px] aspect-square rounded-xl bg-slate-800 text-white p-4 text-center shadow-lg flex flex-col items-center justify-center">
                 <div className="text-sm font-semibold">{it.title}</div>
                 {it.subtitle && (
-                  <div className="mt-1 text-xs opacity-80 leading-snug">{it.subtitle}</div>
+                  <div className="mt-1 text-md max-w-20 opacity-80 leading-snug">{it.subtitle}</div>
                 )}
               </div>
             </div>
