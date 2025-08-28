@@ -22,6 +22,7 @@ interface UserProfile {
   pronouns?: string | null;
   promotion?: string | null;
   status?: string;
+  birthDate?: string;
 }
 
 interface ProfileSettingsProps {
@@ -73,6 +74,12 @@ export function ProfileSettings({
   const [lastName, setLastName] = useState(formData?.lastName || initialProfile?.lastName || '');
   const [bio, setBio] = useState(formData?.biography || initialProfile?.biography || '');
   const [photoUrl, setPhotoUrl] = useState(formData?.photoUrl || initialProfile?.photoUrl || null);
+  const [birthDate, setBirthDate] = useState(
+    formData?.birthDate ||
+      (initialProfile?.birthDate
+        ? new Date(initialProfile.birthDate).toISOString().split('T')[0]
+        : ''),
+  );
 
   // Report changes to parent
   const handleFieldChange = (field: string, value: string | null | boolean) => {
@@ -80,12 +87,14 @@ export function ProfileSettings({
     if (field === 'lastName') setLastName(value);
     if (field === 'biography') setBio(value);
     if (field === 'photoUrl') setPhotoUrl(value);
+    if (field === 'birthDate') setBirthDate(value);
 
     const updatedData: Record<string, unknown> = {
       firstName: field === 'firstName' ? value : firstName,
       lastName: field === 'lastName' ? value : lastName,
       biography: field === 'biography' ? value : bio,
       photoUrl: field === 'photoUrl' ? value : photoUrl,
+      birthDate: field === 'birthDate' ? value : birthDate,
     };
 
     // Add special flags for photo operations
@@ -315,6 +324,15 @@ export function ProfileSettings({
                     onChange={(e) => handleFieldChange('lastName', e.target.value)}
                   />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="birthDate">Date de naissance</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => handleFieldChange('birthDate', e.target.value)}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="bio">Bio</Label>

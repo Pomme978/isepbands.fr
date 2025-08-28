@@ -13,6 +13,10 @@ const updateProfileSchema = z.object({
   photoUrl: z.string().nullable().optional(),
   isLookingForGroup: z.boolean().optional(),
   pronouns: z.string().nullable().optional(),
+  birthDate: z
+    .string()
+    .transform((val) => new Date(val))
+    .optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -247,6 +251,7 @@ export async function PUT(req: NextRequest) {
         photoUrl: true,
         isLookingForGroup: true,
         pronouns: true,
+        birthDate: true,
         updatedAt: true,
       },
     });
