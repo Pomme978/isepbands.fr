@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuth } from '@/lib/auth-client';
+import { useAuth, useSession } from '@/lib/auth-client';
 import { registerSchema } from '@/validation/auth';
 import { useI18n } from '@/locales/client';
 import { RegistrationData, RegistrationStep } from '@/types/registration';
@@ -66,10 +66,14 @@ export default function RegisterPage() {
     [],
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
   const router = useRouter();
   const params = useParams();
   const lang = typeof params.lang === 'string' ? params.lang : 'fr';
-  const { register: registerUser, loading, error, user } = useAuth();
+
+  // Use useSession for faster auth check, useAuth only for register function
+  const { user, loading } = useSession();
+  const { register: registerUser } = useAuth();
 
   useEffect(() => {
     fetchInstruments().then((instruments) => setAvailableInstruments(instruments));
@@ -126,8 +130,23 @@ export default function RegisterPage() {
     }
   };
 
-  // Calcul du pourcentage de progression
-  const progressPercentage = (step / stepTitles.length) * 100;
+  // Show loading screen while checking authentication status
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Don't show register form if user is authenticated (during redirect)
+  if (user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center relative p-4">
@@ -201,7 +220,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Error Message */}
-        {error && (
+        {registerError && (
           <div className="mx-6 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -214,7 +233,7 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-800">{error}</p>
+                <p className="text-sm text-red-800">{registerError}</p>
               </div>
             </div>
           </div>

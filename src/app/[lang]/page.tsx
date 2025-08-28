@@ -18,15 +18,16 @@ export default function HomePage() {
         ? params.lang[0]
         : 'fr';
 
-  const { user } = useSession();
-  const { signOut, loading } = useAuth();
+  const { user, loading } = useSession();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     await signOut(() => router.push(`/${lang}/login`));
   };
 
   // Use fixed navbar when user is connected, scroll when not connected
-  const navbarMode = user ? 'fixed' : 'scroll';
+  // Show scroll mode only when we're sure user is not connected (not during loading)
+  const navbarMode = user ? 'fixed' : loading ? 'static' : 'scroll';
 
   return (
     <BasicLayout navbarMode={navbarMode} offsetContent={false}>

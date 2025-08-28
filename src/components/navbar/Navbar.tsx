@@ -67,18 +67,23 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
     setMounted(true);
   }, []);
 
+  // Initialize visibility based on mode and scroll position
   useEffect(() => {
-    // Si mode static ou fixed, on n'écoute pas le scroll
     if (mode === 'static' || mode === 'fixed') {
       setIsVisible(true);
       return;
     }
 
-    // Mode scroll : comportement existant
-    const currentScrollY = window.pageYOffset;
-    if (currentScrollY > 50) {
-      setIsVisible(true);
+    // For scroll mode, only check after mounted
+    if (mounted) {
+      const currentScrollY = window.pageYOffset;
+      setIsVisible(currentScrollY > 50);
     }
+  }, [mode, mounted]);
+
+  // Handle scroll events for scroll mode
+  useEffect(() => {
+    if (!mounted || mode !== 'scroll') return;
 
     let ticking = false;
 
@@ -90,7 +95,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
         return;
       }
 
-      // Afficher la navbar dès qu'on scroll (même vers le bas)
+      // Afficher la navbar dès qu'on scroll au-delà de 50px
       if (scrollY > 50) {
         setIsVisible(true);
       } else {
@@ -115,7 +120,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
     window.addEventListener('scroll', onScroll);
 
     return () => window.removeEventListener('scroll', onScroll);
-  }, [lastScrollY, mode]);
+  }, [lastScrollY, mounted]);
 
   // Container classes selon le mode
   const getContainerClasses = () => {

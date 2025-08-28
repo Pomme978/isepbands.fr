@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { loginSchema } from '@/validation/auth';
 import { useI18n } from '@/locales/client';
-import { useAuth } from '@/lib/auth-client';
+import { useAuth, useSession } from '@/lib/auth-client';
 import BackButton from '@/components/ui/back-button';
 import LoginFormCard from '@/components/login/LoginFormCard';
 import LoginFormFields from '@/components/login/LoginFormFields';
@@ -26,7 +26,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  const { signIn, loading, error, user } = useAuth();
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Use useSession for faster auth check, useAuth only for signIn function
+  const { user, loading } = useSession();
+  const { signIn } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -39,8 +44,36 @@ export default function LoginPage() {
     e.preventDefault();
     const parsed = loginSchema.safeParse({ username: email, password });
     if (!parsed.success) return;
-    await signIn(email, password, () => router.push('/' + lang));
+
+    setIsLoggingIn(true);
+    setLoginError(null);
+
+    try {
+      await signIn(email, password, () => router.push('/' + lang));
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Login failed');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
+
+  // Show loading screen while checking authentication status
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Don't show login form if user is authenticated (during redirect)
+  if (user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -65,7 +98,7 @@ export default function LoginPage() {
               setRememberMe={setRememberMe}
               lang={lang}
             />
-            <LoginFormActions loading={loading} error={error} />
+            <LoginFormActions loading={isLoggingIn} error={loginError} />
           </form>
           <LoginFormLinks lang={lang} />
         </LoginFormCard>
