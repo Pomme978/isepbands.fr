@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../../../../lib/prisma';
 import { requireAuth } from '@/middlewares/auth';
 import { z } from 'zod';
 import { getBadgeDisplayName } from '@/utils/badgeUtils';
