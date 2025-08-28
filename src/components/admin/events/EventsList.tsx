@@ -35,10 +35,6 @@ export default function EventsList({ filters, refreshTrigger }: EventsListProps)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchEvents();
-  }, [filters, refreshTrigger, fetchEvents]);
-
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -116,6 +112,10 @@ export default function EventsList({ filters, refreshTrigger }: EventsListProps)
       setLoading(false);
     }
   }, [filters]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents, refreshTrigger]);
 
   if (loading) {
     return (
