@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import type { ActivityType } from '@/types/activity';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import Image from 'next/image';
 import {
   Users,
   MessageSquare,
@@ -78,102 +79,118 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
   };
 
   const getNewMemberAvatar = (memberName: string) => {
-    const firstLetter = memberName.charAt(0).toUpperCase();
-    return firstLetter;
+    return memberName.charAt(0).toUpperCase();
   };
 
   return (
-    <div className="flex space-x-3 p-4 hover:bg-gray-50 rounded-lg transition-colors">
-      <Avatar className="h-10 w-10 flex-shrink-0">
-        {isSystemMessage ? (
-          activity.type === 'new_member' ? (
-            <AvatarFallback className="bg-green-500 text-white">
-              {getNewMemberAvatar(getNewMemberName(activity.description) || 'N')}
-            </AvatarFallback>
-          ) : (
-            <AvatarFallback className="bg-gray-500 text-white">
-              {getActivityIcon(activity.type)}
-            </AvatarFallback>
-          )
-        ) : (
-          <>
-            <AvatarImage src={activity.user?.avatar} />
-            <AvatarFallback className="bg-blue-500 text-white">
-              {activity.user?.name?.charAt(0) || '?'}
-            </AvatarFallback>
-          </>
-        )}
-      </Avatar>
+    <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-4">
+      {/* Titre en gras si présent - plus gros */}
+      {activity.title && <h3 className="font-bold text-lg text-gray-900">{activity.title}</h3>}
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center space-x-2 mb-1">
-          {!isSystemMessage && (
-            <>
-              <h5 className="font-semibold text-sm text-gray-900">{activity.user?.name}</h5>
-              {activity.user?.role && (
-                <Badge variant="outline" className="text-xs">
-                  {activity.user.role}
-                </Badge>
-              )}
-            </>
-          )}
-          <div className="flex items-center space-x-1 text-gray-500">
-            {!isSystemMessage && getActivityIcon(activity.type)}
-            <span className="text-xs">{getActivityLabel(activity.type)}</span>
+      {/* Description */}
+      {activity.description && <p className="text-md text-gray-600 mb-4">{activity.description}</p>}
+
+      {/* Informations utilisateur sur une ligne avec séparation gauche/droite */}
+      <div className="flex items-center justify-between mt-2">
+        {/* Gauche: Avatar + Nom + Rôle */}
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-8 w-8 flex-shrink-0">
+            {isSystemMessage ? (
+              activity.type === 'new_member' ? (
+                <AvatarFallback className="bg-green-500 text-white">
+                  {getNewMemberAvatar(getNewMemberName(activity.description) || 'N')}
+                </AvatarFallback>
+              ) : (
+                <AvatarFallback className="bg-gray-500 text-white">
+                  {getActivityIcon(activity.type)}
+                </AvatarFallback>
+              )
+            ) : (
+              <>
+                <AvatarImage src={activity.user?.avatar} />
+                <AvatarFallback className="bg-blue-500 text-white">
+                  {activity.user?.name?.charAt(0) || '?'}
+                </AvatarFallback>
+              </>
+            )}
+          </Avatar>
+
+          <div className="flex items-center space-x-2 text-sm">
+            {!isSystemMessage && (
+              <>
+                <span className="font-medium text-gray-900">{activity.user?.name}</span>
+                {activity.user?.role && (
+                  <Badge variant="outline" className="text-xs">
+                    {activity.user.role}
+                  </Badge>
+                )}
+              </>
+            )}
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
-
-        {activity.type === 'post_with_image' && activity.images && activity.images.length > 0 && (
-          <div className="mb-3">
-            <div className="grid grid-cols-2 gap-2 max-w-xs">
-              {activity.images.map((image, index) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={`Post image ${index + 1}`}
-                  className="rounded-lg w-full h-24 object-cover"
-                />
-              ))}
-            </div>
+        {/* Droite: Type d'activité + Heure */}
+        <div className="flex items-center space-x-2 text-sm text-gray-500">
+          <div className="flex items-center space-x-1">
+            {!isSystemMessage && getActivityIcon(activity.type)}
+            <span className="text-xs">{getActivityLabel(activity.type)}</span>
           </div>
-        )}
-
-        {activity.type === 'post_with_image' && activity.image && !activity.images && (
-          <div className="mb-3">
-            <img
-              src={activity.image}
-              alt="Post image"
-              className="rounded-lg max-w-full h-32 object-cover"
-            />
-          </div>
-        )}
-
-        {activity.type === 'event' && (
-          <div className="mb-2">
-            <button className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-md border border-red-200 transition-colors">
-              Voir l'événement
-            </button>
-          </div>
-        )}
-
-        {activity.type === 'new_group' && (
-          <div className="mb-2">
-            <button className="px-3 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs rounded-md border border-orange-200 transition-colors">
-              Voir le groupe
-            </button>
-          </div>
-        )}
-
-        {activity.comments && (
-          <div className="flex items-center text-xs text-gray-500 mb-2">
-            <span>💬 {activity.comments}</span>
-          </div>
-        )}
-
-        <p className="text-xs text-gray-400">{timeAgo}</p>
+          <span className="text-gray-400">•</span>
+          <span className="text-xs text-gray-400">{timeAgo}</span>
+        </div>
       </div>
+
+      {/* Images et contenu supplémentaire */}
+      {activity.type === 'post_with_image' && activity.images && activity.images.length > 0 && (
+        <div className="mt-3 mb-3">
+          <div className="grid grid-cols-2 gap-2 max-w-xs">
+            {activity.images.map((image, index) => (
+              <Image
+                key={index}
+                src={image}
+                alt={`Post image ${index + 1}`}
+                width={96}
+                height={96}
+                className="rounded-lg w-full h-24 object-cover"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activity.type === 'post_with_image' && activity.image && !activity.images && (
+        <div className="mt-3 mb-3">
+          <Image
+            src={activity.image}
+            alt="Post image"
+            width={200}
+            height={128}
+            className="rounded-lg max-w-full h-32 object-cover"
+          />
+        </div>
+      )}
+
+      {activity.type === 'event' && (
+        <div className="mt-3">
+          <button className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-md border border-red-200 transition-colors">
+            Voir l&apos;événement
+          </button>
+        </div>
+      )}
+
+      {activity.type === 'new_group' && (
+        <div className="mt-3">
+          <button className="px-3 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs rounded-md border border-orange-200 transition-colors">
+            Voir le groupe
+          </button>
+        </div>
+      )}
+
+      {activity.comments && (
+        <div className="flex items-center text-xs text-gray-500 mt-3">
+          <span>💬 {activity.comments}</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -208,7 +225,8 @@ export const RecentActivity = ({
             onClick={onShowHistory}
             className="w-full py-2 px-4 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
           >
-            Voir l'historique complet ({activities.length - maxItems} activités supplémentaires)
+            Voir l&apos;historique complet ({activities.length - maxItems} activités
+            supplémentaires)
           </button>
         </div>
       )}

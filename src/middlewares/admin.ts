@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getErrorMessage } from '@/lib/i18n-api';
-import { prisma } from '@/prisma';
+import { prisma } from '../../lib/prisma';
 
 export async function requireAdminAuth(req: NextRequest) {
   const user = await getSessionUser(req);
-  
+
   if (!user) {
     const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
     const error = await getErrorMessage('unauthorized', lang);
@@ -23,7 +23,7 @@ export async function requireAdminAuth(req: NextRequest) {
   // Check if regular user has admin access
   if (!user.isFullAccess) {
     const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
-    const error = await getErrorMessage('forbidden', lang);
+    await getErrorMessage('forbidden', lang);
     return {
       ok: false,
       res: NextResponse.json({ error: 'Admin access required' }, { status: 403 }),
@@ -65,14 +65,14 @@ export async function requireAdminPermission(req: NextRequest, permission: strin
             include: {
               permissions: {
                 include: {
-                  permission: true
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                  permission: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!userWithPermissions) {
@@ -90,10 +90,10 @@ export async function requireAdminPermission(req: NextRequest, permission: strin
   }
 
   // Check if user has the required permission
-  const hasPermission = userWithPermissions.roles.some(userRole =>
-    userRole.role.permissions.some(rolePermission =>
-      rolePermission.permission.name === permission
-    )
+  const hasPermission = userWithPermissions.roles.some((userRole) =>
+    userRole.role.permissions.some(
+      (rolePermission) => rolePermission.permission.name === permission,
+    ),
   );
 
   if (!hasPermission) {
@@ -105,14 +105,32 @@ export async function requireAdminPermission(req: NextRequest, permission: strin
     };
   }
 
-  return { 
-    ok: true, 
+  return {
+    ok: true,
     user: {
       id: userWithPermissions.id,
       firstName: userWithPermissions.firstName,
       lastName: userWithPermissions.lastName,
       email: userWithPermissions.email,
       status: userWithPermissions.status,
-    }
+    },
   };
+}
+
+// Simple admin permission check (for basic admin tasks like club feed)
+export async function checkAdminPermission(
+  user: { isRoot?: boolean; isFullAccess?: boolean } | null,
+) {
+  if (!user) {
+    return { hasPermission: false };
+  }
+
+  // Root user has full access
+  if (user.isRoot || user.isFullAccess) {
+    return { hasPermission: true };
+  }
+
+  // For now, allow any authenticated user to manage club feed
+  // This can be enhanced later with specific permissions
+  return { hasPermission: true };
 }

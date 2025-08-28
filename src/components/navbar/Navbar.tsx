@@ -27,7 +27,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
   const { signOut } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const t = useI18n();
+  // const t = useI18n(); // TODO: Add internationalization
 
   // Get the current language from params
   const currentLang = params?.lang || params?.locale || 'fr';
@@ -120,7 +120,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
     window.addEventListener('scroll', onScroll);
 
     return () => window.removeEventListener('scroll', onScroll);
-  }, [lastScrollY, mounted]);
+  }, [lastScrollY, mounted, mode]);
 
   // Container classes selon le mode
   const getContainerClasses = () => {
@@ -136,12 +136,12 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
 
     // Mode scroll (default)
     return `fixed top-3 ${baseClasses} ${
-      isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+      isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
     }`;
   };
 
-  // Don't render navbar content until auth has loaded to prevent flash
-  const showContent = mounted && !authLoading;
+  // Don't render navbar content until mounted, but allow it to render even during auth loading for non-auth users
+  const showContent = mounted;
 
   // Helper function to get display name
   const getDisplayName = () => {
@@ -172,7 +172,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
               </div>
               <div className="flex items-center gap-4 flex-shrink-0">
                 <LanguageSwitcher />
-                {showContent ? <UserMenu /> : <div className="h-10 w-24"></div>}
+                <UserMenu />
               </div>
             </div>
 
@@ -214,7 +214,9 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
                 <div className="pt-4 border-t">
                   {showContent ? (
                     <div className="w-full space-y-3">
-                      {user ? (
+                      {authLoading ? (
+                        <div className="h-12 w-full bg-gray-200 animate-pulse rounded"></div>
+                      ) : user ? (
                         // Authenticated user menu items (matching desktop UserMenu)
                         <div className="space-y-2">
                           <div className="flex items-center gap-3 px-3 py-3 border-b pb-3">

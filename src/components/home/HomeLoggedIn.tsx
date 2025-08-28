@@ -175,24 +175,23 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
               (activity: {
                 id: string;
                 type: string;
-                timestamp: string;
-                content?: string;
-                user?: {
-                  firstName: string;
-                  lastName: string;
-                  photoUrl?: string;
-                };
+                createdAt: string;
+                title: string;
+                description?: string;
+                userName?: string;
+                userAvatar?: string;
+                userRole?: string;
               }) => ({
                 id: activity.id,
                 type: activity.type === 'custom' ? 'post' : activity.type,
                 timestamp: new Date(activity.createdAt),
-                description:
-                  activity.title + (activity.description ? `: ${activity.description}` : ''),
+                title: activity.title, // Titre séparé
+                description: activity.description || '', // Description séparée (peut être vide)
                 user: activity.userName
                   ? {
                       name: activity.userName,
                       avatar: activity.userAvatar || '/avatars/default.jpg',
-                      role: 'Admin', // Could be enhanced to get real role
+                      role: activity.userRole || null, // Use real role from API
                     }
                   : undefined,
                 isSystemMessage: activity.type !== 'custom',

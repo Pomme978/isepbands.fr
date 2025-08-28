@@ -17,6 +17,7 @@ export interface ActivityType {
     | 'system_announcement';
   user?: ActivityUser; // Optional pour les messages système
   timestamp: Date;
+  title?: string; // Titre optionnel pour les actualités du club feed
   description: string;
   images?: string[]; // Array d'images pour les posts avec plusieurs images
   image?: string; // Rétrocompatibilité

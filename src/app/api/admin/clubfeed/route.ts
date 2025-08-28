@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/prisma';
+import { prisma } from '../../../../../lib/prisma';
 import { requireAuth } from '@/middlewares/auth';
 import { checkAdminPermission } from '@/middlewares/admin';
 
@@ -12,42 +12,64 @@ export async function GET(req: NextRequest) {
     // Check admin permission
     const adminCheck = await checkAdminPermission(auth.user);
     if (!adminCheck.hasPermission) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
     // Fetch activities - we'll use a generic Activity model
     // For now, we'll return mock data until the model is created
-    const activities = await prisma.activity.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            photoUrl: true,
-          }
-        }
-      }
-    }).catch(() => []);
+    const activities = await prisma.activity
+      .findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              photoUrl: true,
+              roles: {
+                include: {
+                  role: {
+                    select: {
+                      nameFrFemale: true,
+                      nameFrMale: true,
+                      weight: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+      .catch(() => []);
 
     // Transform activities for the frontend
-    const transformedActivities = activities.map(activity => ({
-      id: activity.id,
-      type: activity.type,
-      title: activity.title,
-      description: activity.description,
-      userId: activity.userId,
-      userName: activity.user ? `${activity.user.firstName} ${activity.user.lastName}` : null,
-      userAvatar: activity.user?.photoUrl,
-      metadata: activity.metadata,
-      createdAt: activity.createdAt,
-      createdBy: activity.createdBy,
-    }));
+    const transformedActivities = activities.map((activity) => {
+      // Get the highest weight role (most important role)
+      let userRole = null;
+      if (activity.user?.roles && activity.user.roles.length > 0) {
+        const sortedRoles = activity.user.roles.sort((a, b) => b.role.weight - a.role.weight);
+        const topRole = sortedRoles[0].role;
+        // Use female version by default, could be enhanced with user gender preference
+        userRole = topRole.nameFrFemale || topRole.nameFrMale;
+      }
+
+      return {
+        id: activity.id,
+        type: activity.type,
+        title: activity.title,
+        description: activity.description,
+        userId: activity.userId,
+        userName: activity.user ? `${activity.user.firstName} ${activity.user.lastName}` : null,
+        userAvatar: activity.user?.photoUrl,
+        userRole: userRole,
+        metadata: activity.metadata,
+        createdAt: activity.createdAt,
+        createdBy: activity.createdBy,
+      };
+    });
 
     return NextResponse.json({ activities: transformedActivities });
   } catch (error) {
@@ -59,65 +81,120 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('POST /api/admin/clubfeed - Starting...');
+
     // Check authentication
     const auth = await requireAuth(req);
-    if (!auth.ok) return auth.res;
+    if (!auth.ok) {
+      console.log('Authentication failed');
+      return auth.res;
+    }
+    console.log('User authenticated:', { id: auth.user.id, email: auth.user.email });
 
     // Check admin permission
     const adminCheck = await checkAdminPermission(auth.user);
     if (!adminCheck.hasPermission) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
+      console.log('Admin permission check failed');
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
+    console.log('Admin permission granted');
 
     const body = await req.json();
     const { type, title, description } = body;
-    
+
     console.log('Creating activity with:', { type, title, description, userId: auth.user.id });
 
-    if (!title) {
-      return NextResponse.json(
-        { error: 'Title is required' },
-        { status: 400 }
-      );
+    // First, verify the user exists in the database
+    const userExists = await prisma.user.findUnique({
+      where: { id: auth.user.id },
+      select: { id: true, firstName: true, lastName: true },
+    });
+
+    if (!userExists) {
+      console.error('User not found in database:', auth.user.id);
+      return NextResponse.json({ error: 'User not found in database' }, { status: 400 });
     }
 
-    // Create activity
-    const activity = await prisma.activity.create({
-      data: {
-        type: type || 'custom',
-        title,
-        description,
-        createdBy: auth.user.id,
-        userId: auth.user.id,
-        metadata: {},
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            photoUrl: true,
-          }
-        }
-      }
-    }).catch(() => null);
+    console.log('User verified in database:', userExists);
 
-    if (!activity) {
-      // If table doesn't exist, return mock data
-      return NextResponse.json({
-        activity: {
-          id: Date.now().toString(),
+    if (!title) {
+      console.log('Title validation failed');
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+
+    console.log('About to create activity in database...');
+    console.log('Data to be inserted:', {
+      type: type || 'custom',
+      title,
+      description: description || null,
+      createdBy: auth.user.id,
+      userId: auth.user.id,
+      metadata: {},
+    });
+
+    // Create activity - always include user information
+    let activity;
+    try {
+      console.log('Creating activity with user information...');
+      activity = await prisma.activity.create({
+        data: {
           type: type || 'custom',
           title,
-          description,
-          createdAt: new Date().toISOString(),
-          userName: 'Admin',
-        }
+          description: description || null,
+          createdBy: auth.user.id,
+          userId: auth.user.id,
+          metadata: {},
+        },
       });
+      console.log('Activity created successfully:', activity);
+    } catch (error) {
+      console.error('Activity creation failed:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        code: (error as Error & { code?: string })?.code,
+        meta: (error as Error & { meta?: unknown })?.meta,
+        name: (error as Error & { name?: string })?.name,
+        fullError: error,
+      });
+      throw error;
+    }
+
+    console.log('Activity created successfully:', activity);
+
+    // Fetch user info separately to avoid relation issues
+    let userName = 'Admin';
+    let userRole = null;
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: auth.user.id },
+        select: {
+          firstName: true,
+          lastName: true,
+          photoUrl: true,
+          roles: {
+            include: {
+              role: {
+                select: {
+                  nameFrFemale: true,
+                  nameFrMale: true,
+                  weight: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      if (user) {
+        userName = `${user.firstName} ${user.lastName}`;
+        // Get the highest weight role
+        if (user.roles && user.roles.length > 0) {
+          const sortedRoles = user.roles.sort((a, b) => b.role.weight - a.role.weight);
+          const topRole = sortedRoles[0].role;
+          userRole = topRole.nameFrFemale || topRole.nameFrMale;
+        }
+      }
+    } catch {
+      console.warn('Could not fetch user details, using default name');
     }
 
     return NextResponse.json({
@@ -127,22 +204,23 @@ export async function POST(req: NextRequest) {
         title: activity.title,
         description: activity.description,
         userId: activity.userId,
-        userName: activity.user ? `${activity.user.firstName} ${activity.user.lastName}` : null,
-        userAvatar: activity.user?.photoUrl,
+        userName: userName,
+        userAvatar: null, // Will be fetched if needed
+        userRole: userRole,
         metadata: activity.metadata,
         createdAt: activity.createdAt,
         createdBy: activity.createdBy,
-      }
+      },
     });
   } catch (error) {
     console.error('Error creating activity:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to create activity',
         details: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
