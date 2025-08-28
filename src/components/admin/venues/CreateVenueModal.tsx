@@ -34,7 +34,6 @@ export default function CreateVenueModal({
     city: '',
     postalCode: '',
     country: 'France',
-    capacity: '',
     metroLine: '',
     accessInstructions: '',
     staffNotes: '',
@@ -65,7 +64,6 @@ export default function CreateVenueModal({
         city: '',
         postalCode: '',
         country: 'France',
-        capacity: '',
         metroLine: '',
         accessInstructions: '',
         staffNotes: '',
@@ -129,6 +127,9 @@ export default function CreateVenueModal({
                   <SelectItem value="CONCERT_HALL">Salle de concert</SelectItem>
                   <SelectItem value="REHEARSAL_ROOM">Salle de répétition</SelectItem>
                   <SelectItem value="RECORDING_STUDIO">Studio d&apos;enregistrement</SelectItem>
+                  <SelectItem value="BAR">Bar</SelectItem>
+                  <SelectItem value="RESTAURANT">Restaurant</SelectItem>
+                  <SelectItem value="NIGHTCLUB">Boîte de nuit</SelectItem>
                   <SelectItem value="EXTERNAL">Lieu externe</SelectItem>
                   <SelectItem value="OTHER">Autre</SelectItem>
                 </SelectContent>
