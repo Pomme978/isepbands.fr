@@ -33,12 +33,34 @@ export default function LoginPage() {
   const { user, loading } = useSession();
   const { signIn } = useAuth();
 
+  // Load remembered email on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const rememberedEmail = localStorage.getItem('rememberedEmail');
+      if (rememberedEmail) {
+        setEmail(rememberedEmail);
+        setRememberMe(true);
+      }
+    }
+  }, []);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (user && !loading) {
       router.push('/' + lang);
     }
   }, [user, loading, router, lang]);
+
+  // Handle remember me checkbox changes
+  const handleRememberMeChange = (checked: boolean) => {
+    setRememberMe(checked);
+    if (typeof window !== 'undefined') {
+      if (!checked) {
+        // If unchecked, remove the remembered email immediately
+        localStorage.removeItem('rememberedEmail');
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +71,17 @@ export default function LoginPage() {
     setLoginError(null);
 
     try {
-      await signIn(email, password, () => router.push('/' + lang));
+      await signIn(email, password, () => {
+        // Handle "Remember me" functionality
+        if (typeof window !== 'undefined') {
+          if (rememberMe) {
+            localStorage.setItem('rememberedEmail', email);
+          } else {
+            localStorage.removeItem('rememberedEmail');
+          }
+        }
+        router.push('/' + lang);
+      });
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Login failed');
     } finally {
@@ -95,7 +127,7 @@ export default function LoginPage() {
               password={password}
               setPassword={setPassword}
               rememberMe={rememberMe}
-              setRememberMe={setRememberMe}
+              setRememberMe={handleRememberMeChange}
               lang={lang}
             />
             <LoginFormActions loading={isLoggingIn} error={loginError} />
