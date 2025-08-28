@@ -15,31 +15,30 @@ interface UserProfile {
   pronouns?: string | null;
   promotion?: string | null;
   status?: string;
-  isOutOfSchool?: boolean;
 }
 
 interface SettingsContentProps {
   activeSection: string;
   userProfile?: UserProfile;
   currentUserId?: string;
-  formData?: any;
-  onFormDataChange?: (section: string, data: any) => void;
+  formData?: Record<string, unknown>;
+  onFormDataChange?: (section: string, data: Record<string, unknown>) => void;
   onPendingPhotoChange?: (file: File | null) => void;
 }
 
-export function SettingsContent({ 
-  activeSection, 
-  userProfile, 
+export function SettingsContent({
+  activeSection,
+  userProfile,
   currentUserId,
   formData,
   onFormDataChange,
-  onPendingPhotoChange
+  onPendingPhotoChange,
 }: SettingsContentProps) {
   const renderContent = () => {
     switch (activeSection) {
       case 'profile':
         return (
-          <ProfileSettings 
+          <ProfileSettings
             initialProfile={userProfile}
             currentUserId={currentUserId}
             formData={formData?.profile}
@@ -50,7 +49,7 @@ export function SettingsContent({
 
       case 'music':
         return (
-          <MusicSettings 
+          <MusicSettings
             formData={formData?.music}
             onFormDataChange={(data) => onFormDataChange?.('music', data)}
           />
@@ -58,7 +57,7 @@ export function SettingsContent({
 
       case 'privacy':
         return (
-          <PrivacySettings 
+          <PrivacySettings
             formData={formData?.privacy}
             onFormDataChange={(data) => onFormDataChange?.('privacy', data)}
           />
@@ -66,7 +65,7 @@ export function SettingsContent({
 
       default:
         return (
-          <ProfileSettings 
+          <ProfileSettings
             initialProfile={userProfile}
             currentUserId={currentUserId}
             formData={formData?.profile}

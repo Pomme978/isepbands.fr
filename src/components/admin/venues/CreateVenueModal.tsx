@@ -48,10 +48,22 @@ export default function CreateVenueModal({
     setLoading(true);
 
     try {
-      // Mock submission for now
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/admin/venues', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      console.log('Creating venue:', formData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create venue');
+      }
+
+      const result = await response.json();
+      console.log('Venue created successfully:', result);
+
       onVenueCreated();
       onClose();
 
@@ -72,6 +84,7 @@ export default function CreateVenueModal({
       });
     } catch (error) {
       console.error('Error creating venue:', error);
+      alert(`Erreur lors de la création du lieu: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -83,134 +96,137 @@ export default function CreateVenueModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Ajouter un nouveau lieu</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nom du lieu</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                placeholder="Ex: Salle de concert Neuilly"
-                required
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Basic Information */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-medium text-gray-900">Informations de base</h4>
 
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                placeholder="Description du lieu..."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="venueType">Type de lieu</Label>
-              <Select
-                value={formData.venueType}
-                onValueChange={(value) => updateField('venueType', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez un type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CAMPUS">Campus ISEP</SelectItem>
-                  <SelectItem value="CONCERT_HALL">Salle de concert</SelectItem>
-                  <SelectItem value="REHEARSAL_ROOM">Salle de répétition</SelectItem>
-                  <SelectItem value="RECORDING_STUDIO">Studio d&apos;enregistrement</SelectItem>
-                  <SelectItem value="BAR">Bar</SelectItem>
-                  <SelectItem value="RESTAURANT">Restaurant</SelectItem>
-                  <SelectItem value="NIGHTCLUB">Boîte de nuit</SelectItem>
-                  <SelectItem value="EXTERNAL">Lieu externe</SelectItem>
-                  <SelectItem value="OTHER">Autre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Address Information */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-medium text-gray-900">Adresse</h4>
-
-            <div>
-              <Label htmlFor="address">Adresse</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => updateField('address', e.target.value)}
-                placeholder="Ex: 28 Rue Notre Dame des Champs"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="city">Ville</Label>
+                <Label htmlFor="name">Nom du lieu</Label>
                 <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => updateField('city', e.target.value)}
-                  placeholder="Ex: Paris"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  placeholder="Ex: Salle de concert Neuilly"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="postalCode">Code postal</Label>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  placeholder="Description du lieu..."
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="venueType">Type de lieu</Label>
+                <Select
+                  value={formData.venueType}
+                  onValueChange={(value) => updateField('venueType', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CAMPUS">Campus ISEP</SelectItem>
+                    <SelectItem value="CONCERT_HALL">Salle de concert</SelectItem>
+                    <SelectItem value="REHEARSAL_ROOM">Salle de répétition</SelectItem>
+                    <SelectItem value="RECORDING_STUDIO">Studio d&apos;enregistrement</SelectItem>
+                    <SelectItem value="BAR">Bar</SelectItem>
+                    <SelectItem value="RESTAURANT">Restaurant</SelectItem>
+                    <SelectItem value="NIGHTCLUB">Boîte de nuit</SelectItem>
+                    <SelectItem value="EXTERNAL">Lieu externe</SelectItem>
+                    <SelectItem value="OTHER">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="photoUrl">URL de la photo</Label>
                 <Input
-                  id="postalCode"
-                  value={formData.postalCode}
-                  onChange={(e) => updateField('postalCode', e.target.value)}
-                  placeholder="Ex: 75006"
+                  id="photoUrl"
+                  value={formData.photoUrl}
+                  onChange={(e) => updateField('photoUrl', e.target.value)}
+                  placeholder="https://example.com/photo.jpg"
                 />
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="country">Pays</Label>
-              <Input
-                id="country"
-                value={formData.country}
-                onChange={(e) => updateField('country', e.target.value)}
-                placeholder="France"
-                required
-              />
+            {/* Right Column - Address Information */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-medium text-gray-900">Adresse</h4>
+
+              <div>
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => updateField('address', e.target.value)}
+                  placeholder="Ex: 28 Rue Notre Dame des Champs"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="city">Ville</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => updateField('city', e.target.value)}
+                    placeholder="Ex: Paris"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="postalCode">Code postal</Label>
+                  <Input
+                    id="postalCode"
+                    value={formData.postalCode}
+                    onChange={(e) => updateField('postalCode', e.target.value)}
+                    placeholder="Ex: 75006"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="country">Pays</Label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => updateField('country', e.target.value)}
+                  placeholder="France"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="metroLine">Ligne de métro / Transport</Label>
+                <Input
+                  id="metroLine"
+                  value={formData.metroLine}
+                  onChange={(e) => updateField('metroLine', e.target.value)}
+                  placeholder="Ex: Ligne 12 - Notre-Dame-des-Champs"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Additional Details */}
+          {/* Additional Information - Full width */}
           <div className="space-y-4">
             <h4 className="text-lg font-medium text-gray-900">Informations complémentaires</h4>
-
-            <div>
-              <Label htmlFor="capacity">Capacité (personnes)</Label>
-              <Input
-                id="capacity"
-                type="number"
-                value={formData.capacity}
-                onChange={(e) => updateField('capacity', e.target.value)}
-                placeholder="Ex: 50"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="metroLine">Ligne de métro / Transport</Label>
-              <Input
-                id="metroLine"
-                value={formData.metroLine}
-                onChange={(e) => updateField('metroLine', e.target.value)}
-                placeholder="Ex: Ligne 12 - Notre-Dame-des-Champs"
-              />
-            </div>
 
             <div>
               <Label htmlFor="accessInstructions">Instructions d&apos;accès</Label>
@@ -220,16 +236,6 @@ export default function CreateVenueModal({
                 onChange={(e) => updateField('accessInstructions', e.target.value)}
                 placeholder="Comment accéder au lieu, codes d'accès, etc..."
                 rows={2}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="photoUrl">URL de la photo</Label>
-              <Input
-                id="photoUrl"
-                value={formData.photoUrl}
-                onChange={(e) => updateField('photoUrl', e.target.value)}
-                placeholder="https://example.com/photo.jpg"
               />
             </div>
           </div>

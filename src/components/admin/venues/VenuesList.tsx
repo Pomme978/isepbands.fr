@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import AdminExpandableSection from '../common/AdminExpandableSection';
 import VenueCard from './VenueCard';
 import Loading from '@/components/ui/Loading';
@@ -31,68 +30,14 @@ interface Venue {
 
 interface VenuesListProps {
   venues: Venue[];
-  filters: {
-    search: string;
-    venueType: string;
-    status: string;
-  };
   loading?: boolean;
-  onRefresh?: () => void;
 }
 
-export default function VenuesList({
-  venues: allVenues,
-  filters,
-  loading = false,
-  onRefresh,
-}: VenuesListProps) {
-  const [error, setError] = useState<string | null>(null);
-
-  // Apply filters
-  let filteredVenues = allVenues;
-
-  // Search filter
-  if (filters.search) {
-    filteredVenues = filteredVenues.filter(
-      (venue) =>
-        venue.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        venue.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        venue.address.toLowerCase().includes(filters.search.toLowerCase()) ||
-        venue.city.toLowerCase().includes(filters.search.toLowerCase()),
-    );
-  }
-
-  // Venue type filter
-  if (filters.venueType !== 'all') {
-    filteredVenues = filteredVenues.filter((venue) => venue.venueType === filters.venueType);
-  }
-
-  // Status filter
-  if (filters.status !== 'all') {
-    filteredVenues = filteredVenues.filter((venue) => venue.status === filters.status);
-  }
-
-  const venues = filteredVenues;
-
+export default function VenuesList({ venues, loading = false }: VenuesListProps) {
   if (loading) {
     return (
       <div className="py-12">
         <Loading text="Chargement des lieux..." size="lg" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-red-600 mb-2">Erreur lors du chargement</div>
-        <div className="text-gray-500 mb-4">{error}</div>
-        <button
-          onClick={onRefresh || (() => {})}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-        >
-          Réessayer
-        </button>
       </div>
     );
   }

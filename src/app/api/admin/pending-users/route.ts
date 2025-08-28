@@ -10,23 +10,23 @@ export async function GET(req: NextRequest) {
     // Get all users with PENDING status
     const pendingUsers = await prisma.user.findMany({
       where: {
-        status: 'PENDING'
+        status: 'PENDING',
       },
       include: {
         instruments: {
           include: {
-            instrument: true
-          }
+            instrument: true,
+          },
         },
-        registrationRequest: true
+        registrationRequest: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     });
 
     // Transform the data to match the expected format
-    const users = pendingUsers.map(user => ({
+    const users = pendingUsers.map((user) => ({
       id: user.id,
       type: 'user',
       name: `${user.firstName} ${user.lastName}`,
@@ -36,28 +36,27 @@ export async function GET(req: NextRequest) {
       phone: user.phone || '',
       currentLevel: user.promotion || '',
       dateOfBirth: user.birthDate ? user.birthDate.toISOString().split('T')[0] : '',
-      isOutOfSchool: user.isOutOfSchool || false,
       pronouns: user.pronouns,
       motivation: user.registrationRequest?.motivation || '',
       experience: user.registrationRequest?.experience || '',
-      instruments: user.instruments.map(ui => ({
+      instruments: user.instruments.map((ui) => ({
         instrumentId: ui.instrument.id,
         instrumentName: ui.instrument.name,
-        skillLevel: ui.skillLevel
+        skillLevel: ui.skillLevel,
       })),
       profilePhoto: user.photoUrl,
-      submittedAt: user.createdAt.toLocaleDateString('fr-FR')
+      submittedAt: user.createdAt.toLocaleDateString('fr-FR'),
     }));
 
     return NextResponse.json({
       success: true,
-      users
+      users,
     });
   } catch (error) {
     console.error('Error fetching pending users:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch pending users' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

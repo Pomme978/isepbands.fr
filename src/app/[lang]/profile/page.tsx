@@ -73,7 +73,6 @@ interface ApiUserData {
   eventsAttended?: number;
   concertsPlayed?: number;
   primaryRole?: string | null;
-  isOutOfSchool?: boolean;
 }
 
 // ---- UI types (same as your first file) ----
@@ -125,7 +124,18 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       try {
         const apiUrl = `/api/profile/${authUser.id}`;
+        console.log('Calling API:', apiUrl);
         const res = await fetch(apiUrl);
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+
+        if (!res.ok) {
+          console.error('API response not ok:', res.status, res.statusText);
+          const text = await res.text();
+          console.error('Response text:', text);
+          return;
+        }
+
         const result = await res.json();
 
         if (!result.success && result.code === 'user_not_found') {
@@ -253,7 +263,6 @@ export default function ProfilePage() {
               emailVerified: user.emailVerified || false,
               currentLevel: user.promotion || '',
               dateOfBirth: user.birthDate || '',
-              isOutOfSchool: user.isOutOfSchool ?? false,
               promotion: user.promotion || '',
               role: user.primaryRole || 'Membre',
               badges: user.badges?.map((b) => b.name) || [],

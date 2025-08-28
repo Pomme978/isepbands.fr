@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   try {
     // Ensure database integrity first
     await ensureDBIntegrity();
-    
+
     const body = await req.json();
     const validatedData = createUserSchema.parse(body);
 
@@ -135,7 +135,6 @@ export async function POST(req: NextRequest) {
           pronouns: validatedData.pronouns,
           status: 'CURRENT',
           emailVerified: false,
-          isOutOfSchool: ['Former', 'Graduate'].includes(validatedData.promotion),
           isFullAccess: validatedData.isFullAccess || false,
         },
       });

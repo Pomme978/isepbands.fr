@@ -4,18 +4,14 @@ import React, { useState, useEffect, use } from 'react';
 import { useLang } from '@/hooks/useLang';
 import { useAuth } from '@/lib/auth-client';
 import BackButton from '@/components/ui/back-button';
-import { Guitar } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import EventBanner from '@/components/profile/EventBanner';
-import InstrumentsSection from '@/components/profile/InstrumentsSection';
 import GroupsSection from '@/components/profile/GroupsSection';
 import ProfileLoadingSkeleton from '@/components/profile/ProfileLoadingSkeleton';
 import { InstrumentsDisplay } from '@/components/profile/shared/InstrumentsDisplay';
 import { useI18n } from '@/locales/client';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { getSkillLevelFr } from '@/utils/skillLevelUtils';
 
 // Utility function to calculate age
 const calculateAge = (birthDate: string | null | undefined): number | null => {
@@ -65,14 +61,6 @@ interface ApiGroupMembership {
   }[];
 }
 
-interface ApiBadge {
-  name: string;
-}
-
-interface ApiRole {
-  name: string;
-}
-
 interface ApiUserData {
   id: string;
   firstName: string;
@@ -98,17 +86,6 @@ interface ApiUserData {
   eventsAttended?: number;
   concertsPlayed?: number;
   primaryRole?: string | null;
-  isOutOfSchool?: boolean;
-}
-
-// Types locaux pour l'UI
-interface Instrument {
-  id: string;
-  name: string;
-  level: string;
-  icon: React.ComponentType<{ className?: string }>;
-  isPrimary: boolean;
-  yearsPlaying?: number;
 }
 
 interface GroupRole {
@@ -258,7 +235,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             emailVerified: user.emailVerified || false,
             currentLevel: user.promotion || '',
             dateOfBirth: user.birthDate || '',
-            isOutOfSchool: user.isOutOfSchool ?? false,
             promotion: user.promotion || '',
             role: user.primaryRole || 'Membre',
             badges: user.badges || [],
