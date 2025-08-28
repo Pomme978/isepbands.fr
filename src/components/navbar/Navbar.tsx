@@ -167,11 +167,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
               </div>
               <div className="flex items-center gap-4 flex-shrink-0">
                 <LanguageSwitcher />
-                {showContent ? (
-                  <UserMenu />
-                ) : (
-                  <div className="h-10 w-32 animate-pulse bg-gray-200 rounded"></div>
-                )}
+                {showContent ? <UserMenu /> : <div className="h-10 w-24"></div>}
               </div>
             </div>
 

@@ -58,6 +58,7 @@ model User {
   roles                         UserRole[]
   votes                         Vote[]
   activities                    Activity[]
+  systemLogs                    SystemLog[] @relation("SystemLogPerformedBy")
 }
 
 model StorageObject {
@@ -272,6 +273,7 @@ enum UserStatus {
   CURRENT
   FORMER
   GRADUATED
+  ALUMNI
   PENDING
   REFUSED
   DELETED
@@ -303,4 +305,31 @@ model MusicGenre {
   id     String @id
   nameFr String
   nameEn String
+}
+
+model SystemSettings {
+  id                        Int      @id @default(1)
+  currentYear              String
+  primaryColor             String   @default("oklch(0.559 0.238 307.331)")
+  associationName          String   @default("ISEP Bands")
+  associationLegalStatus   String   @default("Association loi 1901")
+  associationAddress       String   @default("")
+  associationSiret         String?
+  associationEmail         String   @default("contact@isepbands.fr")
+  publicationDirectorName  String   @default("")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @default(now()) @updatedAt
+}
+
+model SystemLog {
+  id            Int      @id @default(autoincrement())
+  action        String   // 'YEAR_MIGRATION', 'SETTINGS_UPDATE', etc.
+  details       Json     // Additional data about the action
+  performedById String
+  createdAt     DateTime @default(now())
+  
+  performedBy   User     @relation(fields: [performedById], references: [id], name: "SystemLogPerformedBy")
+
+  @@index([performedById], map: "SystemLog_performedById_fkey")
+  @@index([createdAt], map: "SystemLog_createdAt_idx")
 }

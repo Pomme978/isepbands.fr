@@ -7,4 +7,7 @@ export type ApiErrorKey =
   | 'unableToWrite'
   | 'emailInUse'
   | 'registrationError'
+  | 'admin_required'
+  | 'root_required'
+  | 'permission_denied'
   | 'unknown';

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import CustomAvatar from '@/components/common/Avatar';
+import Avatar from '@/components/common/Avatar';
 import { useI18n } from '@/locales/client';
 import LangLink from '@/components/common/LangLink';
 import { User } from 'next-auth';
@@ -13,7 +13,6 @@ import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
 import BadgeDisplay from '@/components/profile/BadgeDisplay';
-import { getBadgeDisplayName } from '@/utils/badgeUtils';
 
 interface HomeLoggedInProps {
   user: User;
@@ -150,11 +149,10 @@ const calculateAge = (birthDate: string | null | undefined): number | null => {
   const birth = new Date(birthDate);
   const age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  return (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) ? age - 1 : age;
+  return monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate()) ? age - 1 : age;
 };
 
 export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLoggedInProps) {
-  const t = useI18n();
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
@@ -167,26 +165,42 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
       try {
         setIsLoadingFeed(true);
         setFeedError(null);
-        
+
         // Try to fetch from public club feed API
         const response = await fetch('/api/clubfeed');
         if (response.ok) {
           const data = await response.json();
-          
+
           // Transform API data to ActivityType format
-          const transformedActivities: ActivityType[] = data.activities?.map((activity: any) => ({
-            id: activity.id,
-            type: activity.type === 'custom' ? 'post' : activity.type,
-            timestamp: new Date(activity.createdAt),
-            description: activity.title + (activity.description ? `: ${activity.description}` : ''),
-            user: activity.userName ? {
-              name: activity.userName,
-              avatar: activity.userAvatar || '/avatars/default.jpg',
-              role: 'Admin', // Could be enhanced to get real role
-            } : undefined,
-            isSystemMessage: activity.type !== 'custom',
-          })) || [];
-          
+          const transformedActivities: ActivityType[] =
+            data.activities?.map(
+              (activity: {
+                id: string;
+                type: string;
+                timestamp: string;
+                content?: string;
+                user?: {
+                  firstName: string;
+                  lastName: string;
+                  photoUrl?: string;
+                };
+              }) => ({
+                id: activity.id,
+                type: activity.type === 'custom' ? 'post' : activity.type,
+                timestamp: new Date(activity.createdAt),
+                description:
+                  activity.title + (activity.description ? `: ${activity.description}` : ''),
+                user: activity.userName
+                  ? {
+                      name: activity.userName,
+                      avatar: activity.userAvatar || '/avatars/default.jpg',
+                      role: 'Admin', // Could be enhanced to get real role
+                    }
+                  : undefined,
+                isSystemMessage: activity.type !== 'custom',
+              }),
+            ) || [];
+
           // Use only real data from the API
           setActivities(transformedActivities);
         } else {
@@ -211,7 +225,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user?.id) return;
-      
+
       try {
         setIsLoadingProfile(true);
         const response = await fetch(`/api/profile/${user.id}`);
@@ -277,21 +291,28 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                   </div>
                 ) : (
                   <div className="flex items-start space-x-4 mb-6">
-                    <CustomAvatar
-                      src={userProfile?.photoUrl || user.image || '/avatars/default.jpg'}
-                      name={userProfile ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}` : (user.name || 'Utilisateur')}
+                    <Avatar
+                      src={userProfile?.photoUrl || user.image}
+                      name={
+                        userProfile
+                          ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`
+                          : user.name || 'Utilisateur'
+                      }
                       size="lg"
                     />
                     <div className="space-y-0">
                       <h3 className="font-semibold text-lg">
-                        {userProfile ? `${userProfile.firstName} ${userProfile.lastName}` : (user.name || 'User')}
+                        {userProfile
+                          ? `${userProfile.firstName} ${userProfile.lastName}`
+                          : user.name || 'User'}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-5">
+                      <p className="text-sm text-gray-600 mb-3">
                         {userProfile && (
                           <>
                             {!userProfile.isOutOfSchool && userProfile.promotion && (
                               <>
-                                {calculateAge(userProfile.birthDate) && `${calculateAge(userProfile.birthDate)} ans, `}
+                                {calculateAge(userProfile.birthDate) &&
+                                  `${calculateAge(userProfile.birthDate)} ans, `}
                                 {userProfile.promotion}
                               </>
                             )}
@@ -304,7 +325,13 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                           role={userProfile.primaryRole || 'Membre'}
                           badges={userProfile.badges || []}
                           isLookingForGroup={userProfile.isLookingForGroup || false}
-                          pronouns={(userProfile.pronouns as any) || 'other'}
+                          pronouns={
+                            (userProfile.pronouns as
+                              | 'he/him'
+                              | 'she/her'
+                              | 'they/them'
+                              | 'other') || 'other'
+                          }
                           size="sm"
                         />
                       )}
@@ -370,11 +397,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">Dernières Actualités</h2>
-                  {feedError && (
-                    <span className="text-sm text-amber-600">Mode hors ligne</span>
-                  )}
+                  {feedError && <span className="text-sm text-amber-600">Mode hors ligne</span>}
                 </div>
-                
+
                 {isLoadingFeed ? (
                   <div className="flex items-center justify-center py-8">
                     <Loading text="Chargement des actualités..." size="sm" />

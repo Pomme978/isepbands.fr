@@ -33,9 +33,10 @@ export default function UserMenu() {
   }
 
   // Get display name from first/last name, fallback to formatted email
-  const displayName = user.firstName && user.lastName 
-    ? `${user.firstName} ${user.lastName}`
-    : (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
+  const displayName =
+    user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
   const band = user.band;
 
   const handleProfileClick = () => {
@@ -79,7 +80,7 @@ export default function UserMenu() {
               alt={displayName}
               name={displayName}
               size="sm"
-              className="shadow-lg flex-shrink-0"
+              className="flex-shrink-0"
             />
           </button>
         </DropdownMenuTrigger>
