@@ -10,19 +10,19 @@ export async function GET(req: NextRequest) {
     // Count pending registration requests
     const pendingUsers = await prisma.registrationRequest.count({
       where: {
-        status: 'PENDING'
-      }
+        status: 'PENDING',
+      },
     });
 
     return NextResponse.json({
       success: true,
-      count: pendingUsers
+      count: pendingUsers,
     });
   } catch (error) {
     console.error('Error fetching pending users count:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch pending users count' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

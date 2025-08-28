@@ -63,12 +63,7 @@ export default function PendingApprovalCard({
                 className="flex items-center justify-between p-4 bg-accent/30 rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center space-x-4">
-                  <Avatar 
-                    src={item.avatar}
-                    name={item.name}
-                    alt={item.name}
-                    size="md"
-                  />
+                  <Avatar src={item.avatar} name={item.name} alt={item.name} size="md" />
                   <div>
                     <h4 className="font-medium text-foreground">{item.name}</h4>
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">

@@ -14,7 +14,7 @@ export default function UsersPage() {
     search: '',
     sortBy: 'alphabetical',
     memberStatus: 'all',
-    dateSort: 'newest'
+    dateSort: 'newest',
   });
 
   const filterConfig: FilterConfig[] = [
@@ -23,7 +23,7 @@ export default function UsersPage() {
       label: 'Search',
       type: 'search',
       placeholder: 'Search users by name, email, or promotion...',
-      value: filterValues.search
+      value: filterValues.search,
     },
     {
       key: 'sortBy',
@@ -34,8 +34,8 @@ export default function UsersPage() {
         { value: 'alphabetical', label: 'Alphabetical' },
         { value: 'recent', label: 'Most Recent' },
         { value: 'role', label: 'By Role' },
-        { value: 'promotion', label: 'By Promotion' }
-      ]
+        { value: 'promotion', label: 'By Promotion' },
+      ],
     },
     {
       key: 'memberStatus',
@@ -47,8 +47,8 @@ export default function UsersPage() {
         { value: 'current', label: 'Current Members' },
         { value: 'former', label: 'Former Members' },
         { value: 'pending', label: 'Pending Approval' },
-        { value: 'board', label: 'Board Members' }
-      ]
+        { value: 'board', label: 'Board Members' },
+      ],
     },
     {
       key: 'dateSort',
@@ -57,18 +57,18 @@ export default function UsersPage() {
       value: filterValues.dateSort,
       options: [
         { value: 'newest', label: 'Newest First' },
-        { value: 'oldest', label: 'Oldest First' }
-      ]
-    }
+        { value: 'oldest', label: 'Oldest First' },
+      ],
+    },
   ];
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilterValues(prev => ({ ...prev, [key]: value }));
+    setFilterValues((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleUserCreated = () => {
     // Trigger refresh by incrementing the counter
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
     // Close modal
     setIsCreateModalOpen(false);
   };
@@ -91,17 +91,14 @@ export default function UsersPage() {
       />
 
       {/* Filters */}
-      <AdminFilters 
-        filters={filterConfig}
-        onFilterChange={handleFilterChange}
-      />
+      <AdminFilters filters={filterConfig} onFilterChange={handleFilterChange} />
 
       {/* Users List */}
       <UsersList filters={filterValues} refreshTrigger={refreshTrigger} />
 
       {/* Create User Modal */}
-      <CreateUserModal 
-        isOpen={isCreateModalOpen} 
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onUserCreated={handleUserCreated}
       />

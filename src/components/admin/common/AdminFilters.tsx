@@ -17,9 +17,13 @@ interface AdminFiltersProps {
   className?: string;
 }
 
-export default function AdminFilters({ filters, onFilterChange, className = '' }: AdminFiltersProps) {
-  const searchFilter = filters.find(f => f.type === 'search');
-  const selectFilters = filters.filter(f => f.type === 'select');
+export default function AdminFilters({
+  filters,
+  onFilterChange,
+  className = '',
+}: AdminFiltersProps) {
+  const searchFilter = filters.find((f) => f.type === 'search');
+  const selectFilters = filters.filter((f) => f.type === 'select');
 
   return (
     <div className={`bg-white p-6 rounded-lg shadow-sm border border-gray-200 ${className}`}>
@@ -50,7 +54,7 @@ export default function AdminFilters({ filters, onFilterChange, className = '' }
                 onChange={(e) => onFilterChange(filter.key, e.target.value)}
                 className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none min-w-[120px]"
               >
-                {filter.options?.map(option => (
+                {filter.options?.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>

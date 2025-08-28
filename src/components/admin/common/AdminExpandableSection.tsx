@@ -16,7 +16,7 @@ export default function AdminExpandableSection({
   count,
   children,
   defaultExpanded = true,
-  className = ''
+  className = '',
 }: AdminExpandableSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -35,12 +35,8 @@ export default function AdminExpandableSection({
           <ChevronDown className="w-5 h-5 text-gray-500" />
         )}
       </button>
-      
-      {isExpanded && (
-        <div className="p-6">
-          {children}
-        </div>
-      )}
+
+      {isExpanded && <div className="p-6">{children}</div>}
     </div>
   );
 }

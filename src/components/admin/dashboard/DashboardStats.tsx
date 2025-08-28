@@ -80,9 +80,7 @@ interface DashboardStatsProps {
   currentAcademicYear?: string;
 }
 
-export default function DashboardStats({
-  currentAcademicYear,
-}: DashboardStatsProps) {
+export default function DashboardStats({ currentAcademicYear }: DashboardStatsProps) {
   const [stats, setStats] = useState<StatData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

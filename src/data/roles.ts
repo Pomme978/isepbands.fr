@@ -18,7 +18,7 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'President',
     weight: 100,
     isCore: true,
-    permissions: [] // President gets all permissions by default via full access
+    permissions: [], // President gets all permissions by default via full access
   },
   {
     name: 'vice_president',
@@ -29,10 +29,19 @@ export const defaultRoles: DefaultRole[] = [
     weight: 90,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.users.view', 'admin.users.edit', 'admin.users.create',
-      'admin.bands.view', 'admin.bands.edit', 'admin.events.view', 'admin.events.create', 
-      'admin.events.edit', 'admin.content.edit', 'admin.media.manage', 'admin.communication'
-    ]
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.users.edit',
+      'admin.users.create',
+      'admin.bands.view',
+      'admin.bands.edit',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.content.edit',
+      'admin.media.manage',
+      'admin.communication',
+    ],
   },
   {
     name: 'treasurer',
@@ -42,7 +51,7 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Treasurer',
     weight: 80,
     isCore: true,
-    permissions: ['admin.dashboard', 'admin.users.view', 'admin.files.access']
+    permissions: ['admin.dashboard', 'admin.users.view', 'admin.files.access'],
   },
   {
     name: 'secretary',
@@ -53,9 +62,14 @@ export const defaultRoles: DefaultRole[] = [
     weight: 80,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.users.view', 'admin.users.edit', 'admin.events.view',
-      'admin.events.create', 'admin.events.edit', 'admin.files.access'
-    ]
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.users.edit',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.files.access',
+    ],
   },
   {
     name: 'head_of_communication',
@@ -66,9 +80,12 @@ export const defaultRoles: DefaultRole[] = [
     weight: 70,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.users.view', 'admin.content.edit', 'admin.media.manage', 
-      'admin.communication'
-    ]
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.content.edit',
+      'admin.media.manage',
+      'admin.communication',
+    ],
   },
   {
     name: 'head_of_creation',
@@ -79,9 +96,14 @@ export const defaultRoles: DefaultRole[] = [
     weight: 70,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.bands.view', 'admin.bands.edit', 'admin.events.view',
-      'admin.events.create', 'admin.events.edit', 'admin.media.manage'
-    ]
+      'admin.dashboard',
+      'admin.bands.view',
+      'admin.bands.edit',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.media.manage',
+    ],
   },
   {
     name: 'member',
@@ -91,7 +113,7 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Member',
     weight: 10,
     isCore: true,
-    permissions: []
+    permissions: [],
   },
   {
     name: 'former_member',
@@ -101,6 +123,6 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Former Member',
     weight: 0,
     isCore: true,
-    permissions: []
-  }
+    permissions: [],
+  },
 ];

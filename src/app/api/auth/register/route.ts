@@ -111,7 +111,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Set session to automatically log in the user
-    const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email } }, { status: 201 });
+    const res = NextResponse.json(
+      { success: true, user: { id: user.id, email: user.email } },
+      { status: 201 },
+    );
     await setSession(res, { id: user.id, email: user.email });
     return res;
   } catch (error) {

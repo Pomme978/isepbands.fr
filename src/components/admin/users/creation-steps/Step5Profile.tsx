@@ -18,9 +18,9 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
   };
 
   const updateEmailPreferences = (preference: string, value: boolean) => {
-    const updatedPreferences = { 
-      ...formData.emailPreferences, 
-      [preference]: value 
+    const updatedPreferences = {
+      ...formData.emailPreferences,
+      [preference]: value,
     };
     setFormData({ ...formData, emailPreferences: updatedPreferences });
   };
@@ -28,17 +28,17 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     // Validate file before storing
     const validation = validateImageFile(file);
     if (!validation.valid) {
       alert(validation.error);
       return;
     }
-    
+
     // Store file for upload when user is created (not auto-upload)
     setFormData({ ...formData, profilePhoto: file });
-    
+
     // Create preview using URL.createObjectURL for better performance
     const previewUrl = URL.createObjectURL(file);
     setPreviewImage(previewUrl);
@@ -49,7 +49,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
     if (previewImage && previewImage.startsWith('blob:')) {
       URL.revokeObjectURL(previewImage);
     }
-    
+
     setFormData({ ...formData, profilePhoto: undefined });
     setPreviewImage(null);
   };
@@ -58,13 +58,11 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Information</h3>
-        
+
         {/* Profile Photo */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Profile Photo
-          </label>
-          
+          <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+
           <div className="flex items-center space-x-4">
             <div className="relative">
               {previewImage ? (
@@ -87,7 +85,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
                 </div>
               )}
             </div>
-            
+
             <div>
               <input
                 type="file"
@@ -117,9 +115,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
 
         {/* Bio Field */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bio
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
           <textarea
             value={formData.bio}
             onChange={(e) => updateField('bio', e.target.value)}
@@ -131,9 +127,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
 
         {/* Pronouns Field */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Pronouns
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Pronouns</label>
           <select
             value={formData.pronouns}
             onChange={(e) => updateField('pronouns', e.target.value)}
@@ -146,10 +140,9 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
             <option value="other">Other (autre)</option>
           </select>
           <p className="text-xs text-gray-500 mt-1">
-            This will be displayed on the user's profile
+            This will be displayed on the user&apos;s profile
           </p>
         </div>
-
       </div>
 
       <div>
@@ -203,9 +196,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
               <label htmlFor="groupInvitations" className="text-sm font-medium text-gray-700">
                 Group Invitations
               </label>
-              <p className="text-xs text-gray-500">
-                Invitations to join bands and musical groups
-              </p>
+              <p className="text-xs text-gray-500">Invitations to join bands and musical groups</p>
             </div>
           </div>
 
@@ -235,7 +226,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
           <li>• Profile information can be updated later by the user</li>
           <li>• Email preferences can be changed at any time in user settings</li>
           <li>• All profiles are visible to association members</li>
-          <li>• Bio information appears on the user's profile page</li>
+          <li>• Bio information appears on the user&apos;s profile page</li>
         </ul>
       </div>
     </div>

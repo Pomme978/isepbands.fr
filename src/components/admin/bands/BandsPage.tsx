@@ -10,7 +10,7 @@ export default function BandsPage() {
     search: '',
     status: 'all',
     recruitment: 'all',
-    sortBy: 'alphabetical'
+    sortBy: 'alphabetical',
   });
 
   const filterConfig: FilterConfig[] = [
@@ -19,7 +19,7 @@ export default function BandsPage() {
       label: 'Search',
       type: 'search',
       placeholder: 'Search bands by name or genre...',
-      value: filterValues.search
+      value: filterValues.search,
     },
     {
       key: 'status',
@@ -30,8 +30,8 @@ export default function BandsPage() {
         { value: 'all', label: 'All Bands' },
         { value: 'active', label: 'Active' },
         { value: 'inactive', label: 'Inactive' },
-        { value: 'disbanded', label: 'Disbanded' }
-      ]
+        { value: 'disbanded', label: 'Disbanded' },
+      ],
     },
     {
       key: 'recruitment',
@@ -41,8 +41,8 @@ export default function BandsPage() {
       options: [
         { value: 'all', label: 'All' },
         { value: 'open', label: 'Open' },
-        { value: 'closed', label: 'Closed' }
-      ]
+        { value: 'closed', label: 'Closed' },
+      ],
     },
     {
       key: 'sortBy',
@@ -52,24 +52,22 @@ export default function BandsPage() {
       options: [
         { value: 'alphabetical', label: 'Alphabetical' },
         { value: 'newest', label: 'Newest' },
-        { value: 'members', label: 'Member Count' }
-      ]
-    }
+        { value: 'members', label: 'Member Count' },
+      ],
+    },
   ];
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilterValues(prev => ({ ...prev, [key]: value }));
+    setFilterValues((prev) => ({ ...prev, [key]: value }));
   };
 
   // Mock data
   const activeBands = [
     { id: '1', name: 'The Rockers', memberCount: 4, status: 'active' },
-    { id: '2', name: 'Jazz Collective', memberCount: 6, status: 'active' }
+    { id: '2', name: 'Jazz Collective', memberCount: 6, status: 'active' },
   ];
-  
-  const inactiveBands = [
-    { id: '3', name: 'Electric Dreams', memberCount: 3, status: 'inactive' }
-  ];
+
+  const inactiveBands = [{ id: '3', name: 'Electric Dreams', memberCount: 3, status: 'inactive' }];
 
   return (
     <div className="space-y-6">
@@ -86,10 +84,7 @@ export default function BandsPage() {
       />
 
       {/* Filters */}
-      <AdminFilters 
-        filters={filterConfig}
-        onFilterChange={handleFilterChange}
-      />
+      <AdminFilters filters={filterConfig} onFilterChange={handleFilterChange} />
 
       {/* Bands List */}
       <div className="space-y-6">
@@ -99,7 +94,7 @@ export default function BandsPage() {
           defaultExpanded={true}
         >
           <div className="space-y-4">
-            {activeBands.map(band => (
+            {activeBands.map((band) => (
               <div key={band.id} className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold">{band.name}</h4>
                 <p className="text-sm text-gray-600">{band.memberCount} members</p>
@@ -114,7 +109,7 @@ export default function BandsPage() {
           defaultExpanded={false}
         >
           <div className="space-y-4">
-            {inactiveBands.map(band => (
+            {inactiveBands.map((band) => (
               <div key={band.id} className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold">{band.name}</h4>
                 <p className="text-sm text-gray-600">{band.memberCount} members</p>

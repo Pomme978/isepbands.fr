@@ -30,26 +30,29 @@ export default function Step2AdditionalInfo({
   };
   const validatePhone = (value: string) => {
     if (!value.trim()) return t('validator.required');
-    
+
     // Remove all formatting to check the digits
     const digitsOnly = value.replace(/\D/g, '');
-    
+
     // French phone validation (more flexible)
     if (digitsOnly.length >= 9 && digitsOnly.length <= 15) {
       // Check if it's a French mobile starting with 6 or 7 (after removing 0 or 33)
-      const numberPart = digitsOnly.startsWith('33') ? digitsOnly.slice(2) : 
-                        digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
-      
+      const numberPart = digitsOnly.startsWith('33')
+        ? digitsOnly.slice(2)
+        : digitsOnly.startsWith('0')
+          ? digitsOnly.slice(1)
+          : digitsOnly;
+
       if (numberPart.length === 9 && /^[67]/.test(numberPart)) {
         return ''; // Valid French mobile
       }
-      
+
       // Or any international number with reasonable length
       if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
         return ''; // Valid international number
       }
     }
-    
+
     return 'Numéro de téléphone invalide';
   };
 
@@ -92,7 +95,7 @@ export default function Step2AdditionalInfo({
             />
             {birthDateError && <div className="text-red-500 text-xs mt-1">{birthDateError}</div>}
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Numéro de téléphone *
@@ -115,8 +118,9 @@ export default function Step2AdditionalInfo({
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Communication et communauté</h4>
         <p className="text-sm text-blue-700">
-          Votre numéro de téléphone est requis pour vous ajouter aux groupes WhatsApp de l'association 
-          et de vos futurs groupes musicaux. C'est ainsi que nous restons connectés !
+          Votre numéro de téléphone est requis pour vous ajouter aux groupes WhatsApp de
+          l&lsquo;association et de vos futurs groupes musicaux. C&lsquo;est ainsi que nous restons
+          connectés !
         </p>
       </div>
 

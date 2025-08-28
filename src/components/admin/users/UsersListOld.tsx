@@ -36,7 +36,7 @@ const MOCK_USERS: User[] = [
     promotion: 'I3',
     role: 'President',
     joinDate: '2024-09-01',
-    status: 'current'
+    status: 'current',
   },
   {
     id: '2',
@@ -47,7 +47,7 @@ const MOCK_USERS: User[] = [
     promotion: 'A2',
     role: 'Member',
     joinDate: '2024-09-02',
-    status: 'current'
+    status: 'current',
   },
   {
     id: '3',
@@ -57,7 +57,7 @@ const MOCK_USERS: User[] = [
     promotion: 'I2',
     role: 'Vice-President',
     joinDate: '2024-09-01',
-    status: 'current'
+    status: 'current',
   },
   {
     id: '4',
@@ -67,7 +67,7 @@ const MOCK_USERS: User[] = [
     promotion: 'Graduate',
     role: 'Former Member',
     joinDate: '2023-09-01',
-    status: 'graduated'
+    status: 'graduated',
   },
   {
     id: '5',
@@ -77,13 +77,13 @@ const MOCK_USERS: User[] = [
     promotion: 'A1',
     role: 'Member',
     joinDate: '2024-12-15',
-    status: 'pending'
-  }
+    status: 'pending',
+  },
 ];
 
 export default function UsersList({ filters }: UsersListProps) {
   // Filter and sort users based on filters
-  const filteredUsers = MOCK_USERS.filter(user => {
+  const filteredUsers = MOCK_USERS.filter((user) => {
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       return (
@@ -96,9 +96,11 @@ export default function UsersList({ filters }: UsersListProps) {
     return true;
   });
 
-  const currentMembers = filteredUsers.filter(user => user.status === 'current');
-  const formerMembers = filteredUsers.filter(user => user.status === 'former' || user.status === 'graduated');
-  const pendingMembers = filteredUsers.filter(user => user.status === 'pending');
+  const currentMembers = filteredUsers.filter((user) => user.status === 'current');
+  const formerMembers = filteredUsers.filter(
+    (user) => user.status === 'former' || user.status === 'graduated',
+  );
+  const pendingMembers = filteredUsers.filter((user) => user.status === 'pending');
 
   return (
     <div className="space-y-6">
@@ -113,7 +115,7 @@ export default function UsersList({ filters }: UsersListProps) {
             <p className="text-gray-500 text-center py-8">No users found in this category.</p>
           ) : (
             <div className="space-y-4">
-              {pendingMembers.map(user => (
+              {pendingMembers.map((user) => (
                 <UserCard key={user.id} user={user} />
               ))}
             </div>
@@ -131,7 +133,7 @@ export default function UsersList({ filters }: UsersListProps) {
           <p className="text-gray-500 text-center py-8">No users found in this category.</p>
         ) : (
           <div className="space-y-4">
-            {currentMembers.map(user => (
+            {currentMembers.map((user) => (
               <UserCard key={user.id} user={user} />
             ))}
           </div>
@@ -148,7 +150,7 @@ export default function UsersList({ filters }: UsersListProps) {
           <p className="text-gray-500 text-center py-8">No users found in this category.</p>
         ) : (
           <div className="space-y-4">
-            {formerMembers.map(user => (
+            {formerMembers.map((user) => (
               <UserCard key={user.id} user={user} />
             ))}
           </div>

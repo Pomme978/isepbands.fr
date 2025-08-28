@@ -146,7 +146,7 @@ export function Dialog({
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [isOpen, closeOnEsc]);
+  }, [isOpen, closeOnEsc, setOpen]);
 
   const ctx = useMemo<DialogContextValue>(
     () => ({
@@ -158,7 +158,7 @@ export function Dialog({
       registerDescription: setDescId,
       requestClose: () => setOpen(false),
     }),
-    [isOpen, labelledById, describedById],
+    [isOpen, setOpen, labelledById, describedById],
   );
 
   // Render children directly; portal happens inside <DialogContent />
@@ -175,10 +175,10 @@ export function DialogTrigger({
   const { setOpen } = useDialogCtx();
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as any, {
+    return React.cloneElement(children, {
       ...rest,
-      onClick: (e: any) => {
-        (children as any).props?.onClick?.(e);
+      onClick: (e: React.MouseEvent) => {
+        children.props?.onClick?.(e);
         setOpen(true);
       },
     });
@@ -218,7 +218,7 @@ export function DialogOverlay({ className, ...props }: React.HTMLAttributes<HTML
       onClick={(e) => {
         // The click handler is set on Content’s wrapper for outside-click;
         // overlay alone is visual. We keep this here if a user renders it standalone.
-        (props as any).onClick?.(e);
+        props.onClick?.(e);
         requestClose();
       }}
     />
@@ -323,7 +323,7 @@ export function DialogTitle({
   ...rest
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   const { registerLabel } = useDialogCtx();
-  const idRef = useRef<string>(() => `dlg-${Math.random().toString(36).slice(2)}` as any);
+  const idRef = useRef<string>();
   const [id] = useState(() => `dlg-${Math.random().toString(36).slice(2)}`);
   useLayoutEffect(() => {
     registerLabel(id);
@@ -364,10 +364,10 @@ export function DialogClose({
   const { requestClose } = useDialogCtx();
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as any, {
+    return React.cloneElement(children, {
       ...rest,
-      onClick: (e: any) => {
-        (children as any).props?.onClick?.(e);
+      onClick: (e: React.MouseEvent) => {
+        children.props?.onClick?.(e);
         requestClose();
       },
     });

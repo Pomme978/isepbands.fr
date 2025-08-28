@@ -7,13 +7,13 @@ const updateInstrumentSchema = z.object({
   name: z.string().min(1).optional(),
   nameFr: z.string().min(1).optional(),
   nameEn: z.string().min(1).optional(),
-  imageUrl: z.string().optional()
+  imageUrl: z.string().optional(),
 });
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const instrumentId = parseInt(params.id);
-    
+
     if (isNaN(instrumentId)) {
       return NextResponse.json({ error: 'Invalid instrument ID' }, { status: 400 });
     }
@@ -37,9 +37,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 firstName: true,
                 lastName: true,
                 photoUrl: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         groupRequirements: {
           select: {
@@ -50,17 +50,17 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 id: true,
                 name: true,
                 imageUrl: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         _count: {
           select: {
             users: true,
-            groupRequirements: true
-          }
-        }
-      }
+            groupRequirements: true,
+          },
+        },
+      },
     });
 
     if (!instrument) {
@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const instrumentId = parseInt(params.id);
-    
+
     if (isNaN(instrumentId)) {
       return NextResponse.json({ error: 'Invalid instrument ID' }, { status: 400 });
     }
@@ -93,7 +93,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     // Check if instrument exists
     const existingInstrument = await prisma.instrument.findUnique({
-      where: { id: instrumentId }
+      where: { id: instrumentId },
     });
 
     if (!existingInstrument) {
@@ -109,17 +109,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
       const conflictingInstrument = await prisma.instrument.findFirst({
         where: {
-          AND: [
-            { id: { not: instrumentId } },
-            { OR: conflictConditions }
-          ]
-        }
+          AND: [{ id: { not: instrumentId } }, { OR: conflictConditions }],
+        },
       });
 
       if (conflictingInstrument) {
-        return NextResponse.json({ 
-          error: 'An instrument with this name already exists' 
-        }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: 'An instrument with this name already exists',
+          },
+          { status: 400 },
+        );
       }
     }
 
@@ -135,24 +135,27 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         _count: {
           select: {
             users: true,
-            groupRequirements: true
-          }
-        }
-      }
+            groupRequirements: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       instrument: updatedInstrument,
-      message: 'Instrument updated successfully'
+      message: 'Instrument updated successfully',
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Validation error', 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: error.errors,
+        },
+        { status: 400 },
+      );
     }
-    
+
     console.error('Error updating instrument:', error);
     return NextResponse.json({ error: 'Failed to update instrument' }, { status: 500 });
   }
@@ -167,7 +170,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   try {
     const instrumentId = parseInt(params.id);
-    
+
     if (isNaN(instrumentId)) {
       return NextResponse.json({ error: 'Invalid instrument ID' }, { status: 400 });
     }
@@ -181,10 +184,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         _count: {
           select: {
             users: true,
-            groupRequirements: true
-          }
-        }
-      }
+            groupRequirements: true,
+          },
+        },
+      },
     });
 
     if (!existingInstrument) {
@@ -193,19 +196,22 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     // Check if instrument is in use
     if (existingInstrument._count.users > 0 || existingInstrument._count.groupRequirements > 0) {
-      return NextResponse.json({ 
-        error: 'Cannot delete instrument that is currently in use by users or groups',
-        usersCount: existingInstrument._count.users,
-        groupsCount: existingInstrument._count.groupRequirements
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Cannot delete instrument that is currently in use by users or groups',
+          usersCount: existingInstrument._count.users,
+          groupsCount: existingInstrument._count.groupRequirements,
+        },
+        { status: 400 },
+      );
     }
 
     await prisma.instrument.delete({
-      where: { id: instrumentId }
+      where: { id: instrumentId },
     });
 
-    return NextResponse.json({ 
-      message: 'Instrument deleted successfully'
+    return NextResponse.json({
+      message: 'Instrument deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting instrument:', error);

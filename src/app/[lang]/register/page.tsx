@@ -14,7 +14,6 @@ import Step4Instruments from '@/components/register/Step4Instruments';
 import Step5Photo from '@/components/register/Step5Photo';
 import Step6Confirmation from '@/components/register/Step6Confirmation';
 import { toast } from 'sonner';
-import { Progress } from '@/components/ui/progress';
 import BackButton from '@/components/ui/back-button';
 import RegisterFormCard from '@/components/register/RegisterFormCard';
 
@@ -66,7 +65,7 @@ export default function RegisterPage() {
     [],
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registerError] = useState<string | null>(null);
   const router = useRouter();
   const params = useParams();
   const lang = typeof params.lang === 'string' ? params.lang : 'fr';

@@ -33,12 +33,42 @@ interface AchievementBadgeTemplate {
 }
 
 const ACHIEVEMENT_BADGES: AchievementBadgeTemplate[] = [
-  { id: 'founding_member', name: 'Founding Member', description: 'Original member of ISEP Bands', color: '#FFD700' },
-  { id: 'former_board_2024', name: 'Former Board 2024-25', description: 'Board member during 2024-25 academic year', color: '#4169E1' },
-  { id: 'concert_performer', name: 'Concert Performer', description: 'Performed in official ISEP Bands concerts', color: '#FF6B35' },
-  { id: 'jam_regular', name: 'Jam Session Regular', description: 'Active participant in jam sessions', color: '#4ECDC4' },
-  { id: 'studio_artist', name: 'Studio Recording Artist', description: 'Recorded tracks in studio sessions', color: '#45B7D1' },
-  { id: 'event_organizer', name: 'Event Organizer', description: 'Helped organize association events', color: '#96CEB4' }
+  {
+    id: 'founding_member',
+    name: 'Founding Member',
+    description: 'Original member of ISEP Bands',
+    color: '#FFD700',
+  },
+  {
+    id: 'former_board_2024',
+    name: 'Former Board 2024-25',
+    description: 'Board member during 2024-25 academic year',
+    color: '#4169E1',
+  },
+  {
+    id: 'concert_performer',
+    name: 'Concert Performer',
+    description: 'Performed in official ISEP Bands concerts',
+    color: '#FF6B35',
+  },
+  {
+    id: 'jam_regular',
+    name: 'Jam Session Regular',
+    description: 'Active participant in jam sessions',
+    color: '#4ECDC4',
+  },
+  {
+    id: 'studio_artist',
+    name: 'Studio Recording Artist',
+    description: 'Recorded tracks in studio sessions',
+    color: '#45B7D1',
+  },
+  {
+    id: 'event_organizer',
+    name: 'Event Organizer',
+    description: 'Helped organize association events',
+    color: '#96CEB4',
+  },
 ];
 
 const BADGE_COLORS = [
@@ -50,16 +80,20 @@ const BADGE_COLORS = [
   { value: '#DDA0DD', name: 'Purple' },
   { value: '#FFB6C1', name: 'Pink' },
   { value: '#D3D3D3', name: 'Silver' },
-  { value: '#FFD700', name: 'Gold' }
+  { value: '#FFD700', name: 'Gold' },
 ];
 
-export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: UserEditBadgesProps) {
+export default function UserEditBadges({
+  user,
+  setUser,
+  setHasUnsavedChanges,
+}: UserEditBadgesProps) {
   const [isAddingBadge, setIsAddingBadge] = useState(false);
   const [editingBadge, setEditingBadge] = useState<number | null>(null);
   const [newBadge, setNewBadge] = useState({
     name: '',
     description: '',
-    color: '#FF6B35'
+    color: '#FF6B35',
   });
 
   const userBadges = user.badges || [];
@@ -71,9 +105,9 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
       description: template.description,
       color: template.color,
       dateAwarded: new Date().toISOString().split('T')[0],
-      awardedBy: 'Admin'
+      awardedBy: 'Admin',
     };
-    
+
     const updatedBadges = [...userBadges, newBadge];
     setUser({ ...user, badges: updatedBadges });
     setHasUnsavedChanges(true);
@@ -81,49 +115,49 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
 
   const addCustomBadge = () => {
     if (!newBadge.name.trim()) return;
-    
+
     const badge: Badge = {
       id: Date.now(), // Temporary ID for frontend
       name: newBadge.name,
       description: newBadge.description,
       color: newBadge.color,
       dateAwarded: new Date().toISOString().split('T')[0],
-      awardedBy: 'Admin'
+      awardedBy: 'Admin',
     };
-    
+
     const updatedBadges = [...userBadges, badge];
     setUser({ ...user, badges: updatedBadges });
-    
+
     setNewBadge({ name: '', description: '', color: '#FF6B35' });
     setIsAddingBadge(false);
     setHasUnsavedChanges(true);
   };
 
   const removeBadge = (id: number) => {
-    const updatedBadges = userBadges.filter(badge => badge.id !== id);
+    const updatedBadges = userBadges.filter((badge) => badge.id !== id);
     setUser({ ...user, badges: updatedBadges });
     setHasUnsavedChanges(true);
   };
 
   const updateBadge = (id: number, updates: Partial<Badge>) => {
-    const updatedBadges = userBadges.map(badge => 
-      badge.id === id ? { ...badge, ...updates } : badge
+    const updatedBadges = userBadges.map((badge) =>
+      badge.id === id ? { ...badge, ...updates } : badge,
     );
     setUser({ ...user, badges: updatedBadges });
     setHasUnsavedChanges(true);
   };
 
   const availableAchievementBadges = ACHIEVEMENT_BADGES.filter(
-    template => !userBadges.some(badge => badge.name === template.name)
+    (template) => !userBadges.some((badge) => badge.name === template.name),
   );
 
   const getIsAchievementBadge = (badgeName: string) => {
-    return ACHIEVEMENT_BADGES.some(template => template.name === badgeName);
+    return ACHIEVEMENT_BADGES.some((template) => template.name === badgeName);
   };
 
   const BadgeCard = ({ badge }: { badge: Badge }) => {
     const isAchievement = getIsAchievementBadge(badge.name);
-    
+
     return (
       <div className="p-4 border-2 border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors">
         <div className="flex items-center justify-between mb-2">
@@ -134,11 +168,11 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
             />
             <div>
               <h4 className="font-semibold text-gray-900">{badge.name}</h4>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                isAchievement 
-                  ? 'bg-blue-100 text-blue-800' 
-                  : 'bg-purple-100 text-purple-800'
-              }`}>
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  isAchievement ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                }`}
+              >
                 {isAchievement ? 'Achievement' : 'Custom'}
               </span>
             </div>
@@ -179,13 +213,13 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
             />
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">Color:</span>
-              {BADGE_COLORS.map(color => (
+              {BADGE_COLORS.map((color) => (
                 <button
                   key={color.value}
                   onClick={() => updateBadge(badge.id, { color: color.value })}
                   className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    badge.color === color.value 
-                      ? 'border-gray-900 scale-110' 
+                    badge.color === color.value
+                      ? 'border-gray-900 scale-110'
                       : 'border-gray-300 hover:scale-105'
                   }`}
                   style={{ backgroundColor: color.value }}
@@ -224,10 +258,10 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Current Badges ({userBadges.length})
         </h3>
-        
+
         {userBadges.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {userBadges.map(badge => (
+            {userBadges.map((badge) => (
               <BadgeCard key={badge.id} badge={badge} />
             ))}
           </div>
@@ -244,7 +278,7 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
         <div className="border-t border-gray-200 pt-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Award Achievement Badges</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {availableAchievementBadges.map(template => (
+            {availableAchievementBadges.map((template) => (
               <button
                 key={template.id}
                 onClick={() => addAchievementBadge(template)}
@@ -282,9 +316,7 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
             <h4 className="font-medium text-gray-900 mb-3">Create Custom Badge</h4>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Badge Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Badge Name</label>
                 <input
                   type="text"
                   value={newBadge.name}
@@ -295,9 +327,7 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={newBadge.description}
                   onChange={(e) => setNewBadge({ ...newBadge, description: e.target.value })}
@@ -308,17 +338,15 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Badge Color
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Badge Color</label>
                 <div className="flex flex-wrap gap-2">
-                  {BADGE_COLORS.map(color => (
+                  {BADGE_COLORS.map((color) => (
                     <button
                       key={color.value}
                       onClick={() => setNewBadge({ ...newBadge, color: color.value })}
                       className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        newBadge.color === color.value 
-                          ? 'border-gray-900 scale-110' 
+                        newBadge.color === color.value
+                          ? 'border-gray-900 scale-110'
                           : 'border-gray-300 hover:scale-105'
                       }`}
                       style={{ backgroundColor: color.value }}
@@ -326,7 +354,7 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
                     />
                   ))}
                 </div>
-                
+
                 <div className="flex items-center space-x-2 mt-2">
                   <input
                     type="color"
@@ -385,11 +413,17 @@ export default function UserEditBadges({ user, setUser, setHasUnsavedChanges }: 
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Badge Guidelines</h3>
         <div className="bg-blue-50 p-4 rounded-lg">
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• <strong>Achievement badges</strong> recognize specific accomplishments within the association</li>
-            <li>• <strong>Custom badges</strong> can be created for unique contributions or special recognition</li>
-            <li>• Badges appear on the user's profile and are visible to other members</li>
+            <li>
+              • <strong>Achievement badges</strong> recognize specific accomplishments within the
+              association
+            </li>
+            <li>
+              • <strong>Custom badges</strong> can be created for unique contributions or special
+              recognition
+            </li>
+            <li>• Badges appear on the user&apos;s profile and are visible to other members</li>
             <li>• Remove badges only when they are no longer accurate or relevant</li>
-            <li>• Consider the user's feelings before removing significant badges</li>
+            <li>• Consider the user&apos;s feelings before removing significant badges</li>
           </ul>
         </div>
       </div>

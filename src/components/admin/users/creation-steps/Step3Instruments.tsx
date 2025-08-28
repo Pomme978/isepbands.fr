@@ -18,12 +18,23 @@ interface Instrument {
 }
 
 const AVAILABLE_INSTRUMENTS_FALLBACK = [
-  'Guitar', 'Bass', 'Drums', 'Piano/Keyboard', 'Vocals', 'Violin', 'Trumpet',
-  'Saxophone', 'Flute', 'Clarinet', 'Cello', 'Percussion', 'Harmonica', 'Other'
+  'Guitar',
+  'Bass',
+  'Drums',
+  'Piano/Keyboard',
+  'Vocals',
+  'Violin',
+  'Trumpet',
+  'Saxophone',
+  'Flute',
+  'Clarinet',
+  'Cello',
+  'Percussion',
+  'Harmonica',
+  'Other',
 ];
 
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-
 
 export default function Step3Instruments({ formData, setFormData }: Step3InstrumentsProps) {
   const [instruments, setInstruments] = useState<Instrument[]>([]);
@@ -60,7 +71,9 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
 
   const addInstrument = () => {
     // Check if instrument already exists
-    const existingInstrument = formData.instruments.find(inst => inst.instrument === newInstrument);
+    const existingInstrument = formData.instruments.find(
+      (inst) => inst.instrument === newInstrument,
+    );
     if (existingInstrument) {
       alert(`${newInstrument} is already added to the list.`);
       return;
@@ -69,23 +82,23 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
     // If this is marked as primary, remove primary from other instruments
     let updatedInstruments = [...(formData.instruments || [])];
     if (newIsPrimary) {
-      updatedInstruments = updatedInstruments.map(inst => ({ ...inst, isPrimary: false }));
+      updatedInstruments = updatedInstruments.map((inst) => ({ ...inst, isPrimary: false }));
     }
 
     // Find the instrument data to get the French name for display
-    const instrumentData = instruments.find(inst => inst.name === newInstrument);
+    const instrumentData = instruments.find((inst) => inst.name === newInstrument);
     const displayName = instrumentData ? instrumentData.nameFr : newInstrument;
-    
-    const newInstrumentEntry = { 
+
+    const newInstrumentEntry = {
       instrument: newInstrument, // technical name for API
       displayName: displayName, // French name for display
       level: newLevel,
       yearsPlaying: newYearsPlaying === '' ? undefined : Number(newYearsPlaying),
-      isPrimary: newIsPrimary 
+      isPrimary: newIsPrimary,
     };
     updatedInstruments = [...updatedInstruments, newInstrumentEntry];
     setFormData({ ...formData, instruments: updatedInstruments });
-    
+
     // Reset form
     setNewYearsPlaying('');
     setNewIsPrimary(false);
@@ -99,22 +112,27 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
   const togglePrimary = (index: number) => {
     const updatedInstruments = formData.instruments.map((inst, i) => ({
       ...inst,
-      isPrimary: i === index ? !inst.isPrimary : false // Only one primary at a time
+      isPrimary: i === index ? !inst.isPrimary : false, // Only one primary at a time
     }));
     setFormData({ ...formData, instruments: updatedInstruments });
   };
 
   // Get available instruments (exclude already added ones)
   const availableInstruments = instruments
-    .filter(instrument => !formData.instruments.some(inst => inst.instrument === instrument.name))
-    .map(instrument => ({ 
-      value: instrument.name, 
+    .filter(
+      (instrument) => !formData.instruments.some((inst) => inst.instrument === instrument.name),
+    )
+    .map((instrument) => ({
+      value: instrument.name,
       label: instrument.nameFr,
-      nameEn: instrument.nameEn 
+      nameEn: instrument.nameEn,
     }));
 
   // Update the selected instrument if the current one is no longer available
-  if (availableInstruments.length > 0 && !availableInstruments.find(inst => inst.value === newInstrument)) {
+  if (
+    availableInstruments.length > 0 &&
+    !availableInstruments.find((inst) => inst.value === newInstrument)
+  ) {
     setNewInstrument(availableInstruments[0].value);
   }
 
@@ -125,9 +143,9 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
   const toggleGenre = (genreId: string) => {
     const currentGenres = formData.preferredGenres || [];
     const newGenres = currentGenres.includes(genreId)
-      ? currentGenres.filter(g => g !== genreId)
+      ? currentGenres.filter((g) => g !== genreId)
       : [...currentGenres, genreId];
-    
+
     setFormData({ ...formData, preferredGenres: newGenres });
   };
 
@@ -135,7 +153,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Instruments Played</h3>
-        
+
         {/* Add Instrument */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -150,7 +168,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                 {isLoadingInstruments ? (
                   <option value="">Loading instruments...</option>
                 ) : availableInstruments.length > 0 ? (
-                  availableInstruments.map(instrument => (
+                  availableInstruments.map((instrument) => (
                     <option key={instrument.value} value={instrument.value}>
                       {instrument.label}
                     </option>
@@ -167,17 +185,23 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                 onChange={(e) => setNewLevel(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               >
-                {SKILL_LEVELS.map(level => (
-                  <option key={level} value={level}>{level}</option>
+                {SKILL_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Years Playing (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Years Playing (Optional)
+              </label>
               <input
                 type="number"
                 value={newYearsPlaying}
-                onChange={(e) => setNewYearsPlaying(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={(e) =>
+                  setNewYearsPlaying(e.target.value === '' ? '' : Number(e.target.value))
+                }
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 placeholder="0"
                 min="0"
@@ -185,7 +209,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
               />
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <label className="flex items-center space-x-2">
               <input
@@ -197,7 +221,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
               <span className="text-sm font-medium text-gray-700">Mark as primary instrument</span>
               <Star className={`w-4 h-4 ${newIsPrimary ? 'text-yellow-500' : 'text-gray-400'}`} />
             </label>
-            
+
             <button
               onClick={addInstrument}
               disabled={availableInstruments.length === 0 || isLoadingInstruments || !newInstrument}
@@ -207,11 +231,13 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
               Add Instrument
             </button>
           </div>
-          
+
           {!isLoadingInstruments && availableInstruments.length === 0 && (
-            <p className="text-sm text-gray-500 italic">All available instruments have been added.</p>
+            <p className="text-sm text-gray-500 italic">
+              All available instruments have been added.
+            </p>
           )}
-          
+
           {isLoadingInstruments && (
             <p className="text-sm text-gray-500 italic">Loading available instruments...</p>
           )}
@@ -222,18 +248,22 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
           <div className="space-y-2 mt-6">
             <p className="text-sm font-medium text-gray-700">Current Instruments:</p>
             {formData.instruments.map((inst, index) => (
-              <div key={index} className={`flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
-                inst.isPrimary 
-                  ? 'bg-yellow-50 border-yellow-200' 
-                  : 'bg-gray-50 border-gray-200'
-              }`}>
+              <div
+                key={index}
+                className={`flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
+                  inst.isPrimary ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
                 <div className="flex items-center space-x-3">
                   <div>
                     <div className="flex items-center space-x-2">
                       <strong className="text-sm">{inst.displayName || inst.instrument}</strong>
                       <span className="text-xs text-gray-500">
                         ({inst.level}
-                        {inst.yearsPlaying && inst.yearsPlaying > 0 ? `, ${inst.yearsPlaying} ans` : ''})
+                        {inst.yearsPlaying && inst.yearsPlaying > 0
+                          ? `, ${inst.yearsPlaying} ans`
+                          : ''}
+                        )
                       </span>
                       {inst.isPrimary && (
                         <div className="flex items-center space-x-1">
@@ -244,7 +274,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => togglePrimary(index)}
@@ -267,12 +297,14 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                 </div>
               </div>
             ))}
-            
-            {formData.instruments.length > 0 && !formData.instruments.some(inst => inst.isPrimary) && (
-              <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                💡 Consider marking one instrument as your primary instrument by clicking the star icon.
-              </p>
-            )}
+
+            {formData.instruments.length > 0 &&
+              !formData.instruments.some((inst) => inst.isPrimary) && (
+                <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                  💡 Consider marking one instrument as your primary instrument by clicking the star
+                  icon.
+                </p>
+              )}
           </div>
         )}
       </div>
@@ -295,13 +327,10 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
             />
           </div>
 
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Preferred Genres
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Preferred Genres</label>
             <div className="flex flex-wrap gap-2">
-              {MUSIC_GENRES.map(genre => (
+              {MUSIC_GENRES.map((genre) => (
                 <button
                   key={genre.id}
                   onClick={() => toggleGenre(genre.id)}
@@ -317,10 +346,13 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
             </div>
             {formData.preferredGenres.length > 0 && (
               <p className="text-xs text-gray-500 mt-2">
-                Selected: {formData.preferredGenres.map(genreId => {
-                  const genre = MUSIC_GENRES.find(g => g.id === genreId);
-                  return genre ? genre.nameEn : genreId;
-                }).join(', ')}
+                Selected:{' '}
+                {formData.preferredGenres
+                  .map((genreId) => {
+                    const genre = MUSIC_GENRES.find((g) => g.id === genreId);
+                    return genre ? genre.nameEn : genreId;
+                  })
+                  .join(', ')}
               </p>
             )}
           </div>
@@ -330,9 +362,9 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
       <div className="bg-green-50 p-4 rounded-lg">
         <h4 className="font-medium text-green-900 mb-2">Optional Information</h4>
         <p className="text-sm text-green-700">
-          This step is completely optional. Users can always add or update their musical 
-          information later in their profile settings. This information helps with band matching 
-          and group recommendations.
+          This step is completely optional. Users can always add or update their musical information
+          later in their profile settings. This information helps with band matching and group
+          recommendations.
         </p>
       </div>
     </div>

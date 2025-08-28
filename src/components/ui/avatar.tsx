@@ -15,14 +15,23 @@ function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimi
   );
 }
 
-function AvatarImage({ src, className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+function AvatarImage({
+  src,
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   // Validate if src is a valid URL before passing it to the image component
   const isValidImageSrc = (url: string | undefined): boolean => {
     if (!url || url.trim() === '' || url === 'PENDING_UPLOAD') return false;
-    
+
     try {
       // Check if it's a valid URL (absolute or relative)
-      if (url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      if (
+        url.startsWith('/') ||
+        url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        url.startsWith('data:')
+      ) {
         return true;
       }
       // Try to construct URL to validate

@@ -100,10 +100,10 @@ export function formatPromotion(
   try {
     const graduationYear = calculateGraduationYear(currentLevel, currentAcademicYear);
     const age = calculateAge(dateOfBirth);
-    const currentYear = currentAcademicYear || getCurrentAcademicYear();
+    // const currentYear = currentAcademicYear || getCurrentAcademicYear();
 
     return `Promotion ${graduationYear}, actuellement en ${currentLevel} (${age} ans)`;
-  } catch (error) {
+  } catch {
     const age = calculateAge(dateOfBirth);
     return `${currentLevel} (${age} ans)`;
   }

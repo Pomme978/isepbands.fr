@@ -10,11 +10,31 @@ interface Step4BadgesProps {
 
 const ACHIEVEMENT_BADGES = [
   { id: 'founding_member', label: 'Founding Member', description: 'Original member of ISEP Bands' },
-  { id: 'former_board_2024', label: 'Former Board 2024-25', description: 'Board member during 2024-25 academic year' },
-  { id: 'concert_performer', label: 'Concert Performer', description: 'Performed in official ISEP Bands concerts' },
-  { id: 'jam_regular', label: 'Jam Session Regular', description: 'Active participant in jam sessions' },
-  { id: 'studio_artist', label: 'Studio Recording Artist', description: 'Recorded tracks in studio sessions' },
-  { id: 'event_organizer', label: 'Event Organizer', description: 'Helped organize association events' }
+  {
+    id: 'former_board_2024',
+    label: 'Former Board 2024-25',
+    description: 'Board member during 2024-25 academic year',
+  },
+  {
+    id: 'concert_performer',
+    label: 'Concert Performer',
+    description: 'Performed in official ISEP Bands concerts',
+  },
+  {
+    id: 'jam_regular',
+    label: 'Jam Session Regular',
+    description: 'Active participant in jam sessions',
+  },
+  {
+    id: 'studio_artist',
+    label: 'Studio Recording Artist',
+    description: 'Recorded tracks in studio sessions',
+  },
+  {
+    id: 'event_organizer',
+    label: 'Event Organizer',
+    description: 'Helped organize association events',
+  },
 ];
 
 const BADGE_COLORS = [
@@ -25,7 +45,7 @@ const BADGE_COLORS = [
   { value: '#FFEAA7', name: 'Yellow' },
   { value: '#DDA0DD', name: 'Purple' },
   { value: '#FFB6C1', name: 'Pink' },
-  { value: '#D3D3D3', name: 'Silver' }
+  { value: '#D3D3D3', name: 'Silver' },
 ];
 
 export default function Step4Badges({ formData, setFormData }: Step4BadgesProps) {
@@ -34,17 +54,17 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
   const toggleBadge = (badgeId: string) => {
     const currentBadges = formData.achievementBadges || [];
     const newBadges = currentBadges.includes(badgeId)
-      ? currentBadges.filter(b => b !== badgeId)
+      ? currentBadges.filter((b) => b !== badgeId)
       : [...currentBadges, badgeId];
-    
+
     setFormData({ ...formData, achievementBadges: newBadges });
   };
 
   const updateCustomBadge = (field: string, value: string) => {
     const customBadge = formData.customBadge || { name: '', description: '', color: '#FF6B35' };
-    setFormData({ 
-      ...formData, 
-      customBadge: { ...customBadge, [field]: value }
+    setFormData({
+      ...formData,
+      customBadge: { ...customBadge, [field]: value },
     });
   };
 
@@ -58,12 +78,13 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Achievement Badges</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Select badges that recognize the user's contributions and achievements within ISEP Bands.
+          Select badges that recognize the user&apos;s contributions and achievements within ISEP
+          Bands.
         </p>
-        
+
         <div className="space-y-3">
           {ACHIEVEMENT_BADGES.map((badge) => (
-            <div 
+            <div
               key={badge.id}
               className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
                 formData.achievementBadges.includes(badge.id)
@@ -103,9 +124,7 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
         {(showCustomBadge || formData.customBadge) && (
           <div className="p-4 bg-gray-50 rounded-lg space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Badge Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Badge Name</label>
               <input
                 type="text"
                 value={formData.customBadge?.name || ''}
@@ -129,9 +148,7 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Badge Color
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Badge Color</label>
               <div className="flex flex-wrap gap-2">
                 {BADGE_COLORS.map((color) => (
                   <button
@@ -147,7 +164,7 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
                   />
                 ))}
               </div>
-              
+
               <div className="flex items-center space-x-2 mt-2">
                 <input
                   type="color"
@@ -177,7 +194,7 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
           <li>• Badges recognize contributions and achievements within the association</li>
           <li>• Users can see their badges on their profile pages</li>
           <li>• Custom badges should be meaningful and related to their contributions</li>
-          <li>• Badges can be modified or removed later from the user's edit page</li>
+          <li>• Badges can be modified or removed later from the user&apos;s edit page</li>
         </ul>
       </div>
     </div>

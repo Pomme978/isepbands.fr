@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     console.error('Storage upload error:', error);
     const lang = detectLangFromRequest(req);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     // Provide more specific error messages based on the error type
     let userMessage;
     if (errorMessage.includes('ENOENT') || errorMessage.includes('EACCES')) {
@@ -77,11 +77,8 @@ export async function POST(req: NextRequest) {
     } else {
       userMessage = await getErrorMessage('unableToWrite', lang);
     }
-    
-    return NextResponse.json(
-      { error: userMessage, details: errorMessage },
-      { status: 500 },
-    );
+
+    return NextResponse.json({ error: userMessage, details: errorMessage }, { status: 500 });
   }
 }
 //
@@ -103,13 +100,13 @@ export async function DELETE(req: NextRequest) {
   }
   // Check ownership - user IDs are strings, not numbers
   const isOwner = sessionUser.id && file.userId && sessionUser.id === file.userId;
-  
+
   // Check admin status - multiple ways to be admin
-  const hasAdminRole = sessionUser.roles?.some((r: any) => 
-    ['president', 'vice_president', 'secretary', 'treasurer'].includes(r.role?.name)
+  const hasAdminRole = sessionUser.roles?.some((r: { role?: { name: string } }) =>
+    ['president', 'vice_president', 'secretary', 'treasurer'].includes(r.role?.name),
   );
   const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot || hasAdminRole;
-  
+
   console.log('DELETE request:', {
     userId: sessionUser.id,
     fileOwnerId: file.userId,
@@ -118,14 +115,17 @@ export async function DELETE(req: NextRequest) {
     isFullAccess: sessionUser.isFullAccess,
     isRoot: sessionUser.isRoot,
     hasAdminRole,
-    roles: sessionUser.roles?.map((r: any) => r.role?.name)
+    roles: sessionUser.roles?.map((r: { role?: { name: string } }) => r.role?.name),
   });
-  
+
   if (!isOwner && !isAdmin) {
     console.log('DELETE DENIED - Not owner or admin');
-    return NextResponse.json({ error: 'Forbidden - You do not have permission to delete this file' }, { status: 403 });
+    return NextResponse.json(
+      { error: 'Forbidden - You do not have permission to delete this file' },
+      { status: 403 },
+    );
   }
-  
+
   try {
     console.log('Deleting file from storage:', id);
     await deleteFromStorage(id);
@@ -160,9 +160,14 @@ export async function PUT(req: NextRequest) {
   const isOwner = sessionUser.id && file.userId && sessionUser.id === file.userId;
   // Also allow admins to delete any file
   const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot;
-  
+
   if (!isOwner && !isAdmin) {
-    console.log('Access forbidden - Not owner or admin. User:', sessionUser.id, 'File owner:', file.userId);
+    console.log(
+      'Access forbidden - Not owner or admin. User:',
+      sessionUser.id,
+      'File owner:',
+      file.userId,
+    );
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   try {

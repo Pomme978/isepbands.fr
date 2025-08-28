@@ -10,19 +10,19 @@ export async function GET(req: NextRequest) {
     // Count only current members
     const totalMembers = await prisma.user.count({
       where: {
-        status: 'CURRENT'
-      }
+        status: 'CURRENT',
+      },
     });
 
     return NextResponse.json({
       success: true,
-      count: totalMembers
+      count: totalMembers,
     });
   } catch (error) {
     console.error('Error fetching member count:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch member count' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

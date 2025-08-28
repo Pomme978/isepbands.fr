@@ -23,15 +23,14 @@ interface UserPronouns {
 export function getRoleDisplayName(
   role: Role,
   userPronouns?: UserPronouns['pronouns'],
-  language: 'fr' | 'en' = 'fr'
+  language: 'fr' | 'en' = 'fr',
 ): string {
   if (!role) return '';
 
   // Determine if we should use feminine form
-  const useFeminine = userPronouns && (
-    userPronouns.toLowerCase().includes('she') || 
-    userPronouns.toLowerCase().includes('elle')
-  );
+  const useFeminine =
+    userPronouns &&
+    (userPronouns.toLowerCase().includes('she') || userPronouns.toLowerCase().includes('elle'));
 
   // Return appropriate translation
   if (language === 'fr') {
@@ -47,13 +46,13 @@ export function getRoleDisplayName(
 export function getAllRoleNames(
   roles: Array<{ role: Role }>,
   userPronouns?: UserPronouns['pronouns'],
-  language: 'fr' | 'en' = 'fr'
+  language: 'fr' | 'en' = 'fr',
 ): string {
   if (!roles || roles.length === 0) return 'Membre';
 
   const sortedRoles = roles
     .sort((a, b) => b.role.weight - a.role.weight)
-    .map(r => getRoleDisplayName(r.role, userPronouns, language));
+    .map((r) => getRoleDisplayName(r.role, userPronouns, language));
 
   return sortedRoles.join(', ');
 }
@@ -64,12 +63,12 @@ export function getAllRoleNames(
 export function getPrimaryRoleName(
   roles: Array<{ role: Role }>,
   userPronouns?: UserPronouns['pronouns'],
-  language: 'fr' | 'en' = 'fr'
+  language: 'fr' | 'en' = 'fr',
 ): string {
   if (!roles || roles.length === 0) return 'Membre';
 
-  const primaryRole = roles.reduce((highest, current) => 
-    current.role.weight > highest.role.weight ? current : highest
+  const primaryRole = roles.reduce((highest, current) =>
+    current.role.weight > highest.role.weight ? current : highest,
   );
 
   return getRoleDisplayName(primaryRole.role, userPronouns, language);
@@ -79,14 +78,14 @@ export function getPrimaryRoleName(
  * Check if a user has a specific role
  */
 export function hasRole(roles: Array<{ role: Role }>, roleName: string): boolean {
-  return roles.some(r => r.role.name === roleName);
+  return roles.some((r) => r.role.name === roleName);
 }
 
 /**
  * Check if a user has any of the specified roles
  */
 export function hasAnyRole(roles: Array<{ role: Role }>, roleNames: string[]): boolean {
-  return roles.some(r => roleNames.includes(r.role.name));
+  return roles.some((r) => roleNames.includes(r.role.name));
 }
 
 /**
@@ -102,9 +101,6 @@ export function getRoleColor(role: Role): string {
 /**
  * Format role for badge display (returns French translation by default)
  */
-export function formatRoleForBadge(
-  role: Role,
-  userPronouns?: UserPronouns['pronouns']
-): string {
+export function formatRoleForBadge(role: Role, userPronouns?: UserPronouns['pronouns']): string {
   return getRoleDisplayName(role, userPronouns, 'fr');
 }

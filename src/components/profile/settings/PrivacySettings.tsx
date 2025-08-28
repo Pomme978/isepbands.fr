@@ -8,9 +8,14 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Trash2, AlertTriangle } from 'lucide-react';
 
+interface PrivacyFormData {
+  showAvailability: boolean;
+  searchable: boolean;
+}
+
 interface PrivacySettingsProps {
-  formData?: any;
-  onFormDataChange?: (data: any) => void;
+  formData?: PrivacyFormData;
+  onFormDataChange?: (data: PrivacyFormData) => void;
 }
 
 export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsProps) {
@@ -30,10 +35,10 @@ export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsP
     } else if (field === 'searchable') {
       setSearchable(value);
     }
-    
+
     onFormDataChange?.({
       ...formData,
-      [field]: value
+      [field]: value,
     });
   };
 
@@ -41,9 +46,7 @@ export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsP
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Confidentialité</h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez vos paramètres de confidentialité
-        </p>
+        <p className="text-muted-foreground mt-2">Gérez vos paramètres de confidentialité</p>
       </div>
 
       {/* Zone de danger */}
@@ -57,8 +60,9 @@ export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsP
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               La suppression de votre compte est définitive et ne peut pas être annulée. Vous serez
-              retiré·e de l'association et de tous vos rôles, et l'ensemble de votre historique
-              associé (groupes, activités, événements) sera effacé, ainsi que vos données.
+              retiré·e de l&lsquo;association et de tous vos rôles, et l&lsquo;ensemble de votre
+              historique associé (groupes, activités, événements) sera effacé, ainsi que vos
+              données.
             </AlertDescription>
           </Alert>
 
@@ -66,8 +70,8 @@ export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsP
             <p className="text-sm font-medium">Concrètement, la suppression entraîne :</p>
             <ul className="text-sm text-muted-foreground space-y-1 ml-4">
               <li>• Suppression de votre profil et de vos informations</li>
-              <li>• Retrait de l'association et de tous les rôles/adhésions</li>
-              <li>• Effacement de l'historique lié (groupes, activités, événements)</li>
+              <li>• Retrait de l&lsquo;association et de tous les rôles/adhésions</li>
+              <li>• Effacement de l&lsquo;historique lié (groupes, activités, événements)</li>
               <li>• Action irréversible</li>
             </ul>
           </div>

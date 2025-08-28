@@ -9,14 +9,14 @@
  */
 export function formatPhoneNumber(phone: string): string {
   if (!phone) return '';
-  
+
   // Remove all non-digit characters except +
-  let cleaned = phone.replace(/[^\d+]/g, '');
-  
+  const cleaned = phone.replace(/[^\d+]/g, '');
+
   // If it starts with +, preserve it
   if (cleaned.startsWith('+')) {
     const withoutPlus = cleaned.slice(1);
-    
+
     // French numbers
     if (withoutPlus.startsWith('33')) {
       const number = withoutPlus.slice(2);
@@ -46,7 +46,7 @@ export function formatPhoneNumber(phone: string): string {
       }
     }
   }
-  
+
   // Handle French numbers without country code
   const digitsOnly = cleaned.replace(/\D/g, '');
   if (digitsOnly.startsWith('0') && digitsOnly.length === 10) {
@@ -55,7 +55,7 @@ export function formatPhoneNumber(phone: string): string {
   } else if (digitsOnly.length === 9 && /^[67]/.test(digitsOnly)) {
     return `+33 ${digitsOnly.slice(0, 1)} ${digitsOnly.slice(1, 3)} ${digitsOnly.slice(3, 5)} ${digitsOnly.slice(5, 7)} ${digitsOnly.slice(7, 9)}`;
   }
-  
+
   // Return as-is if format is not recognized
   return phone;
 }
@@ -67,10 +67,10 @@ export function formatPhoneNumber(phone: string): string {
  */
 export function formatPhoneInput(value: string): string {
   if (!value) return '';
-  
+
   // Remove all non-digit characters except +
   let cleaned = value.replace(/[^\d+]/g, '');
-  
+
   // If no +, add it
   if (!cleaned.startsWith('+')) {
     if (cleaned.length > 0) {
@@ -79,9 +79,9 @@ export function formatPhoneInput(value: string): string {
       return '+';
     }
   }
-  
+
   const withoutPlus = cleaned.slice(1);
-  
+
   // France (+33)
   if (withoutPlus.startsWith('33')) {
     const numberPart = withoutPlus.slice(2);
@@ -135,12 +135,12 @@ export function formatPhoneInput(value: string): string {
  */
 export function isValidPhone(phone: string): boolean {
   if (!phone) return false;
-  
+
   const cleaned = phone.replace(/\D/g, '');
-  
+
   // Basic validation - must be between 7 and 15 digits with country code
   if (cleaned.length < 7 || cleaned.length > 15) return false;
-  
+
   // Must start with a country code (1-3 digits)
   return /^\+?\d{7,15}$/.test(phone);
 }
@@ -152,9 +152,9 @@ export function isValidPhone(phone: string): boolean {
  */
 export function isValidFrenchPhone(phone: string): boolean {
   if (!phone) return false;
-  
+
   const cleaned = phone.replace(/\D/g, '');
-  
+
   // Check various formats
   if (cleaned.startsWith('33')) {
     const number = cleaned.slice(2);
@@ -165,7 +165,7 @@ export function isValidFrenchPhone(phone: string): boolean {
   } else if (cleaned.length === 9) {
     return /^[67]/.test(cleaned);
   }
-  
+
   return false;
 }
 
@@ -176,9 +176,9 @@ export function isValidFrenchPhone(phone: string): boolean {
  */
 export function cleanPhoneNumber(phone: string): string {
   if (!phone) return '';
-  
+
   const cleaned = phone.replace(/\D/g, '');
-  
+
   // Convert to international format for storage
   if (cleaned.startsWith('33')) {
     return '+' + cleaned;
@@ -187,6 +187,6 @@ export function cleanPhoneNumber(phone: string): string {
   } else if (cleaned.length === 9) {
     return '+33' + cleaned;
   }
-  
+
   return phone;
 }

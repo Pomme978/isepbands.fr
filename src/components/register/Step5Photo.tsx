@@ -22,19 +22,19 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Validate file before storing
     const validation = validateImageFile(file);
     if (!validation.valid) {
       setPhotoError(validation.error || 'Invalid file');
       return;
     }
-    
+
     setPhotoError('');
-    
+
     // Store file for upload when registration is submitted (not auto-upload)
     onChange({ profilePhoto: file });
-    
+
     // Create preview using URL.createObjectURL
     const preview = URL.createObjectURL(file);
     setPreviewUrl(preview);
@@ -46,11 +46,11 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
-    
+
     onChange({ profilePhoto: undefined });
     setPhotoError('');
   };
-  
+
   const validateAll = () => {
     if (!data.profilePhoto) {
       setPhotoError(t('validator.required'));
@@ -69,14 +69,16 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
     >
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Photo de profil</h3>
-        
+
         {/* Photo Upload Section */}
         <div className="flex items-start space-x-6">
           <div className="relative">
             {previewUrl || data.profilePhoto ? (
               <div className="relative">
                 <img
-                  src={previewUrl || (data.profilePhoto ? URL.createObjectURL(data.profilePhoto) : '')}
+                  src={
+                    previewUrl || (data.profilePhoto ? URL.createObjectURL(data.profilePhoto) : '')
+                  }
                   alt="Aperçu du profil"
                   className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-lg"
                 />
@@ -94,7 +96,7 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
               </div>
             )}
           </div>
-          
+
           <div className="flex-1">
             <input
               id="profilePhoto"
@@ -119,13 +121,13 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
             {data.profilePhoto && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
                 <p className="text-sm text-blue-700">
-                  ✓ Photo sélectionnée ! Elle sera téléchargée lors de l'inscription.
+                  Photo sélectionnée. Elle sera téléchargée lors de l&apos;inscription.
                 </p>
               </div>
             )}
           </div>
         </div>
-        
+
         {photoError && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-800">{photoError}</p>
@@ -136,7 +138,7 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Votre identité visuelle</h4>
         <p className="text-sm text-blue-700">
-          Ajoutez une belle photo de profil pour que les autres membres puissent vous reconnaître ! 
+          Ajoutez une belle photo de profil pour que les autres membres puissent vous reconnaître !
           Une photo souriante et professionnelle est idéale.
         </p>
       </div>

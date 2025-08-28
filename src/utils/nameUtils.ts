@@ -13,28 +13,28 @@
 export function formatFullName(
   firstName?: string | null,
   lastName?: string | null,
-  fallbackName?: string | null
+  fallbackName?: string | null,
 ): string {
   // If we have both first and last name, use them
   if (firstName && lastName) {
     return `${firstName.trim()} ${lastName.trim()}`;
   }
-  
+
   // If we only have first name
   if (firstName && !lastName) {
     return firstName.trim();
   }
-  
+
   // If we only have last name
   if (!firstName && lastName) {
     return lastName.trim();
   }
-  
+
   // If we have a fallback name (like from auth provider)
   if (fallbackName) {
     return fallbackName.trim();
   }
-  
+
   // Default fallback
   return 'Utilisateur';
 }
@@ -46,7 +46,7 @@ export function formatFullName(
  */
 export function getInitials(fullName: string): string {
   if (!fullName || fullName.trim().length === 0) return '??';
-  
+
   return fullName
     .trim()
     .split(' ')
@@ -63,10 +63,10 @@ export function getInitials(fullName: string): string {
  */
 export function capitalizeWord(name: string): string {
   if (!name) return '';
-  
+
   return name
     .toLowerCase()
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }

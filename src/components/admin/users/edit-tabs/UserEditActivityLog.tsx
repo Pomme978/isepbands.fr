@@ -43,10 +43,10 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
 
   const formatSkillLevel = (level: string) => {
     const levels = {
-      'BEGINNER': 'Débutant',
-      'INTERMEDIATE': 'Intermédiaire',
-      'ADVANCED': 'Avancé',
-      'EXPERT': 'Expert'
+      BEGINNER: 'Débutant',
+      INTERMEDIATE: 'Intermédiaire',
+      ADVANCED: 'Avancé',
+      EXPERT: 'Expert',
     };
     return levels[level as keyof typeof levels] || level;
   };
@@ -54,17 +54,18 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Activity Log</h3>
-      
+
       {/* Registration Details Section */}
       {registrationDetails && (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-2 mb-4">
             <User className="w-5 h-5 text-blue-600" />
-            <h4 className="text-lg font-medium text-gray-900">Détails d'inscription originale</h4>
+            <h4 className="text-lg font-medium text-gray-900">
+              Détails d&apos;inscription originale
+            </h4>
           </div>
-          
-          <div className="grid grid-cols-1 gap-6">
 
+          <div className="grid grid-cols-1 gap-6">
             {/* Motivation */}
             {registrationDetails.motivation && (
               <div className="flex items-start space-x-3">
@@ -73,7 +74,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                   <h5 className="font-medium text-gray-900 mb-2">Motivation on registration</h5>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-sm text-gray-700 leading-relaxed">
-                      "{registrationDetails.motivation}"
+                      &quot;{registrationDetails.motivation}&quot;
                     </p>
                   </div>
                 </div>
@@ -88,7 +89,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                   <h5 className="font-medium text-gray-900 mb-2">Expérience musicale</h5>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-sm text-gray-700 leading-relaxed">
-                      "{registrationDetails.experience}"
+                      &quot;{registrationDetails.experience}&quot;
                     </p>
                   </div>
                 </div>
@@ -97,19 +98,18 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           </div>
         </div>
       )}
-      
+
       {/* Activity Log Placeholder */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
         <div className="flex flex-col items-center">
           <FileText className="w-12 h-12 text-gray-400 mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">Journal d'activité</h4>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">Journal d&apos;activité</h4>
           <p className="text-gray-600 max-w-sm">
-            Cette section affichera un journal complet de toutes les activités de l'utilisateur, 
-            incluant les connexions, modifications de profil, participation aux événements et actions administratives.
+            Cette section affichera un journal complet de toutes les activités de
+            l&apos;utilisateur, incluant les connexions, modifications de profil, participation aux
+            événements et actions administratives.
           </p>
-          <div className="mt-4 text-sm text-gray-500">
-            Système de journalisation à venir
-          </div>
+          <div className="mt-4 text-sm text-gray-500">Système de journalisation à venir</div>
         </div>
       </div>
     </div>

@@ -67,13 +67,15 @@ export default function InstrumentCard({ instrument }: InstrumentCardProps) {
             <h4 className="font-bold text-gray-900 text-lg">{instrument.name}</h4>
             <div className="space-y-1">
               <LevelBadge level={instrument.level} />
-              {instrument.yearsPlaying !== undefined && instrument.yearsPlaying !== null && instrument.yearsPlaying > 0 && (
-                <p className="text-xs text-gray-500">
-                  {instrument.yearsPlaying === 1 
-                    ? "Depuis 1 an"
-                    : `Depuis ${instrument.yearsPlaying} ans`}
-                </p>
-              )}
+              {instrument.yearsPlaying !== undefined &&
+                instrument.yearsPlaying !== null &&
+                instrument.yearsPlaying > 0 && (
+                  <p className="text-xs text-gray-500">
+                    {instrument.yearsPlaying === 1
+                      ? 'Depuis 1 an'
+                      : `Depuis ${instrument.yearsPlaying} ans`}
+                  </p>
+                )}
               {instrument.isPrimary && (
                 <p className="text-xs text-purple-600 font-medium">Instrument principal</p>
               )}

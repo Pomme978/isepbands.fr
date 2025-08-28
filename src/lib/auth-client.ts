@@ -89,7 +89,7 @@ export function useSession(onAutoLogout?: () => void) {
     if (mounted) {
       fetchSession();
     }
-  }, [fetchSession, pathname]);
+  }, [fetchSession, pathname, mounted]);
 
   return { user, loading, isLoading: loading };
 }

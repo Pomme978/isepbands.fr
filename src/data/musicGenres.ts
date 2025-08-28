@@ -24,15 +24,15 @@ export const MUSIC_GENRES: MusicGenre[] = [
   { id: 'funk', nameFr: 'Funk', nameEn: 'Funk' },
   { id: 'soul', nameFr: 'Soul', nameEn: 'Soul' },
   { id: 'disco', nameFr: 'Disco', nameEn: 'Disco' },
-  { id: 'house', nameFr: 'House', nameEn: 'House' }
+  { id: 'house', nameFr: 'House', nameEn: 'House' },
 ];
 
 export function getMusicGenreDisplay(genreId: string, locale: 'fr' | 'en'): string {
-  const genre = MUSIC_GENRES.find(g => g.id === genreId);
+  const genre = MUSIC_GENRES.find((g) => g.id === genreId);
   if (!genre) return genreId;
   return locale === 'fr' ? genre.nameFr : genre.nameEn;
 }
 
 export function getMusicGenreIds(): string[] {
-  return MUSIC_GENRES.map(g => g.id);
+  return MUSIC_GENRES.map((g) => g.id);
 }

@@ -49,31 +49,36 @@ interface UserEditPermissionsProps {
   setHasUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-
-export default function UserEditPermissions({ user, setUser, setHasUnsavedChanges }: UserEditPermissionsProps) {
+export default function UserEditPermissions({
+  user,
+  setUser,
+  setHasUnsavedChanges,
+}: UserEditPermissionsProps) {
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(user.roles?.map(r => r.role?.id || r.roleId || r.id) || []);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
+    user.roles?.map((r) => r.role?.id || r.roleId || r.id) || [],
+  );
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [isFullAccess, setIsFullAccess] = useState(user.isFullAccess || false);
 
   // Get current permissions from user roles
   const getCurrentPermissions = (roles: typeof availableRoles, userRoles: User['roles']) => {
     if (!userRoles || userRoles.length === 0) return new Set<number>();
-    
+
     const permissionIds = new Set<number>();
-    
-    userRoles.forEach(userRole => {
+
+    userRoles.forEach((userRole) => {
       const roleId = userRole.role?.id || userRole.roleId || userRole.id;
-      const fullRole = roles.find(r => r.id === roleId);
+      const fullRole = roles.find((r) => r.id === roleId);
       if (fullRole && fullRole.permissions) {
-        fullRole.permissions.forEach(p => {
+        fullRole.permissions.forEach((p) => {
           permissionIds.add(p.permission.id);
         });
       }
     });
-    
+
     return permissionIds;
   };
 
@@ -83,17 +88,17 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
       try {
         const [rolesResponse, permissionsResponse] = await Promise.all([
           fetch('/api/admin/roles'),
-          fetch('/api/admin/permissions')
+          fetch('/api/admin/permissions'),
         ]);
 
         if (rolesResponse.ok && permissionsResponse.ok) {
           const rolesData = await rolesResponse.json();
           const permissionsData = await permissionsResponse.json();
           const roles = rolesData.roles || [];
-          
+
           setAvailableRoles(roles);
           setAvailablePermissions(permissionsData.permissions || []);
-          
+
           // Initialize current permissions from user roles
           const currentPermissions = getCurrentPermissions(roles, user.roles);
           setSelectedPermissions(Array.from(currentPermissions));
@@ -118,19 +123,23 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
 
   const updateRoles = (roleId: number) => {
     const newSelectedRoles = selectedRoleIds.includes(roleId)
-      ? selectedRoleIds.filter(id => id !== roleId)
+      ? selectedRoleIds.filter((id) => id !== roleId)
       : [...selectedRoleIds, roleId];
-    
+
     setSelectedRoleIds(newSelectedRoles);
-    
+
     // Update the user object with new roles - keep original structure that matches API expectation
-    const newRoles = newSelectedRoles.map(id => {
-      const role = availableRoles.find(r => r.id === id);
-      return role ? { 
-        role: role  // Simplified structure that matches API expectation
-      } : null;
-    }).filter(Boolean);
-    
+    const newRoles = newSelectedRoles
+      .map((id) => {
+        const role = availableRoles.find((r) => r.id === id);
+        return role
+          ? {
+              role: role, // Simplified structure that matches API expectation
+            }
+          : null;
+      })
+      .filter(Boolean);
+
     setUser({ ...user, roles: newRoles });
     setHasUnsavedChanges(true);
   };
@@ -146,9 +155,9 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
 
   const togglePermission = (permissionId: number) => {
     const newPermissions = selectedPermissions.includes(permissionId)
-      ? selectedPermissions.filter(p => p !== permissionId)
+      ? selectedPermissions.filter((p) => p !== permissionId)
       : [...selectedPermissions, permissionId];
-    
+
     setSelectedPermissions(newPermissions);
     setHasUnsavedChanges(true);
   };
@@ -156,30 +165,34 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
   const applyRolePermissions = () => {
     // Get all permissions from selected roles
     const rolePermissions = new Set<number>();
-    selectedRoleIds.forEach(roleId => {
-      const role = availableRoles.find(r => r.id === roleId);
+    selectedRoleIds.forEach((roleId) => {
+      const role = availableRoles.find((r) => r.id === roleId);
       // Note: we'd need to fetch role permissions from API
       // For now just clear individual permissions when applying role permissions
     });
-    
+
     setSelectedPermissions([]);
     setHasUnsavedChanges(true);
   };
 
   const getCurrentRoleNames = () => {
-    return selectedRoleIds.map(roleId => {
-      const role = availableRoles.find(r => r.id === roleId);
-      return role ? getRoleDisplayName(role, user.pronouns, 'fr') : 'Unknown';
-    }).join(', ') || 'None';
+    return (
+      selectedRoleIds
+        .map((roleId) => {
+          const role = availableRoles.find((r) => r.id === roleId);
+          return role ? getRoleDisplayName(role, user.pronouns, 'fr') : 'Unknown';
+        })
+        .join(', ') || 'None'
+    );
   };
 
   const getPermissionSource = (permissionId: number) => {
     // Check if this permission comes from any of the user's roles
-    const fromRoles = selectedRoleIds.some(roleId => {
-      const role = availableRoles.find(r => r.id === roleId);
-      return role?.permissions?.some(p => p.permission.id === permissionId);
+    const fromRoles = selectedRoleIds.some((roleId) => {
+      const role = availableRoles.find((r) => r.id === roleId);
+      return role?.permissions?.some((p) => p.permission.id === permissionId);
     });
-    
+
     return fromRoles ? 'role' : 'individual';
   };
 
@@ -207,7 +220,9 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
                   className="text-primary border-gray-300 focus:ring-primary/20"
                 />
                 <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{getRoleDisplayName(role, user.pronouns, 'fr')}</h4>
+                  <h4 className="font-medium text-gray-900">
+                    {getRoleDisplayName(role, user.pronouns, 'fr')}
+                  </h4>
                   <p className="text-sm text-gray-600">
                     Weight: {role.weight} • {role.isCore ? 'Core Role' : 'Custom Role'}
                   </p>
@@ -235,7 +250,8 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
                 Full Access Override
               </label>
               <p className="text-xs text-gray-500 mt-1">
-                Grant complete administrative access, bypassing role-based permissions. Use with caution.
+                Grant complete administrative access, bypassing role-based permissions. Use with
+                caution.
               </p>
             </div>
           </div>
@@ -245,13 +261,18 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
                   <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-yellow-800">Full Access Enabled</h4>
                   <p className="text-sm text-yellow-700 mt-1">
-                    This user has complete access to all administrative functions, regardless of their role assignments.
+                    This user has complete access to all administrative functions, regardless of
+                    their role assignments.
                   </p>
                 </div>
               </div>
@@ -271,7 +292,9 @@ export default function UserEditPermissions({ user, setUser, setHasUnsavedChange
             </div>
             <div>
               <span className="font-medium text-gray-700">Access Level:</span>
-              <span className={`ml-2 font-medium ${isFullAccess ? 'text-yellow-600' : 'text-gray-900'}`}>
+              <span
+                className={`ml-2 font-medium ${isFullAccess ? 'text-yellow-600' : 'text-gray-900'}`}
+              >
                 {isFullAccess ? 'Full Access (Override Active)' : 'Role-based permissions'}
               </span>
             </div>

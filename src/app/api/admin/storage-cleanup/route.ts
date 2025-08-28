@@ -14,14 +14,14 @@ export async function DELETE() {
     const usedIds = new Set<string>();
     const users = await prisma.user.findMany({
       where: {
-        photoUrl: { not: null }
+        photoUrl: { not: null },
       },
       select: {
-        photoUrl: true
-      }
+        photoUrl: true,
+      },
     });
 
-    users.forEach(user => {
+    users.forEach((user) => {
       if (user.photoUrl && user.photoUrl.includes('/api/storage?id=')) {
         const id = user.photoUrl.split('/api/storage?id=')[1];
         if (id) usedIds.add(id);
@@ -29,13 +29,13 @@ export async function DELETE() {
     });
 
     // Find unused objects
-    const unusedObjects = storageObjects.filter(obj => !usedIds.has(obj.id));
-    
+    const unusedObjects = storageObjects.filter((obj) => !usedIds.has(obj.id));
+
     if (unusedObjects.length === 0) {
       return NextResponse.json({
         message: 'No unused files to clean up',
         cleanedFiles: 0,
-        freedSpaceMB: 0
+        freedSpaceMB: 0,
       });
     }
 
@@ -45,7 +45,7 @@ export async function DELETE() {
     // Delete files from filesystem
     let deletedFiles = 0;
     const errors: string[] = [];
-    
+
     for (const obj of unusedObjects) {
       try {
         const filePath = path.join(UPLOADS_DIR, obj.key);
@@ -58,11 +58,11 @@ export async function DELETE() {
     }
 
     // Delete unused objects from database
-    const deletedIds = unusedObjects.map(obj => obj.id);
+    const deletedIds = unusedObjects.map((obj) => obj.id);
     await prisma.storageObject.deleteMany({
       where: {
-        id: { in: deletedIds }
-      }
+        id: { in: deletedIds },
+      },
     });
 
     return NextResponse.json({
@@ -71,18 +71,21 @@ export async function DELETE() {
       deletedFromFilesystem: deletedFiles,
       freedSpaceMB: (freedSpace / 1024 / 1024).toFixed(2),
       errors: errors.length > 0 ? errors : undefined,
-      deletedObjects: unusedObjects.map(obj => ({
+      deletedObjects: unusedObjects.map((obj) => ({
         id: obj.id,
         key: obj.key,
         sizeMB: (obj.size / 1024 / 1024).toFixed(2),
-        uploadedAt: obj.uploadedAt
-      }))
+        uploadedAt: obj.uploadedAt,
+      })),
     });
   } catch (error) {
     console.error('Error cleaning up storage:', error);
-    return NextResponse.json({ 
-      error: 'Failed to clean up storage',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to clean up storage',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

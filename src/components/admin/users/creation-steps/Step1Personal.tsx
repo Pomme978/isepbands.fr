@@ -24,9 +24,7 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
         <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              First Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
             <input
               type="text"
               value={formData.firstName}
@@ -35,11 +33,9 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
               placeholder="Enter first name"
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
             <input
               type="text"
               value={formData.lastName}
@@ -50,9 +46,7 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
             <input
               type="email"
               value={formData.email}
@@ -63,9 +57,7 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
             <input
               type="tel"
               value={formData.phone}
@@ -77,9 +69,7 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Birth Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
             <input
               type="date"
               value={formData.birthDate}
@@ -94,9 +84,7 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
         <h3 className="text-lg font-medium text-gray-900 mb-4">ISEP Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Promotion *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Promotion *</label>
             <select
               value={formData.promotion}
               onChange={(e) => updateField('promotion', e.target.value)}
@@ -117,15 +105,14 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
               <option value="Former">Former - Ancien étudiant (non diplômé)</option>
             </select>
           </div>
-
         </div>
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Required Fields</h4>
         <p className="text-sm text-blue-700">
-          Fields marked with * are required. Make sure to fill in at least the first name, 
-          last name, email, and promotion before proceeding to the next step.
+          Fields marked with * are required. Make sure to fill in at least the first name, last
+          name, email, and promotion before proceeding to the next step.
         </p>
       </div>
     </div>

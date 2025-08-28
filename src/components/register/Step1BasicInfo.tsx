@@ -90,9 +90,7 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
         <h3 className="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Prénom *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
             <input
               id="firstName"
               type="text"
@@ -108,11 +106,9 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
             />
             {firstNameError && <div className="text-red-500 text-xs mt-1">{firstNameError}</div>}
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nom *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
             <input
               id="lastName"
               type="text"
@@ -130,9 +126,7 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
             <input
               id="email"
               type="email"
@@ -155,9 +149,7 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
         <h3 className="text-lg font-medium text-gray-900 mb-4">Sécurité</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mot de passe *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe *</label>
             <input
               id="password"
               type="password"
@@ -167,7 +159,9 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
               onChange={(e) => {
                 onChange({ password: e.target.value });
                 setPasswordError(validatePassword(e.target.value));
-                setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, e.target.value));
+                setConfirmPasswordError(
+                  validateConfirmPassword(data.confirmPassword, e.target.value),
+                );
               }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
@@ -176,31 +170,43 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
             {data.password && (
               <div className="mt-2 text-xs text-gray-600">
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <span className={`flex items-center ${data.password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}>
+                  <span
+                    className={`flex items-center ${data.password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}
+                  >
                     <span className="mr-1">{data.password.length >= 8 ? '✓' : '○'}</span>
                     8+ caractères
                   </span>
-                  <span className={`flex items-center ${/[a-z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                  <span
+                    className={`flex items-center ${/[a-z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
+                  >
                     <span className="mr-1">{/[a-z]/.test(data.password) ? '✓' : '○'}</span>
                     Minuscule
                   </span>
-                  <span className={`flex items-center ${/[A-Z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                  <span
+                    className={`flex items-center ${/[A-Z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
+                  >
                     <span className="mr-1">{/[A-Z]/.test(data.password) ? '✓' : '○'}</span>
                     Majuscule
                   </span>
-                  <span className={`flex items-center ${/\d/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                  <span
+                    className={`flex items-center ${/\d/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
+                  >
                     <span className="mr-1">{/\d/.test(data.password) ? '✓' : '○'}</span>
                     Chiffre
                   </span>
-                  <span className={`flex items-center ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}>
-                    <span className="mr-1">{/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? '✓' : '○'}</span>
+                  <span
+                    className={`flex items-center ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
+                  >
+                    <span className="mr-1">
+                      {/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? '✓' : '○'}
+                    </span>
                     Spécial
                   </span>
                 </div>
               </div>
             )}
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Confirmer le mot de passe *
@@ -229,9 +235,7 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
         <h3 className="text-lg font-medium text-gray-900 mb-4">Informations ISEP</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Promotion *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Promotion *</label>
             <select
               id="cycle"
               value={data.cycle}
@@ -264,8 +268,9 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Champs requis</h4>
         <p className="text-sm text-blue-700">
-          Les champs marqués d'un * sont obligatoires. Assurez-vous de remplir au moins le prénom, 
-          le nom, l'email, le mot de passe et la promotion avant de passer à l'étape suivante.
+          Les champs marqués d&lsquo;un * sont obligatoires. Assurez-vous de remplir au moins le
+          prénom, le nom, l&lsquo;email, le mot de passe et la promotion avant de passer à
+          l&apos;étape suivante.
         </p>
       </div>
 

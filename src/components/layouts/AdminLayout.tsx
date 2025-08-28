@@ -47,14 +47,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         if (!response.ok) {
           throw new Error('Not authenticated');
         }
-        
+
         const sessionData = await response.json();
         if (!sessionData?.user) {
           throw new Error('No user session');
         }
 
         const user = sessionData.user;
-        
+
         // Check if user has admin access
         if (!user.isFullAccess && !user.isRoot) {
           throw new Error('Admin access required');

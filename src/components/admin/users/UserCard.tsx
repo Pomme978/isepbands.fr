@@ -64,8 +64,8 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
       <div className="flex items-center space-x-4 flex-1">
         {/* Avatar */}
-        <Avatar 
-          src={user.avatar} 
+        <Avatar
+          src={user.avatar}
           alt={`${user.firstName} ${user.lastName}`}
           name={`${user.firstName} ${user.lastName}`}
           size="md"
@@ -81,9 +81,7 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
               )}
             </h3>
             <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
-            <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>
-              {user.role}
-            </span>
+            <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>{user.role}</span>
           </div>
 
           <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -143,7 +141,9 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
               Edit
             </LangLink>
             <button
-              onClick={() => {/* TODO: Restore function */}}
+              onClick={() => {
+                /* TODO: Restore function */
+              }}
               className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
             >
               Restore
@@ -158,11 +158,7 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
               <Edit className="w-3 h-3 mr-1" />
               Edit
             </LangLink>
-            <ViewProfileButton 
-              userId={user.id}
-              variant="button"
-              className="px-3 py-1 text-sm"
-            />
+            <ViewProfileButton userId={user.id} variant="button" className="px-3 py-1 text-sm" />
           </>
         )}
       </div>

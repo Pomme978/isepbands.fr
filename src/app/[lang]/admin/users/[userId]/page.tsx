@@ -12,7 +12,7 @@ interface AdminUserEditProps {
 
 export default function AdminUserEdit({ params }: AdminUserEditProps) {
   const { userId } = use(params);
-  
+
   return (
     <AdminLayout>
       <UserEditPage userId={userId} />

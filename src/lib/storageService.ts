@@ -24,79 +24,84 @@ export async function uploadToStorage(file: File, userId?: string) {
     const key = randomUUID();
     const filePath = path.join(UPLOADS_DIR, key);
     const url = `/storage/uploads/${key}`;
-    
+
     // Validate original file size (max 10MB)
     if (originalSize > 10 * 1024 * 1024) {
       throw new Error('File size exceeds 10MB limit');
     }
-    
+
     // Validate content type
     if (!contentType.startsWith('image/')) {
       throw new Error('Only image files are allowed');
     }
-    
+
     console.log(`Processing image: ${file.name} (${originalSize} bytes)`);
-    
+
     let processedBuffer = originalBuffer;
-    
+
     // Process image if it's an image file
     if (contentType.startsWith('image/')) {
       try {
         // Get image metadata
         const metadata = await sharp(originalBuffer).metadata();
-        console.log('Original image dimensions:', { width: metadata.width, height: metadata.height });
-        
+        console.log('Original image dimensions:', {
+          width: metadata.width,
+          height: metadata.height,
+        });
+
         // Resize and compress the image
         const maxDimension = 800; // Max width or height
         const quality = 85; // JPEG quality
-        
+
         let sharpInstance = sharp(originalBuffer);
-        
+
         // Resize if image is larger than maxDimension
-        if ((metadata.width && metadata.width > maxDimension) || 
-            (metadata.height && metadata.height > maxDimension)) {
+        if (
+          (metadata.width && metadata.width > maxDimension) ||
+          (metadata.height && metadata.height > maxDimension)
+        ) {
           sharpInstance = sharpInstance.resize(maxDimension, maxDimension, {
             fit: 'inside',
-            withoutEnlargement: true
+            withoutEnlargement: true,
           });
         }
-        
+
         // Convert to JPEG for better compression (unless it's PNG with transparency)
         if (contentType !== 'image/png' || !metadata.hasAlpha) {
-          processedBuffer = await sharpInstance
-            .jpeg({ quality, progressive: true })
-            .toBuffer();
+          processedBuffer = await sharpInstance.jpeg({ quality, progressive: true }).toBuffer();
           contentType = 'image/jpeg';
         } else {
           // Keep as PNG but optimize
-          processedBuffer = await sharpInstance
-            .png({ compressionLevel: 9 })
-            .toBuffer();
+          processedBuffer = await sharpInstance.png({ compressionLevel: 9 }).toBuffer();
         }
-        
-        const compressionRatio = ((originalSize - processedBuffer.length) / originalSize * 100).toFixed(1);
-        console.log(`Image processed: ${originalSize} -> ${processedBuffer.length} bytes (${compressionRatio}% reduction)`);
-        
+
+        const compressionRatio = (
+          ((originalSize - processedBuffer.length) / originalSize) *
+          100
+        ).toFixed(1);
+        console.log(
+          `Image processed: ${originalSize} -> ${processedBuffer.length} bytes (${compressionRatio}% reduction)`,
+        );
       } catch (imageError) {
         console.warn('Image processing failed, using original:', imageError);
         processedBuffer = originalBuffer;
       }
     }
-    
+
     const finalSize = processedBuffer.length;
-    
+
     await fs.mkdir(UPLOADS_DIR, { recursive: true });
     await fs.writeFile(filePath, processedBuffer);
-    
+
     console.log('File written successfully, creating database record');
-    
+
     const baseData = { key, url, size: finalSize, contentType };
     const dbRecord = await prisma.storageObject.create({
       data: userId ? { ...baseData, userId: userId } : baseData,
     });
-    
+
     console.log('Database record created:', dbRecord.id);
-    
+
     return dbRecord;
   } catch (error) {
     console.error('uploadToStorage error:', error);

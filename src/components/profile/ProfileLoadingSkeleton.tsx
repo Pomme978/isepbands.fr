@@ -11,26 +11,26 @@ export default function ProfileLoadingSkeleton() {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Avatar */}
             <Skeleton className="w-32 h-32 rounded-full" />
-            
+
             {/* User Info */}
             <div className="flex-1 space-y-4">
               <Skeleton className="h-10 w-64" />
               <Skeleton className="h-5 w-40" />
               <Skeleton className="h-4 w-80" />
-              
+
               {/* Stats */}
               <div className="flex gap-4">
                 <Skeleton className="h-6 w-24" />
                 <Skeleton className="h-6 w-24" />
                 <Skeleton className="h-6 w-24" />
               </div>
-              
+
               {/* Badges */}
               <div className="flex gap-2">
                 <Skeleton className="h-8 w-20 rounded-full" />
                 <Skeleton className="h-8 w-24 rounded-full" />
               </div>
-              
+
               {/* Bio */}
               <Skeleton className="h-20 w-full rounded-xl" />
             </div>

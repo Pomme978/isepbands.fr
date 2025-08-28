@@ -7,7 +7,7 @@ const createPermissionSchema = z.object({
   name: z.string().min(1),
   nameFr: z.string().min(1),
   nameEn: z.string().min(1),
-  description: z.string().optional()
+  description: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -27,22 +27,22 @@ export async function GET(req: NextRequest) {
         description: true,
         _count: {
           select: {
-            roles: true
-          }
-        }
+            roles: true,
+          },
+        },
       },
       orderBy: {
-        name: 'asc'
-      }
+        name: 'asc',
+      },
     });
 
-    const transformedPermissions = permissions.map(permission => ({
+    const transformedPermissions = permissions.map((permission) => ({
       id: permission.id,
       name: permission.name,
       nameFr: permission.nameFr,
       nameEn: permission.nameEn,
       description: permission.description,
-      rolesCount: permission._count.roles
+      rolesCount: permission._count.roles,
     }));
 
     return NextResponse.json({ permissions: transformedPermissions });
@@ -69,18 +69,21 @@ export async function POST(req: NextRequest) {
         OR: [
           { name: validatedData.name },
           { nameFr: validatedData.nameFr },
-          { nameEn: validatedData.nameEn }
-        ]
-      }
+          { nameEn: validatedData.nameEn },
+        ],
+      },
     });
 
     if (existingPermission) {
-      return NextResponse.json({ 
-        error: 'A permission with this name already exists' 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'A permission with this name already exists',
+        },
+        { status: 400 },
+      );
     }
 
-    const permission = await prisma.permission.create({ 
+    const permission = await prisma.permission.create({
       data: validatedData,
       select: {
         id: true,
@@ -88,21 +91,27 @@ export async function POST(req: NextRequest) {
         nameFr: true,
         nameEn: true,
         description: true,
-      }
+      },
     });
 
-    return NextResponse.json({ 
-      permission,
-      message: 'Permission created successfully'
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        permission,
+        message: 'Permission created successfully',
+      },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Validation error', 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: error.errors,
+        },
+        { status: 400 },
+      );
     }
-    
+
     console.error('Error creating permission:', error);
     return NextResponse.json({ error: 'Failed to create permission' }, { status: 500 });
   }

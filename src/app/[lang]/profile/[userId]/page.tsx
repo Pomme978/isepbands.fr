@@ -7,6 +7,6 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ params }: ProfilePageProps) {
   const { userId } = use(params);
-  
+
   return <ProfilePageContent userId={userId} showBackButton={true} wrapInLayout={false} />;
 }

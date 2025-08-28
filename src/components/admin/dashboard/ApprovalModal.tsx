@@ -239,8 +239,8 @@ function UserDetails({ user }: { user: PendingUser }) {
     <div className="space-y-6">
       {/* Profile Header */}
       <div className="flex items-start space-x-6">
-        <Avatar 
-          src={user.profilePhoto} 
+        <Avatar
+          src={user.profilePhoto}
           alt={`${user.firstName} ${user.lastName}`}
           name={`${user.firstName} ${user.lastName}`}
           size="xl"
@@ -288,7 +288,9 @@ function UserDetails({ user }: { user: PendingUser }) {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="font-medium">{instrument.instrumentNameFr || instrument.instrumentName}</span>
+                    <span className="font-medium">
+                      {instrument.instrumentNameFr || instrument.instrumentName}
+                    </span>
                     {instrument.isPrimary && (
                       <div className="flex items-center space-x-1">
                         <Star className="w-4 h-4 text-yellow-500 fill-current" />
@@ -304,7 +306,8 @@ function UserDetails({ user }: { user: PendingUser }) {
                 </div>
                 {instrument.yearsPlaying && (
                   <p className="text-xs text-muted-foreground">
-                    {instrument.yearsPlaying} année{instrument.yearsPlaying > 1 ? 's' : ''} d'expérience
+                    {instrument.yearsPlaying} année{instrument.yearsPlaying > 1 ? 's' : ''}{' '}
+                    d&apos;expérience
                   </p>
                 )}
               </div>

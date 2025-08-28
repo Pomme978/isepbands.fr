@@ -33,10 +33,15 @@ export default function Avatar({ src, name, size = 'xl', className = '' }: Avata
   // Validate if src is a valid URL
   const isValidImageSrc = (url: string | null): boolean => {
     if (!url || url.trim() === '' || url === 'PENDING_UPLOAD') return false;
-    
+
     try {
       // Check if it's a valid URL (absolute or relative)
-      if (url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      if (
+        url.startsWith('/') ||
+        url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        url.startsWith('data:')
+      ) {
         return true;
       }
       // Try to construct URL to validate
@@ -50,12 +55,12 @@ export default function Avatar({ src, name, size = 'xl', className = '' }: Avata
   const sizeClasses = sizeMap[size];
   const shouldShowImage = src && isValidImageSrc(src);
   const [imageError, setImageError] = useState(false);
-  
+
   // Reset error state when src changes
   useEffect(() => {
     setImageError(false);
   }, [src]);
-  
+
   const resetImageError = () => setImageError(false);
 
   return (

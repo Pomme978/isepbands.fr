@@ -50,10 +50,11 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
                   Compte en attente de validation
                 </CardTitle>
                 <p className="text-amber-700 text-sm mt-1">
-                  Votre inscription a été soumise le {new Date(user.createdAt).toLocaleDateString('fr-FR', {
+                  Votre inscription a été soumise le{' '}
+                  {new Date(user.createdAt).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'long',
-                    year: 'numeric'
+                    year: 'numeric',
                   })}
                 </p>
               </div>
@@ -71,7 +72,7 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
                     <ul className="text-sm text-amber-700 space-y-1">
                       <li>• Profil visible uniquement par vous et les administrateurs</li>
                       <li>• Impossible de rejoindre des groupes pour le moment</li>
-                      <li>• Pas d'accès aux événements en cours</li>
+                      <li>• Pas d&apos;accès aux événements en cours</li>
                       <li>• Les paramètres de profil sont en lecture seule</li>
                     </ul>
                   </div>
@@ -82,12 +83,10 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
                 <div className="flex items-start space-x-2">
                   <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-blue-800 font-medium mb-2">
-                      Processus de validation
-                    </p>
+                    <p className="text-blue-800 font-medium mb-2">Processus de validation</p>
                     <p className="text-sm text-blue-700 mb-2">
-                      Notre équipe administrative examine toutes les nouvelles demandes d'inscription. 
-                      Ce processus prend généralement 2-3 jours ouvrés.
+                      Notre équipe administrative examine toutes les nouvelles demandes
+                      d&apos;inscription. Ce processus prend généralement 2-3 jours ouvrés.
                     </p>
                     <p className="text-sm text-blue-700">
                       Vous recevrez une notification par email dès que votre compte sera activé.
@@ -107,30 +106,18 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Prénom
-                </label>
-                <div className="p-2 bg-gray-50 rounded border text-gray-600">
-                  {user.firstName}
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                <div className="p-2 bg-gray-50 rounded border text-gray-600">{user.firstName}</div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nom
-                </label>
-                <div className="p-2 bg-gray-50 rounded border text-gray-600">
-                  {user.lastName}
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <div className="p-2 bg-gray-50 rounded border text-gray-600">{user.lastName}</div>
               </div>
-              
+
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <div className="p-2 bg-gray-50 rounded border text-gray-600">
-                  {user.email}
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <div className="p-2 bg-gray-50 rounded border text-gray-600">{user.email}</div>
               </div>
             </div>
 
@@ -138,11 +125,8 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
               <p className="text-sm text-gray-600 mb-4">
                 Les modifications de profil seront disponibles après la validation de votre compte.
               </p>
-              <Button 
-                variant="outline" 
-                onClick={() => router.push(`/${lang}`)}
-              >
-                Retour à l'accueil
+              <Button variant="outline" onClick={() => router.push(`/${lang}`)}>
+                Retour à l&apos;accueil
               </Button>
             </div>
           </CardContent>

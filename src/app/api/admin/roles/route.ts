@@ -12,7 +12,7 @@ const createRoleSchema = z.object({
   nameEnFemale: z.string().min(1),
   weight: z.number().int().min(0),
   isCore: z.boolean().default(false),
-  permissionIds: z.array(z.number().int()).default([])
+  permissionIds: z.array(z.number().int()).default([]),
 });
 
 export async function GET(req: NextRequest) {
@@ -44,23 +44,23 @@ export async function GET(req: NextRequest) {
                 nameFr: true,
                 nameEn: true,
                 description: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         _count: {
           select: {
-            users: true
-          }
-        }
+            users: true,
+          },
+        },
       },
       orderBy: {
-        weight: 'desc'
-      }
+        weight: 'desc',
+      },
     });
 
     // Transform the data to flatten permissions and calculate availability
-    const transformedRoles = roles.map(role => {
+    const transformedRoles = roles.map((role) => {
       // Define role limits (same logic as in user creation API)
       let maxUsers = 1; // Default: 1 user per role
       if (role.name === 'vice_president') {
@@ -68,11 +68,11 @@ export async function GET(req: NextRequest) {
       } else if (['member', 'former_member'].includes(role.name)) {
         maxUsers = 999; // No limit for member roles
       }
-      
+
       const currentCount = role._count.users;
       const isAvailable = currentCount < maxUsers;
       const spotsLeft = maxUsers === 999 ? 999 : maxUsers - currentCount;
-      
+
       return {
         id: role.id,
         name: role.name,
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
         maxUsers: maxUsers,
         isAvailable: isAvailable,
         spotsLeft: spotsLeft,
-        permissions: role.permissions.map(rp => rp.permission)
+        permissions: role.permissions.map((rp) => rp.permission),
       };
     });
 
@@ -116,20 +116,23 @@ export async function POST(req: NextRequest) {
           { nameFrMale: validatedData.nameFrMale },
           { nameFrFemale: validatedData.nameFrFemale },
           { nameEnMale: validatedData.nameEnMale },
-          { nameEnFemale: validatedData.nameEnFemale }
-        ]
-      }
+          { nameEnFemale: validatedData.nameEnFemale },
+        ],
+      },
     });
 
     if (existingRole) {
-      return NextResponse.json({ 
-        error: 'A role with this name already exists' 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'A role with this name already exists',
+        },
+        { status: 400 },
+      );
     }
 
     // Create role with transaction to include permissions
     const role = await prisma.$transaction(async (tx) => {
-      const newRole = await tx.role.create({ 
+      const newRole = await tx.role.create({
         data: {
           name: validatedData.name,
           nameFrMale: validatedData.nameFrMale,
@@ -137,17 +140,17 @@ export async function POST(req: NextRequest) {
           nameEnMale: validatedData.nameEnMale,
           nameEnFemale: validatedData.nameEnFemale,
           weight: validatedData.weight,
-          isCore: validatedData.isCore
-        }
+          isCore: validatedData.isCore,
+        },
       });
 
       // Add permissions if provided
       if (validatedData.permissionIds.length > 0) {
         await tx.rolePermission.createMany({
-          data: validatedData.permissionIds.map(permissionId => ({
+          data: validatedData.permissionIds.map((permissionId) => ({
             roleId: newRole.id,
-            permissionId
-          }))
+            permissionId,
+          })),
         });
       }
 
@@ -175,28 +178,34 @@ export async function POST(req: NextRequest) {
                 nameFr: true,
                 nameEn: true,
                 description: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
-    return NextResponse.json({ 
-      role: {
-        ...completeRole,
-        permissions: completeRole?.permissions.map(rp => rp.permission) || []
+    return NextResponse.json(
+      {
+        role: {
+          ...completeRole,
+          permissions: completeRole?.permissions.map((rp) => rp.permission) || [],
+        },
+        message: 'Role created successfully',
       },
-      message: 'Role created successfully'
-    }, { status: 201 });
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Validation error', 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: error.errors,
+        },
+        { status: 400 },
+      );
     }
-    
+
     console.error('Error creating role:', error);
     return NextResponse.json({ error: 'Failed to create role' }, { status: 500 });
   }

@@ -26,20 +26,90 @@ const defaultInstruments = [
 ];
 
 const defaultPermissions = [
-  { name: 'admin.dashboard', nameFr: 'Accès au tableau de bord admin', nameEn: 'Admin dashboard access', description: 'Access to the administrative dashboard' },
-  { name: 'admin.users.view', nameFr: 'Voir les utilisateurs', nameEn: 'View users', description: 'View user profiles and information' },
-  { name: 'admin.users.edit', nameFr: 'Modifier les utilisateurs', nameEn: 'Edit users', description: 'Edit user profiles and information' },
-  { name: 'admin.users.create', nameFr: 'Créer des utilisateurs', nameEn: 'Create users', description: 'Create new user accounts' },
-  { name: 'admin.users.delete', nameFr: 'Supprimer des utilisateurs', nameEn: 'Delete users', description: 'Delete user accounts' },
-  { name: 'admin.bands.view', nameFr: 'Voir les groupes', nameEn: 'View bands', description: 'View band information' },
-  { name: 'admin.bands.edit', nameFr: 'Modifier les groupes', nameEn: 'Edit bands', description: 'Edit band information and management' },
-  { name: 'admin.events.view', nameFr: 'Voir les événements', nameEn: 'View events', description: 'View event information' },
-  { name: 'admin.events.create', nameFr: 'Créer des événements', nameEn: 'Create events', description: 'Create new events' },
-  { name: 'admin.events.edit', nameFr: 'Modifier les événements', nameEn: 'Edit events', description: 'Edit event information' },
-  { name: 'admin.content.edit', nameFr: 'Modifier le contenu', nameEn: 'Edit content', description: 'Edit site content and pages' },
-  { name: 'admin.media.manage', nameFr: 'Gérer les médias', nameEn: 'Manage media', description: 'Manage media library' },
-  { name: 'admin.communication', nameFr: 'Communication', nameEn: 'Communication', description: 'Send newsletters and communications' },
-  { name: 'admin.files.access', nameFr: 'Accès aux fichiers', nameEn: 'Files access', description: 'Access to restricted files' },
+  {
+    name: 'admin.dashboard',
+    nameFr: 'Accès au tableau de bord admin',
+    nameEn: 'Admin dashboard access',
+    description: 'Access to the administrative dashboard',
+  },
+  {
+    name: 'admin.users.view',
+    nameFr: 'Voir les utilisateurs',
+    nameEn: 'View users',
+    description: 'View user profiles and information',
+  },
+  {
+    name: 'admin.users.edit',
+    nameFr: 'Modifier les utilisateurs',
+    nameEn: 'Edit users',
+    description: 'Edit user profiles and information',
+  },
+  {
+    name: 'admin.users.create',
+    nameFr: 'Créer des utilisateurs',
+    nameEn: 'Create users',
+    description: 'Create new user accounts',
+  },
+  {
+    name: 'admin.users.delete',
+    nameFr: 'Supprimer des utilisateurs',
+    nameEn: 'Delete users',
+    description: 'Delete user accounts',
+  },
+  {
+    name: 'admin.bands.view',
+    nameFr: 'Voir les groupes',
+    nameEn: 'View bands',
+    description: 'View band information',
+  },
+  {
+    name: 'admin.bands.edit',
+    nameFr: 'Modifier les groupes',
+    nameEn: 'Edit bands',
+    description: 'Edit band information and management',
+  },
+  {
+    name: 'admin.events.view',
+    nameFr: 'Voir les événements',
+    nameEn: 'View events',
+    description: 'View event information',
+  },
+  {
+    name: 'admin.events.create',
+    nameFr: 'Créer des événements',
+    nameEn: 'Create events',
+    description: 'Create new events',
+  },
+  {
+    name: 'admin.events.edit',
+    nameFr: 'Modifier les événements',
+    nameEn: 'Edit events',
+    description: 'Edit event information',
+  },
+  {
+    name: 'admin.content.edit',
+    nameFr: 'Modifier le contenu',
+    nameEn: 'Edit content',
+    description: 'Edit site content and pages',
+  },
+  {
+    name: 'admin.media.manage',
+    nameFr: 'Gérer les médias',
+    nameEn: 'Manage media',
+    description: 'Manage media library',
+  },
+  {
+    name: 'admin.communication',
+    nameFr: 'Communication',
+    nameEn: 'Communication',
+    description: 'Send newsletters and communications',
+  },
+  {
+    name: 'admin.files.access',
+    nameFr: 'Accès aux fichiers',
+    nameEn: 'Files access',
+    description: 'Access to restricted files',
+  },
 ];
 
 const defaultRoles = [
@@ -51,7 +121,7 @@ const defaultRoles = [
     nameEnFemale: 'President',
     weight: 100,
     isCore: true,
-    permissions: [] // President gets all permissions by default via full access
+    permissions: [], // President gets all permissions by default via full access
   },
   {
     name: 'vice_president',
@@ -62,10 +132,19 @@ const defaultRoles = [
     weight: 90,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.users.view', 'admin.users.edit', 'admin.users.create',
-      'admin.bands.view', 'admin.bands.edit', 'admin.events.view', 'admin.events.create', 
-      'admin.events.edit', 'admin.content.edit', 'admin.media.manage', 'admin.communication'
-    ]
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.users.edit',
+      'admin.users.create',
+      'admin.bands.view',
+      'admin.bands.edit',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.content.edit',
+      'admin.media.manage',
+      'admin.communication',
+    ],
   },
   {
     name: 'treasurer',
@@ -75,7 +154,7 @@ const defaultRoles = [
     nameEnFemale: 'Treasurer',
     weight: 80,
     isCore: true,
-    permissions: ['admin.dashboard', 'admin.users.view', 'admin.files.access']
+    permissions: ['admin.dashboard', 'admin.users.view', 'admin.files.access'],
   },
   {
     name: 'secretary',
@@ -86,9 +165,14 @@ const defaultRoles = [
     weight: 80,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.users.view', 'admin.users.edit', 'admin.events.view',
-      'admin.events.create', 'admin.events.edit', 'admin.files.access'
-    ]
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.users.edit',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.files.access',
+    ],
   },
   {
     name: 'head_of_communication',
@@ -99,9 +183,12 @@ const defaultRoles = [
     weight: 70,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.users.view', 'admin.content.edit', 'admin.media.manage', 
-      'admin.communication'
-    ]
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.content.edit',
+      'admin.media.manage',
+      'admin.communication',
+    ],
   },
   {
     name: 'head_of_creation',
@@ -112,9 +199,14 @@ const defaultRoles = [
     weight: 70,
     isCore: true,
     permissions: [
-      'admin.dashboard', 'admin.bands.view', 'admin.bands.edit', 'admin.events.view',
-      'admin.events.create', 'admin.events.edit', 'admin.media.manage'
-    ]
+      'admin.dashboard',
+      'admin.bands.view',
+      'admin.bands.edit',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.media.manage',
+    ],
   },
   {
     name: 'member',
@@ -124,7 +216,7 @@ const defaultRoles = [
     nameEnFemale: 'Member',
     weight: 10,
     isCore: true,
-    permissions: []
+    permissions: [],
   },
   {
     name: 'former_member',
@@ -134,8 +226,8 @@ const defaultRoles = [
     nameEnFemale: 'Former Member',
     weight: 0,
     isCore: true,
-    permissions: []
-  }
+    permissions: [],
+  },
 ];
 
 async function seedInstruments() {
@@ -143,9 +235,9 @@ async function seedInstruments() {
 
   for (const instrument of defaultInstruments) {
     const existing = await prisma.instrument.findFirst({
-      where: { name: instrument.name }
+      where: { name: instrument.name },
     });
-    
+
     if (existing) {
       await prisma.instrument.update({
         where: { id: existing.id },
@@ -174,9 +266,9 @@ async function seedPermissions() {
 
   for (const permission of defaultPermissions) {
     const existing = await prisma.permission.findFirst({
-      where: { name: permission.name }
+      where: { name: permission.name },
     });
-    
+
     if (existing) {
       await prisma.permission.update({
         where: { id: existing.id },
@@ -206,9 +298,9 @@ async function seedRoles() {
 
   for (const roleData of defaultRoles) {
     let role = await prisma.role.findFirst({
-      where: { name: roleData.name }
+      where: { name: roleData.name },
     });
-    
+
     if (role) {
       role = await prisma.role.update({
         where: { id: role.id },
@@ -239,26 +331,26 @@ async function seedRoles() {
     if (roleData.permissions.length > 0) {
       // Delete existing permissions for this role
       await prisma.rolePermission.deleteMany({
-        where: { roleId: role.id }
+        where: { roleId: role.id },
       });
 
       // Get permission IDs
       const permissions = await prisma.permission.findMany({
         where: {
-          name: { in: roleData.permissions }
+          name: { in: roleData.permissions },
         },
-        select: { id: true, name: true }
+        select: { id: true, name: true },
       });
 
       // Create new role-permission relationships
-      const rolePermissions = permissions.map(permission => ({
+      const rolePermissions = permissions.map((permission) => ({
         roleId: role.id,
-        permissionId: permission.id
+        permissionId: permission.id,
       }));
 
       if (rolePermissions.length > 0) {
         await prisma.rolePermission.createMany({
-          data: rolePermissions
+          data: rolePermissions,
         });
       }
     }
@@ -272,7 +364,7 @@ async function main() {
     await seedInstruments();
     await seedPermissions();
     await seedRoles();
-    
+
     console.log('🎉 All seeding completed successfully!');
   } catch (error) {
     console.error('❌ Error seeding database:', error);

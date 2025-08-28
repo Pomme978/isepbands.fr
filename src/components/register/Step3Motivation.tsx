@@ -60,7 +60,7 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
             />
             {motivationError && <div className="text-red-500 text-xs mt-1">{motivationError}</div>}
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Décrivez votre expérience musicale *
@@ -85,8 +85,9 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Votre histoire musicale</h4>
         <p className="text-sm text-blue-700">
-          Ces informations sont essentielles pour évaluer votre candidature et déterminer si vous pourrez 
-          rejoindre l'association. Elles nous permettent aussi de vous proposer des groupes adaptés. Soyez authentique !
+          Ces informations sont essentielles pour évaluer votre candidature et déterminer si vous
+          pourrez rejoindre l&lsquo;association. Elles nous permettent aussi de vous proposer des
+          groupes adaptés. Soyez authentique !
         </p>
       </div>
 

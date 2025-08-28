@@ -48,7 +48,7 @@ export async function uploadImageToStorage(file: File): Promise<ImageUploadResul
       } catch {
         errorMessage = response.statusText || `Error ${response.status}`;
       }
-      
+
       return {
         success: false,
         error: errorMessage,
@@ -56,7 +56,7 @@ export async function uploadImageToStorage(file: File): Promise<ImageUploadResul
     }
 
     const uploadData = await response.json();
-    
+
     if (!uploadData.success || !uploadData.file?.id) {
       return {
         success: false,
@@ -65,12 +65,11 @@ export async function uploadImageToStorage(file: File): Promise<ImageUploadResul
     }
 
     const imageUrl = `/api/storage?id=${uploadData.file.id}`;
-    
+
     return {
       success: true,
       url: imageUrl,
     };
-    
   } catch (error) {
     console.error('Error uploading image:', error);
     return {

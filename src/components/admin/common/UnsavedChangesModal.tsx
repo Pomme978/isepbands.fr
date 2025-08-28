@@ -18,8 +18,8 @@ export default function UnsavedChangesModal({
   onSave,
   onDiscard,
   saving = false,
-  title = "Unsaved Changes",
-  message = "You have unsaved changes. What would you like to do?"
+  title = 'Unsaved Changes',
+  message = 'You have unsaved changes. What would you like to do?',
 }: UnsavedChangesModalProps) {
   if (!isOpen) return null;
 
@@ -41,11 +41,9 @@ export default function UnsavedChangesModal({
           </div>
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         </div>
-        
-        <p className="text-gray-600 mb-6">
-          {message}
-        </p>
-        
+
+        <p className="text-gray-600 mb-6">{message}</p>
+
         <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}

@@ -16,38 +16,35 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         registrationRequest: true,
         instruments: {
           include: {
-            instrument: true
-          }
-        }
-      }
+            instrument: true,
+          },
+        },
+      },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
     const details = {
       motivation: user.registrationRequest?.motivation || null,
       experience: user.registrationRequest?.experience || null,
       createdAt: user.createdAt.toISOString(),
-      instruments: user.instruments.map(ui => ({
+      instruments: user.instruments.map((ui) => ({
         instrumentName: ui.instrument.name,
-        skillLevel: ui.skillLevel
-      }))
+        skillLevel: ui.skillLevel,
+      })),
     };
 
     return NextResponse.json({
       success: true,
-      details
+      details,
     });
   } catch (error) {
     console.error('Error fetching registration details:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch registration details' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
