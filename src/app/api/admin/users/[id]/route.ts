@@ -192,8 +192,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (validatedData.biography !== undefined) baseUpdateData.biography = validatedData.biography;
       if (validatedData.phone !== undefined) baseUpdateData.phone = validatedData.phone;
       if (validatedData.pronouns !== undefined) baseUpdateData.pronouns = validatedData.pronouns;
-      if (validatedData.isOutOfSchool !== undefined)
-        baseUpdateData.isOutOfSchool = validatedData.isOutOfSchool;
       // Handle photo URL changes and cleanup
       if (validatedData.photoUrl !== undefined) {
         // If we're removing/changing the photo, clean up the old one
