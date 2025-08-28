@@ -218,7 +218,7 @@ export const Garland: React.FC<GarlandProps> = ({
             garlandIndex={rowIndex}
           />
 
-          <div className="max-w-[130rem] mx-auto relative">
+          <div className="max-w-[100rem] mx-auto relative">
             <div className="relative z-10">
               <div className="relative">
                 {rowCards.map((item, cardIndex) => {

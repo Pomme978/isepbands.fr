@@ -21,8 +21,8 @@ import { PendingValidationProfile } from '@/components/profile/PendingValidation
 
 // ---- API types (same as your first file) ----
 interface ApiInstrument {
-  instrument: { 
-    id: string; 
+  instrument: {
+    id: string;
     name?: string;
     nameFr?: string;
     nameEn?: string;
@@ -237,13 +237,13 @@ export default function ProfilePage() {
   if (user.status === 'PENDING') {
     return (
       <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
-        <PendingValidationProfile 
+        <PendingValidationProfile
           user={{
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
             photoUrl: user.photoUrl,
-            createdAt: user.createdAt.toString()
+            createdAt: user.createdAt.toString(),
           }}
           lang={lang}
         />
@@ -268,7 +268,7 @@ export default function ProfilePage() {
               dateOfBirth: user.birthDate || '',
               isOutOfSchool: user.isOutOfSchool ?? false,
               promotion: user.promotion || '',
-              role: user.primaryRole || t('user.settings.role.default'),
+              role: user.primaryRole || 'Membre',
               badges: user.badges?.map((b) => b.name) || [],
               bio: user.biography || '',
               pronouns:
@@ -279,9 +279,9 @@ export default function ProfilePage() {
               totalGroups: user.totalGroups ?? user.groupMemberships?.length ?? 0,
               eventsAttended: user.eventsAttended ?? 0,
               activeGroups: user.activeGroups ?? activeGroups.length,
-              memberSince: new Date(user.createdAt).toLocaleDateString('fr-FR', { 
-                year: 'numeric', 
-                month: 'long' 
+              memberSince: new Date(user.createdAt).toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
               }),
               instrumentCount: user.instrumentCount ?? (instruments?.length || 0),
               concertsPlayed:
@@ -310,7 +310,7 @@ export default function ProfilePage() {
           {/* 3-column grid: Instruments, Music Genres, Groups */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
             <InstrumentsDisplay instruments={instruments} />
-            <MusicGenresSection 
+            <MusicGenresSection
               genres={user.preferredGenres ? JSON.parse(user.preferredGenres) : []}
               locale={lang}
             />

@@ -37,12 +37,12 @@ const settingsItems: SettingsItem[] = [
   },
 ];
 
-export function SettingsSidebar({ 
-  activeSection, 
-  onSectionChange, 
-  onSave, 
-  isSaving, 
-  hasUnsavedChanges 
+export function SettingsSidebar({
+  activeSection,
+  onSectionChange,
+  onSave,
+  isSaving,
+  hasUnsavedChanges,
 }: SettingsSidebarProps) {
   return (
     <div className="w-64 flex-shrink-0 overflow-y-auto flex flex-col">
@@ -77,9 +77,9 @@ export function SettingsSidebar({
           disabled={!hasUnsavedChanges || isSaving}
           className={cn(
             'w-full h-12',
-            hasUnsavedChanges 
-              ? 'bg-primary hover:bg-primary/90 text-white' 
-              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            hasUnsavedChanges
+              ? 'bg-primary hover:bg-primary/90 text-white'
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed',
           )}
         >
           {isSaving ? (

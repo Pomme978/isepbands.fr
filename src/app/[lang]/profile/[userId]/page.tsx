@@ -23,11 +23,11 @@ const calculateAge = (birthDate: string | null | undefined): number | null => {
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age;
 };
 
@@ -89,7 +89,7 @@ interface ApiUserData {
   isLookingForGroup?: boolean;
   badges: string[]; // API returns array of strings
   instruments: ApiInstrument[];
-  roles: string[]; // API returns array of strings  
+  roles: string[]; // API returns array of strings
   groupMemberships: ApiGroupMembership[];
   totalGroups?: number;
   instrumentCount?: number;
@@ -179,7 +179,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               memberCount: gm.memberCount || 0,
               maxMembers: 0,
               slug: gm.id,
-              concertCount: gm.events?.filter((e) => e.type.toLowerCase() === 'concert').length || 0,
+              concertCount:
+                gm.events?.filter((e) => e.type.toLowerCase() === 'concert').length || 0,
               genre: gm.genre,
               nextEvent: gm.events?.[0]
                 ? {
@@ -257,7 +258,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             dateOfBirth: user.birthDate || '',
             isOutOfSchool: user.isOutOfSchool ?? false,
             promotion: user.promotion || '',
-            role: user.primaryRole || t('user.settings.role.default'),
+            role: user.primaryRole || 'Membre',
             badges: user.badges || [],
             bio: user.biography || '',
             age: calculateAge(user.birthDate),
@@ -269,9 +270,9 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             totalGroups: user.totalGroups ?? user.groupMemberships?.length ?? 0,
             eventsAttended: user.eventsAttended ?? 0,
             activeGroups: user.activeGroups ?? activeGroups.length,
-            memberSince: new Date(user.createdAt).toLocaleDateString('fr-FR', { 
-              year: 'numeric', 
-              month: 'long' 
+            memberSince: new Date(user.createdAt).toLocaleDateString('fr-FR', {
+              year: 'numeric',
+              month: 'long',
             }),
             instrumentCount: user.instrumentCount ?? (instruments?.length || 0),
             concertsPlayed:

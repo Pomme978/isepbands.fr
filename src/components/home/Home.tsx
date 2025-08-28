@@ -42,7 +42,7 @@ export function Home({ lang }: HomeProps) {
               />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-10 z-20">WHO ARE WE?</h1>
-            <p className="text-gray-700 text-md mt-4 text-center mb-6 max-w-4xl z-20">
+            <p className="text-gray-700 text-md mt-4 text-center mb-6 max-w-2xl z-20">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam id lobortis purus.
               Vivamus sed varius risus. Sed a purus sit amet nisl feugiat mollis. Nullam dignissim,
               dolor sit amet hendrerit blandit, erat est efficitur mi, quis egestas odio dui sit
