@@ -274,7 +274,7 @@ export default function ProfilePage() {
               concertsPlayed:
                 user.concertsPlayed ?? groups.reduce((acc, g) => acc + g.concertCount, 0),
             }}
-            isUserProfile={true}
+            isUserProfile={authUser?.id === user.id}
           />
 
           {/* Same EventBanner usage */}
