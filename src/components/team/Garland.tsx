@@ -16,6 +16,7 @@ interface User {
   motto?: string;
   profilePhoto?: string;
   role: string;
+  roleDisplayName?: string;
 }
 
 interface UserRole {
@@ -106,11 +107,11 @@ export const Garland: React.FC<GarlandProps> = ({
   const validUsers = useMemo(
     () =>
       roleInfos
-        .map((roleInfo) => {
-          const user = users.find((u) => u.role === roleInfo.role);
-          return user ? { user, roleInfo } : null;
+        .flatMap((roleInfo) => {
+          const usersWithRole = users.filter((u) => u.role === roleInfo.role);
+          return usersWithRole.map((user) => ({ user, roleInfo }));
         })
-        .filter(Boolean) as { user: User; roleInfo: UserRole }[],
+        .filter((item) => item !== null) as { user: User; roleInfo: UserRole }[],
     [users, roleInfos],
   );
 
@@ -249,7 +250,7 @@ export const Garland: React.FC<GarlandProps> = ({
                     >
                       <MemberCard
                         user={item.user}
-                        roleDisplay={item.roleInfo.displayName}
+                        roleDisplay={item.user.roleDisplayName || item.roleInfo.displayName}
                         variant={item.roleInfo.variant}
                         className="relative z-30"
                       />

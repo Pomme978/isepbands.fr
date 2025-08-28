@@ -14,6 +14,7 @@ interface User {
   motto?: string;
   profilePhoto?: string;
   role: string;
+  roleDisplayName?: string;
 }
 
 interface UserRole {
@@ -23,90 +24,40 @@ interface UserRole {
   variant?: 'president' | 'executive' | 'pole';
 }
 
-const Page = () => {
-  // PLACEHOLDER DATA - Remove when backend is ready
-  const placeholderUsers: User[] = [
-    {
-      id: '1',
-      firstName: 'Sarah',
-      lastName: 'LEVY',
-      email: 'sarah.levy@student.isep.fr',
-      motto: 'Toujours prête à relever les défis !',
-      profilePhoto: '/placeholder/maere.jpg',
-      role: 'vice_president_1',
-    },
-    {
-      id: '2',
-      firstName: 'Maxime',
-      lastName: 'LE ROY-MEUNIER',
-      email: 'maxime@eleve.isep.fr',
-      motto: 'Leader par passion, innovateur par nature',
-      profilePhoto: '/placeholder-photos/maxime.jpg',
-      role: 'president',
-    },
-    {
-      id: '3',
-      firstName: 'Armand',
-      lastName: 'OCTEAU',
-      email: 'armand@eleve.isep.fr',
-      motto: 'La musique unit les cœurs',
-      profilePhoto: '/placeholder-photos/armand.jpg',
-      role: 'vice_president_2',
-    },
-    {
-      id: '4',
-      firstName: 'Maéva',
-      lastName: 'RONCEY',
-      email: 'maeva@eleve.isep.fr',
-      motto: 'Organisation et créativité',
-      profilePhoto: '/placeholder-photos/maeva.jpg',
-      role: 'secretary_general',
-    },
-    {
-      id: '5',
-      firstName: 'Shane',
-      lastName: 'PRADGER',
-      email: 'shane@eleve.isep.fr',
-      motto: 'Les chiffres et la musique en harmonie',
-      profilePhoto: '/placeholder-photos/shane.jpg',
-      role: 'treasurer',
-    },
-    {
-      id: '6',
-      firstName: 'Aurélia',
-      lastName: 'HUISSE--DALBOUSSIERE',
-      email: 'aurelia@eleve.isep.fr',
-      motto: "Communiquer c'est créer du lien",
-      profilePhoto: '/placeholder-photos/aurelia.jpg',
-      role: 'pole_communication',
-    },
-  ];
+const Page = async () => {
+  // Fetch team members from API
+  let teamUsers: User[] = [];
 
-  // Define role mappings
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/team`,
+      {
+        cache: 'no-store', // Always fetch fresh data
+      },
+    );
+
+    if (response.ok) {
+      teamUsers = await response.json();
+    } else {
+      console.error('Failed to fetch team members');
+    }
+  } catch (error) {
+    console.error('Error fetching team members:', error);
+  }
+
+  // Define role mappings - utilise le roleDisplayName de l'API au lieu du displayName hardcodé
   const roleMapping: UserRole[] = [
     // Executive section
-    {
-      role: 'vice_president_1',
-      displayName: 'VICE-PRÉSIDENTE',
-      section: 'executive',
-      variant: 'executive',
-    },
-    { role: 'president', displayName: 'PRÉSIDENT', section: 'executive', variant: 'president' },
-    {
-      role: 'vice_president_2',
-      displayName: 'VICE-PRÉSIDENT',
-      section: 'executive',
-      variant: 'executive',
-    },
+    { role: 'vice_president', displayName: '', section: 'executive', variant: 'executive' },
+    { role: 'president', displayName: '', section: 'executive', variant: 'president' },
 
     // Other members section
-    { role: 'secretary_general', displayName: 'SECRÉTAIRE GÉNÉRALE', section: 'other' },
-    { role: 'treasurer', displayName: 'TRÉSORIER', section: 'other' },
+    { role: 'secretary', displayName: '', section: 'other' },
+    { role: 'treasurer', displayName: '', section: 'other' },
 
     // Pole section
-    { role: 'pole_bands', displayName: 'PÔLE BANDS', section: 'pole', variant: 'pole' },
-    { role: 'pole_communication', displayName: 'PÔLE COM', section: 'pole', variant: 'pole' },
-    { role: 'pole_creation', displayName: 'PÔLE CRÉA', section: 'pole', variant: 'pole' },
+    { role: 'head_of_communication', displayName: '', section: 'pole', variant: 'pole' },
+    { role: 'head_of_creation', displayName: '', section: 'pole', variant: 'pole' },
   ];
 
   // Group roles by section
@@ -137,20 +88,10 @@ const Page = () => {
       />
 
       {/* Membres exécutifs */}
-      <Garland
-        users={placeholderUsers}
-        roleInfos={executiveRoles}
-        lightType="yellow"
-        className="mb-0"
-      />
+      <Garland users={teamUsers} roleInfos={executiveRoles} lightType="yellow" className="mb-0" />
 
       {/* Autres membres */}
-      <Garland
-        users={placeholderUsers}
-        roleInfos={otherRoles}
-        lightType="yellow"
-        className="mb-100"
-      />
+      <Garland users={teamUsers} roleInfos={otherRoles} lightType="yellow" className="mb-100" />
 
       {/* Section "Sans oublier nos responsables pôles" */}
       <div className="text-center mb-8 w-full text-4xl md:text-3xl text-white font-bold text-glow text-glow-[#F4E0FF]">
@@ -158,7 +99,7 @@ const Page = () => {
       </div>
 
       {/* Pôles */}
-      <Garland users={placeholderUsers} roleInfos={poleRoles} lightType="blue" className="mb-100" />
+      <Garland users={teamUsers} roleInfos={poleRoles} lightType="blue" className="mb-100" />
 
       {/* Vision Note */}
       <div className="flex justify-center mb-20 px-4">

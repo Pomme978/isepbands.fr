@@ -1,7 +1,7 @@
 // components/team/MemberCard.tsx
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import LangLink from '@/components/common/LangLink';
 import clothespinSvg from '@/assets/svg/Clothespin.svg';
 import { ChevronRight } from 'lucide-react';
 
@@ -152,8 +152,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   }
 
   return (
-    <Link href={`/profile/${user.id}`} className={cardClassName}>
+    <LangLink href={`/profile/${user.id}`} className={cardClassName}>
       <CardContent user={user} roleDisplay={roleDisplay} showClothespin={showClothespin} />
-    </Link>
+    </LangLink>
   );
 };

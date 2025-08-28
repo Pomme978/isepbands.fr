@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import NeonLogo from '@/components/common/NeonLogo'; // Adjust path as needed
 import isepbands_logo from '@/assets/images/isepbands-logo.svg';
@@ -7,6 +9,9 @@ import { SocialIcons } from '@/components/footer/SocialIcons';
 import StageLights from '@/components/home/StageLights';
 import Crowd from '@/components/home/Crowd';
 import MusicNotes from '@/components/home/MusicNotes';
+import LangLink from '@/components/common/LangLink';
+import { useSession } from '@/lib/auth-client';
+import { useParams } from 'next/navigation';
 
 const socialLinks = [
   {
@@ -30,6 +35,10 @@ const socialLinks = [
 ];
 
 const HomeHero = () => {
+  const { user } = useSession();
+  const params = useParams();
+  const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
+
   return (
     <div className="w-full h-screen overflow-hidden">
       {/* Custom Background Color */}
@@ -105,12 +114,15 @@ const HomeHero = () => {
 
             {/* Button */}
             <div className="flex justify-between w-full items-center">
-              <Button
-                size="lg"
-                className="relative shadow-md overflow-hidden bg-primary text-md py-6 px-12 text-primary-foreground"
-              >
-                Join Us
-              </Button>
+              {!user && (
+                <Button
+                  asChild
+                  size="lg"
+                  className="relative shadow-md overflow-hidden bg-primary text-md py-6 px-12 text-primary-foreground"
+                >
+                  <LangLink href={`/register`}>Join Us</LangLink>
+                </Button>
+              )}
               <SocialIcons
                 links={socialLinks}
                 defaultColor="text-white"

@@ -11,6 +11,7 @@ interface BasicLayoutProps {
   showNavbar?: boolean;
   showFooter?: boolean;
   navbarMode?: 'scroll' | 'static' | 'fixed'; // Added 'fixed' mode
+  offsetContent?: boolean; // Controls if content should be offset when navbar is fixed
 }
 
 export default function BasicLayout({
@@ -18,10 +19,11 @@ export default function BasicLayout({
   showNavbar = true,
   showFooter = true,
   navbarMode = 'scroll',
+  offsetContent = true,
 }: BasicLayoutProps) {
-  // Add top padding when using fixed navbar to prevent content overlap
+  // Add top padding when using fixed navbar to prevent content overlap (only if offsetContent is true)
   const getContentClasses = () => {
-    if (navbarMode === 'fixed' && showNavbar) {
+    if (navbarMode === 'fixed' && showNavbar && offsetContent) {
       return 'pt-16'; // Adjust this value based on your navbar height
     }
     return '';

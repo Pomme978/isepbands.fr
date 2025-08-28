@@ -39,6 +39,10 @@ export default function UserMenu() {
       : (user.email || '').replace(/\b([a-z])/g, (c: string) => c.toUpperCase());
   const band = user.band;
 
+  // Check if user has admin permissions (based on role weight >= 70)
+  const isAdmin =
+    user.isRoot || user.isFullAccess || user.roles?.some((userRole) => userRole.role.weight >= 70);
+
   const handleProfileClick = () => {
     router.push(`/${currentLang}/profile`);
   };
@@ -97,7 +101,9 @@ export default function UserMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleProfileClick}>Mon profil</DropdownMenuItem>
           <DropdownMenuItem onClick={handleGroupSpaceClick}>Mon espace groupe</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleAdminClick}>Tableau de bord admin</DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem onClick={handleAdminClick}>Tableau de bord admin</DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleSettingsClick}>Paramètres</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>Se déconnecter</DropdownMenuItem>

@@ -25,8 +25,11 @@ export default function HomePage() {
     await signOut(() => router.push(`/${lang}/login`));
   };
 
+  // Use fixed navbar when user is connected, scroll when not connected
+  const navbarMode = user ? 'fixed' : 'scroll';
+
   return (
-    <BasicLayout navbarMode="scroll">
+    <BasicLayout navbarMode={navbarMode} offsetContent={false}>
       <main className="flex flex-col items-center justify-center min-h-screen">
         <HeroBanner />
 

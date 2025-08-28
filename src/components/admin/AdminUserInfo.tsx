@@ -2,10 +2,12 @@
 
 import LangLink from '@/components/common/LangLink';
 import Avatar from '@/components/common/Avatar';
+import { Button } from '@/components/ui/button';
 import { LogOut, User, ChevronUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-client';
 import { getPrimaryRoleName } from '@/utils/roleUtils';
+import { useRouter, useParams } from 'next/navigation';
 
 interface AdminUserInfoProps {
   user?: {
@@ -34,6 +36,9 @@ interface AdminUserInfoProps {
 
 export default function AdminUserInfo({ user }: AdminUserInfoProps) {
   const { signOut } = useAuth();
+  const router = useRouter();
+  const params = useParams();
+  const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
 
   // Get display name from first/last name, fallback to formatted email
   const displayName =
@@ -86,13 +91,14 @@ export default function AdminUserInfo({ user }: AdminUserInfoProps) {
             <span>My Profile</span>
           </LangLink>
 
-          <button
-            onClick={() => signOut()}
-            className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          <Button
+            onClick={() => signOut(() => router.push(`/${lang}/login`))}
+            variant="ghost"
+            className="w-full justify-start space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             <LogOut size={16} />
             <span>Logout</span>
-          </button>
+          </Button>
         </div>
       )}
     </div>

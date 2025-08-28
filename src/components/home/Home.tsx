@@ -6,6 +6,7 @@ import { useI18n } from '@/locales/client';
 import LangLink from '@/components/common/LangLink';
 import OurFamousEvents from '@/components/home/OurFamousEvents';
 import UpcomingEvents from '@/components/home/UpcomingEvents';
+import { useSession } from '@/lib/auth-client';
 
 import purpleGuitar from '@/assets/images/instruments/purple_guitar.png';
 import synth from '@/assets/images/instruments/synth.png';
@@ -16,6 +17,7 @@ interface HomeProps {
 
 export function Home({ lang }: HomeProps) {
   const t = useI18n();
+  const { user } = useSession();
 
   return (
     <>
@@ -62,14 +64,18 @@ export function Home({ lang }: HomeProps) {
           <OurFamousEvents />
 
           {/* Call to Action (reste dans page.tsx) */}
-          <div className="text-center mb-16 py-12 w-full bg-white rounded-xl">
-            <div className="flex flex-col md:flex-row items-center justify-between mx-10">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
-                SO IF YOU&#39;RE READY, WHAT ARE YOU WAITING FOR ?
-              </h2>
-              <Button className="bg-primary text-white px-8 py-3">Join Us</Button>
+          {!user && (
+            <div className="text-center mb-16 py-12 w-full bg-white rounded-xl">
+              <div className="flex flex-col md:flex-row items-center justify-between mx-10">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
+                  SO IF YOU&#39;RE READY, WHAT ARE YOU WAITING FOR ?
+                </h2>
+                <Button asChild className="bg-primary text-white px-8 py-3">
+                  <LangLink href="/register">Join Us</LangLink>
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Divider */}
           <hr className="border-gray-300 mb-16" />
