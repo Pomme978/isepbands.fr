@@ -38,48 +38,49 @@ export default function BadgeDisplay({
       gap: "gap-1"
     },
     sm: {
-      padding: "px-3 py-1",
+      padding: "px-3 py-1.5",
       text: "text-xs",
       icon: "h-3 w-3",
-      gap: "gap-1"
+      gap: "gap-1.5"
     },
     md: {
       padding: "px-4 py-2",
       text: "text-sm",
-      icon: "h-3 w-3",
+      icon: "h-4 w-4",
       gap: "gap-2"
     },
     lg: {
-      padding: "px-5 py-2",
+      padding: "px-5 py-3",
       text: "text-base",
       icon: "h-4 w-4",
-      gap: "gap-2"
+      gap: "gap-3"
     }
   };
 
   const config = sizeConfig[size];
   const finalTextSize = textSize !== "text-sm" ? textSize : config.text;
   return (
-    <div className={`flex ${config.gap} flex-wrap ${className}`}>
-      <span className={`${config.padding} ${bgColor} text-white rounded-full ${finalTextSize} font-medium shadow-md hover:scale-95 transition-transform duration-200 ease-in-out`}>
+    <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
+      {/* Badge de rôle principal */}
+      <span className={`inline-flex items-center ${config.padding} ${bgColor} text-white rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}>
         {role}
       </span>
 
-      {badges.map((badge, index) => (
+      {/* Badges supplémentaires */}
+      {badges && badges.length > 0 && badges.map((badge, index) => (
         <span
           key={index}
-          className={`${config.padding} bg-gray-200 text-gray-700 flex justify-center items-center rounded-full ${finalTextSize} font-medium hover:scale-95 transition-transform duration-200 ease-in-out`}
+          className={`inline-flex items-center ${config.padding} bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
         >
           {badge}
         </span>
       ))}
 
+      {/* Badge "Recherche un groupe" */}
       {isLookingForGroup && (
-        <span className={`${config.padding} bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full ${finalTextSize} font-medium shadow-md animate-pulse hover:scale-95 transition-transform duration-200 ease-in-out`}>
-          <span className={`flex items-center ${config.gap}`}>
-            <Star className={config.icon} />
-            Prêt à rejoindre un groupe
-          </span>
+        <span className={`inline-flex items-center ${config.padding} bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md animate-pulse hover:scale-105 transition-all duration-200 ease-in-out`}>
+          <Star className={`${config.icon} mr-1`} />
+          Prêt à rejoindre un groupe
         </span>
       )}
     </div>

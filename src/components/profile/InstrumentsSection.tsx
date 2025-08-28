@@ -27,7 +27,7 @@ export default function InstrumentsSection({ instruments }: InstrumentsSectionPr
   };
 
   return (
-    <Card className="xl:col-span-2 p-6 border-0 h-fit">
+    <Card className="xl:col-span-2 p-6 border-0 h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-3">
           <Music className="h-6 w-6 text-purple-600" />
@@ -35,21 +35,23 @@ export default function InstrumentsSection({ instruments }: InstrumentsSectionPr
         </h2>
       </div>
 
-      {instruments.length > 0 ? (
-        <div className="space-y-4">
-          <div className={`grid gap-4 ${getGridCols()}`}>
-            {instruments.map((instrument) => (
-              <InstrumentCard key={instrument.id} instrument={instrument} />
-            ))}
+      <div className="flex-1">
+        {instruments.length > 0 ? (
+          <div className="space-y-4">
+            <div className={`grid gap-4 ${getGridCols()}`}>
+              {instruments.map((instrument) => (
+                <InstrumentCard key={instrument.id} instrument={instrument} />
+              ))}
+            </div>
           </div>
-        </div>
-      ) : (
-        <EmptyState
-          icon={Music}
-          title="Aucun instrument ajouté"
-          description="Ajoutez vos instruments pour que les groupes puissent vous trouver !"
-        />
-      )}
+        ) : (
+          <EmptyState
+            icon={Music}
+            title="Aucun instrument ajouté"
+            description="Ajoutez vos instruments pour que les groupes puissent vous trouver !"
+          />
+        )}
+      </div>
     </Card>
   );
 }

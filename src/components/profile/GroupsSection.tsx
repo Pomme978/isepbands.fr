@@ -44,13 +44,13 @@ export default function GroupsSection({ groups, onGroupClick }: GroupsSectionPro
   const inactiveGroups = groups.filter((group: Group) => !group.isActive);
 
   return (
-    <Card className="p-6 border-0 h-fit">
+    <Card className="p-6 border-0 h-full flex flex-col">
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
         {t('user.settings.groups.title')}
       </h2>
 
-      <div className="space-y-4">
+      <div className="flex-1 space-y-4">
         {/* Active Groups */}
         {activeGroups.map((group: Group) => (
           <GroupCard key={group.id} group={group} onClick={() => onGroupClick(group.slug)} />
