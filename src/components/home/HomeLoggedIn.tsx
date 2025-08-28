@@ -11,120 +11,12 @@ import type { ActivityType } from '@/types/activity';
 import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
-import BadgeDisplay from '@/components/profile/BadgeDisplay';
-
 interface HomeLoggedInProps {
   user: User;
   lang: string;
   onLogout: () => Promise<void>;
   loading: boolean;
 }
-
-export const mockActivities: ActivityType[] = [
-  // Message système - nouveau membre
-  {
-    id: '1',
-    type: 'post',
-    timestamp: new Date('2025-08-16'),
-    description: "Hier nous avons tondu le gazon de NDL ! C'était incroyable, merci isep bandssss",
-    user: {
-      name: 'Sarah LÉVY',
-      avatar: '/avatars/sarah.jpg',
-      role: 'Vice Présidente',
-    },
-  },
-
-  // Message système - nouveau membre
-  {
-    id: '2',
-    type: 'new_member',
-    timestamp: new Date('2025-08-16T12:30:00'),
-    description: 'Solène DIE vient de rejoindre ISEP BANDS',
-    isSystemMessage: true,
-  },
-
-  // Post d'un membre du bureau avec images
-  {
-    id: '3',
-    type: 'post_with_image',
-    user: {
-      name: 'Sarah LÉVY',
-      avatar: '/avatars/sarah.jpg',
-      role: 'Vice Présidente',
-    },
-    timestamp: new Date('2025-08-16T22:30:00'),
-    description: "Mangez, c'est bon de manger.",
-    images: ['/posts/food1.jpg', '/posts/food2.jpg'],
-  },
-
-  // Message système - nouveau groupe créé
-  {
-    id: '4',
-    type: 'new_group',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    description: 'Un nouveau groupe "Jazz Ensemble" a été créé',
-    groupName: 'Jazz Ensemble',
-    isSystemMessage: true,
-  },
-
-  // Post du président
-  {
-    id: '5',
-    type: 'post',
-    user: {
-      name: 'Julie LAMBERT',
-      avatar: '/avatars/julie.jpg',
-      role: 'Présidente',
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    description:
-      'Rappel important : les répétitions se terminent à 22h maximum. Merci de respecter les horaires pour les voisins !',
-  },
-
-  // Message système - nouvel événement
-  {
-    id: '6',
-    type: 'event',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    description: 'Un nouvel événement "Concert de Fin d\'Année 2024" a été programmé',
-    eventTitle: "Concert de Fin d'Année 2024",
-    isSystemMessage: true,
-  },
-
-  // Post du trésorier
-  {
-    id: '9',
-    type: 'post',
-    user: {
-      name: 'Alex MARTIN',
-      avatar: '/avatars/alex.jpg',
-      role: 'Trésorier',
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-    description:
-      "Les cotisations pour le semestre sont maintenant ouvertes. N'oubliez pas de payer avant la fin du mois pour garder votre accès aux studios.",
-  },
-
-  // Message système - nouveau membre
-  {
-    id: '10',
-    type: 'new_member',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-    description: "Thomas BERNARD a rejoint l'association",
-    isSystemMessage: true,
-  },
-];
-
-// Les rôles possibles pour les membres du bureau qui peuvent poster
-export const BUREAU_ROLES = [
-  'Présidente',
-  'Vice Présidente',
-  'Secrétaire',
-  'Trésorier',
-  'Responsable Événements',
-  'Responsable Communication',
-  'Responsable Matériel',
-];
 
 interface UserProfile {
   id: string;
@@ -135,7 +27,6 @@ interface UserProfile {
   promotion?: string;
   birthDate?: string;
   primaryRole?: string;
-  badges?: string[];
   isLookingForGroup?: boolean;
   pronouns?: string;
 }
@@ -201,14 +92,14 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
           // Use only real data from the API
           setActivities(transformedActivities);
         } else {
-          // If API fails, fallback to mock data
-          console.warn('Failed to fetch club feed, using mock data');
-          setActivities(mockActivities);
+          // If API fails, show empty state
+          console.warn('Failed to fetch club feed');
+          setActivities([]);
         }
       } catch (error) {
         console.error('Error fetching club feed:', error);
-        // Fallback to mock data on error
-        setActivities(mockActivities);
+        // Show empty state on error
+        setActivities([]);
         setFeedError('Impossible de charger les dernières actualités');
       } finally {
         setIsLoadingFeed(false);
@@ -238,7 +129,6 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
               promotion: data.data.promotion,
               birthDate: data.data.birthDate,
               primaryRole: data.data.primaryRole,
-              badges: data.data.badges || [],
               isLookingForGroup: data.data.isLookingForGroup,
               pronouns: data.data.pronouns,
             });
@@ -303,33 +193,18 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                           : user.name || 'User'}
                       </h3>
                       <p className="text-sm text-gray-600 mb-3">
-                        {userProfile && (
+                        {userProfile && userProfile.promotion && (
                           <>
-                            {!userProfile.isOutOfSchool && userProfile.promotion && (
-                              <>
-                                {calculateAge(userProfile.birthDate) &&
-                                  `${calculateAge(userProfile.birthDate)} ans, `}
-                                {userProfile.promotion}
-                              </>
-                            )}
-                            {userProfile.isOutOfSchool && 'Diplômé·e'}
+                            {calculateAge(userProfile.birthDate) &&
+                              `${calculateAge(userProfile.birthDate)} ans, `}
+                            {userProfile.promotion}
                           </>
                         )}
                       </p>
-                      {userProfile && (
-                        <BadgeDisplay
-                          role={userProfile.primaryRole || 'Membre'}
-                          badges={userProfile.badges || []}
-                          isLookingForGroup={userProfile.isLookingForGroup || false}
-                          pronouns={
-                            (userProfile.pronouns as
-                              | 'he/him'
-                              | 'she/her'
-                              | 'they/them'
-                              | 'other') || 'other'
-                          }
-                          size="sm"
-                        />
+                      {userProfile?.primaryRole && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          {userProfile.primaryRole}
+                        </span>
                       )}
                     </div>
                   </div>
