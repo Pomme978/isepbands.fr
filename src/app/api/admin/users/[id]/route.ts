@@ -11,34 +11,47 @@ const updateUserSchema = z.object({
   lastName: z.string().min(1).optional(),
   email: z.string().email().optional(),
   promotion: z.string().optional(),
-  birthDate: z.string().optional().transform(str => str ? new Date(str) : undefined),
+  birthDate: z
+    .string()
+    .optional()
+    .transform((str) => (str ? new Date(str) : undefined)),
   biography: z.string().optional(),
   phone: z.string().nullable().optional(),
   pronouns: z.string().nullable().optional(),
-  isOutOfSchool: z.boolean().optional(),
   photoUrl: z.string().nullable().optional(),
-  status: z.string().optional().transform(val => {
-    if (!val) return val;
-    const uppercased = val.toUpperCase();
-    if (['CURRENT', 'FORMER', 'GRADUATED', 'PENDING'].includes(uppercased)) {
-      return uppercased as 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
-    }
-    throw new Error(`Invalid status: ${val}`);
-  }),
+  status: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return val;
+      const uppercased = val.toUpperCase();
+      if (['CURRENT', 'FORMER', 'GRADUATED', 'PENDING'].includes(uppercased)) {
+        return uppercased as 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
+      }
+      throw new Error(`Invalid status: ${val}`);
+    }),
   isLookingForGroup: z.boolean().optional(),
   isFullAccess: z.boolean().optional(),
   // Relations
-  instruments: z.array(z.object({
-    instrumentId: z.number(),
-    skillLevel: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']),
-    yearsPlaying: z.number().nullable().optional(),
-    isPrimary: z.boolean().optional()
-  })).optional(),
+  instruments: z
+    .array(
+      z.object({
+        instrumentId: z.number(),
+        skillLevel: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']),
+        yearsPlaying: z.number().nullable().optional(),
+        isPrimary: z.boolean().optional(),
+      }),
+    )
+    .optional(),
   roleIds: z.array(z.number()).optional(),
-  badges: z.array(z.object({
-    name: z.string()
-  })).optional(),
-  preferredGenres: z.array(z.string()).optional()
+  badges: z
+    .array(
+      z.object({
+        name: z.string(),
+      }),
+    )
+    .optional(),
+  preferredGenres: z.array(z.string()).optional(),
 });
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -62,7 +75,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         biography: true,
         phone: true,
         pronouns: true,
-        isOutOfSchool: true,
         photoUrl: true,
         status: true,
         isLookingForGroup: true,
@@ -139,7 +151,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id: userId } = await params;
     const body = await req.json();
-    
+
     console.log('API received body:', JSON.stringify(body, null, 2));
     console.log('roleIds in body:', body.roleIds, typeof body.roleIds);
 
@@ -150,7 +162,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!existingUser) {
@@ -160,7 +172,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // Check for email uniqueness if email is being updated
     if (validatedData.email && validatedData.email !== existingUser.email) {
       const emailExists = await prisma.user.findUnique({
-        where: { email: validatedData.email }
+        where: { email: validatedData.email },
       });
       if (emailExists) {
         return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
@@ -168,10 +180,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     // Use transaction to update user and relations
-    const updatedUser = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // Update basic user data
-      const baseUpdateData: any = {};
-      
+      const baseUpdateData: Record<string, unknown> = {};
+
       if (validatedData.firstName !== undefined) baseUpdateData.firstName = validatedData.firstName;
       if (validatedData.lastName !== undefined) baseUpdateData.lastName = validatedData.lastName;
       if (validatedData.email !== undefined) baseUpdateData.email = validatedData.email;
@@ -180,33 +192,48 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (validatedData.biography !== undefined) baseUpdateData.biography = validatedData.biography;
       if (validatedData.phone !== undefined) baseUpdateData.phone = validatedData.phone;
       if (validatedData.pronouns !== undefined) baseUpdateData.pronouns = validatedData.pronouns;
-      if (validatedData.isOutOfSchool !== undefined) baseUpdateData.isOutOfSchool = validatedData.isOutOfSchool;
+      if (validatedData.isOutOfSchool !== undefined)
+        baseUpdateData.isOutOfSchool = validatedData.isOutOfSchool;
       // Handle photo URL changes and cleanup
       if (validatedData.photoUrl !== undefined) {
         // If we're removing/changing the photo, clean up the old one
-        if (existingUser.photoUrl && (validatedData.photoUrl === null || validatedData.photoUrl === '' || validatedData.photoUrl !== existingUser.photoUrl)) {
+        if (
+          existingUser.photoUrl &&
+          (validatedData.photoUrl === null ||
+            validatedData.photoUrl === '' ||
+            validatedData.photoUrl !== existingUser.photoUrl)
+        ) {
           try {
             // Find the storage object for the old photo
             const oldStorageObject = await tx.storageObject.findFirst({
-              where: { 
+              where: {
                 userId,
-                url: existingUser.photoUrl
-              }
+                url: existingUser.photoUrl,
+              },
             });
-            
+
             if (oldStorageObject) {
               // Delete the storage object record
               await tx.storageObject.delete({
-                where: { id: oldStorageObject.id }
+                where: { id: oldStorageObject.id },
               });
-              
+
               // Delete the physical file
-              const filePath = path.join(process.cwd(), 'public', 'storage', 'uploads', oldStorageObject.key);
+              const filePath = path.join(
+                process.cwd(),
+                'public',
+                'storage',
+                'uploads',
+                oldStorageObject.key,
+              );
               try {
                 await fs.unlink(filePath);
                 console.log(`Deleted old profile picture: ${oldStorageObject.key}`);
               } catch (fileError) {
-                console.warn(`Failed to delete old profile picture file ${oldStorageObject.key}:`, fileError);
+                console.warn(
+                  `Failed to delete old profile picture file ${oldStorageObject.key}:`,
+                  fileError,
+                );
               }
             }
           } catch (cleanupError) {
@@ -217,50 +244,57 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         baseUpdateData.photoUrl = validatedData.photoUrl;
       }
       if (validatedData.status !== undefined) baseUpdateData.status = validatedData.status;
-      if (validatedData.isLookingForGroup !== undefined) baseUpdateData.isLookingForGroup = validatedData.isLookingForGroup;
-      if (validatedData.isFullAccess !== undefined) baseUpdateData.isFullAccess = validatedData.isFullAccess;
+      if (validatedData.isLookingForGroup !== undefined)
+        baseUpdateData.isLookingForGroup = validatedData.isLookingForGroup;
+      if (validatedData.isFullAccess !== undefined)
+        baseUpdateData.isFullAccess = validatedData.isFullAccess;
 
       const user = await tx.user.update({
         where: { id: userId },
         data: {
           ...baseUpdateData,
           updatedAt: new Date(),
-        }
+        },
       });
 
       // Update instruments
       if (validatedData.instruments !== undefined) {
         // Delete existing instruments
         await tx.userInstrument.deleteMany({
-          where: { userId }
+          where: { userId },
         });
-        
+
         // Add new instruments
         if (validatedData.instruments.length > 0) {
           // Remove duplicates by instrumentId (keep the last one)
-          const uniqueInstruments = validatedData.instruments.reduce((acc: any[], inst) => {
-            const existingIndex = acc.findIndex(existing => existing.instrumentId === inst.instrumentId);
-            if (existingIndex >= 0) {
-              // Replace existing with new one
-              acc[existingIndex] = inst;
-            } else {
-              // Add new one
-              acc.push(inst);
-            }
-            return acc;
-          }, []);
+          const uniqueInstruments = validatedData.instruments.reduce(
+            (acc: typeof validatedData.instruments, inst) => {
+              const existingIndex = acc.findIndex(
+                (existing) => existing.instrumentId === inst.instrumentId,
+              );
+              if (existingIndex >= 0) {
+                // Replace existing with new one
+                acc[existingIndex] = inst;
+              } else {
+                // Add new one
+                acc.push(inst);
+              }
+              return acc;
+            },
+            [],
+          );
 
           console.log('Original instruments:', validatedData.instruments);
           console.log('Unique instruments after deduplication:', uniqueInstruments);
 
           await tx.userInstrument.createMany({
-            data: uniqueInstruments.map(inst => ({
+            data: uniqueInstruments.map((inst) => ({
               userId,
               instrumentId: inst.instrumentId,
               skillLevel: inst.skillLevel,
               yearsPlaying: inst.yearsPlaying,
-              isPrimary: inst.isPrimary || false
-            }))
+              isPrimary: inst.isPrimary || false,
+            })),
           });
         }
       }
@@ -272,17 +306,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           // Get role details for validation
           const rolesToAssign = await tx.role.findMany({
             where: { id: { in: validatedData.roleIds } },
-            select: { id: true, name: true }
+            select: { id: true, name: true },
           });
 
           // Check role limits for each role being assigned
           for (const role of rolesToAssign) {
             // Get current users with this role (excluding current user)
             const currentUsersWithRole = await tx.userRole.count({
-              where: { 
+              where: {
                 roleId: role.id,
-                userId: { not: userId }
-              }
+                userId: { not: userId },
+              },
             });
 
             // Define role limits
@@ -294,27 +328,31 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             }
 
             // Debug logging
-            console.log(`Role validation: ${role.name}, current: ${currentUsersWithRole}, max: ${maxUsers}`);
-            
+            console.log(
+              `Role validation: ${role.name}, current: ${currentUsersWithRole}, max: ${maxUsers}`,
+            );
+
             // Check if assigning this role would exceed the limit
             if (currentUsersWithRole >= maxUsers) {
-              throw new Error(`Role "${role.name}" is limited to ${maxUsers} user${maxUsers > 1 ? 's' : ''}. Current count: ${currentUsersWithRole}`);
+              throw new Error(
+                `Role "${role.name}" is limited to ${maxUsers} user${maxUsers > 1 ? 's' : ''}. Current count: ${currentUsersWithRole}`,
+              );
             }
           }
         }
 
         // Delete existing roles
         await tx.userRole.deleteMany({
-          where: { userId }
+          where: { userId },
         });
-        
+
         // Add new roles
         if (validatedData.roleIds.length > 0) {
           await tx.userRole.createMany({
-            data: validatedData.roleIds.map(roleId => ({
+            data: validatedData.roleIds.map((roleId) => ({
               userId,
-              roleId
-            }))
+              roleId,
+            })),
           });
         }
       }
@@ -323,16 +361,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (validatedData.badges !== undefined) {
         // Delete existing badges
         await tx.badge.deleteMany({
-          where: { userId }
+          where: { userId },
         });
-        
+
         // Add new badges
         if (validatedData.badges.length > 0) {
           await tx.badge.createMany({
-            data: validatedData.badges.map(badge => ({
+            data: validatedData.badges.map((badge) => ({
               userId,
-              name: badge.name
-            }))
+              name: badge.name,
+            })),
           });
         }
       }
@@ -353,7 +391,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         biography: true,
         phone: true,
         pronouns: true,
-        isOutOfSchool: true,
         photoUrl: true,
         status: true,
         isLookingForGroup: true,
@@ -397,26 +434,34 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       user: fullUser,
-      message: 'User updated successfully'
+      message: 'User updated successfully',
     });
   } catch (error) {
     console.error('Error updating user:', error);
-    
+
     if (error instanceof z.ZodError) {
       console.log('Zod validation error:', JSON.stringify(error.errors, null, 2));
-      return NextResponse.json({ 
-        error: 'Validation error', 
-        details: error.errors,
-        message: error.errors?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: error.errors,
+          message:
+            error.errors?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ') ||
+            'Validation failed',
+        },
+        { status: 400 },
+      );
     }
-    
-    return NextResponse.json({ 
-      error: 'Failed to update user', 
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        error: 'Failed to update user',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -431,7 +476,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!existingUser) {
@@ -439,41 +484,41 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     // First, get user's storage objects before deletion
-    const userStorageObjects = await prisma.storageObject.findMany({ 
+    const userStorageObjects = await prisma.storageObject.findMany({
       where: { userId },
-      select: { id: true, key: true }
+      select: { id: true, key: true },
     });
-    
+
     // Use transaction to delete user and all related data
     await prisma.$transaction(async (tx) => {
       // Delete user instruments
       await tx.userInstrument.deleteMany({ where: { userId } });
-      
+
       // Delete user roles
       await tx.userRole.deleteMany({ where: { userId } });
-      
+
       // Delete group memberships
       await tx.groupMembership.deleteMany({ where: { userId } });
-      
+
       // Delete badges
       await tx.badge.deleteMany({ where: { userId } });
-      
+
       // Delete storage objects database records
       await tx.storageObject.deleteMany({ where: { userId } });
-      
+
       // Delete registration request
       await tx.registrationRequest.deleteMany({ where: { userId } });
-      
+
       // Delete votes
       await tx.vote.deleteMany({ where: { userId } });
-      
+
       // Delete news authored by user
       await tx.news.deleteMany({ where: { authorId: userId } });
-      
+
       // Finally delete the user
       await tx.user.delete({ where: { id: userId } });
     });
-    
+
     // After successful database deletion, clean up physical files
     for (const storageObj of userStorageObjects) {
       try {
@@ -486,8 +531,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }
     }
 
-    return NextResponse.json({ 
-      message: 'User deleted successfully' 
+    return NextResponse.json({
+      message: 'User deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting user:', error);

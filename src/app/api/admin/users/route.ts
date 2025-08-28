@@ -52,7 +52,6 @@ export async function GET(req: NextRequest) {
         status: true,
         photoUrl: true,
         createdAt: true,
-        isOutOfSchool: true,
         pronouns: true,
         biography: true,
         phone: true,
@@ -118,7 +117,6 @@ export async function GET(req: NextRequest) {
       status: user.status,
       photoUrl: user.photoUrl,
       createdAt: user.createdAt,
-      isOutOfSchool: user.isOutOfSchool,
       pronouns: user.pronouns,
       biography: user.biography,
       phone: user.phone,
@@ -138,7 +136,7 @@ export async function GET(req: NextRequest) {
           nameEnFemale: ur.role.nameEnFemale,
           weight: ur.role.weight,
           isCore: ur.role.isCore,
-        }
+        },
       })),
       groups: user.groupMemberships.map((gm) => ({
         id: gm.group.id,
