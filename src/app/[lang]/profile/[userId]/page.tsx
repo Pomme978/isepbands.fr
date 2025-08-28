@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { useLang } from '@/hooks/useLang';
+import { useAuth } from '@/lib/auth-client';
 import BackButton from '@/components/ui/back-button';
 import { Guitar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -149,6 +150,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const { lang } = useLang();
   const { userId } = use(params);
   const t = useI18n();
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
     if (!userId) {
@@ -204,7 +206,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     fetchProfile();
   }, [lang, userId]);
 
-  const isUserProfile = true; // TODO: comparer avec l'utilisateur authentifié
+  const isUserProfile = authUser?.id === user?.id;
   const activeGroups = groups.filter((group) => group.isActive);
 
   const router = useRouter();
