@@ -45,8 +45,6 @@ model User {
   status                        UserStatus           @default(PENDING)
   isLookingForGroup             Boolean              @default(false)
   pronouns                      String?
-  isOutOfSchool                 Boolean              @default(false)
-  isPublicProfile               Boolean              @default(false)
   preferredGenres               String?
   isFullAccess                  Boolean              @default(false)
   createdAt                     DateTime             @default(now())
@@ -299,4 +297,10 @@ enum EventType {
   VENTE
   SHOWCASE
   OTHER
+}
+
+model MusicGenre {
+  id     String @id
+  nameFr String
+  nameEn String
 }

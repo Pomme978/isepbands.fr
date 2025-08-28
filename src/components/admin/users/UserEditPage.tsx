@@ -1,7 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Mail, Lock, User, Shield, Music, Award, Users, Calendar, FileText, Loader2, Trash2, Eye, Archive } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Mail,
+  Lock,
+  User,
+  Shield,
+  Music,
+  Award,
+  Users,
+  Calendar,
+  FileText,
+  Trash2,
+  Archive,
+} from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 import LangLink from '@/components/common/LangLink';
 import ViewProfileButton from '../common/ViewProfileButton';
@@ -22,6 +36,50 @@ interface UserEditPageProps {
   userId: string;
 }
 
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  promotion?: string;
+  birthDate?: string;
+  biography?: string;
+  bio?: string;
+  phone?: string;
+  phoneNumber?: string;
+  pronouns?: string;
+  isOutOfSchool?: boolean;
+  photoUrl?: string;
+  avatar?: string;
+  status: string;
+  isLookingForGroup?: boolean;
+  instruments?: UserInstrument[];
+  roles?: UserRole[];
+  badges?: UserBadge[];
+  preferredGenres?: string[];
+  createdAt?: string;
+  joinDate?: string;
+  refusalReason?: string;
+}
+
+interface UserInstrument {
+  instrument?: { id: string; name: string };
+  instrumentId?: string;
+  skillLevel: string;
+  yearsPlaying?: number;
+  isPrimary: boolean;
+}
+
+interface UserRole {
+  role?: { id: string; name: string; weight: number };
+  id?: string;
+  roleId?: string;
+}
+
+interface UserBadge {
+  name: string;
+}
+
 const TABS = [
   { id: 'main', label: 'Main', icon: User },
   { id: 'permissions', label: 'Permissions', icon: Shield },
@@ -29,12 +87,12 @@ const TABS = [
   { id: 'badges', label: 'Badges', icon: Award },
   { id: 'groups', label: 'Groups', icon: Users },
   { id: 'events', label: 'Events', icon: Calendar },
-  { id: 'activity', label: 'Activity Log', icon: FileText }
+  { id: 'activity', label: 'Activity Log', icon: FileText },
 ];
 
 export default function UserEditPage({ userId }: UserEditPageProps) {
   const [activeTab, setActiveTab] = useState('main');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,7 +105,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
-  
+
   // Fetch current user session
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -70,11 +128,11 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       try {
         setLoading(true);
         const response = await fetch(`/api/admin/users/${userId}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch user');
         }
-        
+
         const data = await response.json();
         console.log('Fetched user data:', data.user);
         // Map API fields to component expected fields
@@ -82,9 +140,13 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           ...data.user,
           avatar: data.user.photoUrl, // Map photoUrl to avatar for compatibility
           phoneNumber: data.user.phone, // Map phone to phoneNumber for compatibility
-          joinDate: data.user.createdAt ? new Date(data.user.createdAt).toISOString().split('T')[0] : '', // Format join date
+          joinDate: data.user.createdAt
+            ? new Date(data.user.createdAt).toISOString().split('T')[0]
+            : '', // Format join date
           // Format birthDate for date input
-          birthDate: data.user.birthDate ? new Date(data.user.birthDate).toISOString().split('T')[0] : '',
+          birthDate: data.user.birthDate
+            ? new Date(data.user.birthDate).toISOString().split('T')[0]
+            : '',
           // Map biography to bio for the component
           bio: data.user.biography || '',
           // Convert status to lowercase for the form component
@@ -107,10 +169,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleSave = async () => {
     if (!user) return;
-    
+
     try {
       setSaving(true);
-      
+
       // First, check if we need to upload a pending image
       let finalPhotoUrl = user.avatar;
       if (pendingImageFile) {
@@ -130,7 +192,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           // Continue with save even if upload fails
         }
       }
-      
+
       const requestBody = {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -144,29 +206,31 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         photoUrl: finalPhotoUrl === '' || finalPhotoUrl === null ? null : finalPhotoUrl, // Map avatar back to photoUrl, handle null and empty string
         status: user.status,
         isLookingForGroup: user.isLookingForGroup,
-        instruments: user.instruments?.map((inst: any) => {
+        instruments: user.instruments?.map((inst: UserInstrument) => {
           console.log('Mapping instrument for API:', inst);
           return {
             instrumentId: inst.instrument?.id || inst.instrumentId,
             skillLevel: inst.skillLevel,
             yearsPlaying: inst.yearsPlaying,
-            isPrimary: inst.isPrimary
+            isPrimary: inst.isPrimary,
           };
         }),
-        roleIds: user.roles?.map((role: any) => {
-          console.log('Processing role:', role);
-          const roleId = role.role?.id || role.id || role.roleId;
-          console.log('Extracted roleId:', roleId, typeof roleId);
-          return roleId;
-        }).filter(id => id !== undefined && id !== null),
-        badges: user.badges?.map((badge: any) => ({
-          name: badge.name
+        roleIds: user.roles
+          ?.map((role: UserRole) => {
+            console.log('Processing role:', role);
+            const roleId = role.role?.id || role.id || role.roleId;
+            console.log('Extracted roleId:', roleId, typeof roleId);
+            return roleId;
+          })
+          .filter((id) => id !== undefined && id !== null),
+        badges: user.badges?.map((badge: UserBadge) => ({
+          name: badge.name,
         })),
-        preferredGenres: user.preferredGenres || []
+        preferredGenres: user.preferredGenres || [],
       };
-      
+
       console.log('Request body being sent:', JSON.stringify(requestBody, null, 2));
-      
+
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
@@ -197,9 +261,13 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         ...updatedData.user,
         avatar: updatedData.user.photoUrl, // Map photoUrl to avatar for compatibility
         phoneNumber: updatedData.user.phone, // Map phone to phoneNumber for compatibility
-        joinDate: updatedData.user.createdAt ? new Date(updatedData.user.createdAt).toISOString().split('T')[0] : '',
+        joinDate: updatedData.user.createdAt
+          ? new Date(updatedData.user.createdAt).toISOString().split('T')[0]
+          : '',
         // Format birthDate for date input
-        birthDate: updatedData.user.birthDate ? new Date(updatedData.user.birthDate).toISOString().split('T')[0] : '',
+        birthDate: updatedData.user.birthDate
+          ? new Date(updatedData.user.birthDate).toISOString().split('T')[0]
+          : '',
         // Map biography to bio for the component
         bio: updatedData.user.biography || '',
         // Convert status to lowercase for the form component
@@ -209,7 +277,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       setHasUnsavedChanges(false);
       // Clear pending image file after successful save
       setPendingImageFile(null);
-      
+
       // Show success message (you might want to add a toast system)
       console.log('User saved successfully');
     } catch (error) {
@@ -262,7 +330,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleDeleteUser = async () => {
     if (!user) return;
-    
+
     try {
       setDeleting(true);
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -287,7 +355,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleArchiveUser = async () => {
     if (!user) return;
-    
+
     try {
       setDeleting(true); // Reuse the same loading state
       const response = await fetch(`/api/admin/users/${userId}/archive`, {
@@ -313,13 +381,38 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'main':
-        return <UserEditMain user={user} setUser={setUser} setHasUnsavedChanges={setHasUnsavedChanges} onPendingImageChange={setPendingImageFile} />;
+        return (
+          <UserEditMain
+            user={user}
+            setUser={setUser}
+            setHasUnsavedChanges={setHasUnsavedChanges}
+            onPendingImageChange={setPendingImageFile}
+          />
+        );
       case 'permissions':
-        return <UserEditPermissions user={user} setUser={setUser} setHasUnsavedChanges={setHasUnsavedChanges} />;
+        return (
+          <UserEditPermissions
+            user={user}
+            setUser={setUser}
+            setHasUnsavedChanges={setHasUnsavedChanges}
+          />
+        );
       case 'instruments':
-        return <UserEditInstruments user={user} setUser={setUser} setHasUnsavedChanges={setHasUnsavedChanges} />;
+        return (
+          <UserEditInstruments
+            user={user}
+            setUser={setUser}
+            setHasUnsavedChanges={setHasUnsavedChanges}
+          />
+        );
       case 'badges':
-        return <UserEditBadges user={user} setUser={setUser} setHasUnsavedChanges={setHasUnsavedChanges} />;
+        return (
+          <UserEditBadges
+            user={user}
+            setUser={setUser}
+            setHasUnsavedChanges={setHasUnsavedChanges}
+          />
+        );
       case 'groups':
         return <UserEditGroups userId={userId} />;
       case 'events':
@@ -347,7 +440,11 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         <div className="flex items-center">
           <div className="flex-shrink-0">
             <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div className="ml-3">
@@ -398,10 +495,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Users
           </LangLink>
-          
+
           <div className="flex items-center space-x-3">
-            <Avatar 
-              src={user.avatar || user.photoUrl} 
+            <Avatar
+              src={user.avatar || user.photoUrl}
               name={`${user.firstName} ${user.lastName}`}
               size="md"
             />
@@ -412,18 +509,16 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                   <span className="text-lg font-normal text-blue-600 ml-2">(moi)</span>
                 )}
               </h1>
-              <p className="text-gray-600">{user.promotion} • {allRolesDisplay}</p>
+              <p className="text-gray-600">
+                {user.promotion} • {allRolesDisplay}
+              </p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          <ViewProfileButton 
-            userId={userId}
-            onClick={handleViewProfile}
-            variant="button"
-          />
-          
+          <ViewProfileButton userId={userId} onClick={handleViewProfile} variant="button" />
+
           <button
             onClick={handleSendEmail}
             className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -431,7 +526,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             <Mail className="w-4 h-4 mr-2" />
             Send Email
           </button>
-          
+
           <button
             onClick={handleResetPassword}
             className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -481,19 +576,24 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
               <svg className="w-5 h-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-800">
-                ⚠️ User Not Approved Yet
-              </h3>
+              <h3 className="text-sm font-medium text-yellow-800">⚠️ User Not Approved Yet</h3>
               <p className="text-sm text-yellow-700 mt-1">
-                This user has not been approved yet. You can edit their information, but they cannot log in until their registration is reviewed and approved.
+                This user has not been approved yet. You can edit their information, but they cannot
+                log in until their registration is reviewed and approved.
               </p>
               <div className="mt-3">
                 <button
-                  onClick={() => {/* TODO: Open review modal */}}
+                  onClick={() => {
+                    /* TODO: Open review modal */
+                  }}
                   className="inline-flex items-center px-3 py-1 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
                 >
                   Review Registration Request
@@ -510,15 +610,17 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
               <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800">
-                ❌ Registration Refused
-              </h3>
+              <h3 className="text-sm font-medium text-red-800">❌ Registration Refused</h3>
               <p className="text-sm text-red-700 mt-1">
-                This user's registration was refused. They cannot log in to the platform.
+                This user&apos;s registration was refused. They cannot log in to the platform.
               </p>
               {user.refusalReason && (
                 <div className="mt-2 p-2 bg-red-100 rounded text-xs text-red-700">
@@ -527,13 +629,17 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               )}
               <div className="mt-3 flex space-x-2">
                 <button
-                  onClick={() => {/* TODO: Restore user function */}}
+                  onClick={() => {
+                    /* TODO: Restore user function */
+                  }}
                   className="inline-flex items-center px-3 py-1 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
                 >
                   Restore Account
                 </button>
                 <button
-                  onClick={() => {/* TODO: Archive user function */}}
+                  onClick={() => {
+                    /* TODO: Archive user function */
+                  }}
                   className="inline-flex items-center px-3 py-1 text-xs bg-gray-100 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Archive User
@@ -564,9 +670,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
-          {renderTabContent()}
-        </div>
+        <div className="p-6">{renderTabContent()}</div>
       </div>
 
       {/* Unsaved Changes Warning */}
@@ -574,17 +678,16 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         <div className="fixed bottom-6 right-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 shadow-lg">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-            <span className="text-sm text-yellow-800 font-medium">
-              You have unsaved changes
-            </span>
+            <span className="text-sm text-yellow-800 font-medium">You have unsaved changes</span>
           </div>
         </div>
       )}
 
       {/* Password Reset Modal */}
-      <PasswordResetModal 
+      <PasswordResetModal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
+        userId={userId}
         userEmail={user.email}
         userName={`${user.firstName} ${user.lastName}`}
       />
@@ -613,12 +716,15 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Delete User</h3>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              Are you sure you want to permanently delete <strong>{user.firstName} {user.lastName}</strong>? 
-              This action cannot be undone and will remove:
+              Are you sure you want to permanently delete{' '}
+              <strong>
+                {user.firstName} {user.lastName}
+              </strong>
+              ? This action cannot be undone and will remove:
             </p>
-            
+
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <ul className="text-sm text-red-800 space-y-1">
                 <li>• All user profile data</li>
@@ -629,7 +735,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                 <li>• Uploaded files and photos</li>
               </ul>
             </div>
-            
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
@@ -670,22 +776,25 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Archive User</h3>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              Are you sure you want to archive <strong>{user.firstName} {user.lastName}</strong>? 
-              Archiving will:
+              Are you sure you want to archive{' '}
+              <strong>
+                {user.firstName} {user.lastName}
+              </strong>
+              ? Archiving will:
             </p>
-            
+
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
               <ul className="text-sm text-orange-800 space-y-1">
-                <li>• Set user status to "DELETED"</li>
+                <li>• Set user status to &quot;DELETED&quot;</li>
                 <li>• Prevent the user from logging in</li>
                 <li>• Keep all data for potential restoration</li>
                 <li>• Move user to archived users section</li>
                 <li>• This action can be reversed later</li>
               </ul>
             </div>
-            
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowArchiveConfirm(false)}

@@ -5,16 +5,11 @@ import { useAuth } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/hooks/useLang';
 import BasicLayout from '@/components/layouts/BasicLayout';
-import BackButton from '@/components/ui/back-button';
-import { Guitar } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import EventBanner from '@/components/profile/EventBanner';
-import InstrumentsSection from '@/components/profile/InstrumentsSection';
 import GroupsSection from '@/components/profile/GroupsSection';
 import ProfileLoadingSkeleton from '@/components/profile/ProfileLoadingSkeleton';
 import { InstrumentsDisplay } from '@/components/profile/shared/InstrumentsDisplay';
-import MusicGenresSection from '@/components/profile/MusicGenresSection';
 import { useI18n } from '@/locales/client';
 import { Button } from '@/components/ui/button';
 import { PendingValidationProfile } from '@/components/profile/PendingValidationProfile';
@@ -82,14 +77,6 @@ interface ApiUserData {
 }
 
 // ---- UI types (same as your first file) ----
-interface Instrument {
-  id: string;
-  name: string;
-  level: string;
-  icon: React.ComponentType<{ className?: string }>;
-  isPrimary: boolean;
-  yearsPlaying?: number;
-}
 interface GroupRole {
   role: string;
   isPrimary: boolean;
@@ -307,13 +294,9 @@ export default function ProfilePage() {
             onEventClick={() => {}}
           />
 
-          {/* 3-column grid: Instruments, Music Genres, Groups */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+          {/* 2-column grid: Instruments, Groups */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
             <InstrumentsDisplay instruments={instruments} />
-            <MusicGenresSection
-              genres={user.preferredGenres ? JSON.parse(user.preferredGenres) : []}
-              locale={lang}
-            />
             <GroupsSection
               groups={groups.map((g) => ({
                 ...g,

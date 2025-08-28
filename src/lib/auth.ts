@@ -30,8 +30,8 @@ export async function getUserByEmail(email: string) {
       status: 'CURRENT',
     };
   }
-  
-  return prisma.user.findUnique({ 
+
+  return prisma.user.findUnique({
     where: { email },
     include: {
       roles: {
@@ -57,7 +57,11 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export async function setSession(res: NextResponse, user: { id: string; email: string }) {
-  const token = await new SignJWT({ id: user.id, email: user.email })
+  const token = await new SignJWT({
+    id: user.id,
+    email: user.email,
+    iat: Math.floor(Date.now() / 1000), // Add issued at time for session validation
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime(`${SESSION_MAX_AGE}s`)
     .sign(new TextEncoder().encode(JWT_SECRET));
@@ -75,7 +79,7 @@ export async function getSessionUser(req: NextRequest) {
   if (!cookie) return null;
   try {
     const { payload } = await jwtVerify(cookie, new TextEncoder().encode(JWT_SECRET));
-    
+
     // Check if it's the root user
     if (payload.id === 'root') {
       return {
@@ -89,7 +93,7 @@ export async function getSessionUser(req: NextRequest) {
         isRoot: true,
       };
     }
-    
+
     // Regular database user
     const user = await prisma.user.findUnique({
       where: { id: payload.id as string },
@@ -102,6 +106,7 @@ export async function getSessionUser(req: NextRequest) {
         pronouns: true,
         status: true,
         isFullAccess: true,
+        updatedAt: true, // Add updatedAt for session validation
         roles: {
           include: {
             role: {
@@ -128,13 +133,24 @@ export async function getSessionUser(req: NextRequest) {
       },
     });
     if (!user) return null;
+
+    // Check if the session token was issued before the user's last update (password reset)
+    const tokenIssuedAt = payload.iat as number;
+    const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
+
+    if (tokenIssuedAt < userUpdatedAt) {
+      // Token was issued before the password reset, invalidate the session
+      return null;
+    }
     const band = user.groupMemberships[0]?.group?.name || null;
-    
+
     // Check if user has admin permissions
-    const hasAdminRole = user.roles.some(r => 
-      ['president', 'vice_president', 'secretary', 'treasurer', 'communications'].includes(r.role.name)
+    const hasAdminRole = user.roles.some((r) =>
+      ['president', 'vice_president', 'secretary', 'treasurer', 'communications'].includes(
+        r.role.name,
+      ),
     );
-    
+
     return {
       id: user.id,
       email: user.email,

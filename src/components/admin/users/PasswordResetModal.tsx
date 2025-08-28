@@ -6,15 +6,17 @@ import { X, RefreshCw, Eye, EyeOff } from 'lucide-react';
 interface PasswordResetModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userId: string;
   userEmail: string;
   userName: string;
 }
 
-export default function PasswordResetModal({ 
-  isOpen, 
-  onClose, 
-  userEmail, 
-  userName 
+export default function PasswordResetModal({
+  isOpen,
+  onClose,
+  userId,
+  userEmail,
+  userName,
 }: PasswordResetModalProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,25 +42,35 @@ export default function PasswordResetModal({
     }
 
     setIsLoading(true);
-    
+
     try {
-      // TODO: Implement API call
-      console.log('Resetting password for:', userEmail, {
-        password,
-        sendEmail,
-        requireChange
+      const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          sendEmail,
+          requireChange,
+        }),
       });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reset password');
+      }
+
+      await response.json();
+
       onClose();
       setPassword('');
-      
+
       // Show success message
       alert('Password reset successfully!');
     } catch (error) {
-      alert('Failed to reset password. Please try again.');
+      console.error('Password reset error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -77,9 +89,7 @@ export default function PasswordResetModal({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Reset Password
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900">Reset Password</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -103,9 +113,7 @@ export default function PasswordResetModal({
           {/* Password Field */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                New Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700">New Password</label>
               <button
                 type="button"
                 onClick={generatePassword}
@@ -115,7 +123,7 @@ export default function PasswordResetModal({
                 Generate
               </button>
             </div>
-            
+
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -144,12 +152,8 @@ export default function PasswordResetModal({
                 className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
               />
               <div>
-                <span className="text-sm font-medium text-gray-700">
-                  Send email notification
-                </span>
-                <p className="text-xs text-gray-500">
-                  Notify the user about the password reset
-                </p>
+                <span className="text-sm font-medium text-gray-700">Send email notification</span>
+                <p className="text-xs text-gray-500">Notify the user about the password reset</p>
               </div>
             </label>
 
@@ -164,9 +168,7 @@ export default function PasswordResetModal({
                 <span className="text-sm font-medium text-gray-700">
                   Require password change on next login
                 </span>
-                <p className="text-xs text-gray-500">
-                  Force the user to create a new password
-                </p>
+                <p className="text-xs text-gray-500">Force the user to create a new password</p>
               </div>
             </label>
           </div>

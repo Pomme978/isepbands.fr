@@ -26,14 +26,17 @@ interface UserEditMainProps {
   onPendingImageChange?: (file: File | null) => void;
 }
 
-export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPendingImageChange }: UserEditMainProps) {
+export default function UserEditMain({
+  user,
+  setUser,
+  setHasUnsavedChanges,
+  onPendingImageChange,
+}: UserEditMainProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(user.avatar || null);
-  const [showResetPassword, setShowResetPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Sync preview image with user avatar when it changes (e.g., after save or initial load)
   useEffect(() => {
     // Only update preview if there's no pending image file and we're not deleting
@@ -41,7 +44,7 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
       setPreviewImage(user.avatar || null);
     }
   }, [user.avatar, pendingImageFile, isDeleting]);
-  
+
   // Remove auto-upload - we'll handle upload on save instead
 
   const updateField = (field: keyof User, value: string | null) => {
@@ -68,13 +71,13 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
     // Create preview URL for immediate display (staged upload)
     const previewUrl = URL.createObjectURL(file);
     setPreviewImage(previewUrl);
-    
+
     // Store the file for upload when save is clicked
     setPendingImageFile(file);
-    
+
     // Notify parent about pending image file
     onPendingImageChange?.(file);
-    
+
     // Just mark that we have unsaved changes, don't trigger upload
     setHasUnsavedChanges(true);
   };
@@ -110,18 +113,18 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
       } catch {
         throw new Error('Invalid server response');
       }
-      
+
       if (!result.success || !result.file?.id) {
         throw new Error('Invalid response data');
       }
-      
+
       // The storage API returns the database object directly
       // We need to construct the access URL
       const photoUrl = `/api/storage?id=${result.file.id}`;
-      
+
       // Clear pending file
       setPendingImageFile(null);
-      
+
       return photoUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -132,21 +135,26 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
   const removeImage = async () => {
     console.log('removeImage called, current avatar:', user.avatar);
     setIsDeleting(true);
-    
+
     // If there's an existing photo URL, delete it from storage
     if (user.avatar && user.avatar.includes('/api/storage?id=')) {
       const photoId = user.avatar.split('/api/storage?id=')[1];
       console.log('Attempting to delete photo with ID:', photoId);
-      
+
       if (photoId) {
         try {
           const deleteResponse = await fetch(`/api/storage?id=${photoId}`, {
             method: 'DELETE',
           });
-          
+
           if (!deleteResponse.ok) {
             const errorText = await deleteResponse.text();
-            console.error('Failed to delete photo from storage. Status:', deleteResponse.status, 'Error:', errorText);
+            console.error(
+              'Failed to delete photo from storage. Status:',
+              deleteResponse.status,
+              'Error:',
+              errorText,
+            );
           } else {
             console.log('Photo deleted successfully from storage');
           }
@@ -155,21 +163,16 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
         }
       }
     }
-    
+
     console.log('Setting preview and avatar to null');
     setPreviewImage(null);
     setPendingImageFile(null);
     onPendingImageChange?.(null);
     updateField('avatar', null);
     setHasUnsavedChanges(true);
-    
+
     // Reset the deleting flag after a short delay to allow the state to update
     setTimeout(() => setIsDeleting(false), 100);
-  };
-
-  const generatePassword = () => {
-    const password = Math.random().toString(36).slice(-10);
-    setNewPassword(password);
   };
 
   return (
@@ -190,7 +193,7 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
                   className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                 />
               ) : (
-                <Avatar 
+                <Avatar
                   name={`${user.firstName} ${user.lastName}`}
                   alt={`${user.firstName} ${user.lastName}`}
                   size="lg"
@@ -212,7 +215,9 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
                 <label
                   htmlFor="profilePhoto"
                   className={`inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg transition-colors ${
-                    uploadingImage ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 cursor-pointer'
+                    uploadingImage
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'hover:bg-gray-50 cursor-pointer'
                   }`}
                 >
                   {uploadingImage ? (
@@ -233,7 +238,7 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
                   </p>
                 )}
               </div>
-              
+
               {previewImage && (
                 <button
                   onClick={removeImage}
@@ -355,77 +360,6 @@ export default function UserEditMain({ user, setUser, setHasUnsavedChanges, onPe
             placeholder="Brief biography..."
           />
         </div>
-      </div>
-
-      {/* Password Reset Section */}
-      <div className="border-t border-gray-200 pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Password Reset</h3>
-          <button
-            onClick={() => setShowResetPassword(!showResetPassword)}
-            className="text-sm text-primary hover:text-primary/80 font-medium"
-          >
-            {showResetPassword ? 'Cancel' : 'Reset Password'}
-          </button>
-        </div>
-
-        {showResetPassword && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-yellow-800">
-                New Temporary Password
-              </label>
-              <button
-                onClick={generatePassword}
-                className="text-sm text-yellow-700 hover:text-yellow-900 font-medium"
-              >
-                Generate Random
-              </button>
-            </div>
-
-            <div className="relative">
-              <input
-                type="text"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 outline-none"
-                placeholder="Enter new password"
-              />
-            </div>
-
-            <div className="flex items-center mt-3 space-x-4">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" defaultChecked className="rounded" />
-                <span className="text-sm text-yellow-800">
-                  Require password change on next login
-                </span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" defaultChecked className="rounded" />
-                <span className="text-sm text-yellow-800">Send email notification</span>
-              </label>
-            </div>
-
-            <div className="flex justify-end mt-4 space-x-2">
-              <button
-                onClick={() => setShowResetPassword(false)}
-                className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  console.log('Resetting password to:', newPassword);
-                  setShowResetPassword(false);
-                  setNewPassword('');
-                }}
-                className="px-4 py-2 text-sm text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 transition-colors"
-              >
-                Reset Password
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Account Status */}
