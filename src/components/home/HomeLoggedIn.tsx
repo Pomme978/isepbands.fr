@@ -248,7 +248,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     className="w-full justify-start text-left h-auto py-3"
                     asChild
                   >
-                    <LangLink href={`/${lang}/settings`}>Paramètres</LangLink>
+                    <LangLink href={`/${lang}/profile/settings`}>Paramètres</LangLink>
                   </Button>
                 </div>
 
