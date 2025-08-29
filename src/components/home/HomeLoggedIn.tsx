@@ -11,6 +11,7 @@ import type { ActivityType } from '@/types/activity';
 import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
+import { calculateGraduationYear } from '@/utils/schoolUtils';
 interface HomeLoggedInProps {
   user: User;
   lang: string;
@@ -192,12 +193,17 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                           ? `${userProfile.firstName} ${userProfile.lastName}`
                           : user.name || 'User'}
                       </h3>
+                      {userProfile && userProfile.promotion && (
+                        <p className="text-sm text-gray-600">
+                          Promotion {calculateGraduationYear(userProfile.promotion)}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-600 mb-3">
                         {userProfile && userProfile.promotion && (
                           <>
-                            {calculateAge(userProfile.birthDate) &&
-                              `${calculateAge(userProfile.birthDate)} ans, `}
                             {userProfile.promotion}
+                            {calculateAge(userProfile.birthDate) &&
+                              `, ${calculateAge(userProfile.birthDate)} ans`}
                           </>
                         )}
                       </p>
