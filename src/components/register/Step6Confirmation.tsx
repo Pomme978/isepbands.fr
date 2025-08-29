@@ -1,14 +1,29 @@
 import { RegistrationData } from '@/types/registration';
 import { useI18n } from '@/locales/client';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatPreferredGenres } from '@/utils/genreUtils';
+import { calculateAge } from '@/utils/schoolUtils';
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  GraduationCap,
+  Music,
+  Heart,
+  MessageSquare,
+  Award,
+  CheckCircle,
+} from 'lucide-react';
 
 interface Step6ConfirmationProps {
   data: RegistrationData;
   onBack: () => void;
   onSubmit: () => void;
-  availableInstruments: { id: number; name: string }[];
+  availableInstruments: { id: number; name: string; nameFr: string; nameEn: string }[];
 }
 export default function Step6Confirmation({
   data,
@@ -17,69 +32,253 @@ export default function Step6Confirmation({
   availableInstruments,
 }: Step6ConfirmationProps) {
   const t = useI18n();
+
+  const skillLevelLabels: Record<string, string> = {
+    BEGINNER: 'Débutant',
+    INTERMEDIATE: 'Intermédiaire',
+    ADVANCED: 'Avancé',
+    EXPERT: 'Expert',
+  };
+
+  const skillLevelColors: Record<string, string> = {
+    BEGINNER: 'bg-green-100 text-green-800',
+    INTERMEDIATE: 'bg-blue-100 text-blue-800',
+    ADVANCED: 'bg-orange-100 text-orange-800',
+    EXPERT: 'bg-red-100 text-red-800',
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label>{t('auth.register.firstName')}</Label>
-          <div>{data.firstName}</div>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header avec titre et icône */}
+      <div className="text-center space-y-3">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <CheckCircle className="w-8 h-8 text-primary" />
+          </div>
         </div>
-        <div>
-          <Label>{t('auth.register.lastName')}</Label>
-          <div>{data.lastName}</div>
+        <h2 className="text-2xl font-bold text-gray-900">Récapitulatif de votre inscription</h2>
+        <p className="text-gray-600">Vérifiez vos informations avant de finaliser votre demande</p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Photo de profil */}
+        <div className="flex justify-center items-center mb-0">
+          <div className="relative">
+            {data.profilePhoto ? (
+              <Avatar className="w-24 h-24 border-4 border-primary/20 shadow-lg">
+                <AvatarImage
+                  src={URL.createObjectURL(data.profilePhoto)}
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-xl bg-primary/10 text-primary font-bold">
+                  {data.firstName.charAt(0)}
+                  {data.lastName.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <Avatar className="w-24 h-24 border-4 border-gray-200 shadow-lg">
+                <AvatarFallback className="text-xl bg-gray-100 text-gray-600 font-bold">
+                  {data.firstName.charAt(0)}
+                  {data.lastName.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            {/* Indicateur de photo */}
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-md">
+              <User className="w-3 h-3 text-white" />
+            </div>
+          </div>
         </div>
-        <div>
-          <Label>{t('auth.register.email')}</Label>
-          <div>{data.email}</div>
-        </div>
-        <div>
-          <Label>{t('auth.register.cycle')}</Label>
-          <div>{data.cycle}</div>
-        </div>
-        <div>
-          <Label>{t('auth.register.birthDate')}</Label>
-          <div>{data.birthDate}</div>
-        </div>
-        <div>
-          <Label>{t('auth.register.phone')}</Label>
-          <div>{data.phone}</div>
-        </div>
-        <div className="md:col-span-2">
-          <Label>{t('auth.register.motivation')}</Label>
-          <div className="whitespace-pre-line">{data.motivation}</div>
-        </div>
-        <div className="md:col-span-2">
-          <Label>{t('auth.register.experience')}</Label>
-          <div className="whitespace-pre-line">{data.experience}</div>
-        </div>
-        <div className="md:col-span-2">
-          <Label>{t('auth.register.instruments')}</Label>
-          <ul className="list-disc list-inside">
-            {data.instruments.map((inst, i) => {
-              const instr = availableInstruments.find((x) => x.id === inst.instrumentId);
-              return (
-                <li key={i}>
-                  {instr?.name || t('auth.register.instrument')} ({inst.skillLevel})
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        <div className="md:col-span-2">
-          <Label>Genres musicaux préférés</Label>
-          <div>{formatPreferredGenres(data.preferredGenres, 'fr')}</div>
-        </div>
-        <div className="md:col-span-2">
-          <Label>{t('auth.register.profilePhoto')}</Label>
-          <div>{data.profilePhoto ? data.profilePhoto.name : t('common.none')}</div>
+
+        {/* Informations personnelles */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-primary" />
+              Informations personnelles
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Informations sur 2 colonnes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Nom complet</p>
+                  <p className="font-medium">
+                    {data.firstName} {data.lastName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium text-sm break-all">{data.email}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Téléphone</p>
+                  <p className="font-medium">{data.phone}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Date de naissance</p>
+                  <p className="font-medium">
+                    {new Date(data.birthDate).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Âge</p>
+                  <p className="font-medium">{calculateAge(data.birthDate)} ans</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Cycle d&apos;études</p>
+                  <Badge variant="outline" className="font-medium text-xs">
+                    {data.cycle}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Instruments */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Music className="w-5 h-5 text-primary" />
+              Mes instruments
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {data.instruments.map((inst, i) => {
+                const instrument = availableInstruments.find((x) => x.id === inst.instrumentId);
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Music className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <p className="font-medium">
+                          {instrument?.nameFr || instrument?.name || 'Instrument'}
+                        </p>
+                        {inst.yearsPlaying && (
+                          <p className="text-sm text-gray-500">
+                            {inst.yearsPlaying} années d&apos;expérience
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        className={`text-xs ${skillLevelColors[inst.skillLevel] || 'bg-gray-100 text-gray-800'}`}
+                      >
+                        {skillLevelLabels[inst.skillLevel] || inst.skillLevel}
+                      </Badge>
+                      {inst.isPrimary && (
+                        <Badge variant="outline" className="text-xs border-primary text-primary">
+                          Principal
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Genres préférés */}
+        {data.preferredGenres && data.preferredGenres.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-primary" />
+                Genres musicaux préférés
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {formatPreferredGenres(data.preferredGenres, 'fr')
+                  .split(', ')
+                  .map((genre, i) => (
+                    <Badge key={i} className="text-sm bg-primary text-white px-3 py-1.5">
+                      {genre}
+                    </Badge>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Motivation et Expérience */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" />
+                Motivation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{data.motivation}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" />
+                Expérience
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{data.experience}</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
-      <div className="flex justify-between gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+
+      {/* Boutons d'action */}
+      <div className="flex justify-between gap-4 pt-6 border-t">
+        <Button type="button" variant="outline" onClick={onBack} className="px-8">
+          <span className="mr-2">←</span>
           {t('common.goback')}
         </Button>
-        <Button type="button" onClick={onSubmit}>
+        <Button type="button" onClick={onSubmit} className="px-8">
           {t('auth.register.confirm')}
+          <CheckCircle className="w-4 h-4 ml-2" />
         </Button>
       </div>
     </div>
