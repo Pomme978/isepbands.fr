@@ -21,18 +21,18 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
   const router = useRouter();
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen mt-10 -mb-25">
+      <div className="max-w-4xl mx-auto px-4 flex flex-col justify-center items-center">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
+        <div className="mb-8 bg-white rounded-xl">
+          <div className="flex items-center flex-col !justify-center py-10 space-x-4 mb-4">
             <CustomAvatar
-              src={user.photoUrl || '/avatars/default.jpg'}
+              src={user.photoUrl}
               name={`${user.firstName} ${user.lastName}`}
               size="xl"
             />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-center text-gray-900">
                 {user.firstName} {user.lastName}
               </h1>
               <p className="text-gray-600">{user.email}</p>
@@ -40,66 +40,36 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
           </div>
         </div>
 
-        {/* Pending Status Banner */}
-        <Card className="border-amber-200 bg-amber-50 mb-8">
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <Clock className="h-8 w-8 text-amber-600" />
-              <div>
-                <CardTitle className="text-xl text-amber-800">
-                  Compte en attente de validation
-                </CardTitle>
-                <p className="text-amber-700 text-sm mt-1">
-                  Votre inscription a été soumise le{' '}
-                  {new Date(user.createdAt).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="bg-amber-100 rounded-lg p-4 border-l-4 border-amber-400">
-                <div className="flex items-start space-x-2">
-                  <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-amber-800 font-medium mb-2">
-                      Votre profil est actuellement restreint
-                    </p>
-                    <ul className="text-sm text-amber-700 space-y-1">
-                      <li>• Profil visible uniquement par vous et les administrateurs</li>
-                      <li>• Impossible de rejoindre des groupes pour le moment</li>
-                      <li>• Pas d&apos;accès aux événements en cours</li>
-                      <li>• Les paramètres de profil sont en lecture seule</li>
-                    </ul>
-                  </div>
-                </div>
+        <Card className="bg-primary/15 mb-8 px-4">
+          <CardContent className="px-4">
+            <div className="flex items-start space-x-6">
+              <div className="flex-shrink-0">
+                <Clock className="h-10 w-10 text-primary" />
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
-                <div className="flex items-start space-x-2">
-                  <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-blue-800 font-medium mb-2">Processus de validation</p>
-                    <p className="text-sm text-blue-700 mb-2">
-                      Notre équipe administrative examine toutes les nouvelles demandes
-                      d&apos;inscription. Ce processus prend généralement 2-3 jours ouvrés.
-                    </p>
-                    <p className="text-sm text-blue-700">
-                      Vous recevrez une notification par email dès que votre compte sera activé.
-                    </p>
-                  </div>
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-3">
+                  <h2 className="text-xl font-bold bg-primary bg-clip-text text-transparent">
+                    Inscription en cours de validation
+                  </h2>
                 </div>
+
+                <p className="text-gray-700 mb-0 text-md leading-relaxed">
+                  Bienvenue dans la communauté ISEP Bands ! Votre demande d&apos;inscription a bien
+                  été reçue et notre équipe examine actuellement votre profil.
+                  <span className="font-medium text-primary">
+                    {' '}
+                    Une notification par email vous sera envoyée dès validation sous 2-3 jours
+                    ouvrés.
+                  </span>
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Basic Profile Info */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Informations de profil</CardTitle>
           </CardHeader>

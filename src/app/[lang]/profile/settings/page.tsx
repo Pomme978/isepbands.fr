@@ -32,6 +32,7 @@ interface UserProfile {
   pronouns?: string | null;
   promotion?: string | null;
   status?: string;
+  birthDate?: string;
 }
 
 export default function ProfileSettingsPage() {
@@ -100,6 +101,9 @@ export default function ProfileSettingsPage() {
             lastName: profileData.data.lastName || '',
             biography: profileData.data.biography || '',
             photoUrl: profileData.data.photoUrl || null,
+            birthDate: profileData.data.birthDate
+              ? new Date(profileData.data.birthDate).toISOString().split('T')[0]
+              : null,
           },
           music: {
             isLookingForGroup: profileData.data.isLookingForGroup || false,
@@ -200,6 +204,7 @@ export default function ProfileSettingsPage() {
         biography: formData.profile?.biography,
         photoUrl: finalPhotoUrl,
         pronouns: formData.privacy?.pronouns,
+        birthDate: formData.profile?.birthDate,
       };
 
       console.log('=== SAVING PROFILE DATA ===');

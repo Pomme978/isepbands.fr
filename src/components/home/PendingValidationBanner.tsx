@@ -1,40 +1,35 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, AlertCircle } from 'lucide-react';
+import { Clock, AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
 import { useI18n } from '@/locales/client';
 
 export function PendingValidationBanner() {
   const t = useI18n();
 
   return (
-    <Card className="border-amber-200 bg-amber-50 mb-8">
-      <CardContent className="p-6">
-        <div className="flex items-start space-x-4">
+    <Card className="bg-primary/15 mb-8 px-4">
+      <CardContent className="px-4">
+        <div className="flex items-start space-x-6">
           <div className="flex-shrink-0">
-            <Clock className="h-8 w-8 text-amber-600" />
+            <Clock className="h-10 w-10 text-primary" />
           </div>
+
           <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-2">
-              <h2 className="text-xl font-semibold text-amber-800">
-                Demande d&apos;inscription en cours de validation
+            <div className="flex items-center space-x-3 mb-3">
+              <h2 className="text-2xl font-bold bg-primary bg-clip-text text-transparent">
+                Inscription en cours de validation
               </h2>
-              <AlertCircle className="h-5 w-5 text-amber-600" />
             </div>
-            <p className="text-amber-700 mb-4">
-              Votre demande d&apos;inscription à ISEP Bands a bien été reçue et est actuellement en
-              cours d&apos;examen par notre équipe administrative. Vous recevrez une notification
-              par email dès que votre compte aura été validé.
+
+            <p className="text-gray-700 mb-0 text-md leading-relaxed">
+              Bienvenue dans la communauté ISEP Bands ! Votre demande d&apos;inscription a bien été
+              reçue et notre équipe examine actuellement votre profil.
+              <span className="font-medium text-primary">
+                {' '}
+                Une notification par email vous sera envoyée dès validation sous 2-3 jours ouvrés.
+              </span>
             </p>
-            <div className="bg-amber-100 rounded-lg p-4 border-l-4 border-amber-400">
-              <h3 className="font-medium text-amber-800 mb-2">En attendant la validation :</h3>
-              <ul className="text-sm text-amber-700 space-y-1">
-                <li>• Votre profil est visible uniquement par vous</li>
-                <li>• Vous ne pouvez pas encore rejoindre de groupes</li>
-                <li>• L&apos;accès aux événements sera disponible après validation</li>
-                <li>• Le processus de validation peut prendre 2-3 jours ouvrés</li>
-              </ul>
-            </div>
           </div>
         </div>
       </CardContent>

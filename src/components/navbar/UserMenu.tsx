@@ -99,14 +99,24 @@ export default function UserMenu() {
         >
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleProfileClick}>Mon profil</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleGroupSpaceClick}>Mon espace groupe</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
+            Mon profil
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleGroupSpaceClick} className="cursor-pointer">
+            Mon espace groupe
+          </DropdownMenuItem>
           {isAdmin && (
-            <DropdownMenuItem onClick={handleAdminClick}>Tableau de bord admin</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleAdminClick} className="cursor-pointer">
+              Tableau de bord admin
+            </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={handleSettingsClick}>Paramètres</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer">
+            Paramètres
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut}>Se déconnecter</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+            Se déconnecter
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -120,9 +120,9 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
               <>
                 <span className="font-medium text-gray-900">{activity.user?.name}</span>
                 {activity.user?.role && (
-                  <Badge variant="outline" className="text-xs">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                     {activity.user.role}
-                  </Badge>
+                  </span>
                 )}
               </>
             )}
