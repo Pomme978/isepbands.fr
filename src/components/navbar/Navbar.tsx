@@ -14,10 +14,11 @@ import { useRouter, useParams } from 'next/navigation';
 
 interface NavbarProps {
   mode?: 'scroll' | 'static' | 'fixed';
+  style?: 'default' | 'transparent';
   className?: string;
 }
 
-export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
+export default function Navbar({ mode = 'scroll', style = 'default', className }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(mode === 'static' || mode === 'fixed');
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -160,19 +161,21 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
       {/* Flexbox container that spans full width */}
       <div className={`${getContainerClasses()} ${className || ''}`}>
         {/* Centered navbar with max-width constraint */}
-        <header className="w-full rounded-lg backdrop-blur bg-white">
+        <header
+          className={`w-full rounded-lg backdrop-blur ${style === 'transparent' ? 'bg-transparent' : 'bg-white'}`}
+        >
           <nav className="flex items-center justify-between px-4 lg:px-6 py-2 gap-2 lg:gap-8 min-w-0">
             {/* Desktop Navigation */}
             <div className="hidden lg:contents">
               <div className="flex-shrink-0">
-                <Logo />
+                <Logo variant={style === 'transparent' ? 'white' : 'default'} />
               </div>
               <div className="flex-1 flex justify-center min-w-0">
-                <NavLinks />
+                <NavLinks variant={style === 'transparent' ? 'white' : 'default'} />
               </div>
               <div className="flex items-center gap-4 flex-shrink-0">
-                <LanguageSwitcher />
-                <UserMenu />
+                <LanguageSwitcher variant={style === 'transparent' ? 'transparent' : 'default'} />
+                <UserMenu variant={style === 'transparent' ? 'white' : 'default'} />
               </div>
             </div>
 
@@ -180,7 +183,11 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
             <div className="lg:hidden flex items-center justify-between w-full min-w-0">
               {/* Page Title */}
               <div className="flex-1 text-left min-w-0">
-                <h1 className="text-xl font-bold truncate">ISEPBANDS</h1>
+                <h1
+                  className={`text-xl font-bold truncate ${style === 'transparent' ? 'text-white' : 'text-black'}`}
+                >
+                  ISEPBANDS
+                </h1>
               </div>
 
               {/* Hamburger Button */}
@@ -189,7 +196,7 @@ export default function Navbar({ mode = 'scroll', className }: NavbarProps) {
                   variant="ghost"
                   onClick={() => setIsOpen(!isOpen)}
                   aria-label="Toggle menu"
-                  className=""
+                  className={style === 'transparent' ? 'text-white hover:bg-white/10' : ''}
                 >
                   {isOpen ? <X size={24} /> : <Menu size={24} />}
                 </Button>

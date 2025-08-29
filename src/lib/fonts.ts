@@ -1,4 +1,5 @@
 import localFont from 'next/font/local';
+import { Monoton, Press_Start_2P } from 'next/font/google';
 
 export const moranga = localFont({
   src: [
@@ -157,4 +158,37 @@ export const deliciousHandrawn = localFont({
     },
   ],
   variable: '--font-handrawn',
+});
+
+export const monoton = Monoton({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-monoton',
+});
+
+export const pressStart2P = Press_Start_2P({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-press-start-2p',
+});
+
+export const impact = localFont({
+  src: [
+    {
+      path: '../assets/fonts/Impact/impact.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/Impact/Impacted.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/Impact/unicode.impact.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-impact',
 });

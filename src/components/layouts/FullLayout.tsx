@@ -11,6 +11,7 @@ interface FullLayoutProps {
   showNavbar?: boolean;
   showFooter?: boolean;
   navbarMode?: 'scroll' | 'static' | 'fixed';
+  navbarStyle?: 'default' | 'transparent';
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export default function FullLayout({
   showNavbar = true,
   showFooter = true,
   navbarMode = 'scroll',
+  navbarStyle = 'default',
   className = 'bg-gray-100',
 }: FullLayoutProps) {
   // Add top padding when using fixed navbar to prevent content overlap
@@ -33,7 +35,9 @@ export default function FullLayout({
     <Providers>
       <div className={className}>
         <div className="mx-auto">
-          <div className="max-w-7xl mx-auto">{showNavbar && <Navbar mode={navbarMode} />}</div>
+          <div className="max-w-7xl mx-auto">
+            {showNavbar && <Navbar mode={navbarMode} style={navbarStyle} />}
+          </div>
           <div className={getContentClasses()}>{children}</div>
           <div className="max-w-7xl mx-auto">{showFooter && <Footer />}</div>
         </div>

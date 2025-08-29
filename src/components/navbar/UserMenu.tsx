@@ -13,7 +13,11 @@ import {
 import { useSession, useAuth } from '@/lib/auth-client';
 import { useRouter, useParams } from 'next/navigation';
 
-export default function UserMenu() {
+interface UserMenuProps {
+  variant?: 'default' | 'white';
+}
+
+export default function UserMenu({ variant = 'default' }: UserMenuProps) {
   const { user } = useSession();
   const { signOut } = useAuth();
   const router = useRouter();
@@ -25,7 +29,12 @@ export default function UserMenu() {
   if (!user) {
     return (
       <div className="flex items-center justify-end h-10 min-w-0 flex-shrink-0">
-        <Button variant="default" size="sm" asChild>
+        <Button
+          variant={variant === 'white' ? 'outline' : 'default'}
+          size="sm"
+          asChild
+          className={variant === 'white' ? 'border-white/20 text-white hover:bg-white/10' : ''}
+        >
           <a href={`/${currentLang}/login`}>Se connecter</a>
         </Button>
       </div>
@@ -64,20 +73,29 @@ export default function UserMenu() {
     signOut(() => router.push(`/${currentLang}/login`));
   };
 
+  const triggerClasses =
+    variant === 'white'
+      ? 'flex items-center gap-3 p-1 rounded-md hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 h-10'
+      : 'flex items-center gap-3 p-1 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 h-10';
+
+  const nameClasses =
+    variant === 'white'
+      ? 'font-semibold text-sm text-white truncate max-w-[120px] leading-tight'
+      : 'font-semibold text-sm text-gray-900 truncate max-w-[120px] leading-tight';
+
+  const bandClasses =
+    variant === 'white'
+      ? 'text-xs text-white/60 truncate max-w-[120px] leading-tight'
+      : 'text-xs text-gray-500 truncate max-w-[120px] leading-tight';
+
   return (
     <div className="flex items-center justify-end h-10 min-w-0 flex-shrink-0">
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-3 p-1 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 h-10">
+          <button className={triggerClasses}>
             <div className="flex flex-col items-end min-w-0">
-              <span className="font-semibold text-sm text-gray-900 truncate max-w-[120px] leading-tight">
-                {displayName}
-              </span>
-              {band && (
-                <span className="text-xs text-gray-500 truncate max-w-[120px] leading-tight">
-                  {band}
-                </span>
-              )}
+              <span className={nameClasses}>{displayName}</span>
+              {band && <span className={bandClasses}>{band}</span>}
             </div>
             <Avatar
               src={user.photoUrl}
