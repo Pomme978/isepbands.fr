@@ -34,6 +34,11 @@ export async function GET(req: NextRequest) {
 
     if (status && status !== 'all') {
       whereClause.status = status;
+    } else if (!status || status === 'all') {
+      // Exclude archived users from normal user lists
+      whereClause.status = {
+        not: 'ARCHIVED',
+      };
     }
 
     // Get total count for pagination

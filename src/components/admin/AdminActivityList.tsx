@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import type { ActivityType } from '@/types/activity';
 import { formatDistanceToNow } from 'date-fns';
@@ -16,12 +16,14 @@ import {
   Settings,
   Edit,
   Trash2,
+  Archive,
 } from 'lucide-react';
 
 interface AdminActivityListProps {
   activities: ActivityType[];
   onEdit?: (activityId: string) => void;
   onDelete?: (activityId: string) => void;
+  onArchive?: (activityId: string, reason?: string) => void;
   currentUserId?: string;
   maxItems?: number;
 }
@@ -72,6 +74,7 @@ interface AdminActivityItemProps {
   activity: ActivityType & { createdBy?: string };
   onEdit?: (activityId: string) => void;
   onDelete?: (activityId: string) => void;
+  onArchive?: (activityId: string, reason?: string) => void;
   currentUserId?: string;
 }
 
@@ -79,6 +82,7 @@ const AdminActivityItem = ({
   activity,
   onEdit,
   onDelete,
+  onArchive,
   currentUserId,
 }: AdminActivityItemProps) => {
   const timeAgo = formatDistanceToNow(activity.timestamp, {
@@ -89,6 +93,7 @@ const AdminActivityItem = ({
   const isSystemMessage = activity.isSystemMessage || !activity.user;
   const canEdit = !isSystemMessage && activity.createdBy === currentUserId && onEdit;
   const canDelete = !isSystemMessage && onDelete;
+  const canArchive = !isSystemMessage && onArchive;
 
   const getNewMemberName = (description: string) => {
     const match = description.match(/^(.+?)\s+vient de rejoindre|^(.+?)\s+a rejoint/);
@@ -115,26 +120,20 @@ const AdminActivityItem = ({
       <div className="flex items-center justify-between mt-2">
         {/* Gauche: Avatar + Nom + Rôle */}
         <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            {isSystemMessage ? (
-              activity.type === 'new_member' ? (
-                <AvatarFallback className="bg-green-500 text-white">
-                  {getNewMemberAvatar(getNewMemberName(activity.description) || 'N')}
-                </AvatarFallback>
-              ) : (
-                <AvatarFallback className="bg-gray-500 text-white">
-                  {getActivityIcon(activity.type)}
-                </AvatarFallback>
-              )
-            ) : (
-              <>
-                <AvatarImage src={activity.user?.avatar} />
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {activity.user?.name?.charAt(0) || '?'}
-                </AvatarFallback>
-              </>
-            )}
-          </Avatar>
+          {isSystemMessage ? (
+            <div className="h-8 w-8 flex-shrink-0 rounded-full flex items-center justify-center bg-gray-500 text-white">
+              {activity.type === 'new_member'
+                ? getNewMemberAvatar(getNewMemberName(activity.description) || 'N')
+                : getActivityIcon(activity.type)}
+            </div>
+          ) : (
+            <Avatar
+              src={activity.user?.avatar}
+              name={activity.user?.name || 'Utilisateur inconnu'}
+              size="sm"
+              className="flex-shrink-0"
+            />
+          )}
 
           <div className="flex items-center space-x-2 text-base md:text-sm">
             {!isSystemMessage && (
@@ -160,7 +159,7 @@ const AdminActivityItem = ({
           <span className="text-sm md:text-xs text-gray-400">{timeAgo}</span>
 
           {/* Boutons d'administration */}
-          {(canEdit || canDelete) && (
+          {(canEdit || canDelete || canArchive) && (
             <>
               <span className="text-gray-400">•</span>
               <div className="flex gap-1">
@@ -172,6 +171,17 @@ const AdminActivityItem = ({
                     className="h-6 w-6 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                   >
                     <Edit className="h-3 w-3" />
+                  </Button>
+                )}
+                {canArchive && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onArchive!(activity.id)}
+                    className="h-6 w-6 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    title="Archiver le post"
+                  >
+                    <Archive className="h-3 w-3" />
                   </Button>
                 )}
                 {canDelete && (
@@ -249,6 +259,7 @@ export const AdminActivityList = ({
   activities,
   onEdit,
   onDelete,
+  onArchive,
   currentUserId,
   maxItems,
 }: AdminActivityListProps) => {
@@ -271,6 +282,7 @@ export const AdminActivityList = ({
           activity={activity as ActivityType & { createdBy?: string }}
           onEdit={onEdit}
           onDelete={onDelete}
+          onArchive={onArchive}
           currentUserId={currentUserId}
         />
       ))}

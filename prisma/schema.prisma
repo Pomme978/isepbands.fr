@@ -49,6 +49,12 @@ model User {
   isFullAccess                  Boolean              @default(false)
   createdAt                     DateTime             @default(now())
   updatedAt                     DateTime?            @default(now()) @updatedAt
+  
+  // Archive fields
+  isArchived                    Boolean              @default(false)
+  archivedAt                    DateTime?
+  archivedBy                    String?
+  archiveReason                 String?
   badges                        Badge[]
   groupMemberships              GroupMembership[]
   ownedNews                     News[]
@@ -213,6 +219,13 @@ model Venue {
   status              VenueStatus @default(ACTIVE)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @default(now()) @updatedAt
+  
+  // Archive fields
+  isArchived          Boolean     @default(false)
+  archivedAt          DateTime?
+  archivedBy          String?
+  archiveReason       String?
+  
   events              Event[]
 
   @@index([status], map: "Venue_status_idx")
@@ -290,6 +303,12 @@ model Activity {
   createdBy   String?  // Admin who created manual activity
   createdAt   DateTime @default(now())
   
+  // Archive fields
+  isArchived  Boolean  @default(false)
+  archivedAt  DateTime?
+  archivedBy  String?
+  archiveReason String?
+  
   user        User?    @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "Activity_userId_fkey")
@@ -305,6 +324,7 @@ enum UserStatus {
   REFUSED
   SUSPENDED
   DELETED
+  ARCHIVED
 }
 
 enum RegistrationStatus {

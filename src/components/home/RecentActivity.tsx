@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Avatar from '@/components/common/Avatar';
 import { Badge } from '@/components/ui/badge';
 import type { ActivityType } from '@/types/activity';
 import { formatDistanceToNow } from 'date-fns';
@@ -94,26 +94,20 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
       <div className="flex items-center justify-between mt-2">
         {/* Gauche: Avatar + Nom + Rôle */}
         <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            {isSystemMessage ? (
-              activity.type === 'new_member' ? (
-                <AvatarFallback className="bg-green-500 text-white">
-                  {getNewMemberAvatar(getNewMemberName(activity.description) || 'N')}
-                </AvatarFallback>
-              ) : (
-                <AvatarFallback className="bg-gray-500 text-white">
-                  {getActivityIcon(activity.type)}
-                </AvatarFallback>
-              )
-            ) : (
-              <>
-                <AvatarImage src={activity.user?.avatar} />
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {activity.user?.name?.charAt(0) || '?'}
-                </AvatarFallback>
-              </>
-            )}
-          </Avatar>
+          {isSystemMessage ? (
+            <div className="h-8 w-8 flex-shrink-0 rounded-full flex items-center justify-center bg-gray-500 text-white">
+              {activity.type === 'new_member'
+                ? getNewMemberAvatar(getNewMemberName(activity.description) || 'N')
+                : getActivityIcon(activity.type)}
+            </div>
+          ) : (
+            <Avatar
+              src={activity.user?.avatar}
+              name={activity.user?.name || 'Utilisateur inconnu'}
+              size="sm"
+              className="flex-shrink-0"
+            />
+          )}
 
           <div className="flex items-center space-x-2 text-sm">
             {!isSystemMessage && (

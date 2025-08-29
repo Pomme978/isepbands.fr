@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import AdminExpandableSection from '../common/AdminExpandableSection';
 import UserCard from './UserCard';
 import { calculateAge } from '@/utils/schoolUtils';
@@ -15,7 +16,15 @@ interface User {
   email: string;
   promotion: string;
   birthDate: string;
-  status: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING' | 'REFUSED' | 'SUSPENDED' | 'DELETED';
+  status:
+    | 'CURRENT'
+    | 'FORMER'
+    | 'GRADUATED'
+    | 'PENDING'
+    | 'REFUSED'
+    | 'SUSPENDED'
+    | 'DELETED'
+    | 'ARCHIVED';
   photoUrl?: string;
   createdAt: string;
   isOutOfSchool: boolean;
@@ -72,6 +81,7 @@ interface UsersListProps {
 }
 
 export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

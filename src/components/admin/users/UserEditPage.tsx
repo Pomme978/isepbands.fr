@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Save,
@@ -103,6 +103,7 @@ const TABS = [
 
 export default function UserEditPage({ userId }: UserEditPageProps) {
   const params = useParams();
+  const router = useRouter();
   const lang = params.lang as string;
   const [activeTab, setActiveTab] = useState('main');
   const [user, setUser] = useState<User | null>(null);
@@ -114,6 +115,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -376,7 +378,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
     if (!user) return;
 
     try {
-      setDeleting(true); // Reuse the same loading state
+      setArchiving(true);
       const response = await fetch(`/api/admin/users/${userId}/archive`, {
         method: 'POST',
       });
@@ -386,13 +388,13 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         throw new Error(errorData.error || 'Failed to archive user');
       }
 
-      // Refresh the page to show the updated status
-      window.location.reload();
+      // Redirect to users page after successful archiving
+      router.push('/admin/users');
     } catch (error) {
       console.error('Error archiving user:', error);
       setError(error instanceof Error ? error.message : 'Failed to archive user');
     } finally {
-      setDeleting(false);
+      setArchiving(false);
       setShowArchiveConfirm(false);
     }
   };
@@ -554,20 +556,22 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             Reset Password
           </button>
 
+          {user?.status !== 'ARCHIVED' && (
+            <button
+              onClick={() => setShowArchiveConfirm(true)}
+              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              Archive User
+            </button>
+          )}
+
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete User
-          </button>
-
-          <button
-            onClick={() => setShowArchiveConfirm(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            <Archive className="w-4 h-4 mr-2" />
-            Archive User
           </button>
 
           <button
@@ -808,13 +812,13 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={archiving}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleArchiveUser}
-              disabled={deleting}
+              disabled={archiving}
               className="bg-orange-600 hover:bg-orange-700"
             >
-              {deleting ? (
+              {archiving ? (
                 <>
                   <Loading text="" size="sm" centered={false} />
                   Archiving...

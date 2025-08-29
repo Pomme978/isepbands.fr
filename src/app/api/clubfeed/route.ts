@@ -7,6 +7,9 @@ export async function GET() {
     // For now, return mock data until Activity table is properly set up
     const activities = await prisma.activity
       .findMany({
+        where: {
+          isArchived: false, // Exclure les posts archivés
+        },
         orderBy: { createdAt: 'desc' },
         take: 20, // Limit to recent activities
         include: {

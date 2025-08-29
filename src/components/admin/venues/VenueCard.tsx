@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import LangLink from '@/components/common/LangLink';
-import { MapPin, Camera, Train, AlertTriangle, Calendar, Eye } from 'lucide-react';
+import { MapPin, Camera, Train, AlertTriangle, Calendar, Eye, Edit, Archive } from 'lucide-react';
 
 interface Venue {
   id: string;
@@ -35,6 +35,7 @@ interface Venue {
 
 interface VenueCardProps {
   venue: Venue;
+  onArchive?: (venueId: string, reason?: string) => void;
 }
 
 const VENUE_TYPE_LABELS = {
@@ -67,7 +68,7 @@ const STATUS_COLORS = {
   AVOID: 'bg-red-50 text-red-700 border-red-200',
 };
 
-export default function VenueCard({ venue }: VenueCardProps) {
+export default function VenueCard({ venue, onArchive }: VenueCardProps) {
   const isAvoidVenue = venue.status === 'AVOID';
 
   return (
@@ -138,6 +139,27 @@ export default function VenueCard({ venue }: VenueCardProps) {
                   <p className="text-xs text-red-700 line-clamp-2">{venue.staffNotes}</p>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 mt-4 pt-3 border-t">
+            <LangLink
+              href={`/admin/venues/${venue.id}`}
+              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <Edit className="w-3 h-3 mr-1" />
+              Edit
+            </LangLink>
+            {onArchive && (
+              <button
+                onClick={() => onArchive(venue.id)}
+                className="inline-flex items-center px-3 py-1 text-sm bg-orange-100 border border-orange-300 text-orange-800 rounded-md hover:bg-orange-200 transition-colors"
+                title="Archiver le venue"
+              >
+                <Archive className="w-3 h-3 mr-1" />
+                Archive
+              </button>
             )}
           </div>
         </div>
