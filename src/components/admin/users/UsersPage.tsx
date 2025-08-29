@@ -47,6 +47,8 @@ export default function UsersPage() {
         { value: 'current', label: 'Current Members' },
         { value: 'former', label: 'Former Members' },
         { value: 'pending', label: 'Pending Approval' },
+        { value: 'refused', label: 'Refused/Suspended' },
+        { value: 'deleted', label: 'Deleted/Archived' },
         { value: 'board', label: 'Board Members' },
       ],
     },

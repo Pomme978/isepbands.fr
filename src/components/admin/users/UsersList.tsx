@@ -14,7 +14,7 @@ interface User {
   email: string;
   promotion: string;
   birthDate: string;
-  status: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
+  status: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING' | 'REFUSED' | 'DELETED';
   photoUrl?: string;
   createdAt: string;
   isOutOfSchool: boolean;
@@ -158,6 +158,12 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         return 'PENDING';
       case 'graduated':
         return 'GRADUATED';
+      case 'refused':
+        return 'REFUSED';
+      case 'suspended':
+        return 'REFUSED'; // REFUSED is used for suspended users
+      case 'deleted':
+        return 'DELETED';
       case 'board':
         return null; // Special case: will be handled differently
       default:
@@ -197,7 +203,13 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       promotion: user.promotion,
       role: roleDisplay,
       joinDate: new Date(user.createdAt).toISOString().split('T')[0],
-      status: user.status.toLowerCase() as 'current' | 'former' | 'pending' | 'graduated',
+      status: user.status.toLowerCase() as
+        | 'current'
+        | 'former'
+        | 'pending'
+        | 'graduated'
+        | 'refused'
+        | 'deleted',
       age: calculateAge(user.birthDate),
       instruments: user.instruments.map((i) => i.name),
       groups: user.groups.map((g) => g.name),
@@ -216,6 +228,8 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     .filter((user) => user.status === 'FORMER' || user.status === 'GRADUATED')
     .map(transformUser);
   const pendingMembers = users.filter((user) => user.status === 'PENDING').map(transformUser);
+  const refusedMembers = users.filter((user) => user.status === 'REFUSED').map(transformUser);
+  const deletedMembers = users.filter((user) => user.status === 'DELETED').map(transformUser);
   const boardMembers = users
     .filter((user) => {
       // Board members are those with high weight roles (president, vice-president, etc.)
@@ -234,12 +248,18 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     filters.memberStatus === 'all' || filters.memberStatus === 'former';
   const shouldShowPendingMembers =
     filters.memberStatus === 'all' || filters.memberStatus === 'pending';
+  const shouldShowRefusedMembers =
+    filters.memberStatus === 'all' || filters.memberStatus === 'refused';
+  const shouldShowDeletedMembers =
+    filters.memberStatus === 'all' || filters.memberStatus === 'deleted';
   const shouldShowBoardMembers = filters.memberStatus === 'board';
 
   // For board filter, only show board members in a special section
   const displayCurrentMembers = shouldShowBoardMembers ? boardMembers : currentMembers;
   const displayFormerMembers = shouldShowBoardMembers ? [] : formerMembers;
   const displayPendingMembers = shouldShowBoardMembers ? [] : pendingMembers;
+  const displayRefusedMembers = shouldShowBoardMembers ? [] : refusedMembers;
+  const displayDeletedMembers = shouldShowBoardMembers ? [] : deletedMembers;
 
   if (loading) {
     return (
@@ -268,7 +288,9 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
   const hasAnyResults =
     (shouldShowCurrentMembers && displayCurrentMembers.length > 0) ||
     (shouldShowFormerMembers && displayFormerMembers.length > 0) ||
-    (shouldShowPendingMembers && displayPendingMembers.length > 0);
+    (shouldShowPendingMembers && displayPendingMembers.length > 0) ||
+    (shouldShowRefusedMembers && displayRefusedMembers.length > 0) ||
+    (shouldShowDeletedMembers && displayDeletedMembers.length > 0);
 
   // Show "no users found" message if no results
   if (!hasAnyResults && users.length === 0) {
@@ -363,6 +385,36 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         >
           <div className="space-y-4">
             {displayFormerMembers.map((user) => (
+              <UserCard key={user.id} user={user} currentUserId={currentUserId} />
+            ))}
+          </div>
+        </AdminExpandableSection>
+      )}
+
+      {/* Refused/Suspended Members - Show only if filter allows */}
+      {shouldShowRefusedMembers && displayRefusedMembers.length > 0 && (
+        <AdminExpandableSection
+          title="Refused/Suspended Members"
+          count={displayRefusedMembers.length}
+          defaultExpanded={false}
+        >
+          <div className="space-y-4">
+            {displayRefusedMembers.map((user) => (
+              <UserCard key={user.id} user={user} currentUserId={currentUserId} />
+            ))}
+          </div>
+        </AdminExpandableSection>
+      )}
+
+      {/* Deleted/Archived Members - Show only if filter allows */}
+      {shouldShowDeletedMembers && displayDeletedMembers.length > 0 && (
+        <AdminExpandableSection
+          title="Deleted/Archived Members"
+          count={displayDeletedMembers.length}
+          defaultExpanded={false}
+        >
+          <div className="space-y-4">
+            {displayDeletedMembers.map((user) => (
               <UserCard key={user.id} user={user} currentUserId={currentUserId} />
             ))}
           </div>

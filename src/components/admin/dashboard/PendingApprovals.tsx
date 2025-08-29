@@ -85,8 +85,8 @@ interface PendingApprovalsProps {
 }
 
 export default function PendingApprovals({
-  onApproveUser = (id) => console.log('Approve user:', id),
-  onRejectUser = (id, reason) => console.log('Reject user:', id, 'Reason:', reason),
+  onApproveUser,
+  onRejectUser,
   onApproveBand = (id) => console.log('Approve band:', id),
   onRejectBand = (id, reason) => console.log('Reject band:', id, 'Reason:', reason),
 }: PendingApprovalsProps) {
@@ -127,19 +127,62 @@ export default function PendingApprovals({
     setSelectedItem(null);
   };
 
-  const handleApprove = (id: string) => {
+  const handleApprove = async (id: string) => {
     if (selectedItem?.type === 'user') {
-      onApproveUser(id);
+      try {
+        const response = await fetch(`/api/admin/pending-users/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'approve' }),
+        });
+
+        if (response.ok) {
+          // Remove the user from pending list
+          setPendingUsers((prev) => prev.filter((user) => user.id !== id));
+          onApproveUser?.(id);
+          // Success - no alert needed, the user disappearing is enough feedback
+        } else {
+          const error = await response.text(); // Use text() instead of json() to avoid parsing errors
+          console.error('Failed to approve user:', response.status, error);
+          alert(`Erreur lors de l'approbation: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error('Error approving user:', error);
+        alert("Erreur de connexion lors de l'approbation");
+      }
     } else {
-      onApproveBand(id);
+      onApproveBand?.(id);
     }
   };
 
-  const handleReject = (id: string, reason: string) => {
+  const handleReject = async (id: string, reason: string) => {
     if (selectedItem?.type === 'user') {
-      onRejectUser(id, reason);
+      try {
+        const response = await fetch(`/api/admin/pending-users/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'reject', reason }),
+        });
+
+        if (response.ok) {
+          // Remove the user from pending list
+          setPendingUsers((prev) => prev.filter((user) => user.id !== id));
+          onRejectUser?.(id, reason);
+        } else {
+          const error = await response.text();
+          console.error('Failed to reject user:', response.status, error);
+          alert(`Erreur lors du refus: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error('Error rejecting user:', error);
+        alert('Erreur de connexion lors du refus');
+      }
     } else {
-      onRejectBand(id, reason);
+      onRejectBand?.(id, reason);
     }
   };
 

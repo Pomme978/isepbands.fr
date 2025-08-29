@@ -142,6 +142,11 @@ export async function getSessionUser(req: NextRequest) {
       return null;
     }
 
+    // Check if user account is suspended/refused
+    if (user.status === 'REFUSED' || user.status === 'DELETED') {
+      return null; // Force logout for suspended/refused users
+    }
+
     // Quick token validation - only check if token is significantly old
     const tokenIssuedAt = payload.iat as number;
     const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
