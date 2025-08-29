@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
     const birthDate = formData.get('birthDate') as string;
     const phone = formData.get('phone') as string | null;
     const motivation = formData.get('motivation') as string | null;
-    const experience = formData.get('experience') as string | null;
     const instruments = formData.get('instruments') as string | null;
     const preferredGenres = formData.get('preferredGenres') as string | null;
     const profilePhoto = formData.get('profilePhoto') as File | null;
@@ -68,7 +67,6 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         status: 'PENDING',
         motivation: motivation || null,
-        experience: experience || null,
       },
     });
 

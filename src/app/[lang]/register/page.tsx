@@ -42,7 +42,6 @@ const initialData: RegistrationData = {
   birthDate: '',
   phone: '',
   motivation: '',
-  experience: '',
   instruments: [],
   preferredGenres: [],
   profilePhoto: null,

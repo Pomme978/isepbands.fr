@@ -39,7 +39,6 @@ export async function GET(req: NextRequest) {
       isOutOfSchool: user.status === 'GRADUATED' || user.status === 'ALUMNI',
       pronouns: user.pronouns,
       motivation: user.registrationRequest?.motivation || '',
-      experience: user.registrationRequest?.experience || '',
       instruments: user.instruments.map((ui) => ({
         instrumentId: ui.instrument.id,
         instrumentName: ui.instrument.name,

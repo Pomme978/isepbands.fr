@@ -107,7 +107,6 @@ export async function GET(req: NextRequest) {
         registrationRequest: {
           select: {
             motivation: true,
-            experience: true,
             status: true,
             rejectionReason: true,
           },
@@ -163,7 +162,6 @@ export async function GET(req: NextRequest) {
       registrationRequest: user.registrationRequest
         ? {
             motivation: user.registrationRequest.motivation || '',
-            experience: user.registrationRequest.experience || '',
             status: user.registrationRequest.status || '',
             rejectionReason: user.registrationRequest.rejectionReason || '',
           }

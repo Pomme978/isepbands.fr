@@ -22,7 +22,6 @@ model RegistrationRequest {
   status          RegistrationStatus @default(PENDING)
   createdAt       DateTime           @default(now())
   motivation      String?
-  experience      String?
   rejectionReason String?
   user            User               @relation(fields: [userId], references: [id])
 }

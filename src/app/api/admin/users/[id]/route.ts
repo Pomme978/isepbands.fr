@@ -445,7 +445,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             data: {
               userId,
               motivation: '',
-              experience: '',
               rejectionReason: validatedData.rejectionReason,
               status:
                 validatedData.status === 'REFUSED'

@@ -15,20 +15,14 @@ interface Step3MotivationProps {
 export default function Step3Motivation({ data, onChange, onNext, onBack }: Step3MotivationProps) {
   const t = useI18n();
   const [motivationError, setMotivationError] = useState('');
-  const [experienceError, setExperienceError] = useState('');
-
   const validateMotivation = (value: string) => {
     if (!value.trim()) return t('validator.required');
     return '';
   };
-  const validateExperience = (value: string) => {
-    if (!value.trim()) return t('validator.required');
-    return '';
-  };
+
   const validateAll = () => {
     setMotivationError(validateMotivation(data.motivation));
-    setExperienceError(validateExperience(data.experience));
-    return !validateMotivation(data.motivation) && !validateExperience(data.experience);
+    return !validateMotivation(data.motivation);
   };
 
   return (
@@ -40,7 +34,7 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
       }}
     >
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Motivation et expérience</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Motivation</h3>
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -60,34 +54,14 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
             />
             {motivationError && <div className="text-red-500 text-xs mt-1">{motivationError}</div>}
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Décrivez votre expérience musicale *
-            </label>
-            <textarea
-              id="experience"
-              placeholder="Racontez-nous votre parcours musical : depuis quand jouez-vous ? Avez-vous déjà joué en groupe ? Quels styles de musique pratiquez-vous ? Autodidacte ou formation ? Toute expérience est la bienvenue !"
-              value={data.experience}
-              onChange={(e) => {
-                onChange({ experience: e.target.value });
-                setExperienceError(validateExperience(e.target.value));
-              }}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
-              rows={5}
-              required
-            />
-            {experienceError && <div className="text-red-500 text-xs mt-1">{experienceError}</div>}
-          </div>
         </div>
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">Votre histoire musicale</h4>
+        <h4 className="font-medium text-blue-900 mb-2">Votre motivation</h4>
         <p className="text-sm text-blue-700">
-          Ces informations sont essentielles pour évaluer votre candidature et déterminer si vous
-          pourrez rejoindre l&lsquo;association. Elles nous permettent aussi de vous proposer des
-          groupes adaptés. Soyez authentique !
+          Cette information est essentielle pour évaluer votre candidature et déterminer si vous
+          pourrez rejoindre l&lsquo;association. Soyez authentique !
         </p>
       </div>
 

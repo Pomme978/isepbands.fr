@@ -60,7 +60,6 @@ export default function UserEditInstruments({
   >([]);
   const [instrumentMapping, setInstrumentMapping] = useState<Record<string, number>>({});
   const [preferredGenres, setPreferredGenres] = useState<string[]>([]);
-  const [totalExperience, setTotalExperience] = useState('8');
   const [isAddingInstrument, setIsAddingInstrument] = useState(false);
   const [editingInstrument, setEditingInstrument] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -515,28 +514,6 @@ export default function UserEditInstruments({
             <p className="text-sm">Add instruments to help with band matching</p>
           </div>
         )}
-      </div>
-
-      {/* Musical Experience */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Musical Experience</h3>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Total Years of Experience
-          </label>
-          <input
-            type="number"
-            value={totalExperience}
-            onChange={(e) => {
-              setTotalExperience(e.target.value);
-              setHasUnsavedChanges(true);
-            }}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-            min="0"
-            max="50"
-          />
-        </div>
       </div>
 
       {/* Preferred Genres */}

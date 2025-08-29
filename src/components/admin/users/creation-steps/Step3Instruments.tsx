@@ -310,23 +310,8 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
       </div>
 
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Musical Experience</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Musical Preferences</h3>
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Years of Experience
-            </label>
-            <input
-              type="number"
-              value={formData.yearsExperience}
-              onChange={(e) => updateField('yearsExperience', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-              placeholder="0"
-              min="0"
-              max="50"
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">Preferred Genres</label>
             <div className="flex flex-wrap gap-2">

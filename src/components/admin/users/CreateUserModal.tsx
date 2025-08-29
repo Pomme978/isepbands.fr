@@ -37,7 +37,6 @@ export interface UserFormData {
     yearsPlaying?: number;
     isPrimary?: boolean;
   }>;
-  yearsExperience: string;
   preferredGenres: string[];
 
   // Step 4: Badges
@@ -88,7 +87,6 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
     primaryRole: 'Member',
     isFullAccess: false,
     instruments: [],
-    yearsExperience: '',
     preferredGenres: [],
     achievementBadges: [],
     bio: '',
@@ -186,7 +184,6 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
       primaryRole: 'Member',
       isFullAccess: false,
       instruments: [],
-      yearsExperience: '',
       preferredGenres: [],
       achievementBadges: [],
       bio: '',
