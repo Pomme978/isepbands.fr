@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminFooter from '@/components/admin/AdminFooter';
+import AdminNavbar from '@/components/admin/AdminNavbar';
 import { Loader2 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 
@@ -76,46 +77,65 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-100">
-        <Loading text="Vérification des permissions..." size="lg" />
-      </div>
+      <>
+        <div className="lg:hidden">
+          <AdminNavbar />
+        </div>
+        <div className="flex items-center justify-center h-screen bg-gray-100">
+          <Loading text="Vérification des permissions..." size="lg" />
+        </div>
+      </>
     );
   }
 
   if (error || !user) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Accès refusé</h2>
-          <p className="text-gray-600 mb-6">
-            Vous devez être administrateur pour accéder à cette section.
-          </p>
-          <button
-            onClick={() => router.push('/fr/login')}
-            className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-          >
-            Se connecter
-          </button>
+      <>
+        <div className="lg:hidden">
+          <AdminNavbar />
         </div>
-      </div>
+        <div className="flex items-center justify-center h-screen bg-gray-100">
+          <div className="text-center max-w-md mx-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Accès refusé</h2>
+            <p className="text-base md:text-sm text-gray-600 mb-6">
+              Vous devez être administrateur pour accéder à cette section.
+            </p>
+            <button
+              onClick={() => router.push('/fr/login')}
+              className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+            >
+              Se connecter
+            </button>
+          </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="h-screen w-screen absolute left-0 flex bg-gray-100">
-      {/* Sidebar */}
-      <AdminSidebar user={user} />
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="mx-auto">{children}</div>
-        </main>
-
-        {/* Footer */}
-        <AdminFooter />
+    <>
+      {/* Mobile Navbar - Only visible on mobile */}
+      <div className="lg:hidden">
+        <AdminNavbar />
       </div>
-    </div>
+
+      <div className="flex lg:h-screen bg-gray-100">
+        {/* Desktop Sidebar - Only visible on desktop */}
+        <div className="hidden lg:block">
+          <AdminSidebar user={user} />
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 w-full lg:overflow-hidden">
+          {/* Content */}
+          <main className="flex-1 overflow-x-hidden lg:overflow-y-auto p-4 lg:p-6">
+            <div className="w-full min-w-0">{children}</div>
+          </main>
+
+          {/* Footer */}
+          <AdminFooter />
+        </div>
+      </div>
+    </>
   );
 }

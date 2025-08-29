@@ -9,6 +9,7 @@ import { MUSIC_GENRES } from '@/data/musicGenres';
  */
 export async function ensureDBIntegrity() {
   console.log('🔍 Checking database integrity...');
+  const actions = [];
 
   try {
     // Remove database duplicates first
@@ -31,6 +32,7 @@ export async function ensureDBIntegrity() {
       for (const deleteId of deleteIds) {
         await prisma.instrument.delete({ where: { id: deleteId } });
         console.log(`🗑️ Removed duplicate instrument with id: ${deleteId}`);
+        actions.push(`Supprimé l'instrument dupliqué avec l'ID ${deleteId}`);
       }
     }
 
@@ -53,6 +55,7 @@ export async function ensureDBIntegrity() {
         await prisma.rolePermission.deleteMany({ where: { permissionId: deleteId } });
         await prisma.permission.delete({ where: { id: deleteId } });
         console.log(`🗑️ Removed duplicate permission with id: ${deleteId}`);
+        actions.push(`Supprimé la permission dupliquée avec l'ID ${deleteId}`);
       }
     }
 
@@ -76,6 +79,7 @@ export async function ensureDBIntegrity() {
         await prisma.userRole.deleteMany({ where: { roleId: deleteId } });
         await prisma.role.delete({ where: { id: deleteId } });
         console.log(`🗑️ Removed duplicate role with id: ${deleteId}`);
+        actions.push(`Supprimé le rôle dupliqué avec l'ID ${deleteId}`);
       }
     }
 
@@ -93,6 +97,7 @@ export async function ensureDBIntegrity() {
       for (let i = 1; i < existing.length; i++) {
         await prisma.musicGenre.delete({ where: { id: existing[i].id } });
         console.log(`🗑️ Removed duplicate music genre with id: ${existing[i].id}`);
+        actions.push(`Supprimé le genre musical dupliqué ${existing[i].id}`);
       }
     }
     // Ensure instruments exist
@@ -112,6 +117,7 @@ export async function ensureDBIntegrity() {
           },
         });
         console.log(`✅ Created missing instrument: ${instrument.name}`);
+        actions.push(`Créé l'instrument manquant: ${instrument.nameFr}`);
       }
     }
 
@@ -132,6 +138,7 @@ export async function ensureDBIntegrity() {
           },
         });
         console.log(`✅ Created missing permission: ${permission.name}`);
+        actions.push(`Créé la permission manquante: ${permission.nameFr}`);
       }
     }
 
@@ -155,6 +162,7 @@ export async function ensureDBIntegrity() {
           },
         });
         console.log(`✅ Created missing role: ${roleData.name}`);
+        actions.push(`Créé le rôle manquant: ${roleData.nameFrMale}`);
 
         // Add permissions for this role
         if (roleData.permissions.length > 0) {
@@ -196,14 +204,15 @@ export async function ensureDBIntegrity() {
           },
         });
         console.log(`✅ Created missing music genre: ${genre.nameFr}`);
+        actions.push(`Créé le genre musical manquant: ${genre.nameFr}`);
       }
     }
 
     console.log('✅ Database integrity check completed successfully!');
-    return true;
+    return { success: true, actions };
   } catch (error) {
     console.error('❌ Error during database integrity check:', error);
-    return false;
+    return { success: false, actions, error: error.message };
   }
 }
 

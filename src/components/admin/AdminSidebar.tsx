@@ -25,6 +25,7 @@ import {
 
   // Content Management
   Users,
+  UserPlus,
   Megaphone,
   Calendar,
   Building2,
@@ -183,7 +184,7 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
 
 export default function AdminSidebar({ user }: AdminSidebarProps = {}) {
   return (
-    <div className="w-64 bg-white shadow-lg flex flex-col">
+    <div className="w-64 bg-white shadow-lg flex flex-col h-screen">
       {/* Logo Section */}
       <div className="p-6 border-b border-gray-200">
         <LangLink href="/" className="flex items-center space-x-3">
@@ -192,7 +193,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps = {}) {
           </div>
           <div>
             <h1 className="text-xl font-bold text-primary">ISEP Bands</h1>
-            <p className="text-sm text-muted-foreground">Admin Panel</p>
+            <p className="text-base md:text-sm text-muted-foreground">Admin Panel</p>
           </div>
         </LangLink>
       </div>

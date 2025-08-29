@@ -65,7 +65,7 @@ export default function Admin() {
         {/* Page Header */}
         <div className="border-b border-border pb-4">
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-base md:text-sm text-muted-foreground">
             {getWelcomeMessage()}, nous sommes le {currentDate}.
           </p>
         </div>

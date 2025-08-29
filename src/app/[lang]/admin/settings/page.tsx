@@ -201,7 +201,7 @@ export default function SettingsPage() {
             <SettingsIcon className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-3xl font-bold text-foreground">Paramètres système</h1>
-              <p className="mt-1 text-muted-foreground">
+              <p className="mt-1 text-base md:text-sm text-muted-foreground">
                 Configuration générale du site et de l&apos;association
               </p>
             </div>
@@ -213,7 +213,7 @@ export default function SettingsPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center">
               <AlertTriangle className="w-5 h-5 text-red-400 mr-3" />
-              <p className="text-sm text-red-800">{error}</p>
+              <p className="text-base md:text-sm text-red-800">{error}</p>
             </div>
           </div>
         )}
@@ -224,7 +224,7 @@ export default function SettingsPage() {
               <div className="w-5 h-5 bg-green-400 rounded-full mr-3 flex items-center justify-center">
                 <div className="w-2 h-2 bg-white rounded-full" />
               </div>
-              <p className="text-sm text-green-800">{success}</p>
+              <p className="text-base md:text-sm text-green-800">{success}</p>
             </div>
           </div>
         )}
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                     }`}
                   >
                     <section.icon className="w-4 h-4" />
-                    <span className="text-sm font-medium">{section.label}</span>
+                    <span className="text-base md:text-sm font-medium">{section.label}</span>
                   </button>
                 ))}
               </nav>

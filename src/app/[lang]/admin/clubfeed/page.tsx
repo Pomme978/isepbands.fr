@@ -22,6 +22,8 @@ import {
 import Loading from '@/components/ui/Loading';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { AdminActivityList } from '@/components/admin/AdminActivityList';
+import type { ActivityType } from '@/types/activity';
 
 interface ActivityItem {
   id: string;
@@ -31,6 +33,7 @@ interface ActivityItem {
   userId?: string;
   userName?: string;
   userAvatar?: string;
+  userRole?: string;
   metadata?: Record<string, unknown>;
   createdAt: string;
   createdBy?: string;
@@ -38,6 +41,7 @@ interface ActivityItem {
 
 export default function AdminClubFeedPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [displayActivities, setDisplayActivities] = useState<ActivityType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -77,6 +81,38 @@ export default function AdminClubFeedPage() {
       if (response.ok) {
         const data = await response.json();
         setActivities(data.activities || []);
+
+        // Transform to ActivityType format
+        const transformedActivities: ActivityType[] = (data.activities || []).map(
+          (activity: ActivityItem) =>
+            ({
+              id: activity.id,
+              type:
+                activity.type === 'custom'
+                  ? 'post'
+                  : activity.type === 'user_joined'
+                    ? 'new_member'
+                    : activity.type === 'group_created'
+                      ? 'new_group'
+                      : activity.type === 'event_created'
+                        ? 'event'
+                        : 'post',
+              timestamp: new Date(activity.createdAt),
+              title: activity.title,
+              description: activity.description || '',
+              user: activity.userName
+                ? {
+                    name: activity.userName,
+                    avatar: activity.userAvatar || '/avatars/default.jpg',
+                    role: activity.userRole || null,
+                  }
+                : undefined,
+              isSystemMessage: activity.type !== 'custom',
+              createdBy: activity.createdBy,
+            }) as ActivityType & { createdBy?: string },
+        );
+
+        setDisplayActivities(transformedActivities);
       }
     } catch (error) {
       console.error('Error fetching activities:', error);
@@ -111,6 +147,25 @@ export default function AdminClubFeedPage() {
 
       const data = await response.json();
       setActivities([data.activity, ...activities]);
+
+      // Update display activities too
+      const newDisplayActivity: ActivityType & { createdBy?: string } = {
+        id: data.activity.id,
+        type: 'post',
+        timestamp: new Date(data.activity.createdAt),
+        title: data.activity.title,
+        description: data.activity.description || '',
+        user: data.activity.userName
+          ? {
+              name: data.activity.userName,
+              avatar: data.activity.userAvatar || '/avatars/default.jpg',
+              role: data.activity.userRole || null,
+            }
+          : undefined,
+        isSystemMessage: false,
+        createdBy: data.activity.createdBy,
+      };
+      setDisplayActivities([newDisplayActivity, ...displayActivities]);
 
       // Reset form
       setNewActivity({ type: 'custom', title: '', description: '' });
@@ -158,6 +213,27 @@ export default function AdminClubFeedPage() {
       const data = await response.json();
       setActivities(activities.map((a) => (a.id === editingActivity.id ? data.activity : a)));
 
+      // Update display activities too
+      const updatedDisplayActivity: ActivityType & { createdBy?: string } = {
+        id: data.activity.id,
+        type: 'post',
+        timestamp: new Date(data.activity.createdAt),
+        title: data.activity.title,
+        description: data.activity.description || '',
+        user: data.activity.userName
+          ? {
+              name: data.activity.userName,
+              avatar: data.activity.userAvatar || '/avatars/default.jpg',
+              role: data.activity.userRole || null,
+            }
+          : undefined,
+        isSystemMessage: false,
+        createdBy: data.activity.createdBy,
+      };
+      setDisplayActivities(
+        displayActivities.map((a) => (a.id === editingActivity.id ? updatedDisplayActivity : a)),
+      );
+
       // Reset editing state
       setEditingActivity(null);
 
@@ -185,6 +261,7 @@ export default function AdminClubFeedPage() {
 
       if (response.ok) {
         setActivities(activities.filter((a) => a.id !== id));
+        setDisplayActivities(displayActivities.filter((a) => a.id !== id));
       }
     } catch (error) {
       console.error('Error deleting activity:', error);
@@ -231,7 +308,7 @@ export default function AdminClubFeedPage() {
           <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
             <Alert className="bg-green-50 border-green-200 max-w-sm">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800 ml-2">
+              <AlertDescription className="text-base md:text-sm text-green-800 ml-2">
                 Activité créée avec succès
               </AlertDescription>
             </Alert>
@@ -241,20 +318,22 @@ export default function AdminClubFeedPage() {
           <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
             <Alert className="bg-red-50 border-red-200 max-w-sm">
               <XCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800 ml-2">{saveError}</AlertDescription>
+              <AlertDescription className="text-base md:text-sm text-red-800 ml-2">
+                {saveError}
+              </AlertDescription>
             </Alert>
           </div>
         )}
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Club Feed</h1>
-            <p className="text-muted-foreground mt-2">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-8">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl lg:text-3xl font-bold">Club Feed</h1>
+            <p className="text-base md:text-sm text-muted-foreground mt-2">
               Publiez des actualités qui apparaîtront sur la page d&apos;accueil des membres
             </p>
           </div>
-          <Button onClick={() => setShowCreateForm(!showCreateForm)}>
+          <Button onClick={() => setShowCreateForm(!showCreateForm)} className="flex-shrink-0">
             <Plus className="mr-2 h-4 w-4" />
             Publier une actualité
           </Button>
@@ -265,7 +344,7 @@ export default function AdminClubFeedPage() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Publier une actualité</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base md:text-sm">
                 Cette actualité apparaîtra dans le feed de la page d&apos;accueil des membres
               </CardDescription>
             </CardHeader>
@@ -315,7 +394,9 @@ export default function AdminClubFeedPage() {
           <Card className="mb-6 border-orange-200">
             <CardHeader>
               <CardTitle>Modifier l&apos;actualité</CardTitle>
-              <CardDescription>Modifiez votre actualité</CardDescription>
+              <CardDescription className="text-base md:text-sm">
+                Modifiez votre actualité
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -360,87 +441,27 @@ export default function AdminClubFeedPage() {
         <Card>
           <CardHeader>
             <CardTitle>Activités récentes</CardTitle>
-            <CardDescription>Les 50 dernières activités du club</CardDescription>
+            <CardDescription className="text-base">
+              Les 50 dernières activités du club
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loading text="Chargement des activités..." size="sm" />
               </div>
-            ) : activities.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Aucune activité pour le moment
-              </div>
             ) : (
-              <div className="space-y-4">
-                {activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
-                  >
-                    {/* Icon */}
-                    <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
-                      {getActivityIcon(activity.type)}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{activity.title}</p>
-                        {activity.type === 'custom' && (
-                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
-                            Manuel
-                          </span>
-                        )}
-                      </div>
-                      {activity.description && (
-                        <p className="text-sm text-muted-foreground">{activity.description}</p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {format(new Date(activity.createdAt), 'dd MMM yyyy à HH:mm', {
-                            locale: fr,
-                          })}
-                        </span>
-                        {activity.userName && (
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {activity.userName}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    {activity.type === 'custom' && currentUser && (
-                      <div className="flex gap-2">
-                        {/* Edit button - only for creator */}
-                        {activity.createdBy === currentUser.id && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingActivity(activity)}
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
-
-                        {/* Delete button - for all admins */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteActivity(activity.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <AdminActivityList
+                activities={displayActivities}
+                onEdit={(id) => {
+                  const activity = activities.find((a) => a.id === id);
+                  if (activity) {
+                    setEditingActivity(activity);
+                  }
+                }}
+                onDelete={handleDeleteActivity}
+                currentUserId={currentUser?.id}
+              />
             )}
           </CardContent>
         </Card>
