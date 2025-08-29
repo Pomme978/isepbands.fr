@@ -30,7 +30,8 @@ export async function signIn(email: string, password: string) {
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error?.error || 'Invalid credentials');
+    // Use message field first, then error field, then default
+    throw new Error(error?.message || error?.error || 'Invalid credentials');
   }
   return res.json();
 }
@@ -147,6 +148,8 @@ export function useAuth(onAutoLogout?: () => void) {
         if (cb) cb();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erreur de connexion');
+        // Re-throw the error so the calling code can handle it
+        throw err;
       } finally {
         setLoading(false);
       }
