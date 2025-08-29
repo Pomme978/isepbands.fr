@@ -105,6 +105,8 @@ export default function EventsPage() {
         <div className="mt-20 w-screen relative left-1/2 -translate-x-1/2 z-30">
           <SignBoard title="THE CALENDAR" className="-top-16" hideLeftSupport={true} />
         </div>
+
+        <p>ICI CALENDRIER</p>
       </div>
 
       <h5 className="text-[10px] text-white/70 relative max-w-7xl flex font-press-start-2p justify-center md:justify-end mx-auto pt-8">
