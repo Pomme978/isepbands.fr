@@ -24,9 +24,21 @@ interface UserRole {
   variant?: 'president' | 'executive' | 'pole';
 }
 
+interface TeamSettings {
+  vision: string;
+  groupPhotoUrl?: string;
+}
+
 const Page = async () => {
   // Fetch team members from API
   let teamUsers: User[] = [];
+  let teamSettings: TeamSettings = {
+    vision: `🎵 Rassembler les passionnés de musique
+🎸 Créer des expériences musicales inoubliables
+🤝 Renforcer les liens entre les étudiants
+🎯 Développer les talents artistiques
+🌟 Faire rayonner l'ISEP par la musique`,
+  };
 
   try {
     const response = await fetch(
@@ -43,6 +55,22 @@ const Page = async () => {
     }
   } catch (error) {
     console.error('Error fetching team members:', error);
+  }
+
+  // Fetch team settings
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/team/settings`,
+      {
+        cache: 'no-store',
+      },
+    );
+
+    if (response.ok) {
+      teamSettings = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching team settings:', error);
   }
 
   // Define role mappings - utilise le roleDisplayName de l'API au lieu du displayName hardcodé
@@ -98,9 +126,9 @@ const Page = async () => {
         </div>
       </DecoratedText>
 
-      {/* Group Photo - Using imported image */}
+      {/* Group Photo - Using dynamic or fallback image */}
       <GroupPhoto
-        src={wallpaperImage}
+        src={teamSettings.groupPhotoUrl || wallpaperImage}
         alt="Bureau ISEP 2025-2026"
         scotchCount={2}
         className="mt-10"
@@ -128,7 +156,7 @@ const Page = async () => {
 
       {/* Vision Note */}
       <div className="flex justify-center mb-20 px-4">
-        <VisionNote />
+        <VisionNote vision={teamSettings.vision} />
       </div>
 
       <h5 className="text-sm text-white/50 relative max-w-7xl flex font-handrawn justify-center md:justify-end mx-auto py-4">

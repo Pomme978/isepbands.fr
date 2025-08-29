@@ -3,7 +3,19 @@ import React from 'react';
 import Image from 'next/image';
 import pinIcon from '@/assets/svg/pin.svg';
 
-export const VisionNote: React.FC = () => {
+interface VisionNoteProps {
+  vision?: string;
+}
+
+export const VisionNote: React.FC<VisionNoteProps> = ({ vision }) => {
+  const defaultVision = `🎵 Rassembler les passionnés de musique
+🎸 Créer des expériences musicales inoubliables
+🤝 Renforcer les liens entre les étudiants
+🎯 Développer les talents artistiques
+🌟 Faire rayonner l'ISEP par la musique`;
+
+  const visionText = vision || defaultVision;
+
   return (
     <div className="relative max-w-md mx-auto">
       {/* Pin */}
@@ -21,11 +33,9 @@ export const VisionNote: React.FC = () => {
 
         {/* Vision content */}
         <div className="space-y-3 text-md text-yellow-900 leading-relaxed">
-          <p>🎵 Rassembler les passionnés de musique</p>
-          <p>🎸 Créer des expériences musicales inoubliables</p>
-          <p>🤝 Renforcer les liens entre les étudiants</p>
-          <p>🎯 Développer les talents artistiques</p>
-          <p>🌟 Faire rayonner l&#39;ISEP par la musique</p>
+          {visionText.split('\n').map((line, index) => (
+            <p key={index}>{line}</p>
+          ))}
           <p className="text-center font-bold mt-4 text-yellow-800">#IsepBands2026</p>
         </div>
 

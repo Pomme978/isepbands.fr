@@ -149,7 +149,7 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
     title: 'Board Management',
     items: [
       {
-        name: 'Board Members',
+        name: 'Board Team',
         href: '/admin/team',
         icon: Crown,
       },
