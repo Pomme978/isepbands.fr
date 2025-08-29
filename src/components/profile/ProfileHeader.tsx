@@ -11,6 +11,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useLang } from '@/hooks/useLang';
 import { formatPreferredGenres } from '@/utils/genreUtils';
+import { calculateGraduationYear } from '@/utils/schoolUtils';
 
 interface UserProfile {
   id: string;
@@ -79,9 +80,11 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
                   </Link>
                 )}
               </div>
-              {/* Affiche la promo et l'âge sur la même ligne */}
-              {(user.promotion || user.age) && (
+              {/* Affiche l'année de promotion, la promotion et l'âge sur la même ligne */}
+              {(user.currentLevel || user.promotion || user.age) && (
                 <p className="text-gray-600 text-lg">
+                  {user.currentLevel && `Promotion ${calculateGraduationYear(user.currentLevel)}`}
+                  {user.currentLevel && (user.promotion || user.age) && ' • '}
                   {user.promotion}
                   {user.promotion && user.age && ', '}
                   {user.age && `${user.age} ans`}
