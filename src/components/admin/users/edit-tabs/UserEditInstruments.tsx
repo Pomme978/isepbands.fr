@@ -64,6 +64,12 @@ export default function UserEditInstruments({
   const [isAddingInstrument, setIsAddingInstrument] = useState(false);
   const [editingInstrument, setEditingInstrument] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [newInstrument, setNewInstrument] = useState({
+    name: '',
+    level: 'Beginner',
+    yearsPlaying: 0,
+    primary: false,
+  });
 
   // Load available instruments from database
   useEffect(() => {
@@ -118,13 +124,6 @@ export default function UserEditInstruments({
     setPreferredGenres(genres);
     console.log('Loaded user preferred genres:', genres);
   }, [user]);
-
-  const [newInstrument, setNewInstrument] = useState({
-    name: '',
-    level: 'Beginner',
-    yearsPlaying: 0,
-    primary: false,
-  });
 
   const addInstrument = () => {
     setErrorMessage(null); // Clear previous errors

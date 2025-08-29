@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
 import { prisma } from '@/prisma';
 import { z } from 'zod';
-import { ensureDBIntegrity } from '@/utils/dbIntegrity';
+// import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Moved to manual DB admin page
 
 const createRoleSchema = z.object({
   name: z.string().min(1),
@@ -23,8 +23,6 @@ export async function GET(req: NextRequest) {
   // }
 
   try {
-    // Ensure database integrity first
-    await ensureDBIntegrity();
     const roles = await prisma.role.findMany({
       select: {
         id: true,

@@ -226,7 +226,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
     setCreateError(null);
 
     try {
-      // First, handle photo upload if there's a profile photo
+      // Handle optional photo upload
       let photoUrl = null;
       if (formData.profilePhoto) {
         try {
@@ -234,14 +234,14 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
           if (uploadResult.success && uploadResult.url) {
             photoUrl = uploadResult.url;
           } else {
-            console.error('Photo upload failed:', uploadResult.error);
-            setCreateError(`Photo upload failed: ${uploadResult.error}`);
-            return;
+            // Photo upload failed, but continue without photo
+            console.warn('Photo upload failed:', uploadResult.error);
+            photoUrl = null;
           }
         } catch (uploadError) {
-          console.error('Error uploading photo:', uploadError);
-          setCreateError('Failed to upload profile photo');
-          return;
+          // Photo upload error, but continue without photo
+          console.warn('Error uploading photo:', uploadError);
+          photoUrl = null;
         }
       }
 
@@ -264,7 +264,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
         achievementBadges: formData.achievementBadges,
         bio: formData.bio || '',
         pronouns: formData.pronouns || undefined,
-        photoUrl: photoUrl, // Include uploaded photo URL
+        photoUrl: photoUrl || undefined, // Include uploaded photo URL or undefined
         temporaryPassword: formData.temporaryPassword,
         sendWelcomeEmail: formData.sendWelcomeEmail,
         requirePasswordChange: formData.requirePasswordChange,

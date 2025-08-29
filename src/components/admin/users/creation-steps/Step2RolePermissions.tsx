@@ -171,7 +171,7 @@ export default function Step2RolePermissions({ formData, setFormData }: Step2Rol
                 {selectedRoleInfo.maxUsers === 999 ? '∞' : selectedRoleInfo.maxUsers} users
                 {selectedRoleInfo.spotsLeft < 999 && selectedRoleInfo.spotsLeft > 0 && (
                   <span className="ml-2 text-green-600">
-                    ✓ Available ({selectedRoleInfo.spotsLeft} spots left)
+                    Available ({selectedRoleInfo.spotsLeft} spots left)
                   </span>
                 )}
               </p>

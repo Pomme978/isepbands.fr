@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
 import { prisma } from '@/prisma';
 import { z } from 'zod';
-import { ensureDBIntegrity } from '@/utils/dbIntegrity';
+// import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Removed for performance
 
 const createInstrumentSchema = z.object({
   name: z.string().min(1),
@@ -21,9 +21,6 @@ const updateInstrumentSchema = z.object({
 // GET: Liste tous les instruments
 export async function GET() {
   try {
-    // Ensure instruments exist in database
-    await ensureDBIntegrity();
-
     const instruments = await prisma.instrument.findMany({
       select: {
         id: true,

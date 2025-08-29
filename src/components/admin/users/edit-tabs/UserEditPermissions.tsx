@@ -13,14 +13,16 @@ interface Role {
   nameEnFemale: string;
   weight: number;
   isCore: boolean;
+  userCount?: number;
+  maxUsers?: number;
+  isAvailable?: boolean;
+  spotsLeft?: number;
   permissions?: {
-    permission: {
-      id: number;
-      name: string;
-      nameFr: string;
-      nameEn: string;
-      description: string;
-    };
+    id: number;
+    name: string;
+    nameFr: string;
+    nameEn: string;
+    description: string;
   }[];
 }
 
@@ -60,6 +62,9 @@ export default function UserEditPermissions({
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
     user.roles?.map((r) => r.role?.id || r.roleId || r.id) || [],
   );
+  const [originalRoleIds] = useState<number[]>(
+    user.roles?.map((r) => r.role?.id || r.roleId || r.id) || [],
+  );
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [isFullAccess, setIsFullAccess] = useState(user.isFullAccess || false);
 
@@ -74,7 +79,9 @@ export default function UserEditPermissions({
       const fullRole = roles.find((r) => r.id === roleId);
       if (fullRole && fullRole.permissions) {
         fullRole.permissions.forEach((p) => {
-          permissionIds.add(p.permission.id);
+          if (p && p.id) {
+            permissionIds.add(p.id);
+          }
         });
       }
     });
@@ -99,9 +106,7 @@ export default function UserEditPermissions({
           setAvailableRoles(roles);
           setAvailablePermissions(permissionsData.permissions || []);
 
-          // Initialize current permissions from user roles
-          const currentPermissions = getCurrentPermissions(roles, user.roles);
-          setSelectedPermissions(Array.from(currentPermissions));
+          // Roles data loaded, permissions will be initialized in separate useEffect
         }
       } catch (error) {
         console.error('Error fetching roles and permissions:', error);
@@ -111,7 +116,15 @@ export default function UserEditPermissions({
     };
 
     fetchRolesAndPermissions();
-  }, [user.roles]);
+  }, []); // Only fetch once on mount
+
+  // Initialize permissions from user roles when roles are loaded
+  useEffect(() => {
+    if (availableRoles.length > 0 && user.roles) {
+      const currentPermissions = getCurrentPermissions(availableRoles, user.roles);
+      setSelectedPermissions(Array.from(currentPermissions));
+    }
+  }, [availableRoles]); // Only when roles are first loaded
 
   if (loading) {
     return (
@@ -121,10 +134,50 @@ export default function UserEditPermissions({
     );
   }
 
+  // Calculate adjusted role availability considering current user's changes
+  const getAdjustedRoleAvailability = (role: Role) => {
+    const originallyHadThisRole = originalRoleIds.includes(role.id);
+    const currentlySelectedThisRole = selectedRoleIds.includes(role.id);
+
+    let adjustedUserCount = role.userCount || 0;
+    let adjustedIsAvailable = role.isAvailable || false;
+    let adjustedSpotsLeft = role.spotsLeft || 0;
+
+    // If user originally had this role but no longer does, decrease count
+    if (originallyHadThisRole && !currentlySelectedThisRole) {
+      adjustedUserCount = Math.max(0, adjustedUserCount - 1);
+      adjustedSpotsLeft = (role.maxUsers || 1) - adjustedUserCount;
+      adjustedIsAvailable = adjustedSpotsLeft > 0;
+    }
+    // If user didn't have this role but now does, increase count
+    else if (!originallyHadThisRole && currentlySelectedThisRole) {
+      adjustedUserCount = adjustedUserCount + 1;
+      adjustedSpotsLeft = Math.max(0, (role.maxUsers || 1) - adjustedUserCount);
+      adjustedIsAvailable = adjustedSpotsLeft > 0 || currentlySelectedThisRole;
+    }
+
+    return {
+      userCount: adjustedUserCount,
+      maxUsers: role.maxUsers,
+      isAvailable: adjustedIsAvailable,
+      spotsLeft: adjustedSpotsLeft,
+    };
+  };
+
   const updateRoles = (roleId: number) => {
-    const newSelectedRoles = selectedRoleIds.includes(roleId)
-      ? selectedRoleIds.filter((id) => id !== roleId)
-      : [...selectedRoleIds, roleId];
+    const role = availableRoles.find((r) => r.id === roleId);
+    const isCurrentlySelected = selectedRoleIds.includes(roleId);
+    const adjustedAvailability = getAdjustedRoleAvailability(role!);
+
+    // Check if role is not available and not currently selected
+    if (role && !adjustedAvailability.isAvailable && !isCurrentlySelected) {
+      return; // Don't allow selection of unavailable roles
+    }
+
+    // Restrict to only one role at a time
+    const newSelectedRoles = isCurrentlySelected
+      ? [] // Remove if already selected
+      : [roleId]; // Replace with only the new one
 
     setSelectedRoleIds(newSelectedRoles);
 
@@ -134,7 +187,9 @@ export default function UserEditPermissions({
         const role = availableRoles.find((r) => r.id === id);
         return role
           ? {
-              role: role, // Simplified structure that matches API expectation
+              role: role,
+              id: role.id.toString(), // Ensure consistent ID format
+              roleId: role.id.toString(),
             }
           : null;
       })
@@ -190,7 +245,7 @@ export default function UserEditPermissions({
     // Check if this permission comes from any of the user's roles
     const fromRoles = selectedRoleIds.some((roleId) => {
       const role = availableRoles.find((r) => r.id === roleId);
-      return role?.permissions?.some((p) => p.permission.id === permissionId);
+      return role?.permissions?.some((p) => p.id === permissionId);
     });
 
     return fromRoles ? 'role' : 'individual';
@@ -201,35 +256,71 @@ export default function UserEditPermissions({
       {/* Role Selection */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Association Role</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Un seul rôle peut être assigné par utilisateur.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {availableRoles.map((role) => (
-            <div
-              key={role.id}
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                selectedRoleIds.includes(role.id)
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => updateRoles(role.id)}
-            >
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  checked={selectedRoleIds.includes(role.id)}
-                  onChange={() => updateRoles(role.id)}
-                  className="text-primary border-gray-300 focus:ring-primary/20"
-                />
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">
-                    {getRoleDisplayName(role, user.pronouns, 'fr')}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Weight: {role.weight} • {role.isCore ? 'Core Role' : 'Custom Role'}
-                  </p>
+          {availableRoles.map((role) => {
+            const isSelected = selectedRoleIds.includes(role.id);
+            const adjustedAvailability = getAdjustedRoleAvailability(role);
+            const isNotAvailable = !adjustedAvailability.isAvailable && !isSelected;
+            const isDisabled = isNotAvailable;
+
+            return (
+              <div
+                key={role.id}
+                className={`p-4 border-2 rounded-lg transition-all ${
+                  isDisabled
+                    ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+                    : isSelected
+                      ? 'border-primary bg-primary/5 cursor-pointer'
+                      : 'border-gray-200 hover:border-gray-300 cursor-pointer'
+                }`}
+                onClick={() => !isDisabled && updateRoles(role.id)}
+              >
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    name="userRole"
+                    checked={isSelected}
+                    onChange={() => !isDisabled && updateRoles(role.id)}
+                    disabled={isDisabled}
+                    className="text-primary border-gray-300 focus:ring-primary/20 disabled:opacity-50"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h4
+                        className={`font-medium ${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}
+                      >
+                        {getRoleDisplayName(role, user.pronouns, 'fr')}
+                      </h4>
+                      {/* Always show counter for non-unlimited roles */}
+                      {role.maxUsers !== undefined && role.maxUsers < 999 && (
+                        <span
+                          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                            isNotAvailable && !isSelected
+                              ? 'bg-red-100 text-red-700'
+                              : isSelected || adjustedAvailability.spotsLeft > 0
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {isSelected
+                            ? `Sélectionné (${adjustedAvailability.userCount}/${role.maxUsers})`
+                            : isNotAvailable
+                              ? `Complet (${adjustedAvailability.userCount}/${role.maxUsers})`
+                              : `${adjustedAvailability.spotsLeft} place${adjustedAvailability.spotsLeft > 1 ? 's' : ''} restante${adjustedAvailability.spotsLeft > 1 ? 's' : ''}`}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-sm ${isDisabled ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Weight: {role.weight} • {role.isCore ? 'Core Role' : 'Custom Role'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -278,34 +369,6 @@ export default function UserEditPermissions({
               </div>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Role Summary */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Role Summary</h3>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="text-sm space-y-2">
-            <div>
-              <span className="font-medium text-gray-700">Current Roles:</span>
-              <span className="ml-2 text-gray-900">{getCurrentRoleNames()}</span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Access Level:</span>
-              <span
-                className={`ml-2 font-medium ${isFullAccess ? 'text-yellow-600' : 'text-gray-900'}`}
-              >
-                {isFullAccess ? 'Full Access (Override Active)' : 'Role-based permissions'}
-              </span>
-            </div>
-            {isFullAccess && (
-              <div className="pt-2 border-t border-gray-200">
-                <p className="text-xs text-yellow-600">
-                  ⚠️ Full Access Override bypasses all role-based permission restrictions
-                </p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

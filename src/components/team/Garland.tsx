@@ -31,6 +31,7 @@ interface GarlandProps {
   roleInfos: UserRole[];
   lightType?: 'yellow' | 'blue';
   className?: string;
+  preserveUserOrder?: boolean; // New prop to preserve order of passed users
 }
 
 interface CurveData {
@@ -82,6 +83,7 @@ export const Garland: React.FC<GarlandProps> = ({
   roleInfos,
   lightType = 'yellow',
   className = '',
+  preserveUserOrder = false,
 }) => {
   const [isClient, setIsClient] = useState(false);
 
@@ -104,16 +106,25 @@ export const Garland: React.FC<GarlandProps> = ({
     setIsClient(true);
   }, []);
 
-  const validUsers = useMemo(
-    () =>
-      roleInfos
+  const validUsers = useMemo(() => {
+    if (preserveUserOrder) {
+      // Preserve the order of users passed, just match with role info
+      return users
+        .map((user) => {
+          const roleInfo = roleInfos.find((ri) => ri.role === user.role);
+          return roleInfo ? { user, roleInfo } : null;
+        })
+        .filter((item) => item !== null) as { user: User; roleInfo: UserRole }[];
+    } else {
+      // Original logic: order by roleInfos
+      return roleInfos
         .flatMap((roleInfo) => {
           const usersWithRole = users.filter((u) => u.role === roleInfo.role);
           return usersWithRole.map((user) => ({ user, roleInfo }));
         })
-        .filter((item) => item !== null) as { user: User; roleInfo: UserRole }[],
-    [users, roleInfos],
-  );
+        .filter((item) => item !== null) as { user: User; roleInfo: UserRole }[];
+    }
+  }, [users, roleInfos, preserveUserOrder]);
 
   const { attachmentPoints, cardsPerRow, totalRows } = useGarlandLayout(
     validUsers.map((v) => v.user),

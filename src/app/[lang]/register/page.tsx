@@ -18,6 +18,7 @@ import BackButton from '@/components/ui/back-button';
 import RegisterFormCard from '@/components/register/RegisterFormCard';
 
 import { useEffect } from 'react';
+import Loading from '@/components/ui/Loading';
 
 // Instruments dynamiques
 async function fetchInstruments() {
@@ -133,7 +134,7 @@ export default function RegisterPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading text="Redirection..." size="lg" />
       </div>
     );
   }

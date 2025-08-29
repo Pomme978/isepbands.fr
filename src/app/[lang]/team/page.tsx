@@ -60,8 +60,27 @@ const Page = async () => {
     { role: 'head_of_creation', displayName: '', section: 'pole', variant: 'pole' },
   ];
 
-  // Group roles by section
+  // Group roles by section with custom ordering for executives
   const executiveRoles = roleMapping.filter((r) => r.section === 'executive');
+
+  // Custom sort for executive section to put president in middle
+  const sortedExecutiveUsers = () => {
+    const vpUsers = teamUsers.filter((u) => u.role === 'vice_president');
+    const presidentUsers = teamUsers.filter((u) => u.role === 'president');
+
+    // Arrange as: VP1, President, VP2 (if 2 VPs exist)
+    if (vpUsers.length === 2 && presidentUsers.length === 1) {
+      return [vpUsers[0], presidentUsers[0], vpUsers[1]];
+    } else if (vpUsers.length === 1 && presidentUsers.length === 1) {
+      return [vpUsers[0], presidentUsers[0]];
+    } else {
+      // Fallback to original order
+      return [...vpUsers, ...presidentUsers];
+    }
+  };
+
+  const executiveUsersOrdered = sortedExecutiveUsers();
+
   const otherRoles = roleMapping.filter((r) => r.section === 'other');
   const poleRoles = roleMapping.filter((r) => r.section === 'pole');
 
@@ -88,7 +107,13 @@ const Page = async () => {
       />
 
       {/* Membres exécutifs */}
-      <Garland users={teamUsers} roleInfos={executiveRoles} lightType="yellow" className="mb-0" />
+      <Garland
+        users={executiveUsersOrdered}
+        roleInfos={executiveRoles}
+        lightType="yellow"
+        className="mb-0"
+        preserveUserOrder={true}
+      />
 
       {/* Autres membres */}
       <Garland users={teamUsers} roleInfos={otherRoles} lightType="yellow" className="mb-100" />

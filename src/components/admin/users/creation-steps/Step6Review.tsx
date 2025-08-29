@@ -253,7 +253,7 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
                   isPasswordValid ? 'text-green-800' : 'text-red-800'
                 }`}
               >
-                Critères de sécurité du mot de passe {isPasswordValid ? '✓' : '✗'}
+                Critères de sécurité du mot de passe {isPasswordValid ? '(validé)' : '(non validé)'}
               </p>
               <ul className="grid grid-cols-2 gap-1 text-xs">
                 {passwordValidation.map((item) => (
@@ -296,10 +296,10 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-semibold text-green-900 mb-2">What happens next?</h4>
         <ul className="text-sm text-green-800 space-y-1">
-          <li>✅ User account will be created with the specified information</li>
-          {formData.sendWelcomeEmail && <li>📧 Welcome email will be sent to {formData.email}</li>}
-          <li>🔗 You&lsquo;ll receive a link to view the user&lsquo;s profile</li>
-          <li>👤 User can be added to groups if needed</li>
+          <li>• User account will be created with the specified information</li>
+          {formData.sendWelcomeEmail && <li>• Welcome email will be sent to {formData.email}</li>}
+          <li>• You&apos;ll receive a link to view the user&apos;s profile</li>
+          <li>• User can be added to groups if needed</li>
         </ul>
       </div>
     </div>

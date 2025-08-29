@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { ensureDBIntegrity } from '@/utils/dbIntegrity';
+// import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Moved to manual DB admin page
 
 // Schema for user creation
 const createUserSchema = z.object({
@@ -38,7 +38,7 @@ const createUserSchema = z.object({
   bio: z.string().optional(),
   pronouns: z.string().optional(),
   preferredGenres: z.array(z.string()).optional(),
-  photoUrl: z.string().optional(),
+  photoUrl: z.string().nullable().optional(),
 
   // Account setup
   temporaryPassword: z
@@ -63,9 +63,6 @@ const createUserSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    // Ensure database integrity first
-    await ensureDBIntegrity();
-
     const body = await req.json();
     const validatedData = createUserSchema.parse(body);
 

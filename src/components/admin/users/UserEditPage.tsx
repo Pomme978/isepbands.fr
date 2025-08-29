@@ -233,9 +233,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             console.log('Processing role:', role);
             const roleId = role.role?.id || role.id || role.roleId;
             console.log('Extracted roleId:', roleId, typeof roleId);
-            return roleId;
+            // Ensure we return a number, not string
+            return typeof roleId === 'string' ? parseInt(roleId) : roleId;
           })
-          .filter((id) => id !== undefined && id !== null),
+          .filter((id) => id !== undefined && id !== null && !isNaN(id)),
         badges: user.badges?.map((badge: UserBadge) => ({
           name: badge.name,
         })),
@@ -440,7 +441,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   // Loading state
   if (loading) {
     return (
-      <div className="py-12">
+      <div className="flex items-center justify-center py-12">
         <Loading text="Loading user..." size="lg" />
       </div>
     );

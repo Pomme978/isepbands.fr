@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { getErrorMessage } from '@/lib/i18n-api';
 import { prisma } from '../../lib/prisma';
 
 export async function requireAdminAuth(req: NextRequest) {
   const user = await getSessionUser(req);
 
   if (!user) {
-    const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
-    const error = await getErrorMessage('unauthorized', lang);
+    // Use simple error message to avoid i18n overhead
     return {
       ok: false,
-      res: NextResponse.json({ error }, { status: 401 }),
+      res: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
     };
   }
 
@@ -22,8 +20,6 @@ export async function requireAdminAuth(req: NextRequest) {
 
   // Check if regular user has admin access
   if (!user.isFullAccess) {
-    const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
-    await getErrorMessage('forbidden', lang);
     return {
       ok: false,
       res: NextResponse.json({ error: 'Admin access required' }, { status: 403 }),
@@ -36,11 +32,10 @@ export async function requireAdminAuth(req: NextRequest) {
 export async function requireAdminPermission(req: NextRequest, permission: string) {
   const user = await getSessionUser(req);
   if (!user) {
-    const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
-    const error = await getErrorMessage('unauthorized', lang);
+    // Use simple error message to avoid i18n overhead
     return {
       ok: false,
-      res: NextResponse.json({ error }, { status: 401 }),
+      res: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
     };
   }
 
@@ -76,11 +71,9 @@ export async function requireAdminPermission(req: NextRequest, permission: strin
   });
 
   if (!userWithPermissions) {
-    const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
-    const error = await getErrorMessage('unauthorized', lang);
     return {
       ok: false,
-      res: NextResponse.json({ error }, { status: 401 }),
+      res: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
     };
   }
 
@@ -97,11 +90,9 @@ export async function requireAdminPermission(req: NextRequest, permission: strin
   );
 
   if (!hasPermission) {
-    const lang = req.headers.get('accept-language')?.split(',')[0]?.split('-')[0] || 'fr';
-    const error = await getErrorMessage('forbidden', lang);
     return {
       ok: false,
-      res: NextResponse.json({ error }, { status: 403 }),
+      res: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
     };
   }
 
