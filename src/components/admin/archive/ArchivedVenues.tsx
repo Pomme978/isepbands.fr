@@ -37,7 +37,12 @@ export default function ArchivedVenues({ filters }: ArchivedVenuesProps) {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams(filters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          params.append(key, value);
+        }
+      });
       const response = await fetch(`/api/admin/archive/venues?${params}`);
 
       if (!response.ok) {

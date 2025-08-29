@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/utils/authMiddleware';
+import { Prisma } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   try {
     const authResult = await requireAdminAuth(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
 
     const url = new URL(req.url);
     const search = url.searchParams.get('search') || '';
@@ -13,22 +16,23 @@ export async function GET(req: NextRequest) {
     const dateRange = url.searchParams.get('dateRange') || 'all';
 
     // Build where clause for archived posts
-    const whereClause: {
-      isArchived: boolean;
-      OR?: Array<{
-        title?: { contains: string; mode: 'insensitive' };
-        description?: { contains: string; mode: 'insensitive' };
-      }>;
-      archivedAt?: { gte: Date };
-    } = {
+    const whereClause: Prisma.ActivityWhereInput = {
       isArchived: true,
     };
 
-    // Search filter
-    if (search) {
+    // Search filter - recherche dans titre, description ET nom d'utilisateur
+    if (search && search.trim()) {
       whereClause.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
+        // Recherche dans le titre
+        { title: { contains: search } },
+        // Recherche dans la description
+        { description: { contains: search } },
+        // Recherche dans le nom de l'utilisateur
+        {
+          user: {
+            OR: [{ firstName: { contains: search } }, { lastName: { contains: search } }],
+          },
+        },
       ];
     }
 
@@ -60,7 +64,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Build order by clause
-    let orderBy: { archivedAt: 'desc' | 'asc' } | { title: 'asc' } = { archivedAt: 'desc' };
+    let orderBy: Prisma.ActivityOrderByWithRelationInput = { archivedAt: 'desc' };
 
     switch (sortBy) {
       case 'oldest':
@@ -140,7 +144,11 @@ export async function GET(req: NextRequest) {
       total: posts.length,
     });
   } catch (error) {
-    console.error('Error fetching archived posts:', error);
+    console.error('Error fetching archived posts:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      error: error,
+    });
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la récupération des posts archivés' },
       { status: 500 },

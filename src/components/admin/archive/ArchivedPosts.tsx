@@ -39,11 +39,19 @@ export default function ArchivedPosts({ filters }: ArchivedPostsProps) {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams(filters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value && value !== '') {
+          params.append(key, value);
+        }
+      });
+      console.log('Fetching archived posts with params:', params.toString());
       const response = await fetch(`/api/admin/archive/posts?${params}`);
 
       if (!response.ok) {
-        throw new Error('Erreur lors du chargement des posts archivés');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', response.status, errorData);
+        throw new Error(errorData.error || 'Erreur lors du chargement des posts archivés');
       }
 
       const data = await response.json();

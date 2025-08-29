@@ -38,7 +38,12 @@ export default function ArchivedUsers({ filters }: ArchivedUsersProps) {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams(filters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          params.append(key, value);
+        }
+      });
       console.log('Fetching archived users with params:', params.toString());
 
       const response = await fetch(`/api/admin/archive/users?${params}`);
