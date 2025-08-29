@@ -1,0 +1,37 @@
+-- Add missing columns to UserInstrument table
+ALTER TABLE `UserInstrument` 
+ADD COLUMN IF NOT EXISTS `yearsPlaying` INT NULL,
+ADD COLUMN IF NOT EXISTS `isPrimary` BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Add missing columns to User table if they don't exist
+ALTER TABLE `User`
+ADD COLUMN IF NOT EXISTS `pronouns` VARCHAR(191) NULL,
+ADD COLUMN IF NOT EXISTS `isOutOfSchool` BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS `isPublicProfile` BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS `isFullAccess` BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Add missing columns to Group table if they don't exist
+ALTER TABLE `Group`
+ADD COLUMN IF NOT EXISTS `genre` VARCHAR(191) NULL,
+ADD COLUMN IF NOT EXISTS `isVerified` BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS `isLookingForMembers` BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS `isInPreparation` BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Add missing columns to GroupMembership table
+ALTER TABLE `GroupMembership`
+ADD COLUMN IF NOT EXISTS `role` VARCHAR(191) NULL,
+ADD COLUMN IF NOT EXISTS `isAdmin` BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Add missing columns to Event table
+ALTER TABLE `Event`
+ADD COLUMN IF NOT EXISTS `isPinned` BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS `isVisible` BOOLEAN NOT NULL DEFAULT TRUE,
+ADD COLUMN IF NOT EXISTS `isArchived` BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS `helloAssoUrl` VARCHAR(191) NULL;
+
+-- Add missing columns to InstrumentRequirement table
+ALTER TABLE `InstrumentRequirement`
+ADD COLUMN IF NOT EXISTS `requiredCount` INT NOT NULL DEFAULT 1,
+ADD COLUMN IF NOT EXISTS `currentCount` INT NOT NULL DEFAULT 0;
+
+-- Foreign key constraints will be added later if needed
