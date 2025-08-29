@@ -69,7 +69,9 @@ export default function ProfileSettingsPage() {
     const fetchUserData = async () => {
       try {
         // Fetch current user session
-        const sessionResponse = await fetch('/api/auth/session');
+        const sessionResponse = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
         if (!sessionResponse.ok) {
           throw new Error('Failed to fetch session');
         }
@@ -82,7 +84,9 @@ export default function ProfileSettingsPage() {
         setUserSession(sessionData);
 
         // Fetch user profile data
-        const profileResponse = await fetch(`/api/profile/${sessionData.user.id}`);
+        const profileResponse = await fetch(`/api/profile/${sessionData.user.id}`, {
+          credentials: 'include',
+        });
         if (!profileResponse.ok) {
           throw new Error('Failed to fetch profile');
         }
@@ -216,6 +220,7 @@ export default function ProfileSettingsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(profileDataToSave),
       });
 
