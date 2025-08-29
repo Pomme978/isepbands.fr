@@ -14,7 +14,15 @@ interface User {
   promotion: string;
   role: string;
   joinDate: string;
-  status: 'current' | 'former' | 'pending' | 'graduated' | 'refused' | 'suspended' | 'deleted';
+  status:
+    | 'current'
+    | 'former'
+    | 'pending'
+    | 'graduated'
+    | 'refused'
+    | 'suspended'
+    | 'deleted'
+    | 'archived';
   age?: number;
   instruments?: string[];
   groups?: string[];
@@ -50,6 +58,8 @@ export default function UserCard({
         return 'bg-orange-100 text-orange-800';
       case 'deleted':
         return 'bg-gray-100 text-gray-800';
+      case 'archived':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

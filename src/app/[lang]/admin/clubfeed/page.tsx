@@ -23,6 +23,7 @@ import Loading from '@/components/ui/Loading';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { AdminActivityList } from '@/components/admin/AdminActivityList';
+import ArchiveConfirmModal from '@/components/admin/common/ArchiveConfirmModal';
 import type { ActivityType } from '@/types/activity';
 
 interface ActivityItem {
@@ -49,6 +50,15 @@ export default function AdminClubFeedPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingActivity, setEditingActivity] = useState<ActivityItem | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+  const [archiveModal, setArchiveModal] = useState<{
+    isOpen: boolean;
+    activityId: string;
+    activityTitle: string;
+  }>({
+    isOpen: false,
+    activityId: '',
+    activityTitle: '',
+  });
 
   // Form state
   const [newActivity, setNewActivity] = useState({
@@ -268,6 +278,51 @@ export default function AdminClubFeedPage() {
     }
   };
 
+  const handleArchiveActivity = (id: string) => {
+    const activity = activities.find((a) => a.id === id);
+    if (activity) {
+      setArchiveModal({
+        isOpen: true,
+        activityId: id,
+        activityTitle: activity.title,
+      });
+    }
+  };
+
+  const confirmArchiveActivity = async (reason?: string) => {
+    try {
+      const response = await fetch(`/api/admin/posts/${archiveModal.activityId}/archive`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason: reason || 'Archivé par un administrateur' }),
+      });
+
+      if (response.ok) {
+        // Remove from current list
+        setActivities(activities.filter((a) => a.id !== archiveModal.activityId));
+        setDisplayActivities(displayActivities.filter((a) => a.id !== archiveModal.activityId));
+
+        // Show success message
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error('Error archiving activity:', error);
+      setSaveError("Erreur lors de l'archivage");
+      setTimeout(() => setSaveError(null), 5000);
+    }
+  };
+
+  const closeArchiveModal = () => {
+    setArchiveModal({
+      isOpen: false,
+      activityId: '',
+      activityTitle: '',
+    });
+  };
+
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'user_joined':
@@ -309,7 +364,7 @@ export default function AdminClubFeedPage() {
             <Alert className="bg-green-50 border-green-200 max-w-sm">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-base md:text-sm text-green-800 ml-2">
-                Activité créée avec succès
+                Opération réussie
               </AlertDescription>
             </Alert>
           </div>
@@ -460,11 +515,22 @@ export default function AdminClubFeedPage() {
                   }
                 }}
                 onDelete={handleDeleteActivity}
+                onArchive={handleArchiveActivity}
                 currentUserId={currentUser?.id}
               />
             )}
           </CardContent>
         </Card>
+
+        {/* Archive Confirmation Modal */}
+        <ArchiveConfirmModal
+          isOpen={archiveModal.isOpen}
+          onClose={closeArchiveModal}
+          onConfirm={confirmArchiveActivity}
+          title="Archiver la publication"
+          description="Cette publication sera déplacée vers les archives et ne sera plus visible sur la page d'accueil ni dans le feed du club."
+          itemName={archiveModal.activityTitle}
+        />
       </div>
     </AdminLayout>
   );

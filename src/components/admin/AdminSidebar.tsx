@@ -175,7 +175,7 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
       },
       {
         name: 'Archives',
-        href: '/admin/archives',
+        href: '/admin/archive',
         icon: Archive,
       },
     ],

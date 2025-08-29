@@ -235,13 +235,15 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     <LangLink href={`/${lang}/groups`}>Mes groupes</LangLink>
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left h-auto py-3"
-                    asChild
-                  >
-                    <LangLink href={`/${lang}/admin`}>Admin</LangLink>
-                  </Button>
+                  {userProfile?.primaryRole && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left h-auto py-3"
+                      asChild
+                    >
+                      <LangLink href={`/${lang}/admin`}>Admin</LangLink>
+                    </Button>
+                  )}
 
                   <Button
                     variant="outline"

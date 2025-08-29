@@ -19,6 +19,9 @@ export async function GET(req: NextRequest) {
     // For now, we'll return mock data until the model is created
     const activities = await prisma.activity
       .findMany({
+        where: {
+          isArchived: false, // Exclure les posts archivés
+        },
         orderBy: { createdAt: 'desc' },
         take: 50,
         include: {
