@@ -25,7 +25,31 @@ export default function Step2AdditionalInfo({
 
   const validateBirthDate = (value: string) => {
     if (!value.trim()) return t('validator.required');
-    // Optionnel: check format date
+
+    const birthDate = new Date(value);
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const birthYear = birthDate.getFullYear();
+
+    // Vérifier que la date n'est pas dans le futur
+    if (birthDate > today) {
+      return 'La date de naissance ne peut pas être dans le futur';
+    }
+
+    // Vérifier l'âge minimum (13 ans) et maximum (100 ans)
+    const age = currentYear - birthYear;
+    if (age < 13) {
+      return 'Vous devez avoir au moins 13 ans pour vous inscrire';
+    }
+    if (age > 100) {
+      return 'Veuillez vérifier votre date de naissance';
+    }
+
+    // Vérifier que l'année n'est pas irréaliste (pas avant 1950)
+    if (birthYear < 1950) {
+      return 'Veuillez entrer une année de naissance valide';
+    }
+
     return '';
   };
   const validatePhone = (value: string) => {
@@ -86,6 +110,8 @@ export default function Step2AdditionalInfo({
               id="birthDate"
               type="date"
               value={data.birthDate}
+              min="1950-01-01"
+              max={new Date().toISOString().split('T')[0]}
               onChange={(e) => {
                 onChange({ birthDate: e.target.value });
                 setBirthDateError(validateBirthDate(e.target.value));
