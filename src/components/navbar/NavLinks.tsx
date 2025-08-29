@@ -12,7 +12,11 @@ const links = [
   { label: 'Le Bureau', href: '/team' },
 ];
 
-export default function NavLinks() {
+interface NavLinksProps {
+  variant?: 'default' | 'white';
+}
+
+export default function NavLinks({ variant = 'default' }: NavLinksProps) {
   const pathname = usePathname();
 
   // Remove language prefix from pathname (/fr/bands -> /bands)
@@ -23,17 +27,21 @@ export default function NavLinks() {
       {links.map((link) => {
         const isActive = cleanPathname === link.href;
 
+        const buttonClasses =
+          variant === 'white'
+            ? `px-3 py-2 text-sm w-full md:w-auto justify-start md:justify-center transition-colors text-white ${
+                isActive
+                  ? 'bg-white/20 hover:bg-white/30'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+              }`
+            : `px-3 py-2 text-sm w-full md:w-auto justify-start md:justify-center transition-colors ${
+                isActive
+                  ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                  : 'hover:bg-accent hover:text-accent-foreground'
+              }`;
+
         return (
-          <Button
-            key={link.href}
-            asChild
-            variant="ghost"
-            className={`px-3 py-2 text-sm w-full md:w-auto justify-start md:justify-center transition-colors ${
-              isActive
-                ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                : 'hover:bg-accent hover:text-accent-foreground'
-            }`}
-          >
+          <Button key={link.href} asChild variant="ghost" className={buttonClasses}>
             <LangLink href={link.href}>{link.label}</LangLink>
           </Button>
         );
