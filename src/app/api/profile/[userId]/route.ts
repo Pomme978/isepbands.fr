@@ -35,7 +35,11 @@ export async function GET(req: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        badges: true,
+        badges: {
+          include: {
+            badgeDefinition: true,
+          },
+        },
         instruments: { include: { instrument: true } },
         roles: { include: { role: true } },
         groupMemberships: {
@@ -71,6 +75,23 @@ export async function GET(req: NextRequest) {
       instrumentsCount: user.instruments?.length,
       rolesCount: user.roles?.length,
     });
+
+    console.log(
+      'User badges with definitions:',
+      user.badges?.map((badge) => ({
+        id: badge.id,
+        name: badge.name,
+        badgeDefinitionId: badge.badgeDefinitionId,
+        badgeDefinition: badge.badgeDefinition
+          ? {
+              id: badge.badgeDefinition.id,
+              labelFr: badge.badgeDefinition.labelFr,
+              color: badge.badgeDefinition.color,
+              isActive: badge.badgeDefinition.isActive,
+            }
+          : null,
+      })),
+    );
 
     // Calculs des champs supplémentaires avec sécurité
     const totalGroups = (user.groupMemberships || []).length;
@@ -125,7 +146,40 @@ export async function GET(req: NextRequest) {
       pronouns: user.pronouns || null,
       isLookingForGroup: user.isLookingForGroup || false,
       preferredGenres: parsePreferredGenres(user.preferredGenres),
-      badges: (user.badges || []).map((b) => getBadgeDisplayName(b.name, 'fr')).filter(Boolean),
+      badges: (user.badges || [])
+        .filter((badge) => {
+          // Only include badges that:
+          // 1. Have active badge definitions, OR
+          // 2. Are legacy badges (no badgeDefinitionId)
+          if (badge.badgeDefinition) {
+            return badge.badgeDefinition.isActive === true;
+          }
+          return !badge.badgeDefinitionId; // Legacy badge
+        })
+        .map((badge) => {
+          if (badge.badgeDefinition) {
+            // System badge with full definition
+            return {
+              id: badge.id,
+              name: badge.badgeDefinition.labelFr,
+              description: badge.badgeDefinition.description,
+              color: badge.badgeDefinition.color,
+              isSystemBadge: true,
+              assignedAt: badge.assignedAt,
+            };
+          } else {
+            // Legacy custom badge
+            return {
+              id: badge.id,
+              name: getBadgeDisplayName(badge.name, 'fr') || badge.name,
+              description: null,
+              color: '#FF6B35', // Default color for legacy badges
+              isSystemBadge: false,
+              assignedAt: badge.assignedAt,
+            };
+          }
+        })
+        .filter(Boolean),
       instruments: user.instruments || [],
       roles: (user.roles || []).map((r) => r.role?.name).filter(Boolean),
       totalGroups,

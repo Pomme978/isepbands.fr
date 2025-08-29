@@ -5,9 +5,18 @@ import { Star } from 'lucide-react';
 
 type Pronouns = 'he/him' | 'she/her' | 'they/them' | 'other';
 
+interface Badge {
+  id: number;
+  name: string;
+  description?: string | null;
+  color: string;
+  isSystemBadge: boolean;
+  assignedAt?: string | Date | null;
+}
+
 interface BadgeDisplayProps {
   role: string;
-  badges: string[];
+  badges: Badge[] | string[];
   isLookingForGroup: boolean;
   pronouns: Pronouns;
   className?: string;
@@ -17,6 +26,22 @@ interface BadgeDisplayProps {
 }
 
 // Role display name is now handled by the API based on user pronouns
+
+// Utility function to determine if a color is dark
+const isColorDark = (color: string): boolean => {
+  // Remove # if present
+  const hex = color.replace('#', '');
+
+  // Parse RGB values
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance < 0.5;
+};
 
 export default function BadgeDisplay({
   role,
@@ -70,14 +95,37 @@ export default function BadgeDisplay({
       {/* Badges supplémentaires */}
       {badges &&
         badges.length > 0 &&
-        badges.map((badge, index) => (
-          <span
-            key={index}
-            className={`inline-flex items-center ${config.padding} bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
-          >
-            {badge}
-          </span>
-        ))}
+        badges.map((badge, index) => {
+          // Handle both new Badge objects and legacy string arrays
+          if (typeof badge === 'string') {
+            return (
+              <span
+                key={index}
+                className={`inline-flex items-center ${config.padding} bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
+              >
+                {badge}
+              </span>
+            );
+          } else {
+            // Badge object with color information
+            const badgeColor = badge.color || '#FF6B35';
+            const isDark = isColorDark(badgeColor);
+
+            return (
+              <span
+                key={badge.id || index}
+                className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
+                style={{
+                  backgroundColor: badgeColor,
+                  color: isDark ? 'white' : 'black',
+                }}
+                title={badge.description || undefined}
+              >
+                {badge.name}
+              </span>
+            );
+          }
+        })}
 
       {/* Badge "Recherche un groupe" */}
       {isLookingForGroup && (

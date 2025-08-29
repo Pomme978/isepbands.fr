@@ -48,6 +48,7 @@ import {
   Database,
   Crown,
   Archive,
+  Award,
   LucideIcon,
 } from 'lucide-react';
 
@@ -112,6 +113,11 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         name: 'Media Library',
         href: '/admin/media',
         icon: Image,
+      },
+      {
+        name: 'Badges',
+        href: '/admin/badges',
+        icon: Award,
       },
     ],
   },

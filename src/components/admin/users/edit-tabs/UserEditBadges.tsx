@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, X, Edit2 } from 'lucide-react';
 
 interface Badge {
@@ -25,85 +25,66 @@ interface UserEditBadgesProps {
   setHasUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-interface AchievementBadgeTemplate {
-  id: string;
-  name: string;
-  description: string;
+interface BadgeDefinition {
+  id: number;
+  key: string;
+  labelFr: string;
+  labelEn: string;
+  description?: string;
   color: string;
 }
-
-const ACHIEVEMENT_BADGES: AchievementBadgeTemplate[] = [
-  {
-    id: 'founding_member',
-    name: 'Founding Member',
-    description: 'Original member of ISEP Bands',
-    color: '#FFD700',
-  },
-  {
-    id: 'former_board_2024',
-    name: 'Former Board 2024-25',
-    description: 'Board member during 2024-25 academic year',
-    color: '#4169E1',
-  },
-  {
-    id: 'concert_performer',
-    name: 'Concert Performer',
-    description: 'Performed in official ISEP Bands concerts',
-    color: '#FF6B35',
-  },
-  {
-    id: 'jam_regular',
-    name: 'Jam Session Regular',
-    description: 'Active participant in jam sessions',
-    color: '#4ECDC4',
-  },
-  {
-    id: 'studio_artist',
-    name: 'Studio Recording Artist',
-    description: 'Recorded tracks in studio sessions',
-    color: '#45B7D1',
-  },
-  {
-    id: 'event_organizer',
-    name: 'Event Organizer',
-    description: 'Helped organize association events',
-    color: '#96CEB4',
-  },
-];
-
-const BADGE_COLORS = [
-  { value: '#FF6B35', name: 'Orange' },
-  { value: '#4ECDC4', name: 'Teal' },
-  { value: '#45B7D1', name: 'Blue' },
-  { value: '#96CEB4', name: 'Green' },
-  { value: '#FFEAA7', name: 'Yellow' },
-  { value: '#DDA0DD', name: 'Purple' },
-  { value: '#FFB6C1', name: 'Pink' },
-  { value: '#D3D3D3', name: 'Silver' },
-  { value: '#FFD700', name: 'Gold' },
-];
 
 export default function UserEditBadges({
   user,
   setUser,
   setHasUnsavedChanges,
 }: UserEditBadgesProps) {
+  const [badgeDefinitions, setBadgeDefinitions] = useState<BadgeDefinition[]>([]);
+  const [loadingBadges, setLoadingBadges] = useState(true);
   const [isAddingBadge, setIsAddingBadge] = useState(false);
   const [editingBadge, setEditingBadge] = useState<number | null>(null);
-  const [newBadge, setNewBadge] = useState({
-    name: '',
-    description: '',
-    color: '#FF6B35',
+  const [selectedBadgeId, setSelectedBadgeId] = useState<number | null>(null);
+
+  // Filter out badges that have inactive badge definitions
+  const userBadges = (user.badges || []).filter((badge) => {
+    // If it's a system badge, check if the badge definition is active
+    const badgeDef = badgeDefinitions.find((b) => b.key === badge.name);
+    if (badgeDef) {
+      return true; // Badge definition found and is active (since we only fetch active ones)
+    }
+    // For legacy badges (no matching badgeDefinition), keep them
+    return true;
   });
 
-  const userBadges = user.badges || [];
+  useEffect(() => {
+    fetchBadgeDefinitions();
+  }, []);
 
-  const addAchievementBadge = (template: AchievementBadgeTemplate) => {
+  const fetchBadgeDefinitions = async () => {
+    try {
+      const response = await fetch('/api/badges');
+      if (response.ok) {
+        const data = await response.json();
+        setBadgeDefinitions(data.badges || []);
+      }
+    } catch (error) {
+      console.error('Error fetching badge definitions:', error);
+    } finally {
+      setLoadingBadges(false);
+    }
+  };
+
+  const addBadge = () => {
+    if (!selectedBadgeId) return;
+
+    const selectedBadgeDef = badgeDefinitions.find((b) => b.id === selectedBadgeId);
+    if (!selectedBadgeDef) return;
+
     const newBadge: Badge = {
       id: Date.now(), // Temporary ID for frontend
-      name: template.name,
-      description: template.description,
-      color: template.color,
+      name: selectedBadgeDef.key, // Store the key
+      description: selectedBadgeDef.description || '',
+      color: selectedBadgeDef.color,
       dateAwarded: new Date().toISOString().split('T')[0],
       awardedBy: 'Admin',
     };
@@ -111,26 +92,10 @@ export default function UserEditBadges({
     const updatedBadges = [...userBadges, newBadge];
     setUser({ ...user, badges: updatedBadges });
     setHasUnsavedChanges(true);
-  };
 
-  const addCustomBadge = () => {
-    if (!newBadge.name.trim()) return;
-
-    const badge: Badge = {
-      id: Date.now(), // Temporary ID for frontend
-      name: newBadge.name,
-      description: newBadge.description,
-      color: newBadge.color,
-      dateAwarded: new Date().toISOString().split('T')[0],
-      awardedBy: 'Admin',
-    };
-
-    const updatedBadges = [...userBadges, badge];
-    setUser({ ...user, badges: updatedBadges });
-
-    setNewBadge({ name: '', description: '', color: '#FF6B35' });
+    // Reset form
     setIsAddingBadge(false);
-    setHasUnsavedChanges(true);
+    setSelectedBadgeId(null);
   };
 
   const removeBadge = (id: number) => {
@@ -147,16 +112,26 @@ export default function UserEditBadges({
     setHasUnsavedChanges(true);
   };
 
-  const availableAchievementBadges = ACHIEVEMENT_BADGES.filter(
-    (template) => !userBadges.some((badge) => badge.name === template.name),
+  const availableBadgeDefinitions = badgeDefinitions.filter(
+    (badgeDef) => !userBadges.some((badge) => badge.name === badgeDef.key),
   );
 
-  const getIsAchievementBadge = (badgeName: string) => {
-    return ACHIEVEMENT_BADGES.some((template) => template.name === badgeName);
+  const getIsSystemBadge = (badgeName: string) => {
+    return badgeDefinitions.some((badgeDef) => badgeDef.key === badgeName);
   };
 
   const BadgeCard = ({ badge }: { badge: Badge }) => {
-    const isAchievement = getIsAchievementBadge(badge.name);
+    const isSystemBadge = getIsSystemBadge(badge.name);
+    const badgeDef = badgeDefinitions.find((b) => b.key === badge.name);
+
+    console.log('Badge display debug:', {
+      badgeName: badge.name,
+      badgeColor: badge.color,
+      badgeDefFound: badgeDef?.labelFr,
+      badgeDefColor: badgeDef?.color,
+      isSystemBadge,
+      finalColor: (isSystemBadge && badgeDef?.color) || badge.color || '#FF6B35',
+    });
 
     return (
       <div className="p-4 border-2 border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors">
@@ -164,21 +139,21 @@ export default function UserEditBadges({
           <div className="flex items-center space-x-3">
             <div
               className="w-6 h-6 rounded-full border-2 border-gray-300"
-              style={{ backgroundColor: badge.color || '#FF6B35' }}
+              style={{
+                backgroundColor: (isSystemBadge && badgeDef?.color) || badge.color || '#FF6B35',
+              }}
             />
             <div>
-              <h4 className="font-semibold text-gray-900">{badge.name}</h4>
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  isAchievement ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                }`}
-              >
-                {isAchievement ? 'Achievement' : 'Custom'}
+              <h4 className="font-semibold text-gray-900">
+                {isSystemBadge ? badgeDef?.labelFr || badge.name : badge.name}
+              </h4>
+              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                Badge
               </span>
             </div>
           </div>
           <div className="flex items-center space-x-1">
-            {!isAchievement && (
+            {!isSystemBadge && (
               <button
                 onClick={() => setEditingBadge(badge.id)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -195,54 +170,51 @@ export default function UserEditBadges({
           </div>
         </div>
 
-        {editingBadge === badge.id && !isAchievement ? (
+        {editingBadge === badge.id && !isSystemBadge ? (
           <div className="space-y-3">
             <input
               type="text"
               value={badge.name}
               onChange={(e) => updateBadge(badge.id, { name: e.target.value })}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-              placeholder="Badge name"
+              placeholder="Nom du badge"
             />
             <textarea
               value={badge.description || ''}
               onChange={(e) => updateBadge(badge.id, { description: e.target.value })}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               rows={2}
-              placeholder="Badge description"
+              placeholder="Description du badge"
             />
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Color:</span>
-              {BADGE_COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  onClick={() => updateBadge(badge.id, { color: color.value })}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    badge.color === color.value
-                      ? 'border-gray-900 scale-110'
-                      : 'border-gray-300 hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: color.value }}
-                  title={color.name}
-                />
-              ))}
+              <span className="text-sm text-gray-600">Couleur:</span>
+              <input
+                type="color"
+                value={badge.color || '#FF6B35'}
+                onChange={(e) => updateBadge(badge.id, { color: e.target.value })}
+                className="w-8 h-6 border border-gray-300 rounded cursor-pointer"
+              />
             </div>
             <div className="flex justify-end">
               <button
                 onClick={() => setEditingBadge(null)}
                 className="text-sm text-primary hover:text-primary/80"
               >
-                Done editing
+                Terminer la modification
               </button>
             </div>
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-sm text-gray-600">{badge.description || 'No description'}</p>
+            <p className="text-sm text-gray-600">
+              {isSystemBadge
+                ? badgeDef?.description || badge.description || 'Aucune description'
+                : badge.description || 'Aucune description'}
+            </p>
             {badge.dateAwarded && (
               <div className="flex justify-between items-center text-xs text-gray-500">
-                <span>Awarded: {new Date(badge.dateAwarded).toLocaleDateString()}</span>
-                <span>By: {badge.awardedBy || 'System'}</span>
+                <span>Décerné le: {new Date(badge.dateAwarded).toLocaleDateString()}</span>
+                <span>Par: {badge.awardedBy || 'Système'}</span>
               </div>
             )}
           </div>
@@ -256,7 +228,7 @@ export default function UserEditBadges({
       {/* Current Badges */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Current Badges ({userBadges.length})
+          Badges Actuels ({userBadges.length})
         </h3>
 
         {userBadges.length > 0 ? (
@@ -267,142 +239,120 @@ export default function UserEditBadges({
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            <p>No badges awarded yet</p>
-            <p className="text-sm">Add badges to recognize achievements and contributions</p>
+            <p>Aucun badge décerné</p>
+            <p className="text-sm">
+              Ajoutez des badges pour reconnaître les réalisations et contributions
+            </p>
           </div>
         )}
       </div>
 
-      {/* Add Achievement Badges */}
-      {availableAchievementBadges.length > 0 && (
-        <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Award Achievement Badges</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {availableAchievementBadges.map((template) => (
-              <button
-                key={template.id}
-                onClick={() => addAchievementBadge(template)}
-                className="p-3 border border-gray-200 rounded-lg text-left hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="flex items-center space-x-3 mb-2">
-                  <div
-                    className="w-5 h-5 rounded-full border border-gray-300"
-                    style={{ backgroundColor: template.color }}
-                  />
-                  <span className="font-medium text-gray-900">{template.name}</span>
-                </div>
-                <p className="text-sm text-gray-600">{template.description}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Add Custom Badge */}
+      {/* Add Badge */}
       <div className="border-t border-gray-200 pt-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Custom Badges</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Ajouter un Badge</h3>
           <button
-            onClick={() => setIsAddingBadge(true)}
-            className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+            onClick={() => setIsAddingBadge(!isAddingBadge)}
+            className={`inline-flex items-center px-3 py-1 text-sm rounded-md transition-colors ${
+              isAddingBadge
+                ? 'bg-gray-500 text-white hover:bg-gray-600'
+                : 'bg-primary text-white hover:bg-primary/90'
+            }`}
           >
-            <Plus className="w-3 h-3 mr-1" />
-            Add Custom Badge
+            <Plus
+              className={`w-3 h-3 mr-1 transition-transform ${isAddingBadge ? 'rotate-45' : ''}`}
+            />
+            {isAddingBadge ? 'Fermer' : 'Nouveau Badge'}
           </button>
         </div>
 
         {isAddingBadge && (
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h4 className="font-medium text-gray-900 mb-3">Create Custom Badge</h4>
+            <h4 className="font-medium text-gray-900 mb-3">Sélectionner un Badge</h4>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Badge Name</label>
-                <input
-                  type="text"
-                  value={newBadge.name}
-                  onChange={(e) => setNewBadge({ ...newBadge, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  placeholder="e.g., Outstanding Musician"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  value={newBadge.description}
-                  onChange={(e) => setNewBadge({ ...newBadge, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  rows={2}
-                  placeholder="Describe what this badge represents..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Badge Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {BADGE_COLORS.map((color) => (
-                    <button
-                      key={color.value}
-                      onClick={() => setNewBadge({ ...newBadge, color: color.value })}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        newBadge.color === color.value
-                          ? 'border-gray-900 scale-110'
-                          : 'border-gray-300 hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
-                    />
-                  ))}
+              {loadingBadges ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-sm text-gray-500 mt-2">Chargement des badges...</p>
                 </div>
-
-                <div className="flex items-center space-x-2 mt-2">
-                  <input
-                    type="color"
-                    value={newBadge.color}
-                    onChange={(e) => setNewBadge({ ...newBadge, color: e.target.value })}
-                    className="w-8 h-8 border border-gray-200 rounded cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600">Custom color</span>
-                </div>
-              </div>
-
-              {/* Preview */}
-              <div className="p-3 bg-white border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">Preview:</p>
-                <div className="flex items-center space-x-3">
-                  <div
-                    className="w-6 h-6 rounded-full border-2 border-gray-300"
-                    style={{ backgroundColor: newBadge.color }}
-                  />
+              ) : (
+                <>
                   <div>
-                    <span className="font-medium text-gray-900">
-                      {newBadge.name || 'Badge Name'}
-                    </span>
-                    <p className="text-sm text-gray-600">
-                      {newBadge.description || 'Badge description'}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Badges Disponibles
+                    </label>
+                    {badgeDefinitions.filter(
+                      (badgeDef) => !userBadges.some((badge) => badge.name === badgeDef.key),
+                    ).length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>Tous les badges sont déjà attribués à cet utilisateur</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                        {badgeDefinitions.map((badgeDef) => {
+                          const isAlreadyAssigned = userBadges.some(
+                            (badge) => badge.name === badgeDef.key,
+                          );
+                          if (isAlreadyAssigned) return null;
 
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => {
-                    setIsAddingBadge(false);
-                    setNewBadge({ name: '', description: '', color: '#FF6B35' });
-                  }}
-                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={addCustomBadge}
-                  disabled={!newBadge.name.trim()}
-                  className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Add Badge
-                </button>
-              </div>
+                          const isSelected = selectedBadgeId === badgeDef.id;
+
+                          return (
+                            <div
+                              key={badgeDef.id}
+                              onClick={() => setSelectedBadgeId(badgeDef.id)}
+                              className={`p-3 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                                isSelected
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div
+                                  className="w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0"
+                                  style={{ backgroundColor: badgeDef.color }}
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <h5 className="font-medium text-gray-900 text-sm truncate">
+                                    {badgeDef.labelFr}
+                                  </h5>
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {badgeDef.description || 'Aucune description'}
+                                  </p>
+                                </div>
+                                {isSelected && (
+                                  <div className="flex-shrink-0 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => {
+                        setIsAddingBadge(false);
+                        setSelectedBadgeId(null);
+                      }}
+                      className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={addBadge}
+                      disabled={!selectedBadgeId}
+                      className="inline-flex items-center px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Ajouter Badge
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -410,20 +360,26 @@ export default function UserEditBadges({
 
       {/* Badge Guidelines */}
       <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Badge Guidelines</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Guide des Badges</h3>
         <div className="bg-blue-50 p-4 rounded-lg">
           <ul className="text-sm text-blue-700 space-y-1">
             <li>
-              • <strong>Achievement badges</strong> recognize specific accomplishments within the
-              association
+              • <strong>Les badges système</strong> reconnaissent des réalisations spécifiques au
+              sein de l&apos;association
             </li>
             <li>
-              • <strong>Custom badges</strong> can be created for unique contributions or special
-              recognition
+              • <strong>Les badges personnalisés</strong> peuvent être créés pour des contributions
+              uniques ou une reconnaissance spéciale
             </li>
-            <li>• Badges appear on the user&apos;s profile and are visible to other members</li>
-            <li>• Remove badges only when they are no longer accurate or relevant</li>
-            <li>• Consider the user&apos;s feelings before removing significant badges</li>
+            <li>
+              • Les badges apparaissent sur le profil de l&apos;utilisateur et sont visibles par les
+              autres membres
+            </li>
+            <li>• Ne retirez les badges que lorsqu&apos;ils ne sont plus pertinents ou précis</li>
+            <li>
+              • Considérez les sentiments de l&apos;utilisateur avant de retirer des badges
+              importants
+            </li>
           </ul>
         </div>
       </div>

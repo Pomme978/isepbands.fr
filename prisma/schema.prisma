@@ -7,11 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BadgeDefinition {
+  id          Int    @id @default(autoincrement())
+  key         String @unique
+  labelFr     String
+  labelEn     String
+  description String?
+  color       String @default("#4ECDC4")
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userBadges  Badge[]
+}
+
 model Badge {
-  id     Int    @id @default(autoincrement())
-  name   String
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  id               Int             @id @default(autoincrement())
+  name             String          // Kept for backward compatibility  
+  userId           String
+  badgeDefinitionId Int?           // Made optional for migration
+  assignedAt       DateTime        @default(now())
+  
+  // Relations  
+  user             User            @relation(fields: [userId], references: [id])
+  badgeDefinition  BadgeDefinition? @relation(fields: [badgeDefinitionId], references: [id])
 
   @@index([userId], map: "Badge_userId_fkey")
 }

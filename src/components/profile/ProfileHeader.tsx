@@ -13,6 +13,15 @@ import { useLang } from '@/hooks/useLang';
 import { formatPreferredGenres } from '@/utils/genreUtils';
 import { calculateGraduationYear } from '@/utils/schoolUtils';
 
+interface Badge {
+  id: number;
+  name: string;
+  description?: string | null;
+  color: string;
+  isSystemBadge: boolean;
+  assignedAt?: string | Date | null;
+}
+
 interface UserProfile {
   id: string;
   username: string;
@@ -24,7 +33,7 @@ interface UserProfile {
   dateOfBirth: string; // Nouveau champ
   promotion: string; // Calculé automatiquement
   role: string;
-  badges: string[];
+  badges: Badge[];
   bio: string;
   pronouns: 'he/him' | 'she/her' | 'they/them' | 'other';
   isLookingForGroup: boolean;
