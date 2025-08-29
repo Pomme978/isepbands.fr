@@ -20,13 +20,12 @@ export async function POST(req: NextRequest) {
       select: { rejectionReason: true },
     });
 
-    const rejectionMessage =
-      registrationRequest?.rejectionReason || "Votre demande d'inscription a été refusée.";
+    const rejectionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
 
     return NextResponse.json(
       {
         error: 'account_suspended',
-        message: `Compte suspendu: ${rejectionMessage}`,
+        message: `Votre compte a été refusé pour la raison suivante : ${rejectionMessage}`,
         details: rejectionMessage,
       },
       { status: 403 },
@@ -43,16 +42,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (user.status === 'PENDING') {
-    return NextResponse.json(
-      {
-        error: 'account_pending',
-        message: "Votre demande d'inscription est en cours de validation.",
-      },
-      { status: 403 },
-    );
-  }
-
+  // PENDING users can login normally
   const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email } });
   await setSession(res, { id: user.id, email: user.email });
   return res;
