@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
               firstName: true,
               lastName: true,
               photoUrl: true,
+              pronouns: true,
               roles: {
                 include: {
                   role: {
@@ -52,8 +53,12 @@ export async function GET(req: NextRequest) {
       if (activity.user?.roles && activity.user.roles.length > 0) {
         const sortedRoles = activity.user.roles.sort((a, b) => b.role.weight - a.role.weight);
         const topRole = sortedRoles[0].role;
-        // Use female version by default, could be enhanced with user gender preference
-        userRole = topRole.nameFrFemale || topRole.nameFrMale;
+        // Use appropriate gender version based on user pronouns
+        const useFeminine =
+          activity.user.pronouns &&
+          (activity.user.pronouns.toLowerCase().includes('she') ||
+            activity.user.pronouns.toLowerCase().includes('elle'));
+        userRole = useFeminine ? topRole.nameFrFemale : topRole.nameFrMale;
       }
 
       return {
@@ -171,6 +176,7 @@ export async function POST(req: NextRequest) {
           firstName: true,
           lastName: true,
           photoUrl: true,
+          pronouns: true,
           roles: {
             include: {
               role: {
@@ -190,7 +196,12 @@ export async function POST(req: NextRequest) {
         if (user.roles && user.roles.length > 0) {
           const sortedRoles = user.roles.sort((a, b) => b.role.weight - a.role.weight);
           const topRole = sortedRoles[0].role;
-          userRole = topRole.nameFrFemale || topRole.nameFrMale;
+          // Use appropriate gender version based on user pronouns
+          const useFeminine =
+            user.pronouns &&
+            (user.pronouns.toLowerCase().includes('she') ||
+              user.pronouns.toLowerCase().includes('elle'));
+          userRole = useFeminine ? topRole.nameFrFemale : topRole.nameFrMale;
         }
       }
     } catch {
