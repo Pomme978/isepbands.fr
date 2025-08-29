@@ -36,14 +36,30 @@ export async function GET(req: NextRequest) {
       phone: user.phone || '',
       currentLevel: user.promotion || '',
       dateOfBirth: user.birthDate ? user.birthDate.toISOString().split('T')[0] : '',
+      isOutOfSchool: user.status === 'GRADUATED' || user.status === 'ALUMNI',
       pronouns: user.pronouns,
       motivation: user.registrationRequest?.motivation || '',
       experience: user.registrationRequest?.experience || '',
       instruments: user.instruments.map((ui) => ({
         instrumentId: ui.instrument.id,
         instrumentName: ui.instrument.name,
+        instrumentNameFr: ui.instrument.nameFr,
+        instrumentNameEn: ui.instrument.nameEn,
         skillLevel: ui.skillLevel,
+        yearsPlaying: ui.yearsPlaying,
+        isPrimary: ui.isPrimary,
       })),
+      preferredGenres: user.preferredGenres
+        ? (() => {
+            try {
+              // Try to parse as JSON array first
+              return JSON.parse(user.preferredGenres);
+            } catch {
+              // Fallback to comma-separated string
+              return user.preferredGenres.split(',').map((g) => g.trim());
+            }
+          })()
+        : [],
       profilePhoto: user.photoUrl,
       submittedAt: user.createdAt.toLocaleDateString('fr-FR'),
     }));
