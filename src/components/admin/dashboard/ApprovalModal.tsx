@@ -17,7 +17,7 @@ import {
   Crown,
 } from 'lucide-react';
 import { formatPromotion } from '@/utils/schoolUtils';
-import { MUSIC_GENRES, getMusicGenreDisplay } from '@/data/musicGenres';
+import { getMusicGenreDisplay } from '@/data/musicGenres';
 import { formatPhoneNumber } from '@/utils/phoneUtils';
 import Avatar from '@/components/common/Avatar';
 
@@ -273,48 +273,72 @@ function UserDetails({ user }: { user: PendingUser }) {
         </div>
       </div>
 
-      {/* Instruments */}
-      {user.instruments.length > 0 && (
-        <div>
-          <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
-            <Music className="w-5 h-5" />
-            <span>Instruments</span>
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {user.instruments.map((instrument, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-lg border-2 ${instrument.isPrimary ? 'bg-yellow-50 border-yellow-200' : 'bg-accent/50 border-transparent'}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium">
-                      {instrument.instrumentNameFr || instrument.instrumentName}
-                    </span>
-                    {instrument.isPrimary && (
-                      <div className="flex items-center space-x-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <span className="text-xs font-medium text-yellow-700">Principal</span>
-                      </div>
-                    )}
+      {/* Instruments and Genres Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Instruments */}
+        {user.instruments.length > 0 && (
+          <div>
+            <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
+              <Music className="w-5 h-5" />
+              <span>Instruments</span>
+            </h4>
+            <div className="space-y-3">
+              {user.instruments.map((instrument, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg border-2 ${instrument.isPrimary ? 'bg-yellow-50 border-yellow-200' : 'bg-accent/50 border-transparent'}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">
+                        {instrument.instrumentNameFr || instrument.instrumentName}
+                      </span>
+                      {instrument.isPrimary && (
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="text-xs font-medium text-yellow-700">Principal</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${skillLevelColors[instrument.skillLevel]}`}
+                      >
+                        {skillLevelLabels[instrument.skillLevel]}
+                      </span>
+                      {instrument.yearsPlaying && (
+                        <span className="text-xs ">
+                          {instrument.yearsPlaying} an{instrument.yearsPlaying > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${skillLevelColors[instrument.skillLevel]}`}
-                  >
-                    {skillLevelLabels[instrument.skillLevel]}
-                  </span>
                 </div>
-                {instrument.yearsPlaying && (
-                  <p className="text-xs text-muted-foreground">
-                    {instrument.yearsPlaying} année{instrument.yearsPlaying > 1 ? 's' : ''}{' '}
-                    d&apos;expérience
-                  </p>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Genres préférés */}
+        {user.preferredGenres && user.preferredGenres.length > 0 && (
+          <div>
+            <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
+              <Music className="w-5 h-5" />
+              <span>Genres préférés</span>
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {user.preferredGenres.map((genreId, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full border border-primary/20"
+                >
+                  {getMusicGenreDisplay(genreId, 'fr') || genreId}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Motivation */}
       <div>
