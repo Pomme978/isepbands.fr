@@ -13,6 +13,12 @@ export default {
     extend: {
       fontFamily: {
         moranga: ['var(--font-moranga)', 'sans-serif'],
+        outfit: ['var(--font-outfit)', 'sans-serif'],
+        ubuntu: ['var(--font-ubuntu)', 'sans-serif'],
+        handrawn: ['var(--font-handrawn)', 'cursive'],
+        monoton: ['var(--font-monoton)', 'cursive'],
+        'press-start-2p': ['var(--font-press-start-2p)', 'monospace'],
+        impact: ['var(--font-impact)', 'sans-serif'],
       },
       maxWidth: {
         '8xl': '88rem',

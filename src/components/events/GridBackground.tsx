@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 
 interface GridBackgroundProps {
   children?: ReactNode;
@@ -15,8 +15,25 @@ export default function GridBackground({
   className = '',
   style,
 }: GridBackgroundProps) {
+  const [actualLineSpacing, setActualLineSpacing] = useState(lineSpacing);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const updateSpacing = () => {
+      const isMobile = window.innerWidth < 768;
+      const mobileWidth = window.innerWidth;
+      const spacing = isMobile ? Math.round(mobileWidth / 4) : lineSpacing;
+      setActualLineSpacing(spacing);
+    };
+
+    updateSpacing();
+    window.addEventListener('resize', updateSpacing);
+    return () => window.removeEventListener('resize', updateSpacing);
+  }, [lineSpacing]);
+
   // Calculer le nombre de lignes nécessaires pour bien couvrir l'écran + débordement
-  const numberOfLines = Math.ceil(2400 / lineSpacing); // Plus large pour couvrir tous les écrans
+  const numberOfLines = Math.ceil(2400 / actualLineSpacing); // Plus large pour couvrir tous les écrans
   const centerIndex = Math.floor(numberOfLines / 2);
 
   return (
@@ -37,7 +54,7 @@ export default function GridBackground({
               className="absolute h-full w-px"
               style={{
                 backgroundColor: '#2E2E2E',
-                left: `calc(50% + ${(i - centerIndex) * lineSpacing}px)`,
+                left: `calc(50% + ${(i - centerIndex) * actualLineSpacing}px)`,
               }}
             />
           ))}

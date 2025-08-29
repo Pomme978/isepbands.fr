@@ -31,8 +31,8 @@ export default function NavLinks({ variant = 'default' }: NavLinksProps) {
           variant === 'white'
             ? `px-3 py-2 text-sm w-full md:w-auto justify-start md:justify-center transition-colors text-white ${
                 isActive
-                  ? 'bg-white/20 hover:bg-white/30'
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-white/20 hover:bg-white/30 hover:text-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white/100'
               }`
             : `px-3 py-2 text-sm w-full md:w-auto justify-start md:justify-center transition-colors ${
                 isActive

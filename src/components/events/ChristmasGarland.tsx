@@ -146,13 +146,13 @@ export default function ChristmasGarland({
       const isMobile = screenWidth < 768;
       const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-      // Largeur réelle du conteneur - TOUTE LA LARGEUR D'ÉCRAN
-      const containerWidth = screenWidth; // 100% de l'écran
-      const containerHeight = isMobile ? 120 : isTablet ? 140 : 160; // Plus haut pour accommoder les lumières pendantes
+      // Largeur réelle du conteneur - ajustée pour éviter le overflow sur mobile
+      const containerWidth = isMobile ? Math.min(screenWidth - 20, 500) : screenWidth; // Marge de 20px sur mobile
+      const containerHeight = isMobile ? 50 : isTablet ? 140 : 160; // TRÈS petite sur mobile
 
-      // MOINS de points d'ancrage pour une courbe plus fluide
-      const pointSpacing = isMobile ? 200 : isTablet ? 180 : 150;
-      const anchorCount = Math.max(6, Math.floor(containerWidth / pointSpacing));
+      // Plus de points d'ancrage sur mobile pour une belle courbe
+      const pointSpacing = isMobile ? 150 : isTablet ? 180 : 150; // Espacement réduit sur mobile pour plus de points
+      const anchorCount = Math.max(isMobile ? 6 : 6, Math.floor(containerWidth / pointSpacing)); // Minimum 4 sur mobile
 
       // Génération des points d'ancrage pour une BELLE GUIRLANDE ALÉATOIRE
       const anchorPoints: { x: number; y: number }[] = [];
@@ -213,8 +213,8 @@ export default function ChristmasGarland({
       const lastY = lastPoint.y;
       bezierPath += ` C ${lastPoint.x + 50} ${lastY}, ${containerWidth - 50} ${lastY}, ${containerWidth + 10} ${lastY}`;
 
-      // Calcul des points d'attache pour les lumières colorées - MOINS de lumières
-      const lightSpacing = isMobile ? 80 : isTablet ? 70 : 60;
+      // Calcul des points d'attache pour les lumières colorées - PEU mais visibles sur mobile
+      const lightSpacing = isMobile ? 80 : isTablet ? 70 : 60; // Espacement réduit sur mobile pour plus de lumières
       const lightCount = Math.floor(containerWidth / lightSpacing);
       const attachments: LightAttachment[] = [];
       const lightColors: ('red' | 'green' | 'blue' | 'yellow')[] = [

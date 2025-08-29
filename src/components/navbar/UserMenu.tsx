@@ -33,7 +33,11 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
           variant={variant === 'white' ? 'outline' : 'default'}
           size="sm"
           asChild
-          className={variant === 'white' ? 'border-white/20 text-white hover:bg-white/10' : ''}
+          className={
+            variant === 'white'
+              ? 'border-white/40 bg-white/10 text-white hover:bg-white/20 hover:border-white/60 hover:text-white'
+              : ''
+          }
         >
           <a href={`/${currentLang}/login`}>Se connecter</a>
         </Button>

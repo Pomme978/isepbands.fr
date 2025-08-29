@@ -57,7 +57,8 @@ export default function EventPosters({
 
   return (
     <div className="relative w-full max-w-7xl mx-auto px-8 py-16">
-      <div className="grid grid-cols-3 gap-8 items-end">
+      {/* Desktop - 3 colonnes */}
+      <div className="hidden md:grid grid-cols-3 gap-8 items-end">
         {/* Colonne 1 - Événement précédent */}
         <div className="flex justify-center">
           <EventPoster event={events.previous} size="small" isActive={false} />
@@ -72,6 +73,11 @@ export default function EventPosters({
         <div className="flex justify-center">
           <EventPoster event={events.next} size="small" isActive={false} />
         </div>
+      </div>
+
+      {/* Mobile - Poster central uniquement */}
+      <div className="md:hidden flex justify-center">
+        <EventPoster event={events.current} size="large" isActive={true} />
       </div>
     </div>
   );

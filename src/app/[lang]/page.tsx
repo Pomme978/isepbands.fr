@@ -31,7 +31,7 @@ export default function HomePage() {
 
   return (
     <BasicLayout navbarMode={navbarMode} offsetContent={false}>
-      <main className="flex flex-col items-center justify-center min-h-screen">
+      <main className="flex flex-col items-center justify-center">
         <HeroBanner />
 
         {user ? (
