@@ -253,7 +253,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     variant="destructive"
                     onClick={onLogout}
                     disabled={loading}
-                    className="w-full"
+                    className="w-full cursor-pointer"
                   >
                     {loading ? 'Déconnexion...' : 'Logout'}
                   </Button>
