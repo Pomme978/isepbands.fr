@@ -48,22 +48,22 @@ export default function UnsavedChangesModal({
           <button
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onDiscard}
             disabled={saving}
-            className="px-4 py-2 text-sm text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-md hover:bg-red-50 transition-colors disabled:opacity-50"
           >
-            <X className="w-4 h-4 mr-2" />
+            <X className="w-3 h-3 mr-1" />
             Discard Changes
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center px-4 py-2 text-sm text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -72,7 +72,7 @@ export default function UnsavedChangesModal({
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-3 h-3 mr-1" />
                 Save & Continue
               </>
             )}

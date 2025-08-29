@@ -292,7 +292,11 @@ export default function CreateVenueModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Annuler
             </Button>
-            <Button type="submit" disabled={loading || !formData.name || !formData.venueType}>
+            <Button
+              type="submit"
+              disabled={loading || !formData.name || !formData.venueType}
+              className="rounded-lg"
+            >
               {loading ? 'Création...' : 'Ajouter le lieu'}
             </Button>
           </div>

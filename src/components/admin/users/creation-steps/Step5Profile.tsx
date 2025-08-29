@@ -96,9 +96,9 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
               />
               <label
                 htmlFor="profilePhoto"
-                className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <Upload className="w-4 h-4 mr-2" />
+                <Upload className="w-3 h-3 mr-1" />
                 {previewImage ? 'Change Photo' : 'Upload Photo'}
               </label>
               <p className="text-xs text-gray-500 mt-1">

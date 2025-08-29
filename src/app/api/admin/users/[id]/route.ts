@@ -25,13 +25,25 @@ const updateUserSchema = z.object({
     .transform((val) => {
       if (!val) return val;
       const uppercased = val.toUpperCase();
-      if (['CURRENT', 'FORMER', 'GRADUATED', 'PENDING'].includes(uppercased)) {
-        return uppercased as 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
+      if (
+        ['CURRENT', 'FORMER', 'GRADUATED', 'PENDING', 'REFUSED', 'SUSPENDED', 'DELETED'].includes(
+          uppercased,
+        )
+      ) {
+        return uppercased as
+          | 'CURRENT'
+          | 'FORMER'
+          | 'GRADUATED'
+          | 'PENDING'
+          | 'REFUSED'
+          | 'SUSPENDED'
+          | 'DELETED';
       }
       throw new Error(`Invalid status: ${val}`);
     }),
   isLookingForGroup: z.boolean().optional(),
   isFullAccess: z.boolean().optional(),
+  rejectionReason: z.string().nullable().optional(),
   // Relations
   instruments: z
     .array(
@@ -97,6 +109,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         updatedAt: true,
         emailVerified: true,
         preferredGenres: true,
+        registrationRequest: {
+          select: {
+            rejectionReason: true,
+          },
+        },
         instruments: {
           include: {
             instrument: {
@@ -150,7 +167,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ user });
+    // Transform the user data to include rejectionReason at the root level
+    const transformedUser = {
+      ...user,
+      rejectionReason: user.registrationRequest?.rejectionReason || null,
+    };
+
+    return NextResponse.json({ user: transformedUser });
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
@@ -390,6 +413,51 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         }
       }
 
+      // Handle rejection/suspension reason for refused, suspended, or deleted status
+      if (
+        validatedData.rejectionReason !== undefined &&
+        (validatedData.status === 'REFUSED' ||
+          validatedData.status === 'SUSPENDED' ||
+          validatedData.status === 'DELETED')
+      ) {
+        // Find or create RegistrationRequest to store the reason
+        const existingRequest = await tx.registrationRequest.findUnique({
+          where: { userId },
+        });
+
+        if (existingRequest) {
+          // Update existing request
+          await tx.registrationRequest.update({
+            where: { userId },
+            data: {
+              rejectionReason: validatedData.rejectionReason,
+              status:
+                validatedData.status === 'REFUSED'
+                  ? 'REJECTED'
+                  : validatedData.status === 'SUSPENDED'
+                    ? 'SUSPENDED'
+                    : 'DELETED',
+            },
+          });
+        } else {
+          // Create new request
+          await tx.registrationRequest.create({
+            data: {
+              userId,
+              motivation: '',
+              experience: '',
+              rejectionReason: validatedData.rejectionReason,
+              status:
+                validatedData.status === 'REFUSED'
+                  ? 'REJECTED'
+                  : validatedData.status === 'SUSPENDED'
+                    ? 'SUSPENDED'
+                    : 'DELETED',
+            },
+          });
+        }
+      }
+
       return user;
     });
 
@@ -412,6 +480,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         isFullAccess: true,
         updatedAt: true,
         preferredGenres: true,
+        registrationRequest: {
+          select: {
+            rejectionReason: true,
+          },
+        },
         instruments: {
           include: {
             instrument: {
@@ -450,8 +523,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
+    // Transform the user data to include rejectionReason at the root level
+    const transformedUser = {
+      ...fullUser,
+      rejectionReason: fullUser?.registrationRequest?.rejectionReason || null,
+    };
+
     return NextResponse.json({
-      user: fullUser,
+      user: transformedUser,
       message: 'User updated successfully',
     });
   } catch (error) {

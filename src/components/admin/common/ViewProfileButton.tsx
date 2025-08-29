@@ -19,7 +19,7 @@ export default function ViewProfileButton({
   onClick,
 }: ViewProfileButtonProps) {
   const defaultButtonClass =
-    'inline-flex items-center px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors';
+    'inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors';
   const defaultLinkClass =
     'inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors';
 

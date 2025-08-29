@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
         pronouns: true,
         biography: true,
         phone: true,
+        preferredGenres: true,
         instruments: {
           include: {
             instrument: {
@@ -98,6 +99,14 @@ export async function GET(req: NextRequest) {
             name: true,
           },
         },
+        registrationRequest: {
+          select: {
+            motivation: true,
+            experience: true,
+            status: true,
+            rejectionReason: true,
+          },
+        },
       },
       orderBy: {
         [sortBy]: sortOrder as 'asc' | 'desc',
@@ -120,6 +129,7 @@ export async function GET(req: NextRequest) {
       pronouns: user.pronouns || null,
       biography: user.biography || '',
       phone: user.phone || '',
+      preferredGenres: user.preferredGenres || null,
       instruments: (user.instruments || []).map((ui) => ({
         name: getInstrumentDisplayName(ui.instrument, 'fr'),
         skillLevel: ui.skillLevel || '',
@@ -145,6 +155,14 @@ export async function GET(req: NextRequest) {
         isAdmin: gm.isAdmin || false,
       })),
       badges: (user.badges || []).map((b) => b.name),
+      registrationRequest: user.registrationRequest
+        ? {
+            motivation: user.registrationRequest.motivation || '',
+            experience: user.registrationRequest.experience || '',
+            status: user.registrationRequest.status || '',
+            rejectionReason: user.registrationRequest.rejectionReason || '',
+          }
+        : null,
     }));
 
     return NextResponse.json({

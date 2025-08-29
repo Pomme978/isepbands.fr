@@ -388,9 +388,9 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
           <button
             onClick={handleBack}
             disabled={currentStep === 1 || isCreating}
-            className="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ChevronLeft className="w-3 h-3 mr-1" />
             Back
           </button>
 
@@ -400,16 +400,16 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
             <button
               onClick={handleNext}
               disabled={isCreating}
-              className="inline-flex items-center px-4 py-2 text-sm text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next Step
-              <ChevronRight className="w-4 h-4 ml-1" />
+              <ChevronRight className="w-4 h-4 ml-2" />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={isCreating}
-              className="inline-flex items-center px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isCreating ? (
                 <>

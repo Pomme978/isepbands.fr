@@ -6,6 +6,7 @@ import UserCard from './UserCard';
 import { calculateAge } from '@/utils/schoolUtils';
 import { getPrimaryRoleName } from '@/utils/roleUtils';
 import Loading from '@/components/ui/Loading';
+import ApprovalModal from '../dashboard/ApprovalModal';
 
 interface User {
   id: string;
@@ -14,7 +15,7 @@ interface User {
   email: string;
   promotion: string;
   birthDate: string;
-  status: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING' | 'REFUSED' | 'DELETED';
+  status: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING' | 'REFUSED' | 'SUSPENDED' | 'DELETED';
   photoUrl?: string;
   createdAt: string;
   isOutOfSchool: boolean;
@@ -75,6 +76,122 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{
+    id: string;
+    type: 'user';
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    currentLevel: string;
+    dateOfBirth: string;
+    isOutOfSchool: boolean;
+    pronouns: 'he/him' | 'she/her' | 'they/them' | 'other' | null;
+    motivation: string;
+    experience: string;
+    instruments: Array<{ instrumentId: number; instrumentName: string; skillLevel: string }>;
+  } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Handle review request
+  const handleReviewRequest = async (userId: string) => {
+    const user = users.find((u) => u.id === userId);
+    if (user) {
+      // Transform to match ApprovalModal format
+      const pendingUser = {
+        id: user.id,
+        type: 'user' as const,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone || '',
+        currentLevel: user.promotion,
+        dateOfBirth: user.birthDate || '',
+        isOutOfSchool: user.status === 'GRADUATED',
+        pronouns: user.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other' | null,
+        motivation: user.registrationRequest?.motivation || '',
+        experience: user.registrationRequest?.experience || '',
+        instruments: user.instruments.map((i) => ({
+          instrumentId: i.id || 0,
+          instrumentName: i.name,
+          instrumentNameFr: i.nameFr || i.name,
+          instrumentNameEn: i.nameEn || i.name,
+          skillLevel: i.skillLevel || 'INTERMEDIATE',
+          yearsPlaying: i.yearsPlaying,
+          isPrimary: i.isPrimary,
+        })),
+        preferredGenres: user.preferredGenres
+          ? Array.isArray(user.preferredGenres)
+            ? user.preferredGenres
+            : []
+          : [],
+        profilePhoto: user.photoUrl,
+        submittedAt: new Date(user.createdAt).toLocaleDateString('fr-FR'),
+      };
+      setSelectedUser(pendingUser);
+      setIsModalOpen(true);
+    }
+  };
+
+  // Handle restore (approve a refused user)
+  const handleRestore = async (userId: string) => {
+    try {
+      console.log('Restoring user:', userId);
+      const response = await fetch(`/api/admin/pending-users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      });
+
+      if (response.ok) {
+        console.log('User restored successfully');
+        await fetchUsers(); // Refresh the list
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to restore user:', response.status, errorData);
+      }
+    } catch (error) {
+      console.error('Error restoring user:', error);
+    }
+  };
+
+  // Handle modal approve
+  const handleApprove = async (id: string) => {
+    try {
+      const response = await fetch(`/api/admin/pending-users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      });
+
+      if (response.ok) {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+        await fetchUsers(); // Refresh the list
+      }
+    } catch (error) {
+      console.error('Error approving user:', error);
+    }
+  };
+
+  // Handle modal reject
+  const handleReject = async (id: string, reason: string) => {
+    try {
+      const response = await fetch(`/api/admin/pending-users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject', reason }),
+      });
+
+      if (response.ok) {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+        await fetchUsers(); // Refresh the list
+      }
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+    }
+  };
 
   // Fetch current user session
   useEffect(() => {
@@ -106,11 +223,13 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
 
     try {
       const statusValue = mapMemberStatusToDBStatus(filters.memberStatus);
+
+      // Pour le filtre board, on récupère tous les utilisateurs et on filtrera côté client
       const params = new URLSearchParams({
         page: '1',
         limit: '50',
         ...(filters.search && { search: filters.search }),
-        ...(statusValue && { status: statusValue }),
+        ...(statusValue && filters.memberStatus !== 'board' && { status: statusValue }),
         sortBy: mapSortByToField(filters.sortBy),
         sortOrder: filters.dateSort === 'oldest' ? 'asc' : 'desc',
       });
@@ -161,7 +280,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       case 'refused':
         return 'REFUSED';
       case 'suspended':
-        return 'REFUSED'; // REFUSED is used for suspended users
+        return 'SUSPENDED';
       case 'deleted':
         return 'DELETED';
       case 'board':
@@ -179,7 +298,14 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     let roleDisplay = 'Membre'; // Default for users with no roles
     console.log('Initial roleDisplay:', roleDisplay);
 
-    if (user.roles && user.roles.length > 0) {
+    // If user is suspended, show "Former" as role regardless of actual roles
+    if (user.status === 'SUSPENDED') {
+      roleDisplay = 'Former';
+      console.log('User is suspended, setting roleDisplay to Former');
+    } else if (user.status === 'PENDING' || user.status === 'REFUSED') {
+      roleDisplay = ''; // No role displayed for pending or refused users
+      console.log(`User is ${user.status.toLowerCase()}, setting roleDisplay to empty`);
+    } else if (user.roles && user.roles.length > 0) {
       console.log('User has roles:', user.roles.length, 'roles');
       try {
         roleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
@@ -209,6 +335,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         | 'pending'
         | 'graduated'
         | 'refused'
+        | 'suspended'
         | 'deleted',
       age: calculateAge(user.birthDate),
       instruments: user.instruments.map((i) => i.name),
@@ -229,6 +356,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     .map(transformUser);
   const pendingMembers = users.filter((user) => user.status === 'PENDING').map(transformUser);
   const refusedMembers = users.filter((user) => user.status === 'REFUSED').map(transformUser);
+  const suspendedMembers = users.filter((user) => user.status === 'SUSPENDED').map(transformUser);
   const deletedMembers = users.filter((user) => user.status === 'DELETED').map(transformUser);
   const boardMembers = users
     .filter((user) => {
@@ -250,6 +378,8 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     filters.memberStatus === 'all' || filters.memberStatus === 'pending';
   const shouldShowRefusedMembers =
     filters.memberStatus === 'all' || filters.memberStatus === 'refused';
+  const shouldShowSuspendedMembers =
+    filters.memberStatus === 'all' || filters.memberStatus === 'suspended';
   const shouldShowDeletedMembers =
     filters.memberStatus === 'all' || filters.memberStatus === 'deleted';
   const shouldShowBoardMembers = filters.memberStatus === 'board';
@@ -259,6 +389,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
   const displayFormerMembers = shouldShowBoardMembers ? [] : formerMembers;
   const displayPendingMembers = shouldShowBoardMembers ? [] : pendingMembers;
   const displayRefusedMembers = shouldShowBoardMembers ? [] : refusedMembers;
+  const displaySuspendedMembers = shouldShowBoardMembers ? [] : suspendedMembers;
   const displayDeletedMembers = shouldShowBoardMembers ? [] : deletedMembers;
 
   if (loading) {
@@ -290,6 +421,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     (shouldShowFormerMembers && displayFormerMembers.length > 0) ||
     (shouldShowPendingMembers && displayPendingMembers.length > 0) ||
     (shouldShowRefusedMembers && displayRefusedMembers.length > 0) ||
+    (shouldShowSuspendedMembers && displaySuspendedMembers.length > 0) ||
     (shouldShowDeletedMembers && displayDeletedMembers.length > 0);
 
   // Show "no users found" message if no results
@@ -344,7 +476,14 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
                 'with role:',
                 user.role,
               );
-              return <UserCard key={user.id} user={user} currentUserId={currentUserId} />;
+              return (
+                <UserCard
+                  key={user.id}
+                  user={user}
+                  currentUserId={currentUserId}
+                  onReviewRequest={handleReviewRequest}
+                />
+              );
             })}
           </div>
         </AdminExpandableSection>
@@ -391,16 +530,41 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         </AdminExpandableSection>
       )}
 
-      {/* Refused/Suspended Members - Show only if filter allows */}
+      {/* Refused Members - Show only if filter allows */}
       {shouldShowRefusedMembers && displayRefusedMembers.length > 0 && (
         <AdminExpandableSection
-          title="Refused/Suspended Members"
+          title="Refused Members"
           count={displayRefusedMembers.length}
           defaultExpanded={false}
         >
           <div className="space-y-4">
             {displayRefusedMembers.map((user) => (
-              <UserCard key={user.id} user={user} currentUserId={currentUserId} />
+              <UserCard
+                key={user.id}
+                user={user}
+                currentUserId={currentUserId}
+                onRestore={handleRestore}
+              />
+            ))}
+          </div>
+        </AdminExpandableSection>
+      )}
+
+      {/* Suspended Members - Show only if filter allows */}
+      {shouldShowSuspendedMembers && displaySuspendedMembers.length > 0 && (
+        <AdminExpandableSection
+          title="Suspended Members"
+          count={displaySuspendedMembers.length}
+          defaultExpanded={false}
+        >
+          <div className="space-y-4">
+            {displaySuspendedMembers.map((user) => (
+              <UserCard
+                key={user.id}
+                user={user}
+                currentUserId={currentUserId}
+                onRestore={handleRestore}
+              />
             ))}
           </div>
         </AdminExpandableSection>
@@ -427,6 +591,18 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
           Showing {users.length} of {pagination.total} users
         </div>
       )}
+
+      {/* Approval Modal */}
+      <ApprovalModal
+        item={selectedUser}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedUser(null);
+        }}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
     </div>
   );
 }

@@ -32,6 +32,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (user.status === 'SUSPENDED') {
+    // Get suspension reason from RegistrationRequest
+    const registrationRequest = await prisma.registrationRequest.findUnique({
+      where: { userId: user.id },
+      select: { rejectionReason: true },
+    });
+
+    const suspensionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
+
+    return NextResponse.json(
+      {
+        error: 'account_suspended',
+        message: `Votre compte a été suspendu pour la raison suivante : ${suspensionMessage}`,
+        details: suspensionMessage,
+      },
+      { status: 403 },
+    );
+  }
+
   if (user.status === 'DELETED') {
     return NextResponse.json(
       {

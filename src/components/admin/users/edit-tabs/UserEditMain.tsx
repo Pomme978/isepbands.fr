@@ -17,6 +17,7 @@ interface User {
   bio?: string;
   birthDate?: string;
   phoneNumber?: string;
+  rejectionReason?: string;
 }
 
 interface UserEditMainProps {
@@ -214,7 +215,7 @@ export default function UserEditMain({
                 />
                 <label
                   htmlFor="profilePhoto"
-                  className={`inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg transition-colors ${
+                  className={`inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md transition-colors ${
                     uploadingImage
                       ? 'cursor-not-allowed opacity-50'
                       : 'hover:bg-gray-50 cursor-pointer'
@@ -227,7 +228,7 @@ export default function UserEditMain({
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4 mr-2" />
+                      <Upload className="w-3 h-3 mr-1" />
                       {previewImage ? 'Change Photo' : 'Upload Photo'}
                     </>
                   )}
@@ -242,7 +243,7 @@ export default function UserEditMain({
               {previewImage && (
                 <button
                   onClick={removeImage}
-                  className="inline-flex items-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-md hover:bg-red-50 transition-colors"
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
@@ -252,7 +253,7 @@ export default function UserEditMain({
                     </>
                   ) : (
                     <>
-                      <X className="w-4 h-4 mr-2" />
+                      <X className="w-3 h-3 mr-1" />
                       Delete Avatar
                     </>
                   )}
@@ -378,6 +379,7 @@ export default function UserEditMain({
               <option value="former">Former Member</option>
               <option value="graduated">Graduated</option>
               <option value="pending">Pending Approval</option>
+              <option value="refused">Refused</option>
               <option value="suspended">Suspended</option>
             </select>
           </div>
@@ -392,6 +394,31 @@ export default function UserEditMain({
             />
           </div>
         </div>
+
+        {/* Suspension/Rejection Reason - Show only for suspended, refused, or deleted users */}
+        {(user.status === 'suspended' ||
+          user.status === 'refused' ||
+          user.status === 'deleted') && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {user.status === 'suspended'
+                ? 'Suspension Reason'
+                : user.status === 'refused'
+                  ? 'Rejection Reason'
+                  : 'Deletion Reason'}
+            </label>
+            <textarea
+              value={user.rejectionReason || ''}
+              onChange={(e) => updateField('rejectionReason', e.target.value)}
+              rows={3}
+              placeholder={`Enter the reason for ${user.status}...`}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              This reason will be shown to the user when they try to log in.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
