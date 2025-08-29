@@ -404,9 +404,9 @@ export default function UserEditInstruments({
           <h3 className="text-lg font-semibold text-gray-900">Instruments</h3>
           <button
             onClick={() => setIsAddingInstrument(true)}
-            className="inline-flex items-center px-3 py-1 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3 h-3 mr-1" />
             Add Instrument
           </button>
         </div>
@@ -488,13 +488,13 @@ export default function UserEditInstruments({
                     primary: false,
                   });
                 }}
-                className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={addInstrument}
-                className="px-3 py-1 text-sm text-white bg-primary rounded hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
               >
                 Add Instrument
               </button>

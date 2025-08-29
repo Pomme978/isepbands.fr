@@ -303,6 +303,7 @@ enum UserStatus {
   ALUMNI
   PENDING
   REFUSED
+  SUSPENDED
   DELETED
 }
 
@@ -310,6 +311,8 @@ enum RegistrationStatus {
   PENDING
   ACCEPTED
   REJECTED
+  SUSPENDED
+  DELETED
 }
 
 enum SkillLevel {

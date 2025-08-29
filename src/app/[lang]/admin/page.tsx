@@ -74,50 +74,7 @@ export default function Admin() {
         <DashboardStats />
 
         {/* Pending Approvals */}
-        <PendingApprovals
-          onApproveUser={async (userId) => {
-            try {
-              const response = await fetch('/api/admin/users/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId }),
-              });
-
-              if (response.ok) {
-                // Refresh the page to update the pending list
-                window.location.reload();
-              } else {
-                const error = await response.json();
-                console.error('Approval failed:', error.error);
-                alert("Erreur lors de l'approbation: " + error.error);
-              }
-            } catch (error) {
-              console.error('Approval error:', error);
-              alert("Erreur lors de l'approbation");
-            }
-          }}
-          onRejectUser={async (userId, reason) => {
-            try {
-              const response = await fetch('/api/admin/users/reject', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, reason }),
-              });
-
-              if (response.ok) {
-                // Refresh the page to update the pending list
-                window.location.reload();
-              } else {
-                const error = await response.json();
-                console.error('Rejection failed:', error.error);
-                alert('Erreur lors du refus: ' + error.error);
-              }
-            } catch (error) {
-              console.error('Rejection error:', error);
-              alert('Erreur lors du refus');
-            }
-          }}
-        />
+        <PendingApprovals />
 
         {/* Recent Activity */}
         <RecentActivity />

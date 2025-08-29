@@ -180,9 +180,9 @@ export default function VenueEditPage({ venue: initialVenue, onVenueUpdate }: Ve
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-md hover:bg-red-50 transition-colors"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            <Trash2 className="w-3 h-3 mr-1" />
             Supprimer le lieu
           </button>
 
@@ -192,7 +192,7 @@ export default function VenueEditPage({ venue: initialVenue, onVenueUpdate }: Ve
             className={`inline-flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${
               hasUnsavedChanges && !saving
                 ? 'bg-primary text-white hover:bg-primary/90'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
             {saving ? (
@@ -314,7 +314,7 @@ export default function VenueEditPage({ venue: initialVenue, onVenueUpdate }: Ve
                   </>
                 ) : (
                   <>
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-3 h-3 mr-1" />
                     Supprimer
                   </>
                 )}

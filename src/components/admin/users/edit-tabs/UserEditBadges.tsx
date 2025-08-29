@@ -304,9 +304,9 @@ export default function UserEditBadges({
           <h3 className="text-lg font-semibold text-gray-900">Custom Badges</h3>
           <button
             onClick={() => setIsAddingBadge(true)}
-            className="inline-flex items-center px-3 py-1 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3 h-3 mr-1" />
             Add Custom Badge
           </button>
         </div>
@@ -391,14 +391,14 @@ export default function UserEditBadges({
                     setIsAddingBadge(false);
                     setNewBadge({ name: '', description: '', color: '#FF6B35' });
                   }}
-                  className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={addCustomBadge}
                   disabled={!newBadge.name.trim()}
-                  className="px-3 py-1 text-sm text-white bg-primary rounded hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add Badge
                 </button>

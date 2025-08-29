@@ -70,7 +70,7 @@ interface User {
   preferredGenres?: string[];
   createdAt?: string;
   joinDate?: string;
-  refusalReason?: string;
+  rejectionReason?: string;
 }
 
 interface UserInstrument {
@@ -164,6 +164,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           bio: data.user.biography || '',
           // Convert status to lowercase for the form component
           status: data.user.status ? data.user.status.toLowerCase() : 'current',
+          // Map rejectionReason
+          rejectionReason: data.user.rejectionReason,
         };
         console.log('Mapped user data:', mappedUser);
         setUser(mappedUser);
@@ -241,6 +243,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           name: badge.name,
         })),
         preferredGenres: user.preferredGenres || [],
+        rejectionReason: user.rejectionReason,
       };
 
       console.log('Request body being sent:', JSON.stringify(requestBody, null, 2));
@@ -286,6 +289,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         bio: updatedData.user.biography || '',
         // Convert status to lowercase for the form component
         status: updatedData.user.status ? updatedData.user.status.toLowerCase() : 'current',
+        // Map rejectionReason
+        rejectionReason: updatedData.user.rejectionReason,
       };
       setUser(mappedUser);
       setHasUnsavedChanges(false);
@@ -559,7 +564,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
           <button
             onClick={() => setShowArchiveConfirm(true)}
-            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
+            className="flex items-center px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
           >
             <Archive className="w-4 h-4 mr-2" />
             Archive User
@@ -568,7 +573,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           <button
             onClick={handleSave}
             disabled={!hasUnsavedChanges || saving}
-            className={`inline-flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               hasUnsavedChanges && !saving
                 ? 'bg-primary text-white hover:bg-primary/90'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -608,7 +613,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                   onClick={() => {
                     /* TODO: Open review modal */
                   }}
-                  className="inline-flex items-center px-3 py-1 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                  className="flex items-center px-4 py-2 text-xs font-medium bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
                 >
                   Review Registration Request
                 </button>
@@ -646,7 +651,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                   onClick={() => {
                     /* TODO: Restore user function */
                   }}
-                  className="inline-flex items-center px-3 py-1 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+                  className="flex items-center px-4 py-2 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   Restore Account
                 </button>
@@ -654,7 +659,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                   onClick={() => {
                     /* TODO: Archive user function */
                   }}
-                  className="inline-flex items-center px-3 py-1 text-xs bg-gray-100 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
+                  className="flex items-center px-4 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Archive User
                 </button>

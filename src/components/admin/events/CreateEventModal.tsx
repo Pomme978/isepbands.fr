@@ -235,7 +235,11 @@ export default function CreateEventModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Annuler
             </Button>
-            <Button type="submit" disabled={loading || !formData.title || !formData.eventType}>
+            <Button
+              type="submit"
+              disabled={loading || !formData.title || !formData.eventType}
+              className="rounded-lg"
+            >
               {loading ? 'Création...' : 'Créer l&apos;événement'}
             </Button>
           </div>

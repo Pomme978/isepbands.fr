@@ -14,7 +14,7 @@ interface User {
   promotion: string;
   role: string;
   joinDate: string;
-  status: 'current' | 'former' | 'pending' | 'graduated' | 'refused';
+  status: 'current' | 'former' | 'pending' | 'graduated' | 'refused' | 'suspended' | 'deleted';
   age?: number;
   instruments?: string[];
   groups?: string[];
@@ -25,9 +25,15 @@ interface UserCardProps {
   user: User;
   currentUserId?: string;
   onReviewRequest?: (userId: string) => void;
+  onRestore?: (userId: string) => void;
 }
 
-export default function UserCard({ user, currentUserId, onReviewRequest }: UserCardProps) {
+export default function UserCard({
+  user,
+  currentUserId,
+  onReviewRequest,
+  onRestore,
+}: UserCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'current':
@@ -40,6 +46,10 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
         return 'bg-yellow-100 text-yellow-800';
       case 'refused':
         return 'bg-red-100 text-red-800';
+      case 'suspended':
+        return 'bg-orange-100 text-orange-800';
+      case 'deleted':
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -108,7 +118,11 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
                 ? 'Graduated'
                 : user.status === 'refused'
                   ? 'Refused'
-                  : 'Former'}
+                  : user.status === 'suspended'
+                    ? 'Suspended'
+                    : user.status === 'deleted'
+                      ? 'Deleted'
+                      : 'Former'}
         </div>
       </div>
 
@@ -121,7 +135,7 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
               className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
             >
               <Clock className="w-3 h-3 mr-1" />
-              Review Request
+              Review
             </button>
             <LangLink
               href={`/admin/users/${user.id}`}
@@ -131,7 +145,7 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
               Edit
             </LangLink>
           </>
-        ) : user.status === 'refused' ? (
+        ) : user.status === 'refused' || user.status === 'suspended' ? (
           <>
             <LangLink
               href={`/admin/users/${user.id}`}
@@ -141,9 +155,7 @@ export default function UserCard({ user, currentUserId, onReviewRequest }: UserC
               Edit
             </LangLink>
             <button
-              onClick={() => {
-                /* TODO: Restore function */
-              }}
+              onClick={() => onRestore?.(user.id)}
               className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
             >
               Restore

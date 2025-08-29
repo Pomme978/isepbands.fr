@@ -146,11 +146,11 @@ export default function PendingApprovals({
         } else {
           const error = await response.text(); // Use text() instead of json() to avoid parsing errors
           console.error('Failed to approve user:', response.status, error);
-          alert(`Erreur lors de l'approbation: ${response.status} ${response.statusText}`);
+          // No alert - just log the error
         }
       } catch (error) {
         console.error('Error approving user:', error);
-        alert("Erreur de connexion lors de l'approbation");
+        // No alert - just log the error
       }
     } else {
       onApproveBand?.(id);
@@ -175,11 +175,11 @@ export default function PendingApprovals({
         } else {
           const error = await response.text();
           console.error('Failed to reject user:', response.status, error);
-          alert(`Erreur lors du refus: ${response.status} ${response.statusText}`);
+          // No alert - just log the error
         }
       } catch (error) {
         console.error('Error rejecting user:', error);
-        alert('Erreur de connexion lors du refus');
+        // No alert - just log the error
       }
     } else {
       onRejectBand?.(id, reason);
