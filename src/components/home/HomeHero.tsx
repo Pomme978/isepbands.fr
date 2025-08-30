@@ -90,7 +90,7 @@ const HomeHero = () => {
       </div>*/}
 
       {/* Content Container - Allow glow to show */}
-      <div className="relative z-40  -top-5 flex items-center justify-center h-full text-white px-6 overflow-hidden">
+      <div className="relative z-40 flex items-center justify-center h-full text-white px-6 overflow-hidden">
         <div className="flex justify-center items-center w-full max-w-6xl mx-auto gap-8 text-center lg:text-left overflow-visible">
           {/* Logo Section - Allow glow overflow */}
           <div className="flex justify-center flex-shrink-0 p-4 overflow-visible">
