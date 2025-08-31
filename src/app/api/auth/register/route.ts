@@ -109,6 +109,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Set session to automatically log in the user
+    // Logger l'inscription
+    try {
+      const { createActivityLog } = await import('@/services/activityLogService');
+      await createActivityLog({
+        userId: String(user.id),
+        type: 'register',
+        title: 'Inscription',
+        description: `Nouvelle inscription pour ${user.email}`,
+        metadata: {},
+        createdBy: String(user.id),
+      });
+    } catch (err) {
+      console.log('Activity log error:', err);
+    }
     const res = NextResponse.json(
       { success: true, user: { id: user.id, email: user.email } },
       { status: 201 },

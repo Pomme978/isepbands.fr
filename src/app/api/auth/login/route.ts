@@ -8,20 +8,16 @@ export async function POST(req: NextRequest) {
   const user = await getUserByEmail(email);
 
   if (!user || !(await verifyPassword(password, user.password))) {
-    // Use simple error message to avoid i18n overhead
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }
 
   // Check user status and handle suspended/refused accounts
   if (user.status === 'REFUSED') {
-    // Get rejection reason from RegistrationRequest
     const registrationRequest = await prisma.registrationRequest.findUnique({
       where: { userId: user.id },
       select: { rejectionReason: true },
     });
-
     const rejectionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
-
     return NextResponse.json(
       {
         error: 'account_suspended',
@@ -33,14 +29,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (user.status === 'SUSPENDED') {
-    // Get suspension reason from RegistrationRequest
     const registrationRequest = await prisma.registrationRequest.findUnique({
       where: { userId: user.id },
       select: { rejectionReason: true },
     });
-
     const suspensionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
-
     return NextResponse.json(
       {
         error: 'account_suspended',
@@ -61,7 +54,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // PENDING users can login normally
+  // Logger la connexion
+  try {
+    const { createActivityLog } = await import('@/services/activityLogService');
+    await createActivityLog({
+      userId: String(user.id),
+      type: 'login',
+      title: 'Connexion',
+      description: `Connexion réussie pour ${user.email}`,
+      metadata: {},
+      createdBy: String(user.id),
+    });
+  } catch (err) {
+    console.log('Activity log error:', err);
+  }
   const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email } });
   await setSession(res, { id: user.id, email: user.email });
   return res;
