@@ -8,30 +8,30 @@ import { useI18n } from '@/locales/client';
 
 const footerColumns = [
   {
-    title: 'Ressources',
+    title: 'Pages',
     links: [
       { label: 'Accueil', href: '/' },
       { label: "L'association", href: '/club' },
       { label: 'Bands', href: '/bands' },
-      { label: 'Les Evenements', href: '/events' },
+      { label: 'Les Événements', href: '/events' },
       { label: 'Le Bureau', href: '/team' },
     ],
   },
   {
-    title: 'Company',
+    title: 'Association',
     links: [
-      { label: 'About', href: '/about' },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Jobs', href: '/jobs' },
-      { label: 'Press', href: '/press' },
+      { label: 'Règlement de l\'asso', href: '/rules' },
+      { label: 'Adhésion', href: '/club#adhesion' },
+      { label: 'Contact', href: '/team' },
     ],
   },
   {
-    title: 'Legal',
+    title: 'Légal',
     links: [
-      { label: 'Terms of service', href: '/terms' },
-      { label: 'Privacy policy', href: '/privacy' },
-      { label: 'License', href: '/license' },
+      { label: 'Conditions d\'utilisation', href: '/conditions' },
+      { label: 'Politique de confidentialité', href: '/confidentialite' },
+      { label: 'Mentions légales', href: '/mentions-legales' },
+      { label: 'RGPD', href: '/rgpd' },
     ],
   },
 ];

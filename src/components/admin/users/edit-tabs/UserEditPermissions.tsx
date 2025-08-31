@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getRoleDisplayName } from '@/utils/roleUtils';
-import { getRoleClasses } from '@/utils/roleColors';
+import { getRoleTextColor } from '@/utils/roleColors';
 import Loading from '@/components/ui/Loading';
 
 interface Role {
@@ -204,21 +204,16 @@ export default function UserEditPermissions({
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div>
                         <h4
-                          className={`font-medium ${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}
+                          className={`font-medium ${
+                            isDisabled 
+                              ? 'text-gray-400' 
+                              : getRoleTextColor(getRoleDisplayName(role, user.pronouns, 'fr'))
+                          }`}
                         >
                           {getRoleDisplayName(role, user.pronouns, 'fr')}
                         </h4>
-                        {!isDisabled && (
-                          <span
-                            className={getRoleClasses(
-                              getRoleDisplayName(role, user.pronouns, 'fr'),
-                            )}
-                          >
-                            {getRoleDisplayName(role, user.pronouns, 'fr')}
-                          </span>
-                        )}
                       </div>
                       {/* Always show counter for non-unlimited roles */}
                       {role.maxUsers !== undefined && role.maxUsers < 999 && (

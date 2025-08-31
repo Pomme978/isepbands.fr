@@ -71,7 +71,7 @@ export function Home({ lang }: HomeProps) {
                   SO IF YOU&#39;RE READY, WHAT ARE YOU WAITING FOR ?
                 </h2>
                 <Button asChild className="bg-primary text-white px-8 py-3">
-                  <LangLink href="/register">Join Us</LangLink>
+                  <LangLink href="/club#adhesion">Join Us</LangLink>
                 </Button>
               </div>
             </div>

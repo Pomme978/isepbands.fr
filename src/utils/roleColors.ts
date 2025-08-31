@@ -6,110 +6,111 @@ export interface RoleColorConfig {
   bg: string;
   text: string;
   border?: string;
+  gradient?: string;
 }
 
 /**
  * Configuration des couleurs par rôle
  */
 const ROLE_COLORS: Record<string, RoleColorConfig> = {
-  // Président - Rouge
+  // Président - Rouge gradient royal
   président: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-200',
+    bg: 'bg-gradient-to-r from-red-600 to-red-800',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-red-600 to-red-800',
   },
   présidente: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-200',
+    bg: 'bg-gradient-to-r from-red-600 to-red-800',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-red-600 to-red-800',
   },
   president: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-200',
+    bg: 'bg-gradient-to-r from-red-600 to-red-800',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-red-600 to-red-800',
   },
 
-  // Vice-président - Primary (couleur du thème)
+  // Vice-président - Primary gradient sophisticated
   'vice-président': {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/20',
+    bg: 'bg-gradient-to-r from-purple-600 to-violet-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
   },
   'vice-présidente': {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/20',
+    bg: 'bg-gradient-to-r from-purple-600 to-violet-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
   },
   'vice-president': {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/20',
+    bg: 'bg-gradient-to-r from-purple-600 to-violet-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
   },
 
-  // Secrétaire Général - Jaune
+  // Secrétaire Général - Or gradient premium
   'secrétaire général': {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-200',
+    bg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
   },
   'secrétaire générale': {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-200',
+    bg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
   },
   sg: {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-200',
+    bg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
   },
 
-  // Trésorier - Vert
+  // Trésorier - Vert émeraude gradient
   trésorier: {
-    bg: 'bg-green-100',
-    text: 'text-green-800',
-    border: 'border-green-200',
+    bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
   },
   trésorière: {
-    bg: 'bg-green-100',
-    text: 'text-green-800',
-    border: 'border-green-200',
+    bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
   },
   treasurer: {
-    bg: 'bg-green-100',
-    text: 'text-green-800',
-    border: 'border-green-200',
+    bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
   },
 
-  // Responsables de pôles - Bleu
+  // Responsables de pôles - Bleu océan gradient
   responsable: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   resp: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable communication': {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable événementiel': {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable technique': {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable partenariats': {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+    text: 'text-white font-bold',
+    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
 };
 
@@ -117,9 +118,9 @@ const ROLE_COLORS: Record<string, RoleColorConfig> = {
  * Couleur par défaut pour les rôles non spécifiés
  */
 const DEFAULT_ROLE_COLOR: RoleColorConfig = {
-  bg: 'bg-primary/10',
-  text: 'text-primary',
-  border: 'border-primary/20',
+  bg: 'bg-gradient-to-r from-gray-600 to-slate-600',
+  text: 'text-white font-bold',
+  gradient: 'bg-gradient-to-r from-gray-600 to-slate-600',
 };
 
 /**
@@ -165,17 +166,53 @@ export function getRoleColor(roleName: string | null | undefined): RoleColorConf
 }
 
 /**
- * Génère les classes CSS pour afficher un badge de rôle
+ * Génère les classes CSS pour afficher un badge de rôle avec gradient
  */
 export function getRoleClasses(roleName: string | null | undefined): string {
   const colors = getRoleColor(roleName);
-  return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text} ${colors.border || ''}`;
+  return `${colors.bg} ${colors.text}`;
 }
 
 /**
- * Génère les classes CSS pour afficher un badge de rôle avec bordure
+ * Génère les classes CSS pour afficher un badge de rôle avec bordure (deprecated - use getRoleClasses)
  */
 export function getRoleClassesWithBorder(roleName: string | null | undefined): string {
   const colors = getRoleColor(roleName);
-  return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border || 'border-gray-200'}`;
+  return `${colors.bg} ${colors.text}`;
+}
+
+/**
+ * Récupère la couleur principale d'un rôle pour le texte (sans gradient)
+ */
+export function getRoleTextColor(roleName: string | null | undefined): string {
+  if (!roleName) {
+    return 'text-gray-600';
+  }
+
+  const normalizedRole = roleName.toLowerCase().trim();
+
+  // Président - Rouge
+  if (normalizedRole.includes('président') || normalizedRole.includes('president')) {
+    if (normalizedRole.includes('vice')) {
+      return 'text-purple-600'; // Vice-président
+    }
+    return 'text-red-600'; // Président
+  }
+
+  // Secrétaire Général - Orange/Jaune
+  if (normalizedRole.includes('secrétaire') || normalizedRole.includes('sg')) {
+    return 'text-orange-500';
+  }
+
+  // Trésorier - Vert
+  if (normalizedRole.includes('trésorier') || normalizedRole.includes('treasurer')) {
+    return 'text-green-600';
+  }
+
+  // Responsables - Bleu
+  if (normalizedRole.includes('responsable') || normalizedRole.includes('resp')) {
+    return 'text-blue-600';
+  }
+
+  return 'text-gray-600';
 }

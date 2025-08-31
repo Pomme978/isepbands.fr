@@ -6,7 +6,7 @@ import type { ActivityType } from '@/types/activity';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Image from 'next/image';
-import { getRoleClasses } from '@/utils/roleColors';
+import BadgeDisplay from '@/components/profile/BadgeDisplay';
 import {
   Users,
   MessageSquare,
@@ -115,7 +115,13 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
               <>
                 <span className="font-medium text-gray-900">{activity.user?.name}</span>
                 {activity.user?.role && (
-                  <span className={getRoleClasses(activity.user.role)}>{activity.user.role}</span>
+                  <BadgeDisplay 
+                    role={activity.user.role}
+                    badges={[]}
+                    isLookingForGroup={false}
+                    pronouns="they/them"
+                    size="xs"
+                  />
                 )}
               </>
             )}

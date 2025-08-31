@@ -2,6 +2,7 @@
 
 import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
+import { getRoleClasses } from '@/utils/roleColors';
 import type { ActivityType } from '@/types/activity';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -140,7 +141,7 @@ const AdminActivityItem = ({
               <>
                 <span className="font-medium text-gray-900">{activity.user?.name}</span>
                 {activity.user?.role && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleClasses(activity.user.role)}`}>
                     {activity.user.role}
                   </span>
                 )}

@@ -72,7 +72,7 @@ export default function Asso() {
             lineThickness="25px"
             circleGap="22%"
           />
-          <div className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-13 mt-20 mb-20">
+          <div id="adhesion" className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-13 mt-20 mb-20">
             <h1 className="font-bold text-2xl tracking-wider">COMMENT NOUS REJOINDRE ?</h1>
             <p className="text-lg mt-3 max-w-xl">
               Rien de plus simple ! Inscris toi via le bouton rejoindre l&#39;association, remplis

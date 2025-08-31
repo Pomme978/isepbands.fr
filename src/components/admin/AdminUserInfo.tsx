@@ -91,13 +91,16 @@ export default function AdminUserInfo({ user }: AdminUserInfoProps) {
             <span>My Profile</span>
           </LangLink>
 
-          <LangLink
-            href="/logout"
-            className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors"
+          <button
+            onClick={async () => {
+              await signOut();
+              router.push(`/${lang}`);
+            }}
+            className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors w-full text-left"
           >
             <LogOut size={16} />
             <span>Logout</span>
-          </LangLink>
+          </button>
         </div>
       )}
     </div>

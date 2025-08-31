@@ -103,7 +103,7 @@ export default function BadgeDisplay({
     <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
       {/* Badge de rôle principal */}
       <span
-        className={`inline-flex items-center ${config.padding} ${roleColors.bg} ${roleColors.text} ${roleColors.border || ''} border rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
+        className={`inline-flex items-center ${config.padding} ${roleColors.bg} ${roleColors.text} rounded-full ${finalTextSize} shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
       >
         {role}
       </span>

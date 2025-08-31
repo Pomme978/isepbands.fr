@@ -12,7 +12,7 @@ import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
 import { calculateGraduationYear } from '@/utils/schoolUtils';
-import { getRoleClasses } from '@/utils/roleColors';
+import BadgeDisplay from '@/components/profile/BadgeDisplay';
 interface HomeLoggedInProps {
   user: User;
   lang: string;
@@ -209,9 +209,13 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                         )}
                       </p>
                       {userProfile?.primaryRole && (
-                        <span className={getRoleClasses(userProfile.primaryRole)}>
-                          {userProfile.primaryRole}
-                        </span>
+                        <BadgeDisplay 
+                          role={userProfile.primaryRole}
+                          badges={[]}
+                          isLookingForGroup={userProfile.isLookingForGroup || false}
+                          pronouns={(userProfile.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other') || 'they/them'}
+                          size="sm"
+                        />
                       )}
                     </div>
                   </div>
