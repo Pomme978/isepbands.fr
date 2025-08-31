@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/prisma';
-import { z } from 'zod';
+import { z, ZodIssue } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -421,15 +421,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           // Fetch badge definitions to get the key for the name field
           const badgeDefinitions = await tx.badgeDefinition.findMany({
             where: {
-              id: { in: validatedData.badges.map(b => b.badgeDefinitionId) }
+              id: { in: validatedData.badges.map((b) => b.badgeDefinitionId) },
             },
             select: {
               id: true,
               key: true,
-            }
+            },
           });
 
-          const badgeDefMap = new Map(badgeDefinitions.map(bd => [bd.id, bd.key]));
+          const badgeDefMap = new Map(badgeDefinitions.map((bd) => [bd.id, bd.key]));
 
           await tx.badge.createMany({
             data: validatedData.badges.map((badge) => ({
@@ -578,13 +578,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     console.error('Error updating user:', error);
 
     if (error instanceof z.ZodError) {
-      console.log('Zod validation error:', JSON.stringify(error.errors, null, 2));
+      console.log('Zod validation error:', JSON.stringify(error.issues, null, 2));
       return NextResponse.json(
         {
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
           message:
-            error.errors?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ') ||
+            error.issues?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ') ||
             'Validation failed',
         },
         { status: 400 },
