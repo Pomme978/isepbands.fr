@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Calendar, AlertCircle, RotateCcw } from 'lucide-react';
+import { User, Calendar, AlertCircle, RotateCcw, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface ArchivedUser {
   id: string;
@@ -28,6 +30,9 @@ export default function ArchivedUsers({ filters }: ArchivedUsersProps) {
   const [users, setUsers] = useState<ArchivedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
 
   useEffect(() => {
     fetchArchivedUsers();
@@ -187,8 +192,17 @@ export default function ArchivedUsers({ filters }: ArchivedUsersProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleRestoreUser(user.id)}
+                  onClick={() => router.push(`/${lang}/admin/users/${user.id}`)}
                   className="flex items-center gap-1"
+                >
+                  <Eye className="w-3 h-3" />
+                  Voir
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRestoreUser(user.id)}
+                  className="flex items-center gap-1 text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
                 >
                   <RotateCcw className="w-3 h-3" />
                   Restaurer

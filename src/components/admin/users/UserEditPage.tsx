@@ -16,6 +16,7 @@ import {
   FileText,
   Trash2,
   Archive,
+  RotateCcw,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 import LangLink from '@/components/common/LangLink';
@@ -130,6 +131,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   // Fetch current user session
   useEffect(() => {
@@ -386,6 +389,49 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
     }
   };
 
+  const handleRestoreUser = async () => {
+    if (!user) return;
+
+    try {
+      setRestoring(true);
+      const response = await fetch(`/api/admin/users/${userId}/restore`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to restore user');
+      }
+
+      // Refresh user data
+      const updatedUserResponse = await fetch(`/api/admin/users/${userId}`);
+      if (updatedUserResponse.ok) {
+        const data = await updatedUserResponse.json();
+        setUser({
+          ...data.user,
+          avatar: data.user.photoUrl,
+          phoneNumber: data.user.phone,
+          joinDate: data.user.createdAt
+            ? new Date(data.user.createdAt).toISOString().split('T')[0]
+            : '',
+          birthDate: data.user.birthDate
+            ? new Date(data.user.birthDate).toISOString().split('T')[0]
+            : '',
+          bio: data.user.biography || '',
+          status: data.user.status ? data.user.status.toLowerCase() : 'current',
+          rejectionReason: data.user.rejectionReason,
+        });
+      }
+
+      setShowRestoreConfirm(false);
+    } catch (error) {
+      console.error('Error restoring user:', error);
+      setError(error instanceof Error ? error.message : 'Failed to restore user');
+    } finally {
+      setRestoring(false);
+    }
+  };
+
   const handleArchiveUser = async () => {
     if (!user) return;
 
@@ -401,7 +447,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       }
 
       // Redirect to users page after successful archiving
-      router.push('/admin/users');
+      router.push(`/${lang}/admin/users`);
     } catch (error) {
       console.error('Error archiving user:', error);
       setError(error instanceof Error ? error.message : 'Failed to archive user');
@@ -420,6 +466,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             setUser={setUser}
             setHasUnsavedChanges={setHasUnsavedChanges}
             onPendingImageChange={setPendingImageFile}
+            isReadOnly={isArchived}
           />
         );
       case 'permissions':
@@ -428,6 +475,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             user={user}
             setUser={setUser}
             setHasUnsavedChanges={setHasUnsavedChanges}
+            isReadOnly={isArchived}
           />
         );
       case 'instruments':
@@ -436,6 +484,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             user={user}
             setUser={setUser}
             setHasUnsavedChanges={setHasUnsavedChanges}
+            isReadOnly={isArchived}
           />
         );
       case 'badges':
@@ -444,6 +493,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             user={user}
             setUser={setUser}
             setHasUnsavedChanges={setHasUnsavedChanges}
+            isReadOnly={isArchived}
           />
         );
       case 'groups':
@@ -516,8 +566,26 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   // const primaryRoleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
   const allRolesDisplay = getAllRoleNames(user.roles, user.pronouns, 'fr');
 
+  const isArchived = user.status === 'deleted' || user.status === 'DELETED';
+
   return (
     <div className="space-y-6">
+      {/* Warning Banner for Archived Users */}
+      {isArchived && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <Archive className="h-5 w-5 text-orange-600 mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-orange-900">Compte archivé</h3>
+              <p className="text-sm text-orange-700 mt-1">
+                Ce compte utilisateur est actuellement archivé et n'est plus actif. 
+                Vous pouvez le restaurer pour permettre à l'utilisateur de se reconnecter.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -550,58 +618,78 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         </div>
 
         <div className="flex items-center space-x-2">
-          <ViewProfileButton userId={userId} onClick={handleViewProfile} variant="button" />
-
-          <button
-            onClick={handleSendEmail}
-            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            Send Email
-          </button>
-
-          <button
-            onClick={handleResetPassword}
-            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Lock className="w-4 h-4 mr-2" />
-            Reset Password
-          </button>
-
-          {user?.status !== 'ARCHIVED' && (
-            <button
-              onClick={() => setShowArchiveConfirm(true)}
-              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
-            >
-              <Archive className="w-4 h-4 mr-2" />
-              Archive User
-            </button>
+          {!isArchived && (
+            <ViewProfileButton userId={userId} onClick={handleViewProfile} variant="button" />
           )}
 
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete User
-          </button>
+          {!isArchived && (
+            <>
+              <button
+                onClick={handleSendEmail}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Send Email
+              </button>
 
-          <button
-            onClick={handleSave}
-            disabled={!hasUnsavedChanges || saving}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              hasUnsavedChanges && !saving
-                ? 'bg-primary text-white hover:bg-primary/90'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {saving ? (
-              <Loading text="" size="sm" centered={false} />
+              <button
+                onClick={handleResetPassword}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                Reset Password
+              </button>
+            </>
+          )}
+
+          {currentUserId !== user.id && (
+            isArchived ? (
+              <button
+                onClick={() => setShowRestoreConfirm(true)}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Restaurer l'utilisateur
+              </button>
             ) : (
-              <Save className="w-4 h-4 mr-2" />
-            )}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
+              <>
+                <button
+                  onClick={() => setShowArchiveConfirm(true)}
+                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  Archive User
+                </button>
+
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete User
+                </button>
+              </>
+            )
+          )}
+
+          {!isArchived && (
+            <button
+              onClick={handleSave}
+              disabled={!hasUnsavedChanges || saving}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                hasUnsavedChanges && !saving
+                  ? 'bg-primary text-white hover:bg-primary/90'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {saving ? (
+                <Loading text="" size="sm" centered={false} />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -787,6 +875,47 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                 <>
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete Permanently
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Restore Confirmation Modal */}
+      <AlertDialog open={showRestoreConfirm} onOpenChange={setShowRestoreConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <RotateCcw className="w-5 h-5 text-green-600" />
+              </div>
+              Restaurer l'utilisateur
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left">
+              Êtes-vous sûr de vouloir restaurer{' '}
+              <strong>
+                {user?.firstName} {user?.lastName}
+              </strong>{' '}
+              ? Ce compte redeviendra actif et l'utilisateur pourra se reconnecter.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRestoreUser}
+              disabled={restoring}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {restoring ? (
+                <>
+                  <Loading text="" size="sm" centered={false} />
+                  Restauration...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Restaurer
                 </>
               )}
             </AlertDialogAction>

@@ -35,6 +35,7 @@ interface UserEditBadgesProps {
   user: User;
   setUser: (user: User) => void;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
+  isReadOnly?: boolean;
 }
 
 interface BadgeDefinition {
@@ -50,6 +51,7 @@ export default function UserEditBadges({
   user,
   setUser,
   setHasUnsavedChanges,
+  isReadOnly = false,
 }: UserEditBadgesProps) {
   const [badgeDefinitions, setBadgeDefinitions] = useState<BadgeDefinition[]>([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
@@ -194,7 +196,7 @@ export default function UserEditBadges({
             </div>
           </div>
           <div className="flex items-center space-x-1">
-            {!isSystemBadge && (
+            {!isSystemBadge && !isReadOnly && (
               <button
                 onClick={() => setEditingBadge(badge.id)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -202,16 +204,18 @@ export default function UserEditBadges({
                 <Edit2 className="w-4 h-4" />
               </button>
             )}
-            <button
-              onClick={() => removeBadge(badge.id)}
-              className="text-red-400 hover:text-red-600 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {!isReadOnly && (
+              <button
+                onClick={() => removeBadge(badge.id)}
+                className="text-red-400 hover:text-red-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
-        {editingBadge === badge.id && !isSystemBadge ? (
+        {editingBadge === badge.id && !isSystemBadge && !isReadOnly ? (
           <div className="space-y-3">
             <input
               type="text"
@@ -331,22 +335,24 @@ export default function UserEditBadges({
       <div className="border-t border-gray-200 pt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Ajouter un Badge</h3>
-          <button
-            onClick={() => setIsAddingBadge(!isAddingBadge)}
-            className={`inline-flex items-center px-3 py-1 text-sm rounded-md transition-colors ${
-              isAddingBadge
-                ? 'bg-gray-500 text-white hover:bg-gray-600'
-                : 'bg-primary text-white hover:bg-primary/90'
-            }`}
-          >
-            <Plus
-              className={`w-3 h-3 mr-1 transition-transform ${isAddingBadge ? 'rotate-45' : ''}`}
-            />
-            {isAddingBadge ? 'Fermer' : 'Nouveau Badge'}
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsAddingBadge(!isAddingBadge)}
+              className={`inline-flex items-center px-3 py-1 text-sm rounded-md transition-colors ${
+                isAddingBadge
+                  ? 'bg-gray-500 text-white hover:bg-gray-600'
+                  : 'bg-primary text-white hover:bg-primary/90'
+              }`}
+            >
+              <Plus
+                className={`w-3 h-3 mr-1 transition-transform ${isAddingBadge ? 'rotate-45' : ''}`}
+              />
+              {isAddingBadge ? 'Fermer' : 'Nouveau Badge'}
+            </button>
+          )}
         </div>
 
-        {isAddingBadge && (
+        {isAddingBadge && !isReadOnly && (
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-medium text-gray-900 mb-3">Sélectionner un Badge</h4>
             <div className="space-y-4">

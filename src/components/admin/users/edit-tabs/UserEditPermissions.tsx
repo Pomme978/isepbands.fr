@@ -45,12 +45,14 @@ interface UserEditPermissionsProps {
   user: User;
   setUser: (user: User) => void;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
+  isReadOnly?: boolean;
 }
 
 export default function UserEditPermissions({
   user,
   setUser,
   setHasUnsavedChanges,
+  isReadOnly = false,
 }: UserEditPermissionsProps) {
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,7 +181,7 @@ export default function UserEditPermissions({
             const isSelected = selectedRoleIds.includes(role.id);
             const adjustedAvailability = getAdjustedRoleAvailability(role);
             const isNotAvailable = !adjustedAvailability.isAvailable && !isSelected;
-            const isDisabled = isNotAvailable;
+            const isDisabled = isNotAvailable || isReadOnly;
 
             return (
               <div
@@ -200,7 +202,7 @@ export default function UserEditPermissions({
                     checked={isSelected}
                     onChange={() => !isDisabled && updateRoles(role.id)}
                     disabled={isDisabled}
-                    className="text-primary border-gray-300 focus:ring-primary/20 disabled:opacity-50"
+                    className="text-primary border-gray-300 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -255,13 +257,14 @@ export default function UserEditPermissions({
               id="fullAccess"
               checked={isFullAccess}
               onChange={toggleFullAccess}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+              disabled={isReadOnly}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div className="flex-1">
-              <label htmlFor="fullAccess" className="text-sm font-medium text-gray-700">
+              <label htmlFor="fullAccess" className={`text-sm font-medium ${isReadOnly ? 'text-gray-400' : 'text-gray-700'}`}>
                 Full Access Override
               </label>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className={`text-xs mt-1 ${isReadOnly ? 'text-gray-400' : 'text-gray-500'}`}>
                 Grant complete administrative access, bypassing role-based permissions. Use with
                 caution.
               </p>

@@ -32,6 +32,7 @@ interface UserEditInstrumentsProps {
   user: User;
   setUser: (user: User) => void;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
+  isReadOnly?: boolean;
 }
 
 interface Instrument {
@@ -52,6 +53,7 @@ export default function UserEditInstruments({
   user,
   setUser,
   setHasUnsavedChanges,
+  isReadOnly = false,
 }: UserEditInstrumentsProps) {
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [availableInstruments, setAvailableInstruments] = useState<
@@ -333,23 +335,25 @@ export default function UserEditInstruments({
             </span>
           )}
         </h4>
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={() => setEditingInstrument(instrument.id)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => removeInstrument(instrument.id)}
-            className="text-red-400 hover:text-red-600 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setEditingInstrument(instrument.id)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => removeInstrument(instrument.id)}
+              className="text-red-400 hover:text-red-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {editingInstrument === instrument.id ? (
+      {editingInstrument === instrument.id && !isReadOnly ? (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <select
@@ -371,7 +375,8 @@ export default function UserEditInstruments({
                 const numValue = value === '' ? 0 : parseInt(value) || 0;
                 updateInstrument(instrument.id, { yearsPlaying: numValue });
               }}
-              className="px-2 py-1 text-sm border border-gray-200 rounded"
+              disabled={isReadOnly}
+              className="px-2 py-1 text-sm border border-gray-200 rounded disabled:bg-gray-50 disabled:cursor-not-allowed"
               placeholder="Years"
               min="0"
             />
@@ -400,7 +405,7 @@ export default function UserEditInstruments({
             {instrument.level}
             {instrument.yearsPlaying > 0 ? ` • ${instrument.yearsPlaying} years` : ''}
           </p>
-          {!instrument.primary && (
+          {!instrument.primary && !isReadOnly && (
             <button
               onClick={() => setPrimaryInstrument(instrument.id)}
               className="text-primary hover:text-primary/80 text-xs mt-1"
@@ -419,17 +424,19 @@ export default function UserEditInstruments({
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Instruments</h3>
-          <button
-            onClick={() => setIsAddingInstrument(true)}
-            className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            Add Instrument
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsAddingInstrument(true)}
+              className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Add Instrument
+            </button>
+          )}
         </div>
 
         {/* Add Instrument Form */}
-        {isAddingInstrument && (
+        {isAddingInstrument && !isReadOnly && (
           <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-medium text-gray-900 mb-3">Add New Instrument</h4>
 
@@ -541,12 +548,13 @@ export default function UserEditInstruments({
           {MUSIC_GENRES.map((genre) => (
             <button
               key={genre.id}
-              onClick={() => toggleGenre(genre.id)}
+              onClick={() => !isReadOnly && toggleGenre(genre.id)}
+              disabled={isReadOnly}
               className={`px-3 py-2 text-sm rounded-full border transition-colors ${
                 preferredGenres.includes(genre.id)
                   ? 'bg-primary text-white border-primary'
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-              }`}
+              } ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {genre.nameFr}
             </button>
@@ -576,8 +584,9 @@ export default function UserEditInstruments({
             <input
               type="checkbox"
               checked={bandMatchingSettings.isAvailableForBands}
-              onChange={(e) => handleBandMatchingChange('isAvailableForBands', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+              onChange={(e) => !isReadOnly && handleBandMatchingChange('isAvailableForBands', e.target.checked)}
+              disabled={isReadOnly}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div>
               <span className="text-sm font-medium text-gray-700">Available for new bands</span>
@@ -591,8 +600,9 @@ export default function UserEditInstruments({
             <input
               type="checkbox"
               checked={bandMatchingSettings.showInstrumentSkills}
-              onChange={(e) => handleBandMatchingChange('showInstrumentSkills', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+              onChange={(e) => !isReadOnly && handleBandMatchingChange('showInstrumentSkills', e.target.checked)}
+              disabled={isReadOnly}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div>
               <span className="text-sm font-medium text-gray-700">
@@ -606,8 +616,9 @@ export default function UserEditInstruments({
             <input
               type="checkbox"
               checked={bandMatchingSettings.lookingForJamPartners}
-              onChange={(e) => handleBandMatchingChange('lookingForJamPartners', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+              onChange={(e) => !isReadOnly && handleBandMatchingChange('lookingForJamPartners', e.target.checked)}
+              disabled={isReadOnly}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div>
               <span className="text-sm font-medium text-gray-700">

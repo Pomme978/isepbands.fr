@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/middlewares/admin';
+import { requireAuth } from '@/middlewares/auth';
 import { prisma } from '@/prisma';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -8,6 +8,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   try {
     const userId = params.id;
+    const currentUserId = auth.user?.id; // Get the ID of the user performing the archive
 
     if (!userId) {
       return NextResponse.json({ error: 'ID utilisateur requis' }, { status: 400 });
@@ -26,10 +27,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: "L'utilisateur est déjà archivé" }, { status: 400 });
     }
 
-    // Update user status to DELETED (archived)
+    // Update user status to DELETED (archived) with archive metadata
     await prisma.user.update({
       where: { id: userId },
-      data: { status: 'DELETED' },
+      data: { 
+        status: 'DELETED',
+        archivedAt: new Date(),
+        archivedBy: currentUserId || null,
+      },
     });
 
     return NextResponse.json({

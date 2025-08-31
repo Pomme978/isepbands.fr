@@ -64,6 +64,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Block access to archived/deleted users
+    if (user.status === 'DELETED') {
+      return NextResponse.json({
+        success: false,
+        code: 'user_not_found',
+        message: 'User not found',
+        data: null,
+      });
+    }
+
     console.log('User data retrieved:', {
       id: user.id,
       firstName: user.firstName,

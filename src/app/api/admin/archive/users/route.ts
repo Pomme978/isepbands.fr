@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     // Build where clause for archived users
     const whereClause: {
-      status: 'ARCHIVED';
+      status: 'DELETED';
       OR?: Array<{
         firstName?: { contains: string; mode: 'insensitive' };
         lastName?: { contains: string; mode: 'insensitive' };
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       }>;
       archivedAt?: { gte: Date };
     } = {
-      status: 'ARCHIVED',
+      status: 'DELETED',
     };
 
     // Search filter

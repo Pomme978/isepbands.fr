@@ -8,6 +8,7 @@ import purpleGuitar from '@/assets/images/instruments/purple_guitar.png';
 import BgElements from '@/components/club/BgElements';
 import { Button } from '@/components/ui/button';
 import LangLink from '@/components/common/LangLink';
+import Cabinet from '@/components/club/Cabinet';
 
 export default function Asso() {
   const items = [
@@ -15,6 +16,29 @@ export default function Asso() {
     { title: 'Des concerts de fou zinzin' },
     { title: 'Réunir les musicos' },
     { title: 'Retaper records' },
+  ];
+
+  const cabinetCards = [
+    { 
+      title: 'Formation musicale', 
+      content: 'Cours et ateliers pour développer tes compétences musicales avec des pros.',
+      stack: 3
+    },
+    { 
+      title: 'Matériel de qualité', 
+      content: 'Accès à une gamme complète d\'instruments et équipements professionnels.',
+      stack: 2
+    },
+    { 
+      title: 'Concerts & Events', 
+      content: 'Participe à nos concerts et événements musicaux tout au long de l\'année.',
+      stack: 1
+    },
+    { 
+      title: 'Réseau musical', 
+      content: 'Rencontre d\'autres musiciens passionnés et forme ton groupe idéal.',
+      stack: 2
+    },
   ];
   return (
     <div>
@@ -136,6 +160,9 @@ export default function Asso() {
           </div>
         </div>
       </div>
+
+      {/* Cabinet Section */}
+      <Cabinet numberOfDrawers={3} cards={cabinetCards} />
     </div>
   );
 }

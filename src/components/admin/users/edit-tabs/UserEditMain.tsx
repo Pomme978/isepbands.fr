@@ -55,6 +55,7 @@ interface UserEditMainProps {
   setUser: (user: User) => void;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
   onPendingImageChange?: (file: File | null) => void;
+  isReadOnly?: boolean;
 }
 
 export default function UserEditMain({
@@ -62,6 +63,7 @@ export default function UserEditMain({
   setUser,
   setHasUnsavedChanges,
   onPendingImageChange,
+  isReadOnly = false,
 }: UserEditMainProps) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(user.avatar || null);
@@ -196,13 +198,13 @@ export default function UserEditMain({
                   id="profilePhoto"
                   accept="image/*"
                   onChange={handleImageUpload}
-                  disabled={uploadingImage}
+                  disabled={uploadingImage || isReadOnly}
                   className="hidden"
                 />
                 <label
                   htmlFor="profilePhoto"
                   className={`inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md transition-colors ${
-                    uploadingImage
+                    uploadingImage || isReadOnly
                       ? 'cursor-not-allowed opacity-50'
                       : 'hover:bg-gray-50 cursor-pointer'
                   }`}
@@ -226,7 +228,7 @@ export default function UserEditMain({
                 )}
               </div>
 
-              {previewImage && (
+              {previewImage && !isReadOnly && (
                 <button
                   onClick={removeImage}
                   className="inline-flex items-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-md hover:bg-red-50 transition-colors"
@@ -256,7 +258,8 @@ export default function UserEditMain({
               type="text"
               value={user.firstName}
               onChange={(e) => updateField('firstName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -266,7 +269,8 @@ export default function UserEditMain({
               type="text"
               value={user.lastName}
               onChange={(e) => updateField('lastName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -276,7 +280,8 @@ export default function UserEditMain({
               type="email"
               value={user.email}
               onChange={(e) => updateField('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -286,7 +291,8 @@ export default function UserEditMain({
               type="tel"
               value={formatPhoneNumber(user.phoneNumber || '')}
               onChange={(e) => updateField('phoneNumber', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
               placeholder="+33 6 12 34 56 78"
             />
           </div>
@@ -296,7 +302,8 @@ export default function UserEditMain({
             <select
               value={user.pronouns || ''}
               onChange={(e) => updateField('pronouns', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
               <option value="">Select pronouns</option>
               <option value="he/him">he/him (il/lui)</option>
@@ -312,7 +319,8 @@ export default function UserEditMain({
               type="date"
               value={user.birthDate || ''}
               onChange={(e) => updateField('birthDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -321,7 +329,8 @@ export default function UserEditMain({
             <select
               value={user.promotion}
               onChange={(e) => updateField('promotion', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
               <option value="P1">P1</option>
               <option value="P2">P2</option>
@@ -342,7 +351,8 @@ export default function UserEditMain({
           <textarea
             value={user.bio || ''}
             onChange={(e) => updateField('bio', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            disabled={isReadOnly}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             rows={4}
             placeholder="Brief biography..."
           />
@@ -359,7 +369,8 @@ export default function UserEditMain({
             <select
               value={user.status}
               onChange={(e) => updateField('status', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
               <option value="current">Current Member</option>
               <option value="former">Former Member</option>
@@ -367,6 +378,9 @@ export default function UserEditMain({
               <option value="pending">Pending Approval</option>
               <option value="refused">Refused</option>
               <option value="suspended">Suspended</option>
+              {(user.status === 'deleted' || user.status === 'DELETED') && (
+                <option value="deleted">Archived</option>
+              )}
             </select>
           </div>
 
@@ -376,29 +390,28 @@ export default function UserEditMain({
               type="date"
               value={user.joinDate}
               onChange={(e) => updateField('joinDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>
 
-        {/* Suspension/Rejection Reason - Show only for suspended, refused, or deleted users */}
+        {/* Suspension/Rejection Reason - Show only for suspended or refused users */}
         {(user.status === 'suspended' ||
-          user.status === 'refused' ||
-          user.status === 'deleted') && (
+          user.status === 'refused') && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {user.status === 'suspended'
                 ? 'Suspension Reason'
-                : user.status === 'refused'
-                  ? 'Rejection Reason'
-                  : 'Deletion Reason'}
+                : 'Rejection Reason'}
             </label>
             <textarea
               value={user.rejectionReason || ''}
               onChange={(e) => updateField('rejectionReason', e.target.value)}
+              disabled={isReadOnly}
               rows={3}
               placeholder={`Enter the reason for ${user.status}...`}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
             <p className="text-xs text-gray-500 mt-1">
               This reason will be shown to the user when they try to log in.

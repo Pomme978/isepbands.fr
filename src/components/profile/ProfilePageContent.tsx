@@ -14,6 +14,7 @@ import { InstrumentsDisplay } from '@/components/profile/shared/InstrumentsDispl
 import { useI18n } from '@/locales/client';
 import { Button } from '@/components/ui/button';
 import { PendingValidationProfile } from '@/components/profile/PendingValidationProfile';
+import { notFound } from 'next/navigation';
 
 // Utility function to calculate age
 const calculateAge = (birthDate: string | null | undefined): number | null => {
@@ -181,7 +182,7 @@ export default function ProfilePageContent({
         const result = await res.json();
 
         if (!result.success && result.code === 'user_not_found') {
-          setUser(null);
+          notFound();
         } else if (result.success && result.data) {
           const data: ApiUserData = result.data;
           setUser(data);
@@ -218,7 +219,7 @@ export default function ProfilePageContent({
         }
       } catch (err) {
         console.error('Erreur lors du fetch profile:', err);
-        setUser(null);
+        notFound();
       } finally {
         setLoading(false);
       }
@@ -241,41 +242,7 @@ export default function ProfilePageContent({
 
   // ---- Not found ----
   if (!user) {
-    const content = (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="max-w-md mx-auto p-8 rounded-lg shadow-lg bg-white text-center">
-          <svg
-            width="64"
-            height="64"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            className="mx-auto mb-4 text-red-400"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">
-            {t('user.settings.notfound.title')}
-          </h2>
-          <p className="text-gray-500 mb-6">{t('user.settings.notfound.description')}</p>
-          <Button variant="outline" onClick={() => router.push(`/${lang}`)}>
-            {t('common.back_home') ?? "Retour à l'accueil"}
-          </Button>
-        </div>
-      </div>
-    );
-    return wrapInLayout ? (
-      <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
-        {content}
-      </BasicLayout>
-    ) : (
-      content
-    );
+    notFound();
   }
 
   const activeGroups = groups.filter((g) => g.isActive);
