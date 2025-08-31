@@ -32,7 +32,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           }
         }
       } catch (error) {
-        console.error('Error fetching registration details:', error);
+        console.log('Error fetching registration details:', error);
       } finally {
         setIsLoading(false);
       }
@@ -55,7 +55,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Activity Log</h3>
 
-      {/* Registration Details Section */}
+      {/* Section : Détails d'inscription originale */}
       {registrationDetails && (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-2 mb-4">
@@ -66,7 +66,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           </div>
 
           <div className="grid grid-cols-1 gap-6">
-            {/* Motivation */}
+            {/* Bloc Motivation */}
             {registrationDetails.motivation && (
               <div className="flex items-start space-x-3">
                 <MessageSquare className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
@@ -81,7 +81,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
               </div>
             )}
 
-            {/* Experience */}
+            {/* Bloc Expérience musicale */}
             {registrationDetails.experience && (
               <div className="flex items-start space-x-3">
                 <Clock className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
@@ -99,7 +99,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
         </div>
       )}
 
-      {/* Activity Log Placeholder */}
+      {/* Section : Journal d'activité (placeholder) */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
         <div className="flex flex-col items-center">
           <FileText className="w-12 h-12 text-gray-400 mb-4" />

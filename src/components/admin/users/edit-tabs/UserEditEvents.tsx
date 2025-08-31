@@ -2,11 +2,7 @@
 
 import { Calendar } from 'lucide-react';
 
-interface UserEditEventsProps {
-  userId: string;
-}
-
-export default function UserEditEvents({ userId }: UserEditEventsProps) {
+export default function UserEditEvents() {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Events Management</h3>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, X, Edit2 } from 'lucide-react';
-import BadgeDisplay from '@/components/profile/BadgeDisplay';
 
 interface Badge {
   id: number;
@@ -58,17 +57,14 @@ export default function UserEditBadges({
   const [editingBadge, setEditingBadge] = useState<number | null>(null);
   const [selectedBadgeId, setSelectedBadgeId] = useState<number | null>(null);
 
-  // Filter out badges that have inactive badge definitions
-  const userBadges = (user.badges || []).filter((badge) => {
-    // If it's a system badge, check if the badge definition is active
-    const badgeDef = badgeDefinitions.find((b) => b.key === badge.name);
-    if (badgeDef) {
-      return true; // Badge definition found and is active (since we only fetch active ones)
-    }
-    // For legacy badges (no matching badgeDefinition), keep them
-    return true;
-  });
+  // ====================
+  // Filtre badges utilisateur (garde tous les badges, legacy inclus)
+  // ====================
+  const userBadges = (user.badges || []).filter(() => true);
 
+  // ====================
+  // Chargement des définitions de badges
+  // ====================
   useEffect(() => {
     fetchBadgeDefinitions();
   }, []);
@@ -81,12 +77,15 @@ export default function UserEditBadges({
         setBadgeDefinitions(data.badges || []);
       }
     } catch (error) {
-      console.error('Error fetching badge definitions:', error);
+      console.log('Error fetching badge definitions:', error);
     } finally {
       setLoadingBadges(false);
     }
   };
 
+  // ====================
+  // Ajout d'un badge
+  // ====================
   const addBadge = () => {
     if (!selectedBadgeId) return;
 
@@ -94,9 +93,9 @@ export default function UserEditBadges({
     if (!selectedBadgeDef) return;
 
     const newBadge: Badge = {
-      id: Date.now(), // Temporary ID for frontend
-      name: selectedBadgeDef.key, // Keep for display
-      badgeDefinitionId: selectedBadgeDef.id, // Store the definition ID
+      id: Date.now(),
+      name: selectedBadgeDef.key,
+      badgeDefinitionId: selectedBadgeDef.id,
       badgeDefinition: {
         id: selectedBadgeDef.id,
         key: selectedBadgeDef.key,
@@ -104,6 +103,8 @@ export default function UserEditBadges({
         labelEn: selectedBadgeDef.labelEn,
         color: selectedBadgeDef.color,
         description: selectedBadgeDef.description,
+        gradientDirection: 'to right',
+        textColor: 'white',
       },
       description: selectedBadgeDef.description || '',
       color: selectedBadgeDef.color,
@@ -115,17 +116,22 @@ export default function UserEditBadges({
     setUser({ ...user, badges: updatedBadges });
     setHasUnsavedChanges(true);
 
-    // Reset form
     setIsAddingBadge(false);
     setSelectedBadgeId(null);
   };
 
+  // ====================
+  // Suppression d'un badge
+  // ====================
   const removeBadge = (id: number) => {
     const updatedBadges = userBadges.filter((badge) => badge.id !== id);
     setUser({ ...user, badges: updatedBadges });
     setHasUnsavedChanges(true);
   };
 
+  // ====================
+  // Modification d'un badge
+  // ====================
   const updateBadge = (id: number, updates: Partial<Badge>) => {
     const updatedBadges = userBadges.map((badge) =>
       badge.id === id ? { ...badge, ...updates } : badge,
@@ -134,18 +140,31 @@ export default function UserEditBadges({
     setHasUnsavedChanges(true);
   };
 
-  const availableBadgeDefinitions = badgeDefinitions.filter(
-    (badgeDef) => !userBadges.some((badge) => badge.badgeDefinitionId === badgeDef.id || badge.name === badgeDef.key),
-  );
+  // ====================
+  // Définition des badges disponibles (non utilisés)
+  // ====================
+  // (Variable inutilisée, retirée)
 
+  // ====================
+  // Détermine si le badge est système
+  // ====================
   const getIsSystemBadge = (badge: Badge) => {
-    return badge.badgeDefinitionId !== undefined || badgeDefinitions.some((badgeDef) => badgeDef.key === badge.name);
+    return (
+      badge.badgeDefinitionId !== undefined ||
+      badgeDefinitions.some((badgeDef) => badgeDef.key === badge.name)
+    );
   };
 
+  // ====================
+  // Composant d'affichage d'un badge
+  // ====================
   const BadgeCard = ({ badge }: { badge: Badge }) => {
     const isSystemBadge = getIsSystemBadge(badge);
-    const badgeDef = badge.badgeDefinition || badgeDefinitions.find((b) => b.id === badge.badgeDefinitionId || b.key === badge.name);
+    const badgeDef =
+      badge.badgeDefinition ||
+      badgeDefinitions.find((b) => b.id === badge.badgeDefinitionId || b.key === badge.name);
 
+    // Debug badge display (non bloquant)
     console.log('Badge display debug:', {
       badgeName: badge.name,
       badgeColor: badge.color,
@@ -258,29 +277,21 @@ export default function UserEditBadges({
             {userBadges.length > 0 && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {userBadges.map((badge, index) => {
-                    const badgeData = {
-                      id: badge.id,
-                      name: badge.name,
-                      description: badge.description,
-                      color: badge.color || '#FF6B35',
-                      isSystemBadge: getIsSystemBadge(badge),
-                      badgeDefinition: badge.badgeDefinition ? {
-                        ...badge.badgeDefinition,
-                        textColor: badge.badgeDefinition.textColor || 'white'
-                      } : undefined
-                    };
-
+                  {userBadges.map((badge) => {
                     // Use color from badgeDefinition if available, otherwise fallback to badge.color or default
                     const badgeColor = badge.badgeDefinition?.color || badge.color || '#FF6B35';
                     const badgeColorEnd = badge.badgeDefinition?.colorEnd;
-                    const gradientDirection = badge.badgeDefinition?.gradientDirection || 'to right';
+                    const gradientDirection =
+                      badge.badgeDefinition?.gradientDirection || 'to right';
+
                     const textColor = badge.badgeDefinition?.textColor || 'white';
                     const displayName = badge.badgeDefinition?.labelFr || badge.name;
 
-                    // Determine background style (gradient or solid)
-                    const backgroundStyle = badgeColorEnd 
-                      ? { background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})` }
+                    // Détermine le style de fond (gradient ou couleur unie)
+                    const backgroundStyle = badgeColorEnd
+                      ? {
+                          background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})`,
+                        }
                       : { backgroundColor: badgeColor };
 
                     return (
@@ -360,7 +371,9 @@ export default function UserEditBadges({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
                         {badgeDefinitions.map((badgeDef) => {
                           const isAlreadyAssigned = userBadges.some(
-                            (badge) => badge.badgeDefinitionId === badgeDef.id || badge.name === badgeDef.key,
+                            (badge) =>
+                              badge.badgeDefinitionId === badgeDef.id ||
+                              badge.name === badgeDef.key,
                           );
                           if (isAlreadyAssigned) return null;
 

@@ -2,11 +2,7 @@
 
 import { Users } from 'lucide-react';
 
-interface UserEditGroupsProps {
-  userId: string;
-}
-
-export default function UserEditGroups({ userId }: UserEditGroupsProps) {
+export default function UserEditGroups() {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Groups Management</h3>

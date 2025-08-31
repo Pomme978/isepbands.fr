@@ -22,6 +22,10 @@ interface User {
     yearsPlaying: number;
     isPrimary: boolean;
   }>;
+  isAvailableForBands?: boolean;
+  showInstrumentSkills?: boolean;
+  lookingForJamPartners?: boolean;
+  preferredGenres?: string[];
 }
 
 interface UserEditInstrumentsProps {
@@ -69,6 +73,12 @@ export default function UserEditInstruments({
     yearsPlaying: 0,
     primary: false,
   });
+  // Band Matching Settings state (controlled by user object)
+  const bandMatchingSettings = {
+    isAvailableForBands: user.isAvailableForBands ?? true,
+    showInstrumentSkills: user.showInstrumentSkills ?? true,
+    lookingForJamPartners: user.lookingForJamPartners ?? false,
+  };
 
   // Load available instruments from database
   useEffect(() => {
@@ -175,8 +185,9 @@ export default function UserEditInstruments({
     // Update the parent user object with the new instruments data
     const updatedUserInstruments = updatedInstruments.map((inst) => {
       const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
-      const mapped = {
-        instrumentId: instrumentId,
+      return {
+        id: inst.id,
+        instrumentId: instrumentId.toString(),
         skillLevel: inst.level.toUpperCase(),
         yearsPlaying: inst.yearsPlaying || 0,
         isPrimary: inst.primary,
@@ -187,8 +198,6 @@ export default function UserEditInstruments({
           nameEn: inst.name,
         },
       };
-      console.log(`[ADD] Mapping instrument ${inst.name} (${inst.id}) to:`, mapped);
-      return mapped;
     });
     console.log('[ADD] Final user.instruments being set:', updatedUserInstruments);
     setUser({ ...user, instruments: updatedUserInstruments });
@@ -211,7 +220,8 @@ export default function UserEditInstruments({
     const updatedUserInstruments = updatedInstruments.map((inst) => {
       const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
       return {
-        instrumentId: instrumentId,
+        id: inst.id,
+        instrumentId: instrumentId.toString(),
         skillLevel: inst.level.toUpperCase(),
         yearsPlaying: inst.yearsPlaying || 0,
         isPrimary: inst.primary,
@@ -245,7 +255,8 @@ export default function UserEditInstruments({
     const updatedUserInstruments = updatedInstruments.map((inst) => {
       const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
       return {
-        instrumentId: instrumentId,
+        id: inst.id,
+        instrumentId: instrumentId.toString(),
         skillLevel: inst.level.toUpperCase(),
         yearsPlaying: inst.yearsPlaying,
         isPrimary: inst.primary,
@@ -273,7 +284,8 @@ export default function UserEditInstruments({
     const updatedUserInstruments = updatedInstruments.map((inst) => {
       const instrumentId = instrumentMapping[inst.name] || parseInt(inst.id);
       return {
-        instrumentId: instrumentId,
+        id: inst.id,
+        instrumentId: instrumentId.toString(),
         skillLevel: inst.level.toUpperCase(),
         yearsPlaying: inst.yearsPlaying || 0,
         isPrimary: inst.primary,
@@ -296,7 +308,13 @@ export default function UserEditInstruments({
     setPreferredGenres(newGenres);
 
     // Update the parent user object with preferred genres (as JSON string)
-    setUser({ ...user, preferredGenres: JSON.stringify(newGenres) });
+    setUser({ ...user, preferredGenres: newGenres });
+    setHasUnsavedChanges(true);
+  };
+
+  // Handlers for Band Matching Settings
+  const handleBandMatchingChange = (field: keyof typeof bandMatchingSettings, value: boolean) => {
+    setUser({ ...user, [field]: value });
     setHasUnsavedChanges(true);
   };
 
@@ -553,12 +571,12 @@ export default function UserEditInstruments({
       {/* Availability Settings */}
       <div className="border-t border-gray-200 pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Band Matching Settings</h3>
-
         <div className="space-y-4">
           <label className="flex items-start space-x-3">
             <input
               type="checkbox"
-              defaultChecked
+              checked={bandMatchingSettings.isAvailableForBands}
+              onChange={(e) => handleBandMatchingChange('isAvailableForBands', e.target.checked)}
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
             />
             <div>
@@ -572,7 +590,8 @@ export default function UserEditInstruments({
           <label className="flex items-start space-x-3">
             <input
               type="checkbox"
-              defaultChecked
+              checked={bandMatchingSettings.showInstrumentSkills}
+              onChange={(e) => handleBandMatchingChange('showInstrumentSkills', e.target.checked)}
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
             />
             <div>
@@ -586,6 +605,8 @@ export default function UserEditInstruments({
           <label className="flex items-start space-x-3">
             <input
               type="checkbox"
+              checked={bandMatchingSettings.lookingForJamPartners}
+              onChange={(e) => handleBandMatchingChange('lookingForJamPartners', e.target.checked)}
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
             />
             <div>

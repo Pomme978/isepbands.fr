@@ -17,13 +17,7 @@ interface Role {
   maxUsers?: number;
   isAvailable?: boolean;
   spotsLeft?: number;
-  permissions?: {
-    id: number;
-    name: string;
-    nameFr: string;
-    nameEn: string;
-    description: string;
-  }[];
+  permissions?: Permission[];
 }
 
 interface Permission {
@@ -42,6 +36,7 @@ interface User {
     role: Role;
   }[];
   isFullAccess?: boolean;
+  pronouns?: string;
   // Add other properties as needed
 }
 
@@ -57,59 +52,30 @@ export default function UserEditPermissions({
   setHasUnsavedChanges,
 }: UserEditPermissionsProps) {
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
-  const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
-    user.roles?.map((r) => r.role?.id || r.roleId || r.id) || [],
+    user.roles?.map((r) => r.role?.id) || [],
   );
-  const [originalRoleIds] = useState<number[]>(
-    user.roles?.map((r) => r.role?.id || r.roleId || r.id) || [],
-  );
-  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
+  const [originalRoleIds] = useState<number[]>(user.roles?.map((r) => r.role?.id) || []);
   const [isFullAccess, setIsFullAccess] = useState(user.isFullAccess || false);
 
   // Get current permissions from user roles
-  const getCurrentPermissions = (roles: typeof availableRoles, userRoles: User['roles']) => {
-    if (!userRoles || userRoles.length === 0) return new Set<number>();
-
-    const permissionIds = new Set<number>();
-
-    userRoles.forEach((userRole) => {
-      const roleId = userRole.role?.id || userRole.roleId || userRole.id;
-      const fullRole = roles.find((r) => r.id === roleId);
-      if (fullRole && fullRole.permissions) {
-        fullRole.permissions.forEach((p) => {
-          if (p && p.id) {
-            permissionIds.add(p.id);
-          }
-        });
-      }
-    });
-
-    return permissionIds;
-  };
 
   // Fetch available roles and permissions
   useEffect(() => {
     const fetchRolesAndPermissions = async () => {
       try {
-        const [rolesResponse, permissionsResponse] = await Promise.all([
-          fetch('/api/admin/roles'),
-          fetch('/api/admin/permissions'),
-        ]);
+        const [rolesResponse] = await Promise.all([fetch('/api/admin/roles')]);
 
-        if (rolesResponse.ok && permissionsResponse.ok) {
+        if (rolesResponse.ok) {
           const rolesData = await rolesResponse.json();
-          const permissionsData = await permissionsResponse.json();
           const roles = rolesData.roles || [];
 
           setAvailableRoles(roles);
-          setAvailablePermissions(permissionsData.permissions || []);
-
           // Roles data loaded, permissions will be initialized in separate useEffect
         }
       } catch (error) {
-        console.error('Error fetching roles and permissions:', error);
+        console.log('Error fetching roles:', error);
       } finally {
         setLoading(false);
       }
@@ -120,11 +86,8 @@ export default function UserEditPermissions({
 
   // Initialize permissions from user roles when roles are loaded
   useEffect(() => {
-    if (availableRoles.length > 0 && user.roles) {
-      const currentPermissions = getCurrentPermissions(availableRoles, user.roles);
-      setSelectedPermissions(Array.from(currentPermissions));
-    }
-  }, [availableRoles]); // Only when roles are first loaded
+    // Permissions logic removed, nothing to do here
+  }, [availableRoles, user.roles]);
 
   if (loading) {
     return (
@@ -185,15 +148,9 @@ export default function UserEditPermissions({
     const newRoles = newSelectedRoles
       .map((id) => {
         const role = availableRoles.find((r) => r.id === id);
-        return role
-          ? {
-              role: role,
-              id: role.id.toString(), // Ensure consistent ID format
-              roleId: role.id.toString(),
-            }
-          : null;
+        return role ? { role } : null;
       })
-      .filter(Boolean);
+      .filter((r): r is { role: Role } => !!r);
 
     setUser({ ...user, roles: newRoles });
     setHasUnsavedChanges(true);
@@ -207,49 +164,6 @@ export default function UserEditPermissions({
   };
 
   // Full Access is now handled by togglePermission(6)
-
-  const togglePermission = (permissionId: number) => {
-    const newPermissions = selectedPermissions.includes(permissionId)
-      ? selectedPermissions.filter((p) => p !== permissionId)
-      : [...selectedPermissions, permissionId];
-
-    setSelectedPermissions(newPermissions);
-    setHasUnsavedChanges(true);
-  };
-
-  const applyRolePermissions = () => {
-    // Get all permissions from selected roles
-    const rolePermissions = new Set<number>();
-    selectedRoleIds.forEach((roleId) => {
-      const role = availableRoles.find((r) => r.id === roleId);
-      // Note: we'd need to fetch role permissions from API
-      // For now just clear individual permissions when applying role permissions
-    });
-
-    setSelectedPermissions([]);
-    setHasUnsavedChanges(true);
-  };
-
-  const getCurrentRoleNames = () => {
-    return (
-      selectedRoleIds
-        .map((roleId) => {
-          const role = availableRoles.find((r) => r.id === roleId);
-          return role ? getRoleDisplayName(role, user.pronouns, 'fr') : 'Unknown';
-        })
-        .join(', ') || 'None'
-    );
-  };
-
-  const getPermissionSource = (permissionId: number) => {
-    // Check if this permission comes from any of the user's roles
-    const fromRoles = selectedRoleIds.some((roleId) => {
-      const role = availableRoles.find((r) => r.id === roleId);
-      return role?.permissions?.some((p) => p.id === permissionId);
-    });
-
-    return fromRoles ? 'role' : 'individual';
-  };
 
   return (
     <div className="space-y-8">

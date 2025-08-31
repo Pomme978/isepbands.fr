@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Upload, X, Eye, EyeOff, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { Upload, X, Loader2 } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 
 interface User {
@@ -18,6 +19,11 @@ interface User {
   birthDate?: string;
   phoneNumber?: string;
   rejectionReason?: string;
+  isAvailableForBands?: boolean;
+  showInstrumentSkills?: boolean;
+  lookingForJamPartners?: boolean;
+  preferredGenres?: string[];
+  pronouns?: string;
 }
 
 interface UserEditMainProps {
@@ -33,9 +39,9 @@ export default function UserEditMain({
   setHasUnsavedChanges,
   onPendingImageChange,
 }: UserEditMainProps) {
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(user.avatar || null);
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Sync preview image with user avatar when it changes (e.g., after save or initial load)
@@ -54,6 +60,7 @@ export default function UserEditMain({
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadingImage(true);
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -81,57 +88,11 @@ export default function UserEditMain({
 
     // Just mark that we have unsaved changes, don't trigger upload
     setHasUnsavedChanges(true);
+    setUploadingImage(false);
   };
 
   // New function to handle actual upload during save
-  const uploadPendingImage = async (): Promise<string | null> => {
-    if (!pendingImageFile) return null;
-
-    try {
-      const formData = new FormData();
-      formData.append('file', pendingImageFile);
-
-      const response = await fetch('/api/storage', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to upload file';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch {
-          // If JSON parsing fails, use status text or default message
-          errorMessage = response.statusText || `Error ${response.status}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      let result;
-      try {
-        result = await response.json();
-      } catch {
-        throw new Error('Invalid server response');
-      }
-
-      if (!result.success || !result.file?.id) {
-        throw new Error('Invalid response data');
-      }
-
-      // The storage API returns the database object directly
-      // We need to construct the access URL
-      const photoUrl = `/api/storage?id=${result.file.id}`;
-
-      // Clear pending file
-      setPendingImageFile(null);
-
-      return photoUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
+  // const uploadPendingImage = async (): Promise<string | null> => { /* unused */ };
 
   const removeImage = async () => {
     console.log('removeImage called, current avatar:', user.avatar);
@@ -188,15 +149,16 @@ export default function UserEditMain({
           <div className="flex items-center space-x-4">
             <div className="relative">
               {previewImage ? (
-                <img
+                <Image
                   src={previewImage}
                   alt="Profile"
+                  width={80}
+                  height={80}
                   className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                 />
               ) : (
                 <Avatar
                   name={`${user.firstName} ${user.lastName}`}
-                  alt={`${user.firstName} ${user.lastName}`}
                   size="lg"
                   className="border-2 border-dashed border-gray-300"
                 />
