@@ -92,7 +92,7 @@ export default function BadgeDisplay({
     },
   };
 
-  const config = sizeConfig[size];
+  const config = sizeConfig[size] || sizeConfig.md; // Fallback to 'md' if size is invalid
   const finalTextSize = textSize !== 'text-sm' ? textSize : config.text;
   return (
     <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
@@ -129,6 +129,7 @@ export default function BadgeDisplay({
             const displayName = badge.badgeDefinition?.labelFr || badge.name;
             const description = badge.badgeDefinition?.description || badge.description;
 
+
             // Determine background style (gradient or solid)
             const backgroundStyle = badgeColorEnd 
               ? { background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})` }
@@ -137,11 +138,12 @@ export default function BadgeDisplay({
             return (
               <span
                 key={badge.id || index}
-                className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
+                className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out [color:var(--badge-text-color)!important]`}
                 style={{
                   ...backgroundStyle,
                   color: textColor,
-                }}
+                  '--badge-text-color': textColor,
+                } as React.CSSProperties & { '--badge-text-color': string }}
                 title={description || undefined}
               >
                 {displayName}
