@@ -20,6 +20,17 @@ interface Badge {
   color: string;
   isSystemBadge: boolean;
   assignedAt?: string | Date | null;
+  badgeDefinition?: {
+    id: number;
+    key: string;
+    labelFr: string;
+    labelEn: string;
+    color: string;
+    colorEnd?: string | null;
+    gradientDirection: string;
+    textColor: string;
+    description?: string | null;
+  };
 }
 
 interface UserProfile {
