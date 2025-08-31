@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { standardAuth } from '@/lib/auth';
+import { standardAuth } from '@/utils/authMiddleware';
 
 export async function GET() {
   try {
@@ -20,7 +20,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await standardAuth(request);
+    const authResult = await standardAuth(request);
+    
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
 
     const body = await request.json();
     const { platform, url, isActive = true, sortOrder = 0 } = body;

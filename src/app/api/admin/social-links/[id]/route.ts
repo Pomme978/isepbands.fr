@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { standardAuth } from '@/lib/auth';
+import { standardAuth } from '@/utils/authMiddleware';
 
 export async function GET(
   request: NextRequest,
@@ -33,7 +33,11 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    await standardAuth(request);
+    const authResult = await standardAuth(request);
+    
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
 
     const body = await request.json();
     const { platform, url, isActive, sortOrder } = body;
@@ -86,7 +90,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await standardAuth(request);
+    const authResult = await standardAuth(request);
+    
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
 
     await prisma.socialLink.delete({
       where: { id: parseInt(params.id) }

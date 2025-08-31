@@ -255,21 +255,51 @@ export default function UserEditBadges({
 
         {userBadges.length > 0 ? (
           <div className="space-y-4">
-            <div className="mb-4">
-              <BadgeDisplay 
-                role="" 
-                badges={userBadges.map(badge => ({
-                  id: badge.id,
-                  name: badge.name,
-                  description: badge.description,
-                  color: badge.color || '#FF6B35',
-                  isSystemBadge: getIsSystemBadge(badge),
-                  badgeDefinition: badge.badgeDefinition
-                }))}
-                size="large"
-                isLookingForGroup={false}
-              />
-            </div>
+            {userBadges.length > 0 && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-2">
+                  {userBadges.map((badge, index) => {
+                    const badgeData = {
+                      id: badge.id,
+                      name: badge.name,
+                      description: badge.description,
+                      color: badge.color || '#FF6B35',
+                      isSystemBadge: getIsSystemBadge(badge),
+                      badgeDefinition: badge.badgeDefinition ? {
+                        ...badge.badgeDefinition,
+                        textColor: badge.badgeDefinition.textColor || 'white'
+                      } : undefined
+                    };
+
+                    // Use color from badgeDefinition if available, otherwise fallback to badge.color or default
+                    const badgeColor = badge.badgeDefinition?.color || badge.color || '#FF6B35';
+                    const badgeColorEnd = badge.badgeDefinition?.colorEnd;
+                    const gradientDirection = badge.badgeDefinition?.gradientDirection || 'to right';
+                    const textColor = badge.badgeDefinition?.textColor || 'white';
+                    const displayName = badge.badgeDefinition?.labelFr || badge.name;
+
+                    // Determine background style (gradient or solid)
+                    const backgroundStyle = badgeColorEnd 
+                      ? { background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})` }
+                      : { backgroundColor: badgeColor };
+
+                    return (
+                      <span
+                        key={badge.id}
+                        className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out"
+                        style={{
+                          ...backgroundStyle,
+                          color: textColor,
+                        }}
+                        title={badge.badgeDefinition?.description || badge.description}
+                      >
+                        {displayName}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {userBadges.map((badge) => (
                 <BadgeCard key={badge.id} badge={badge} />
