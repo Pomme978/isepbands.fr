@@ -6,6 +6,8 @@ import Image from 'next/image';
 import Roadmap from '@/components/club/Roadmap';
 import purpleGuitar from '@/assets/images/instruments/purple_guitar.png';
 import BgElements from '@/components/club/BgElements';
+import { Button } from '@/components/ui/button';
+import LangLink from '@/components/common/LangLink';
 
 export default function Asso() {
   const items = [
@@ -60,6 +62,78 @@ export default function Asso() {
               className={'w-70 h-auto relative rotate-20 z-30'}
               priority={false}
             />
+          </div>
+        </div>
+
+        <div className="relative">
+          <BgElements
+            variant="circle"
+            sizeClassName="w-80 h-80 absolute -left-20 -bottom-20 z-[0]"
+            lineThickness="25px"
+            circleGap="22%"
+          />
+          <div className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-13 mt-20 mb-20">
+            <h1 className="font-bold text-2xl tracking-wider">COMMENT NOUS REJOINDRE ?</h1>
+            <p className="text-lg mt-3 max-w-xl">
+              Rien de plus simple ! Inscris toi via le bouton rejoindre l&#39;association, remplis le
+              formulaire, attends ta réponse, et tout seras prêt !
+            </p>
+            <span className="italic text-xs mt-1">*(Sous quelques conditions)</span>
+
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-8 md:gap-10 max-w-7xl mx-auto mt-10 mb-6 px-4">
+              <div className="flex flex-col justify-between items-center text-center max-w-60 h-96">
+                <h3 className="text-xl font-bold">Savoir jouer d&#39;un instrument</h3>
+                <p className="text-md">
+                  Tu pratique d&#39;un instrument, quel qu&#39;il soit ? Guitare, basse, piano, chant,
+                  harpe, batterie ou tout type d&#39;appareil qui produit du son? Alors isep bands est
+                  fait pour toi !
+                </p>
+                <Button
+                  asChild
+                  size="sm"
+                  className="relative shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground mt-8"
+                >
+                  <LangLink href={`/register`}>Rejoindre</LangLink>
+                </Button>
+              </div>
+
+              <div className="hidden md:block w-px bg-gray-300 self-stretch my-4"></div>
+
+              <div className="flex flex-col justify-between items-center text-center max-w-60 h-96">
+                <h3 className="text-xl font-bold">Être prêt à s'engager</h3>
+                <p className="text-md">
+                  Tu es prêt à t'engager et à participer à la vie de l'asso ? Rejoindre un groupe,
+                  monter sur scène, assurer et être présents aux répétitions ? Alors isep bands
+                  est fait pour toi !
+                </p>
+                <Button
+                  asChild
+                  size="sm"
+                  className="relative shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground mt-8"
+                >
+                  <LangLink href={`/register`}>Rejoindre</LangLink>
+                </Button>
+              </div>
+
+              <div className="hidden md:block w-px bg-gray-300 self-stretch my-4"></div>
+
+              <div className="flex flex-col justify-between items-center text-center max-w-60 h-96">
+                <h3 className="text-xl font-bold">Kiffer la musique</h3>
+                <p className="text-md">
+                  Tu aimes la musique, tu veux découvrir le monde de la scène, des groupes, du
+                  live ? Tu veux pouvoir vivre cette experience et rencontrer pleins d'autres
+                  personnes qui souhaitent la même chose que toi? Alors isep bands est fait pour
+                  toi !
+                </p>
+                <Button
+                  asChild
+                  size="sm"
+                  className="relative shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground mt-8"
+                >
+                  <LangLink href={`/register`}>Rejoindre</LangLink>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -8,9 +8,10 @@ interface BgElementsProps {
   sizeClassName?: string; // taille globale du canvas
   lineCount?: number; // nombre de barres (par défaut 3)
   lineLength?: string; // longueur des barres (ex: "100%")
-  lineThickness?: string; // épaisseur (ex: "12%")
+  lineThickness?: string; // épaisseur (ex: "12%" ou "20px")
   lineGap?: string; // espacement vertical/horizontal entre barres (ex: "20px" ou "15%")
   lineAngle?: number; // angle en degrés (ex: -35 pour diagonale)
+  circleGap?: string; // espacement entre les cercles (pour variant circle)
 }
 
 export default function BgElements({
@@ -22,14 +23,28 @@ export default function BgElements({
   lineThickness = '12%',
   lineGap = '18%',
   lineAngle = -35,
+  circleGap = '20%',
 }: BgElementsProps) {
   if (variant === 'circle') {
+    const borderWidth = lineThickness.includes('px') ? lineThickness : '20px';
+    const gapValue = circleGap.includes('%') ? circleGap : '25%';
+    
     return (
       <div className={`${sizeClassName} ${className} text-slate-800 blur-[2px]`} aria-hidden>
-        <div className="absolute inset-0 rounded-full border-[10px] border-current" />
+        {/* Cercle extérieur */}
+        <div 
+          className="absolute inset-0 rounded-full border-current" 
+          style={{ borderWidth, borderStyle: 'solid' }}
+        />
+        {/* Cercle intérieur */}
         <div
-          className="absolute inset-0 rounded-full border-[10px] border-current"
-          style={{ inset: '17%' }}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-current"
+          style={{ 
+            width: `calc(100% - 2 * ${gapValue})`,
+            height: `calc(100% - 2 * ${gapValue})`,
+            borderWidth,
+            borderStyle: 'solid'
+          }}
         />
       </div>
     );

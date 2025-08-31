@@ -160,7 +160,8 @@ export default function ProfilePageContent({
   useEffect(() => {
     if (!mounted) return;
 
-    // Si pas d'userId spécifique et pas d'utilisateur connecté, rediriger
+    // Pour les profils publics, si un userId est fourni, on continue même sans auth
+    // Sinon, si pas d'userId spécifique et pas d'utilisateur connecté, rediriger
     if (!userId && (!authUser || authLoading)) {
       if (!authLoading && !authUser) {
         router.push(`/${lang}`);

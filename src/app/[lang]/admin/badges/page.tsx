@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import BadgeDisplay from '@/components/profile/BadgeDisplay';
 
 interface BadgeDefinition {
   id: number;
@@ -23,20 +24,12 @@ interface BadgeFormData {
   labelEn: string;
   description: string;
   color: string;
+  colorEnd: string;
+  gradientDirection: string;
+  textColor: 'white' | 'black';
+  useGradient: boolean;
 }
 
-const BADGE_COLORS = [
-  { value: '#FF6B35', name: 'Orange' },
-  { value: '#4ECDC4', name: 'Teal' },
-  { value: '#45B7D1', name: 'Blue' },
-  { value: '#96CEB4', name: 'Green' },
-  { value: '#FFEAA7', name: 'Yellow' },
-  { value: '#DDA0DD', name: 'Purple' },
-  { value: '#FFB6C1', name: 'Pink' },
-  { value: '#D3D3D3', name: 'Silver' },
-  { value: '#FF6347', name: 'Red' },
-  { value: '#32CD32', name: 'Lime' },
-];
 
 function BadgesContent() {
   const [badges, setBadges] = useState<BadgeDefinition[]>([]);
@@ -50,7 +43,37 @@ function BadgesContent() {
     labelEn: '',
     description: '',
     color: '#4ECDC4',
+    colorEnd: '#FF6B35',
+    gradientDirection: 'to right',
+    textColor: 'white',
+    useGradient: false,
   });
+
+  // Fonction pour déterminer la couleur de texte optimale
+  const getOptimalTextColor = (backgroundColor: string): 'white' | 'black' => {
+    // Remove # if present
+    const hex = backgroundColor.replace('#', '');
+    
+    // Parse RGB values
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calculate luminance using WCAG formula
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    return luminance > 0.5 ? 'black' : 'white';
+  };
+
+  // Mise à jour automatique de la couleur de texte quand la couleur de fond change
+  const handleColorChange = (newColor: string) => {
+    const optimalTextColor = getOptimalTextColor(newColor);
+    setFormData({ 
+      ...formData, 
+      color: newColor,
+      textColor: optimalTextColor
+    });
+  };
 
   useEffect(() => {
     fetchBadges();
@@ -84,6 +107,10 @@ function BadgesContent() {
       labelEn: '',
       description: '',
       color: '#4ECDC4',
+      colorEnd: '#FF6B35',
+      gradientDirection: 'to right',
+      textColor: 'white',
+      useGradient: false,
     });
     setEditingId(null);
     setIsCreating(false);
@@ -96,6 +123,10 @@ function BadgesContent() {
       labelEn: badge.labelEn,
       description: badge.description || '',
       color: badge.color,
+      colorEnd: (badge as any).colorEnd || '#FF6B35',
+      gradientDirection: (badge as any).gradientDirection || 'to right',
+      textColor: (badge as any).textColor || getOptimalTextColor(badge.color),
+      useGradient: !!(badge as any).colorEnd,
     });
     setEditingId(badge.id);
     setIsCreating(false);
@@ -172,6 +203,7 @@ function BadgesContent() {
           labelEn: badge.labelEn,
           description: badge.description,
           color: badge.color,
+          textColor: getOptimalTextColor(badge.color), // Utilise la couleur de texte optimale
           isActive: !badge.isActive,
         }),
       });
@@ -234,24 +266,175 @@ function BadgesContent() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Couleur</label>
-              <div className="flex gap-2">
-                <select
-                  value={formData.color}
-                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                >
-                  {BADGE_COLORS.map((color) => (
-                    <option key={color.value} value={color.value}>
-                      {color.name}
-                    </option>
-                  ))}
-                </select>
-                <div
-                  className="w-10 h-10 rounded-lg border border-gray-300"
-                  style={{ backgroundColor: formData.color }}
-                />
+            {/* Aperçu du badge */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Aperçu</label>
+              <div className="p-4 bg-gray-50 rounded-lg border">
+                <div className="inline-flex">
+                  <span
+                    className="inline-flex items-center px-5 py-3 rounded-full text-base font-medium shadow-sm transition-all duration-200"
+                    style={{
+                      background: formData.useGradient 
+                        ? `linear-gradient(${formData.gradientDirection}, ${formData.color}, ${formData.colorEnd})`
+                        : formData.color,
+                      color: formData.textColor,
+                    }}
+                  >
+                    {formData.labelFr || 'Exemple Badge'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Choix du type de couleur */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Apparence</label>
+              <div className="space-y-4">
+                {/* Radio buttons pour choisir couleur unie ou dégradé */}
+                <div className="flex gap-6">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="colorType"
+                      checked={!formData.useGradient}
+                      onChange={() => setFormData({ ...formData, useGradient: false })}
+                      className="mr-2 text-primary focus:ring-primary/20"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Couleur unie</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="colorType"
+                      checked={formData.useGradient}
+                      onChange={() => setFormData({ ...formData, useGradient: true })}
+                      className="mr-2 text-primary focus:ring-primary/20"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Dégradé</span>
+                  </label>
+                </div>
+
+                {/* Configuration couleur unie */}
+                {!formData.useGradient && (
+                  <div className="p-4 bg-white rounded-lg border">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Couleur du badge</h4>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={formData.color}
+                        onChange={(e) => handleColorChange(e.target.value)}
+                        className="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={formData.color}
+                        onChange={(e) => handleColorChange(e.target.value)}
+                        className="w-28 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-mono"
+                        placeholder="#4ECDC4"
+                        pattern="^#[0-9A-Fa-f]{6}$"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Configuration dégradé */}
+                {formData.useGradient && (
+                  <div className="p-4 bg-white rounded-lg border space-y-4">
+                    <h4 className="text-sm font-medium text-gray-700">Configuration du dégradé</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Couleur de début</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={formData.color}
+                            onChange={(e) => handleColorChange(e.target.value)}
+                            className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={formData.color}
+                            onChange={(e) => handleColorChange(e.target.value)}
+                            className="flex-1 px-2 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-mono"
+                            placeholder="#4ECDC4"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Couleur de fin</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={formData.colorEnd}
+                            onChange={(e) => setFormData({ ...formData, colorEnd: e.target.value })}
+                            className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={formData.colorEnd}
+                            onChange={(e) => setFormData({ ...formData, colorEnd: e.target.value })}
+                            className="flex-1 px-2 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-mono"
+                            placeholder="#FF6B35"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Direction du dégradé</label>
+                      <select
+                        value={formData.gradientDirection}
+                        onChange={(e) => setFormData({ ...formData, gradientDirection: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                      >
+                        <option value="to right">→ De gauche à droite</option>
+                        <option value="to left">← De droite à gauche</option>
+                        <option value="to bottom">↓ De haut en bas</option>
+                        <option value="to top">↑ De bas en haut</option>
+                        <option value="to bottom right">↘ Diagonal bas-droite</option>
+                        <option value="to bottom left">↙ Diagonal bas-gauche</option>
+                        <option value="to top right">↗ Diagonal haut-droite</option>
+                        <option value="to top left">↖ Diagonal haut-gauche</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Couleur du texte */}
+                <div className="p-4 bg-white rounded-lg border">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Couleur du texte</h4>
+                  <div className="flex items-center gap-4">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, textColor: 'white' })}
+                        className={`px-4 py-2 text-sm rounded-lg border font-medium transition-colors ${
+                          formData.textColor === 'white'
+                            ? 'bg-gray-800 text-white border-gray-800'
+                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        Blanc
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, textColor: 'black' })}
+                        className={`px-4 py-2 text-sm rounded-lg border font-medium transition-colors ${
+                          formData.textColor === 'black'
+                            ? 'bg-gray-800 text-white border-gray-800'
+                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        Noir
+                      </button>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      Suggéré: <strong>{getOptimalTextColor(formData.color) === 'white' ? 'Blanc' : 'Noir'}</strong>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -288,7 +471,7 @@ function BadgesContent() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-vertical"
                 rows={3}
-                placeholder="Description du badge..."
+                placeholder="Description interne du badge pour les administrateurs (à quoi sert ce badge, quand l'attribuer, etc.)"
               />
             </div>
           </div>

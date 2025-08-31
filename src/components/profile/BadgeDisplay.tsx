@@ -12,6 +12,17 @@ interface Badge {
   color: string;
   isSystemBadge: boolean;
   assignedAt?: string | Date | null;
+  badgeDefinition?: {
+    id: number;
+    key: string;
+    labelFr: string;
+    labelEn: string;
+    color: string;
+    colorEnd?: string | null;
+    gradientDirection: string;
+    textColor: string;
+    description?: string | null;
+  };
 }
 
 interface BadgeDisplayProps {
@@ -108,20 +119,32 @@ export default function BadgeDisplay({
             );
           } else {
             // Badge object with color information
-            const badgeColor = badge.color || '#FF6B35';
-            const isDark = isColorDark(badgeColor);
+            // Use color from badgeDefinition if available, otherwise fallback to badge.color or default
+            const badgeColor = badge.badgeDefinition?.color || badge.color || '#FF6B35';
+            const badgeColorEnd = badge.badgeDefinition?.colorEnd;
+            const gradientDirection = badge.badgeDefinition?.gradientDirection || 'to right';
+            // Use textColor from badgeDefinition if available, otherwise calculate optimal
+            const textColor = badge.badgeDefinition?.textColor || (isColorDark(badgeColor) ? 'white' : 'black');
+            // Use labelFr from badgeDefinition if available, otherwise use badge.name
+            const displayName = badge.badgeDefinition?.labelFr || badge.name;
+            const description = badge.badgeDefinition?.description || badge.description;
+
+            // Determine background style (gradient or solid)
+            const backgroundStyle = badgeColorEnd 
+              ? { background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})` }
+              : { backgroundColor: badgeColor };
 
             return (
               <span
                 key={badge.id || index}
                 className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
                 style={{
-                  backgroundColor: badgeColor,
-                  color: isDark ? 'white' : 'black',
+                  ...backgroundStyle,
+                  color: textColor,
                 }}
-                title={badge.description || undefined}
+                title={description || undefined}
               >
-                {badge.name}
+                {displayName}
               </span>
             );
           }

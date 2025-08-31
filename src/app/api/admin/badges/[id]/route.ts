@@ -18,7 +18,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { key, labelFr, labelEn, description, color, isActive } = body;
+    const { key, labelFr, labelEn, description, color, colorEnd, gradientDirection, textColor, isActive } = body;
 
     // Validation
     if (!key || !labelFr || !labelEn) {
@@ -59,6 +59,9 @@ export async function PUT(req: NextRequest) {
         labelEn: labelEn.trim(),
         description: description?.trim() || null,
         color: color || '#4ECDC4',
+        colorEnd: colorEnd || null,
+        gradientDirection: gradientDirection || 'to right',
+        textColor: textColor || 'white',
         isActive: isActive !== undefined ? isActive : true,
       },
     });

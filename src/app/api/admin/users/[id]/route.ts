@@ -59,7 +59,7 @@ const updateUserSchema = z.object({
   badges: z
     .array(
       z.object({
-        name: z.string(),
+        badgeDefinitionId: z.number(),
       }),
     )
     .optional(),
@@ -158,6 +158,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           select: {
             id: true,
             name: true,
+            badgeDefinitionId: true,
+            badgeDefinition: {
+              select: {
+                id: true,
+                key: true,
+                labelFr: true,
+                labelEn: true,
+                color: true,
+                colorEnd: true,
+                gradientDirection: true,
+                textColor: true,
+                description: true,
+              },
+            },
           },
         },
       },
@@ -402,12 +416,26 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           where: { userId },
         });
 
-        // Add new badges
+        // Add new badges with badgeDefinitionId
         if (validatedData.badges.length > 0) {
+          // Fetch badge definitions to get the key for the name field
+          const badgeDefinitions = await tx.badgeDefinition.findMany({
+            where: {
+              id: { in: validatedData.badges.map(b => b.badgeDefinitionId) }
+            },
+            select: {
+              id: true,
+              key: true,
+            }
+          });
+
+          const badgeDefMap = new Map(badgeDefinitions.map(bd => [bd.id, bd.key]));
+
           await tx.badge.createMany({
             data: validatedData.badges.map((badge) => ({
               userId,
-              name: badge.name,
+              badgeDefinitionId: badge.badgeDefinitionId,
+              name: badgeDefMap.get(badge.badgeDefinitionId) || 'unknown',
             })),
           });
         }
@@ -517,6 +545,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           select: {
             id: true,
             name: true,
+            badgeDefinitionId: true,
+            badgeDefinition: {
+              select: {
+                id: true,
+                key: true,
+                labelFr: true,
+                labelEn: true,
+                color: true,
+                colorEnd: true,
+                gradientDirection: true,
+                textColor: true,
+                description: true,
+              },
+            },
           },
         },
       },

@@ -166,6 +166,17 @@ export async function GET(req: NextRequest) {
               color: badge.badgeDefinition.color,
               isSystemBadge: true,
               assignedAt: badge.assignedAt,
+              badgeDefinition: {
+                id: badge.badgeDefinition.id,
+                key: badge.badgeDefinition.key,
+                labelFr: badge.badgeDefinition.labelFr,
+                labelEn: badge.badgeDefinition.labelEn,
+                color: badge.badgeDefinition.color,
+                colorEnd: badge.badgeDefinition.colorEnd,
+                gradientDirection: badge.badgeDefinition.gradientDirection,
+                textColor: badge.badgeDefinition.textColor,
+                description: badge.badgeDefinition.description,
+              },
             };
           } else {
             // Legacy custom badge

@@ -3,9 +3,8 @@
 
 import { FooterColumn } from './FooterColumn';
 import { Newsletter } from './Newsletter';
-import { SocialIcons } from './SocialIcons';
+import SocialsLink from '@/components/common/SocialsLink';
 import { useI18n } from '@/locales/client';
-import { siFacebook, siInstagram, siX, siGithub, siYoutube } from 'simple-icons';
 
 const footerColumns = [
   {
@@ -37,35 +36,6 @@ const footerColumns = [
   },
 ];
 
-const socialLinks = [
-  {
-    name: 'Facebook',
-    href: 'https://facebook.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siFacebook.path} />
-      </svg>
-    ),
-  },
-  {
-    name: 'Instagram',
-    href: 'https://instagram.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siInstagram.path} />
-      </svg>
-    ),
-  },
-  {
-    name: 'YouTube',
-    href: 'https://youtube.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siYoutube.path} />
-      </svg>
-    ),
-  },
-];
 
 export default function Footer() {
   const t = useI18n();
@@ -107,7 +77,7 @@ export default function Footer() {
             <p className="text-gray-600 text-sm">
               © {currentYear} ISEPBANDS, {t('footer.all_rights_reserved')}
             </p>
-            <SocialIcons links={socialLinks} />
+            <SocialsLink />
           </div>
         </div>
       </div>

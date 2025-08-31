@@ -4,35 +4,14 @@ import { Button } from '@/components/ui/button';
 import NeonLogo from '@/components/common/NeonLogo'; // Adjust path as needed
 import isepbands_logo from '@/assets/images/isepbands-logo.svg';
 import { ChevronDown } from 'lucide-react';
-import { siFacebook, siGithub, siInstagram, siX, siYoutube } from 'simple-icons';
-import { SocialIcons } from '@/components/footer/SocialIcons';
 import StageLights from '@/components/home/StageLights';
 import Crowd from '@/components/home/Crowd';
 import MusicNotes from '@/components/home/MusicNotes';
 import LangLink from '@/components/common/LangLink';
+import SocialsLink from '@/components/common/SocialsLink';
 import { useSession } from '@/lib/auth-client';
 import { useParams } from 'next/navigation';
 
-const socialLinks = [
-  {
-    name: 'Instagram',
-    href: 'https://instagram.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siInstagram.path} />
-      </svg>
-    ),
-  },
-  {
-    name: 'YouTube',
-    href: 'https://youtube.com',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d={siYoutube.path} />
-      </svg>
-    ),
-  },
-];
 
 const HomeHero = () => {
   const { user } = useSession();
@@ -123,11 +102,10 @@ const HomeHero = () => {
                   <LangLink href={`/register`}>Join Us</LangLink>
                 </Button>
               )}
-              <SocialIcons
-                links={socialLinks}
-                defaultColor="text-white"
-                defaultHoverColor="text-gray-200"
-                defaultSize="w-8 h-8"
+              <SocialsLink
+                iconColor="text-white"
+                iconHoverColor="text-gray-200"
+                iconSize="w-8 h-8"
               />
             </div>
           </div>

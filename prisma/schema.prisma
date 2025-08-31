@@ -14,6 +14,9 @@ model BadgeDefinition {
   labelEn     String
   description String?
   color       String @default("#4ECDC4")
+  colorEnd    String?  // Couleur de fin pour gradient (optionnel)
+  gradientDirection String @default("to right") // Direction du gradient
+  textColor   String @default("white")
   isActive    Boolean @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -392,6 +395,18 @@ model MusicGenre {
   id     String @id
   nameFr String
   nameEn String
+}
+
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  platform  String   // 'facebook', 'instagram', 'youtube', 'twitter', 'tiktok', 'discord', etc.
+  url       String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  @@unique([platform])
 }
 
 model SystemSettings {

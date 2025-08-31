@@ -39,7 +39,7 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
     }
   };
 
-  const toggleBadge = (badgeId: string) => {
+  const toggleBadge = (badgeId: number) => {
     const currentBadges = formData.achievementBadges || [];
     const newBadges = currentBadges.includes(badgeId)
       ? currentBadges.filter((b) => b !== badgeId)
@@ -66,18 +66,18 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
           <div className="space-y-3">
             {badges.map((badge) => (
               <div
-                key={badge.key}
+                key={badge.id}
                 className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  formData.achievementBadges.includes(badge.key)
+                  formData.achievementBadges.includes(badge.id)
                     ? 'bg-primary/10 border-primary/30'
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                 }`}
-                onClick={() => toggleBadge(badge.key)}
+                onClick={() => toggleBadge(badge.id)}
               >
                 <input
                   type="checkbox"
-                  checked={formData.achievementBadges.includes(badge.key)}
-                  onChange={() => toggleBadge(badge.key)}
+                  checked={formData.achievementBadges.includes(badge.id)}
+                  onChange={() => toggleBadge(badge.id)}
                   className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
                 />
                 <div

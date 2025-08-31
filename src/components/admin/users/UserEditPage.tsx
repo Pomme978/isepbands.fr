@@ -88,7 +88,17 @@ interface UserRole {
 }
 
 interface UserBadge {
+  id?: number;
   name: string;
+  badgeDefinitionId?: number;
+  badgeDefinition?: {
+    id: number;
+    key: string;
+    labelFr: string;
+    labelEn: string;
+    color: string;
+    description?: string;
+  };
 }
 
 const TABS = [
@@ -242,8 +252,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           })
           .filter((id) => id !== undefined && id !== null && !isNaN(id)),
         badges: user.badges?.map((badge: UserBadge) => ({
-          name: badge.name,
-        })),
+          badgeDefinitionId: badge.badgeDefinitionId || badge.badgeDefinition?.id,
+        })).filter(b => b.badgeDefinitionId),
         preferredGenres: user.preferredGenres || [],
         rejectionReason: user.rejectionReason,
       };

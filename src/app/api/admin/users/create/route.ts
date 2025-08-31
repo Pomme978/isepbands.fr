@@ -32,7 +32,7 @@ const createUserSchema = z.object({
     .optional(),
 
   // Badges
-  achievementBadges: z.array(z.string()).optional(),
+  achievementBadges: z.array(z.number()).optional(),
 
   // Profile
   bio: z.string().optional(),
@@ -183,13 +183,28 @@ export async function POST(req: NextRequest) {
 
       // Add badges if provided
       if (validatedData.achievementBadges && validatedData.achievementBadges.length > 0) {
-        for (const badgeName of validatedData.achievementBadges) {
-          await tx.badge.create({
-            data: {
-              name: badgeName,
-              userId: newUser.id,
-            },
-          });
+        // Fetch badge definitions to get the key for the name field
+        const badgeDefinitions = await tx.badgeDefinition.findMany({
+          where: {
+            id: { in: validatedData.achievementBadges }
+          },
+          select: {
+            id: true,
+            key: true,
+          }
+        });
+
+        for (const badgeDefId of validatedData.achievementBadges) {
+          const badgeDef = badgeDefinitions.find(bd => bd.id === badgeDefId);
+          if (badgeDef) {
+            await tx.badge.create({
+              data: {
+                name: badgeDef.key,
+                badgeDefinitionId: badgeDefId,
+                userId: newUser.id,
+              },
+            });
+          }
         }
       }
 

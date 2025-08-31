@@ -15,7 +15,7 @@ const ROOT_USER = {
   lastName: 'Admin',
   password: 'ROOTPASS25*',
   // Pre-hashed password to avoid bcrypt on each call
-  hashedPassword: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // hash of 'ROOTPASS25*'
+  hashedPassword: '$2b$10$bONm9L/DLBlJp0LF/llhYu0awuy9BeSnhvmOX3EjceoSESugSrwKm', // hash of 'ROOTPASS25*'
   isFullAccess: true,
 };
 

@@ -18,6 +18,9 @@ export async function GET() {
         labelEn: true,
         description: true,
         color: true,
+        colorEnd: true,
+        gradientDirection: true,
+        textColor: true,
       },
     });
 

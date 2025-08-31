@@ -2,10 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, X, Edit2 } from 'lucide-react';
+import BadgeDisplay from '@/components/profile/BadgeDisplay';
 
 interface Badge {
   id: number;
   name: string;
+  badgeDefinitionId?: number;
+  badgeDefinition?: {
+    id: number;
+    key: string;
+    labelFr: string;
+    labelEn: string;
+    color: string;
+    colorEnd?: string | null;
+    gradientDirection: string;
+    textColor: string;
+    description?: string;
+  };
   description?: string;
   color?: string;
   dateAwarded?: string;
@@ -82,7 +95,16 @@ export default function UserEditBadges({
 
     const newBadge: Badge = {
       id: Date.now(), // Temporary ID for frontend
-      name: selectedBadgeDef.key, // Store the key
+      name: selectedBadgeDef.key, // Keep for display
+      badgeDefinitionId: selectedBadgeDef.id, // Store the definition ID
+      badgeDefinition: {
+        id: selectedBadgeDef.id,
+        key: selectedBadgeDef.key,
+        labelFr: selectedBadgeDef.labelFr,
+        labelEn: selectedBadgeDef.labelEn,
+        color: selectedBadgeDef.color,
+        description: selectedBadgeDef.description,
+      },
       description: selectedBadgeDef.description || '',
       color: selectedBadgeDef.color,
       dateAwarded: new Date().toISOString().split('T')[0],
@@ -113,16 +135,16 @@ export default function UserEditBadges({
   };
 
   const availableBadgeDefinitions = badgeDefinitions.filter(
-    (badgeDef) => !userBadges.some((badge) => badge.name === badgeDef.key),
+    (badgeDef) => !userBadges.some((badge) => badge.badgeDefinitionId === badgeDef.id || badge.name === badgeDef.key),
   );
 
-  const getIsSystemBadge = (badgeName: string) => {
-    return badgeDefinitions.some((badgeDef) => badgeDef.key === badgeName);
+  const getIsSystemBadge = (badge: Badge) => {
+    return badge.badgeDefinitionId !== undefined || badgeDefinitions.some((badgeDef) => badgeDef.key === badge.name);
   };
 
   const BadgeCard = ({ badge }: { badge: Badge }) => {
-    const isSystemBadge = getIsSystemBadge(badge.name);
-    const badgeDef = badgeDefinitions.find((b) => b.key === badge.name);
+    const isSystemBadge = getIsSystemBadge(badge);
+    const badgeDef = badge.badgeDefinition || badgeDefinitions.find((b) => b.id === badge.badgeDefinitionId || b.key === badge.name);
 
     console.log('Badge display debug:', {
       badgeName: badge.name,
@@ -232,10 +254,27 @@ export default function UserEditBadges({
         </h3>
 
         {userBadges.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {userBadges.map((badge) => (
-              <BadgeCard key={badge.id} badge={badge} />
-            ))}
+          <div className="space-y-4">
+            <div className="mb-4">
+              <BadgeDisplay 
+                role="" 
+                badges={userBadges.map(badge => ({
+                  id: badge.id,
+                  name: badge.name,
+                  description: badge.description,
+                  color: badge.color || '#FF6B35',
+                  isSystemBadge: getIsSystemBadge(badge),
+                  badgeDefinition: badge.badgeDefinition
+                }))}
+                size="large"
+                isLookingForGroup={false}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userBadges.map((badge) => (
+                <BadgeCard key={badge.id} badge={badge} />
+              ))}
+            </div>
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
@@ -291,7 +330,7 @@ export default function UserEditBadges({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
                         {badgeDefinitions.map((badgeDef) => {
                           const isAlreadyAssigned = userBadges.some(
-                            (badge) => badge.name === badgeDef.key,
+                            (badge) => badge.badgeDefinitionId === badgeDef.id || badge.name === badgeDef.key,
                           );
                           if (isAlreadyAssigned) return null;
 

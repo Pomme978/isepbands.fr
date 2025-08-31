@@ -11,6 +11,11 @@ import {
   RefreshCw,
   Settings as SettingsIcon,
   FileText,
+  Share2,
+  Plus,
+  X,
+  ExternalLink,
+  Move,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 
@@ -27,6 +32,14 @@ interface SystemSettings {
   publicationDirector: {
     name: string;
   };
+}
+
+interface SocialLink {
+  id: number;
+  platform: string;
+  url: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 
 export default function SettingsPage() {
@@ -51,12 +64,18 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('year');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  
+  // Social Links state
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [socialLinksLoading, setSocialLinksLoading] = useState(false);
+  const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
 
   // Check if current month is August (migration allowed)
   const isAugust = new Date().getMonth() === 7;
 
   useEffect(() => {
     loadSettings();
+    loadSocialLinks();
   }, []);
 
   const loadSettings = async () => {
@@ -72,6 +91,102 @@ export default function SettingsPage() {
       setError('Erreur lors du chargement des paramètres');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSocialLinks = async () => {
+    try {
+      setSocialLinksLoading(true);
+      const response = await fetch('/api/admin/social-links');
+      if (response.ok) {
+        const data = await response.json();
+        setSocialLinks(data);
+      }
+    } catch (error) {
+      console.error('Failed to load social links:', error);
+      setError('Erreur lors du chargement des liens sociaux');
+    } finally {
+      setSocialLinksLoading(false);
+    }
+  };
+
+  const handleCreateSocialLink = async () => {
+    if (!newSocialLink.platform || !newSocialLink.url) {
+      setError('La plateforme et l\'URL sont obligatoires');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/social-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          platform: newSocialLink.platform.toLowerCase(),
+          url: newSocialLink.url,
+          sortOrder: socialLinks.length
+        })
+      });
+
+      if (response.ok) {
+        const newLink = await response.json();
+        setSocialLinks([...socialLinks, newLink]);
+        setNewSocialLink({ platform: '', url: '' });
+        setSuccess('Lien social ajouté avec succès');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Erreur lors de la création');
+      }
+    } catch (error) {
+      console.error('Error creating social link:', error);
+      setError('Erreur lors de la création du lien social');
+    }
+  };
+
+  const handleUpdateSocialLink = async (id: number, updates: Partial<SocialLink>) => {
+    try {
+      const response = await fetch(`/api/admin/social-links/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+
+      if (response.ok) {
+        const updatedLink = await response.json();
+        setSocialLinks(socialLinks.map(link => 
+          link.id === id ? updatedLink : link
+        ));
+        setSuccess('Lien social mis à jour');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Erreur lors de la mise à jour');
+      }
+    } catch (error) {
+      console.error('Error updating social link:', error);
+      setError('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleDeleteSocialLink = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce lien social ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/social-links/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setSocialLinks(socialLinks.filter(link => link.id !== id));
+        setSuccess('Lien social supprimé');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Erreur lors de la suppression');
+      }
+    } catch (error) {
+      console.error('Error deleting social link:', error);
+      setError('Erreur lors de la suppression');
     }
   };
 
@@ -189,6 +304,7 @@ export default function SettingsPage() {
   const sections = [
     { id: 'year', label: 'Année scolaire', icon: Calendar },
     { id: 'appearance', label: 'Apparence', icon: Palette },
+    { id: 'social', label: 'Réseaux sociaux', icon: Share2 },
     { id: 'legal', label: 'Mentions légales', icon: FileText },
   ];
 
@@ -374,6 +490,136 @@ export default function SettingsPage() {
                       <p className="text-xs text-muted-foreground mt-1">
                         Format: oklch(lightness chroma hue). Exemple: oklch(0.559 0.238 307.331)
                       </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Social Media Section */}
+              {activeSection === 'social' && (
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <Share2 className="w-6 h-6 text-primary" />
+                    <h2 className="text-xl font-semibold">Réseaux sociaux</h2>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Add new social link */}
+                    <div className="bg-muted/30 rounded-lg p-4">
+                      <h3 className="font-medium text-foreground mb-4">Ajouter un réseau social</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            Plateforme
+                          </label>
+                          <select
+                            value={newSocialLink.platform}
+                            onChange={(e) => setNewSocialLink({ ...newSocialLink, platform: e.target.value })}
+                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          >
+                            <option value="">Sélectionner...</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="x">X (Twitter)</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="discord">Discord</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="spotify">Spotify</option>
+                            <option value="soundcloud">SoundCloud</option>
+                            <option value="github">GitHub</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            URL
+                          </label>
+                          <input
+                            type="url"
+                            value={newSocialLink.url}
+                            onChange={(e) => setNewSocialLink({ ...newSocialLink, url: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <button
+                            onClick={handleCreateSocialLink}
+                            className="w-full inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Ajouter
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Current social links */}
+                    <div>
+                      <h3 className="font-medium text-foreground mb-4">Liens configurés</h3>
+                      {socialLinksLoading ? (
+                        <div className="text-center py-8">
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Chargement...</p>
+                        </div>
+                      ) : socialLinks.length === 0 ? (
+                        <div className="text-center py-8 border border-dashed border-border rounded-lg">
+                          <Share2 className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Aucun réseau social configuré</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {socialLinks.map((link) => (
+                            <div
+                              key={link.id}
+                              className="flex items-center justify-between p-4 border border-border rounded-lg bg-white"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <Share2 className="w-4 h-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-foreground capitalize">
+                                      {link.platform}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {link.url.length > 50 ? `${link.url.substring(0, 50)}...` : link.url}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => window.open(link.url, '_blank')}
+                                  className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                                  title="Ouvrir le lien"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateSocialLink(link.id, { isActive: !link.isActive })}
+                                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                                    link.isActive
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {link.isActive ? 'Actif' : 'Inactif'}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSocialLink(link.id)}
+                                  className="p-2 text-muted-foreground hover:text-red-600 transition-colors"
+                                  title="Supprimer"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

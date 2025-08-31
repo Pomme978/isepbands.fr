@@ -174,7 +174,7 @@ export async function ensureDBIntegrity() {
           });
 
           const rolePermissions = permissions.map((permission) => ({
-            roleId: role.id,
+            roleId: role!.id,
             permissionId: permission.id,
           }));
 
@@ -212,7 +212,7 @@ export async function ensureDBIntegrity() {
     return { success: true, actions };
   } catch (error) {
     console.error('❌ Error during database integrity check:', error);
-    return { success: false, actions, error: error.message };
+    return { success: false, actions, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
@@ -247,4 +247,17 @@ export async function getAvailablePermissions() {
   return await prisma.permission.findMany({
     orderBy: { name: 'asc' },
   });
+}
+
+// Exécution directe si appelé depuis la ligne de commande
+if (require.main === module) {
+  ensureDBIntegrity()
+    .then(() => {
+      console.log('✅ Database integrity restored successfully!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('❌ Failed to restore database:', error);
+      process.exit(1);
+    });
 }

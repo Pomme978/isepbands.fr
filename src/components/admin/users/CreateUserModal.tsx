@@ -40,7 +40,7 @@ export interface UserFormData {
   preferredGenres: string[];
 
   // Step 4: Badges
-  achievementBadges: string[];
+  achievementBadges: number[];
   customBadge?: {
     name: string;
     description: string;
