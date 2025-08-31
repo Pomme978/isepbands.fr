@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import CabinetDrawers from './CabinetDrawers';
 
 interface CardData {
@@ -10,14 +10,20 @@ interface CardData {
 }
 
 interface CabinetProps {
-  numberOfDrawers: number;
   cards: CardData[];
 }
 
-export default function Cabinet({ numberOfDrawers, cards }: CabinetProps) {
+export default function Cabinet({ cards }: CabinetProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Set mobile state
+    setIsMobile(window.innerWidth < 768);
+
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+
     const handleScroll = () => {
       const element = document.getElementById('cabinet');
       if (!element) return;
@@ -29,86 +35,87 @@ export default function Cabinet({ numberOfDrawers, cards }: CabinetProps) {
 
       // Start animation when element enters viewport - more gradual
       const startPoint = windowHeight - 100; // Start earlier
-      const endPoint = -elementHeight + 200; // End later
-      
+      const endPoint = -elementHeight - 200; // End much later to allow reaching 1.5
+
       if (elementTop <= startPoint && elementTop >= endPoint) {
         const progress = (startPoint - elementTop) / (startPoint - endPoint);
-        // Smooth easing function for more fluid movement
-        const easedProgress = progress * progress * (3 - 2 * progress); // smoothstep
-        setScrollProgress(Math.min(Math.max(easedProgress, 0), 1));
+        // Linear progression for constant speed on mobile
+        const finalProgress = progress * 1.5;
+        setScrollProgress(Math.min(Math.max(finalProgress, 0), 1.5));
       } else if (elementTop > startPoint) {
         setScrollProgress(0);
       } else if (elementTop < endPoint) {
-        setScrollProgress(1);
+        setScrollProgress(1.5); // Set to 150% when fully scrolled
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     // Initial call to set correct state
     handleScroll();
-    
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  // Distribute cards across drawers
-  const distributeCards = (cards: CardData[], numDrawers: number) => {
-    const cardsPerDrawer = Math.ceil(cards.length / numDrawers);
-    const drawers: CardData[][] = [];
-    
-    for (let i = 0; i < numDrawers; i++) {
-      drawers[i] = [];
+  // Distribution logic: mobile = 1 card per drawer, desktop = distribute across 3 drawers
+  const createDrawers = (cards: CardData[]) => {
+    console.log('createDrawers called:', { isMobile, cardsLength: cards.length });
+    if (isMobile) {
+      // Mobile: 1 card per drawer
+      const result = cards.map((card) => [card]);
+      console.log('Mobile distribution:', result.length, 'drawers');
+      return result;
+    } else {
+      // Desktop: distribute across 3 drawers
+      const drawers: CardData[][] = [[], [], []];
+      cards.forEach((card, index) => {
+        const drawerIndex = index % 3; // Round-robin distribution across 3 drawers
+        drawers[drawerIndex].push(card);
+      });
+      console.log('Desktop distribution:', drawers.length, 'drawers');
+      return drawers;
     }
-    
-    // Distribute cards evenly, avoiding empty drawers
-    let currentDrawer = 0;
-    for (let i = 0; i < cards.length; i++) {
-      drawers[currentDrawer].push(cards[i]);
-      
-      // Move to next drawer if current has enough cards
-      if (drawers[currentDrawer].length >= cardsPerDrawer && currentDrawer < numDrawers - 1) {
-        // Check if remaining cards can fill remaining drawers
-        const remainingCards = cards.length - i - 1;
-        const remainingDrawers = numDrawers - currentDrawer - 1;
-        if (remainingCards >= remainingDrawers) {
-          currentDrawer++;
-        }
-      }
-    }
-    
-    return drawers.filter(drawer => drawer.length > 0);
   };
 
-  const distributedCards = distributeCards(cards, numberOfDrawers);
+  const distributedCards = useMemo(() => createDrawers(cards), [cards, isMobile]);
 
   return (
-    <div className="relative w-full py-16">
+    <div
+      className={`relative w-full py-16 ${isMobile ? 'overflow-hidden' : 'overflow-visible'}`}
+    >
       <div
         id="cabinet"
-        className="relative bg-gray-800 rounded-xl shadow-2xl w-full md:w-96 md:ml-0"
-        style={{ minHeight: '600px' }}
+        className="relative bg-gray-800 rounded-xl shadow-2xl w-full md:w-96"
+        style={{ minHeight: isMobile ? '300px' : '600px' }}
       >
-        {/* Cabinet Title */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+        {/* Cabinet Title - higher z-index */}
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          style={{ zIndex: 999 }}
+        >
           <h2 className="text-2xl md:text-3xl font-bold text-white text-center whitespace-nowrap">
             CE QU'ON PROPOSE
           </h2>
         </div>
 
         {/* Cabinet Drawers */}
-        <CabinetDrawers
-          drawers={distributedCards}
-          scrollProgress={scrollProgress}
-        />
-
+        <CabinetDrawers drawers={distributedCards} scrollProgress={scrollProgress} isMobile={isMobile} />
 
         {/* Cabinet Front Cover - higher z-index to hide drawers */}
-        <div 
+        <div
           className="absolute inset-0 bg-gray-800 rounded-xl pointer-events-none"
           style={{
-            zIndex: Math.max(...distributedCards.map((_, i) => distributedCards.length - i + 10)) + 10, // Higher than all drawers
+            zIndex:
+              Math.max(...distributedCards.map((_, i) => (distributedCards.length - i) * 10 + 10)) +
+              20, // Higher than all drawers
           }}
         />
       </div>
+
+      {/* Space for mobile drawers extending downward */}
+      {isMobile && <div style={{ height: `${cards.length * 300}px` }} />}
     </div>
   );
 }

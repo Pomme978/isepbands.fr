@@ -19,25 +19,25 @@ export default function Asso() {
   ];
 
   const cabinetCards = [
-    { 
-      title: 'Formation musicale', 
-      content: 'Cours et ateliers pour développer tes compétences musicales avec des pros.',
-      stack: 3
+    {
+      title: 'DES JAMS',
+      content: 'Venez jouez avec d’autres musiciens !',
+      stack: 1,
     },
-    { 
-      title: 'Matériel de qualité', 
-      content: 'Accès à une gamme complète d\'instruments et équipements professionnels.',
-      stack: 2
+    {
+      title: 'DES CONCERTS',
+      content: 'Venez vivre des moment sinoubliables sur scène !!',
+      stack: 2,
     },
-    { 
-      title: 'Concerts & Events', 
-      content: 'Participe à nos concerts et événements musicaux tout au long de l\'année.',
-      stack: 1
+    {
+      title: 'DES SESSIONS STUDIOS',
+      content: 'Venez enregistrer vos meilleures reprises avec nous !',
+      stack: 3,
     },
-    { 
-      title: 'Réseau musical', 
-      content: 'Rencontre d\'autres musiciens passionnés et forme ton groupe idéal.',
-      stack: 2
+    {
+      title: 'DES AFTERWORK',
+      content: 'Venez au bar rencontrez l’équipe et vous détendre après les cours !',
+      stack: 2,
     },
   ];
   return (
@@ -89,14 +89,29 @@ export default function Asso() {
           </div>
         </div>
 
+        {/* Cabinet Section */}
+        <div className="mx-3 md:mx-0">
+          <Cabinet cards={cabinetCards} />
+        </div>
+
         <div className="relative">
           <BgElements
             variant="circle"
-            sizeClassName="w-80 h-80 absolute -left-20 -bottom-20 z-[0]"
+            sizeClassName="w-75 h-75 absolute -left-20 -bottom-20 z-[0]"
             lineThickness="25px"
-            circleGap="22%"
+            circleGap="18%"
           />
-          <div id="adhesion" className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-13 mt-20 mb-20">
+
+          <BgElements
+            variant="circle"
+            sizeClassName="w-75 h-75 absolute -right-20 -top-25 z-[0]"
+            lineThickness="25px"
+            circleGap="18%"
+          />
+          <div
+            id="adhesion"
+            className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-13 mt-20 mb-20"
+          >
             <h1 className="font-bold text-2xl tracking-wider">COMMENT NOUS REJOINDRE ?</h1>
             <p className="text-lg mt-3 max-w-xl">
               Rien de plus simple ! Inscris toi via le bouton rejoindre l&#39;association, remplis
@@ -161,8 +176,6 @@ export default function Asso() {
         </div>
       </div>
 
-      {/* Cabinet Section */}
-      <Cabinet numberOfDrawers={3} cards={cabinetCards} />
     </div>
   );
 }
