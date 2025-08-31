@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createActivityLog } from '@/services/activityLogService';
 import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
@@ -97,6 +98,21 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ venu
       },
     });
 
+    // Logger la modification de salle
+    try {
+      const adminId = authResult.user?.id ? String(authResult.user.id) : undefined;
+      await createActivityLog({
+        userId: venueId,
+        type: 'venue_updated',
+        title: 'Salle modifiée',
+        description: `Salle ${venue.name} modifiée par admin ${adminId}`,
+        metadata: { updatedFields: Object.keys(validatedData) },
+        createdBy: adminId,
+      });
+    } catch {
+      // ignore logger errors
+    }
+
     return NextResponse.json({
       success: true,
       venue: {
@@ -112,7 +128,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ venu
       return NextResponse.json(
         {
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 },
       );
@@ -158,6 +174,21 @@ export async function DELETE(
     await prisma.venue.delete({
       where: { id: venueId },
     });
+
+    // Logger la suppression de salle
+    try {
+      const adminId = authResult.user?.id ? String(authResult.user.id) : undefined;
+      await createActivityLog({
+        userId: venueId,
+        type: 'venue_deleted',
+        title: 'Salle supprimée',
+        description: `Salle ${venueWithEvents.name} supprimée par admin ${adminId}`,
+        metadata: {},
+        createdBy: adminId,
+      });
+    } catch {
+      // ignore logger errors
+    }
 
     return NextResponse.json({
       success: true,

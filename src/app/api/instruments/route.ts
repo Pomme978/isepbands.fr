@@ -48,11 +48,11 @@ export async function GET() {
 
 // POST: Crée un nouvel instrument
 export async function POST(req: NextRequest) {
-  // Check authentication and permissions
   const authResult = await requireAuth(req);
   if (!authResult.ok) {
     return authResult.res;
   }
+  const user = authResult.user;
 
   try {
     const body = await req.json();
@@ -89,6 +89,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Logger l'action de création d'instrument
+    try {
+      const { createActivityLog } = await import('@/services/activityLogService');
+      await createActivityLog({
+        userId: String(instrument.id),
+        type: 'instrument_created',
+        title: 'Instrument créé',
+        description: `Instrument ${instrument.name} créé par ${user?.firstName || 'inconnu'}`,
+        metadata: {},
+        createdBy: user?.id ? String(user.id) : undefined,
+      });
+    } catch (err) {
+      console.log('Activity log error:', err);
+    }
+
     return NextResponse.json(
       {
         instrument,
@@ -101,7 +116,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 },
       );

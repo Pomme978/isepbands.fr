@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { createActivityLog } from '@/services/activityLogService';
 
 // Schema for venue creation
 const createVenueSchema = z.object({
@@ -95,6 +96,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Logger la création de salle
+    try {
+      const adminId = authResult.user?.id ? String(authResult.user.id) : undefined;
+      await createActivityLog({
+        userId: String(venue.id),
+        type: 'venue_created',
+        title: 'Salle créée',
+        description: `Salle ${venue.name} créée par admin ${adminId}`,
+        metadata: {},
+        createdBy: adminId,
+      });
+    } catch {
+      // ignore logger errors
+    }
     return NextResponse.json({
       success: true,
       venue,
@@ -107,7 +122,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 },
       );

@@ -43,15 +43,27 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Update user password only (don't update updatedAt to avoid invalidating admin sessions)
     await prisma.user.update({
       where: { id: userId },
       data: {
         password: hashedPassword,
-        // Don't update updatedAt - only the user whose password was reset should be disconnected
-        // The session invalidation should only affect the target user, not the admin performing the reset
       },
     });
+
+    // Logger le reset de mot de passe
+    try {
+      const { createActivityLog } = await import('@/services/activityLogService');
+      await createActivityLog({
+        userId,
+        type: 'user_password_reset',
+        title: 'Mot de passe réinitialisé',
+        description: `Mot de passe réinitialisé pour ${user.firstName} ${user.lastName}`,
+        metadata: { userId, sendEmail },
+        createdBy: authResult.user?.id ? String(authResult.user.id) : undefined,
+      });
+    } catch (err) {
+      console.log('Activity log error:', err);
+    }
 
     // TODO: Implement email notification if sendEmail is true
     if (sendEmail) {

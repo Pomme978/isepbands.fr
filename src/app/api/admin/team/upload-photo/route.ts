@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createActivityLog } from '@/services/activityLogService';
 import { requireAdminAuth } from '@/utils/authMiddleware';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -38,6 +39,25 @@ export async function POST(req: NextRequest) {
     }
 
     await ensureUploadsDir();
+
+    // Logger l'upload de photo d'équipe
+    try {
+      const adminId = String(authResult.user?.id || '');
+      await createActivityLog({
+        userId: adminId,
+        type: 'UPLOAD_TEAM_PHOTO',
+        title: 'Upload photo équipe',
+        description: `Photo ${file.name} uploadée par admin ${adminId}`,
+        metadata: {
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        },
+        createdBy: adminId,
+      });
+    } catch {
+      // ignore logger errors
+    }
 
     // Generate unique filename
     const ext = path.extname(file.name);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createActivityLog } from '@/services/activityLogService';
 import { requireAdminAuth } from '@/utils/authMiddleware';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -80,6 +81,23 @@ export async function PUT(req: NextRequest) {
     };
 
     await saveSettings(settings);
+
+    // Logger la modification des paramètres d'équipe
+    try {
+      const adminId = String(authResult.user?.id || '');
+      await createActivityLog({
+        userId: adminId,
+        type: 'UPDATE_TEAM_SETTINGS',
+        title: 'Modification paramètres équipe',
+        description: `Paramètres équipe modifiés par admin ${adminId}`,
+        metadata: {
+          updatedFields: Object.keys(settings),
+        },
+        createdBy: adminId,
+      });
+    } catch {
+      // ignore logger errors
+    }
 
     return NextResponse.json({ success: true, settings });
   } catch (error) {

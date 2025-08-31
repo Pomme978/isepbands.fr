@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/middlewares/admin';
 import { prisma } from '@/prisma';
+import { requireAuth } from '@/middlewares/auth';
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     // Check if user exists and is pending
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { registrationRequest: true }
+      include: { registrationRequest: true },
     });
 
     if (!user) {
@@ -24,37 +24,50 @@ export async function POST(req: NextRequest) {
     }
 
     if (user.status !== 'PENDING') {
-      return NextResponse.json({ error: 'L\'utilisateur n\'est pas en attente d\'approbation' }, { status: 400 });
+      return NextResponse.json(
+        { error: "L'utilisateur n'est pas en attente d'approbation" },
+        { status: 400 },
+      );
     }
 
-    // Update user status to REFUSED and registration request to REJECTED with reason
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
-        data: { status: 'REFUSED' }
+        data: { status: 'REFUSED' },
       });
 
       if (user.registrationRequest) {
         await tx.registrationRequest.update({
           where: { userId },
-          data: { 
+          data: {
             status: 'REJECTED',
-            rejectionReason: reason
-          }
+            rejectionReason: reason,
+          },
         });
+      }
+
+      // Logger le rejet
+      try {
+        const { createActivityLog } = await import('@/services/activityLogService');
+        await createActivityLog({
+          userId,
+          type: 'user_rejected',
+          title: 'Utilisateur refusé',
+          description: `Utilisateur ${user.firstName} ${user.lastName} refusé. Raison : ${reason}`,
+          metadata: { userId, reason },
+          createdBy: auth.user?.id ? String(auth.user.id) : undefined,
+        });
+      } catch (err) {
+        console.log('Activity log error:', err);
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Utilisateur refusé avec succès' 
+    return NextResponse.json({
+      success: true,
+      message: 'Utilisateur refusé avec succès',
     });
-
   } catch (error) {
     console.error('Error rejecting user:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors du refus' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erreur lors du refus' }, { status: 500 });
   }
 }

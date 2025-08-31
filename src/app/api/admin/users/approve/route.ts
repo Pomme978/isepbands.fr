@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/middlewares/admin';
 import { prisma } from '@/prisma';
+import { requireAuth } from '@/middlewares/auth';
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     // Check if user exists and is pending
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { registrationRequest: true }
+      include: { registrationRequest: true },
     });
 
     if (!user) {
@@ -24,34 +24,47 @@ export async function POST(req: NextRequest) {
     }
 
     if (user.status !== 'PENDING') {
-      return NextResponse.json({ error: 'L\'utilisateur n\'est pas en attente d\'approbation' }, { status: 400 });
+      return NextResponse.json(
+        { error: "L'utilisateur n'est pas en attente d'approbation" },
+        { status: 400 },
+      );
     }
 
-    // Update user status to CURRENT and registration request to ACCEPTED
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
-        data: { status: 'CURRENT' }
+        data: { status: 'CURRENT' },
       });
 
       if (user.registrationRequest) {
         await tx.registrationRequest.update({
           where: { userId },
-          data: { status: 'ACCEPTED' }
+          data: { status: 'ACCEPTED' },
         });
+      }
+
+      // Logger l'approbation
+      try {
+        const { createActivityLog } = await import('@/services/activityLogService');
+        await createActivityLog({
+          userId,
+          type: 'user_approved',
+          title: 'Utilisateur approuvé',
+          description: `Utilisateur ${user.firstName} ${user.lastName} approuvé`,
+          metadata: { userId },
+          createdBy: auth.user?.id ? String(auth.user.id) : undefined,
+        });
+      } catch (err) {
+        console.log('Activity log error:', err);
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Utilisateur approuvé avec succès' 
+    return NextResponse.json({
+      success: true,
+      message: 'Utilisateur approuvé avec succès',
     });
-
   } catch (error) {
     console.error('Error approving user:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de l\'approbation' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erreur lors de l'approbation" }, { status: 500 });
   }
 }

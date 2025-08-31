@@ -4,6 +4,7 @@ import { prisma } from '@/prisma';
 import { z, ZodIssue } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
+import { createActivityLog } from '@/services/activityLogService';
 
 // Schema pour la validation des données utilisateur
 const updateUserSchema = z.object({
@@ -570,6 +571,26 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       rejectionReason: fullUser?.registrationRequest?.rejectionReason || null,
     };
 
+    // Logger la modification d'utilisateur
+    try {
+      const adminId = authResult.user?.id ? String(authResult.user.id) : undefined;
+      if (!transformedUser.id) {
+        throw new Error('transformedUser.id is undefined');
+      }
+      await createActivityLog({
+        userId: String(transformedUser.id),
+        type: 'user_updated',
+        title: 'Utilisateur modifié',
+        description: `Utilisateur ${transformedUser.firstName} ${transformedUser.lastName} modifié`,
+        metadata: {
+          updatedFields: Object.keys(validatedData),
+        },
+        createdBy: adminId,
+      });
+    } catch {
+      // ignore logger errors
+    }
+
     return NextResponse.json({
       user: transformedUser,
       message: 'User updated successfully',
@@ -625,34 +646,31 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       select: { id: true, key: true },
     });
 
-    // Use transaction to delete user and all related data
     await prisma.$transaction(async (tx) => {
-      // Delete user instruments
       await tx.userInstrument.deleteMany({ where: { userId } });
-
-      // Delete user roles
       await tx.userRole.deleteMany({ where: { userId } });
-
-      // Delete group memberships
       await tx.groupMembership.deleteMany({ where: { userId } });
-
-      // Delete badges
       await tx.badge.deleteMany({ where: { userId } });
-
-      // Delete storage objects database records
       await tx.storageObject.deleteMany({ where: { userId } });
-
-      // Delete registration request
       await tx.registrationRequest.deleteMany({ where: { userId } });
-
-      // Delete votes
       await tx.vote.deleteMany({ where: { userId } });
-
-      // Delete news authored by user
       await tx.news.deleteMany({ where: { authorId: userId } });
-
-      // Finally delete the user
       await tx.user.delete({ where: { id: userId } });
+
+      // Logger la suppression d'utilisateur
+      try {
+        const { createActivityLog } = await import('@/services/activityLogService');
+        await createActivityLog({
+          userId,
+          type: 'user_deleted',
+          title: 'Utilisateur supprimé',
+          description: `Utilisateur ${existingUser.firstName} ${existingUser.lastName} supprimé`,
+          metadata: {},
+          createdBy: authResult.user?.id ? String(authResult.user.id) : undefined,
+        });
+      } catch (err) {
+        console.log('Activity log error:', err);
+      }
     });
 
     // After successful database deletion, clean up physical files
