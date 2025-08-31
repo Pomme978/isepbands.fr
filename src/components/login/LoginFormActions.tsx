@@ -17,7 +17,7 @@ export default function LoginFormActions({ loading, error }: LoginFormActionsPro
         </div>
       )}
       <Button type="submit" disabled={loading} className="w-full">
-        {loading ? <Loading size="sm" /> : t('auth.login.button')}
+        {loading ? <Loading size="sm" theme="white" /> : t('auth.login.button')}
       </Button>
     </>
   );

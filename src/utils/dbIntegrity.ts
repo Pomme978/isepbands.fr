@@ -212,7 +212,11 @@ export async function ensureDBIntegrity() {
     return { success: true, actions };
   } catch (error) {
     console.error('❌ Error during database integrity check:', error);
-    return { success: false, actions, error: error instanceof Error ? error.message : 'Unknown error' };
+    return {
+      success: false,
+      actions,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 

@@ -38,7 +38,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { key, labelFr, labelEn, description, color, colorEnd, gradientDirection, textColor } = body;
+    const { key, labelFr, labelEn, description, color, colorEnd, gradientDirection, textColor } =
+      body;
 
     // Validation
     if (!key || !labelFr || !labelEn) {

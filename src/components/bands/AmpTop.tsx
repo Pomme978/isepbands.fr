@@ -45,9 +45,9 @@ export default function AmpTop() {
               }
             }
           `}</style>
-          
+
           {/* Ligne de bordure inférieure */}
-          
+
           {/* Contenu - Desktop */}
           <div className="hidden md:flex w-full justify-between items-center px-0 max-w-5xl">
             <h1 className="text-5xl lg:text-6xl font-black text-white">OUR</h1>

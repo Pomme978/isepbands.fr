@@ -12,7 +12,6 @@ import SocialsLink from '@/components/common/SocialsLink';
 import { useSession } from '@/lib/auth-client';
 import { useParams } from 'next/navigation';
 
-
 const HomeHero = () => {
   const { user } = useSession();
   const params = useParams();

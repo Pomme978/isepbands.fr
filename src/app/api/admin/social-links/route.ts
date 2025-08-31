@@ -5,7 +5,7 @@ import { standardAuth } from '@/utils/authMiddleware';
 export async function GET() {
   try {
     const socialLinks = await prisma.socialLink.findMany({
-      orderBy: { sortOrder: 'asc' }
+      orderBy: { sortOrder: 'asc' },
     });
 
     return NextResponse.json(socialLinks);
@@ -13,7 +13,7 @@ export async function GET() {
     console.error('Error fetching social links:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des liens sociaux' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const authResult = await standardAuth(request);
-    
+
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
 
     if (!platform || !url) {
       return NextResponse.json(
-        { error: 'La plateforme et l\'URL sont obligatoires' },
-        { status: 400 }
+        { error: "La plateforme et l'URL sont obligatoires" },
+        { status: 400 },
       );
     }
 
@@ -41,24 +41,21 @@ export async function POST(request: NextRequest) {
         platform: platform.toLowerCase(),
         url,
         isActive,
-        sortOrder
-      }
+        sortOrder,
+      },
     });
 
     return NextResponse.json(socialLink, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating social link:', error);
-    
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Cette plateforme existe déjà' },
-        { status: 409 }
-      );
+
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      return NextResponse.json({ error: 'Cette plateforme existe déjà' }, { status: 409 });
     }
 
     return NextResponse.json(
       { error: 'Erreur lors de la création du lien social' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

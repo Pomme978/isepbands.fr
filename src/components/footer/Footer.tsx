@@ -36,7 +36,6 @@ const footerColumns = [
   },
 ];
 
-
 export default function Footer() {
   const t = useI18n();
   const currentYear = new Date().getFullYear();

@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
-import { prisma } from '@/prisma';
+import { getSessionUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
+    const session = await getSessionUser(request);
     if (!session?.id) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
+
+    // Detect language from URL or headers
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/');
+    const locale = pathSegments[1] === 'en' ? 'en' : 'fr';
 
     const user = await prisma.user.findUnique({
       where: { id: session.id },
@@ -38,7 +43,7 @@ export async function GET() {
     // Transform instruments to match expected format
     const instruments = user.instruments.map((ui) => ({
       id: ui.instrumentId.toString(),
-      name: ui.instrument.name,
+      name: locale === 'en' ? ui.instrument.nameEn : ui.instrument.nameFr,
       level: ui.skillLevel.toLowerCase() as 'beginner' | 'intermediate' | 'advanced' | 'expert',
       yearsPlaying: ui.yearsPlaying || 0,
       isPrimary: ui.isPrimary,
@@ -62,7 +67,7 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
-    const session = await getSession();
+    const session = await getSessionUser(req);
     if (!session?.id) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
@@ -92,7 +97,11 @@ export async function PUT(req: NextRequest) {
           data: {
             userId: session.id,
             instrumentId: parseInt(inst.id),
-            skillLevel: inst.level.toUpperCase() as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT',
+            skillLevel: inst.level.toUpperCase() as
+              | 'BEGINNER'
+              | 'INTERMEDIATE'
+              | 'ADVANCED'
+              | 'EXPERT',
             yearsPlaying: inst.yearsPlaying || null,
             isPrimary: inst.id === primaryInstrumentId,
           },

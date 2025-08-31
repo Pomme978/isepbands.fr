@@ -142,14 +142,14 @@ export default function UserCard({
           <>
             <button
               onClick={() => onReviewRequest?.(user.id)}
-              className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
             >
               <Clock className="w-3 h-3 mr-1" />
               Review
             </button>
             <LangLink
               href={`/admin/users/${user.id}`}
-              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Edit className="w-3 h-3 mr-1" />
               Edit
@@ -159,7 +159,7 @@ export default function UserCard({
           <>
             <LangLink
               href={`/admin/users/${user.id}`}
-              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Edit className="w-3 h-3 mr-1" />
               Edit
@@ -175,7 +175,7 @@ export default function UserCard({
           <>
             <LangLink
               href={`/admin/users/${user.id}`}
-              className="inline-flex items-center px-3 py-1 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Edit className="w-3 h-3 mr-1" />
               Edit

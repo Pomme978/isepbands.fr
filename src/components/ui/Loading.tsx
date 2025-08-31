@@ -8,6 +8,7 @@ interface LoadingProps {
   variant?: 'spinner' | 'dots' | 'pulse';
   className?: string;
   centered?: boolean;
+  theme?: 'default' | 'white';
 }
 
 export default function Loading({
@@ -16,6 +17,7 @@ export default function Loading({
   variant = 'spinner',
   className = '',
   centered = true,
+  theme = 'default',
 }: LoadingProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -33,11 +35,15 @@ export default function Loading({
     ? `flex items-center justify-center space-x-2 ${className}`
     : `flex items-center space-x-2 ${className}`;
 
+  const spinnerColorClass = theme === 'white' ? 'text-white' : 'text-primary';
+  const textColorClass = theme === 'white' ? 'text-white' : 'text-gray-600';
+  const dotsColorClass = theme === 'white' ? 'bg-white' : 'bg-primary';
+
   if (variant === 'spinner') {
     return (
       <div className={containerClasses}>
-        <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} />
-        {text && <span className={`text-gray-600 ${textSizeClasses[size]}`}>{text}</span>}
+        <Loader2 className={`${sizeClasses[size]} animate-spin ${spinnerColorClass}`} />
+        {text && <span className={`${textColorClass} ${textSizeClasses[size]}`}>{text}</span>}
       </div>
     );
   }
@@ -47,19 +53,19 @@ export default function Loading({
       <div className={containerClasses}>
         <div className="flex space-x-1">
           <div
-            className="w-2 h-2 bg-primary rounded-full animate-bounce"
+            className={`w-2 h-2 ${dotsColorClass} rounded-full animate-bounce`}
             style={{ animationDelay: '0ms' }}
           ></div>
           <div
-            className="w-2 h-2 bg-primary rounded-full animate-bounce"
+            className={`w-2 h-2 ${dotsColorClass} rounded-full animate-bounce`}
             style={{ animationDelay: '150ms' }}
           ></div>
           <div
-            className="w-2 h-2 bg-primary rounded-full animate-bounce"
+            className={`w-2 h-2 ${dotsColorClass} rounded-full animate-bounce`}
             style={{ animationDelay: '300ms' }}
           ></div>
         </div>
-        {text && <span className={`text-gray-600 ml-2 ${textSizeClasses[size]}`}>{text}</span>}
+        {text && <span className={`${textColorClass} ml-2 ${textSizeClasses[size]}`}>{text}</span>}
       </div>
     );
   }
@@ -67,8 +73,8 @@ export default function Loading({
   if (variant === 'pulse') {
     return (
       <div className={containerClasses}>
-        <div className={`${sizeClasses[size]} bg-primary rounded-full animate-pulse`}></div>
-        {text && <span className={`text-gray-600 ${textSizeClasses[size]}`}>{text}</span>}
+        <div className={`${sizeClasses[size]} ${dotsColorClass} rounded-full animate-pulse`}></div>
+        {text && <span className={`${textColorClass} ${textSizeClasses[size]}`}>{text}</span>}
       </div>
     );
   }

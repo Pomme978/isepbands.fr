@@ -71,12 +71,14 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
         const response = await fetch('/api/instruments');
         if (response.ok) {
           const data = await response.json();
-          const instrumentsWithIds = (data.instruments || []).map(
-            (inst: { id: number; nameFr: string }) => ({
+          const instrumentsWithIds = (data.instruments || []).map((item: any) => {
+            // Check if it's a nested structure or direct instrument
+            const inst = item.instrument || item;
+            return {
               id: inst.id.toString(),
-              name: inst.nameFr,
-            }),
-          );
+              name: locale === 'en' ? inst.nameEn : inst.nameFr,
+            };
+          });
           setAvailableInstruments(instrumentsWithIds);
         }
       } catch (error) {

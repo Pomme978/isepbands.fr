@@ -186,16 +186,16 @@ export async function POST(req: NextRequest) {
         // Fetch badge definitions to get the key for the name field
         const badgeDefinitions = await tx.badgeDefinition.findMany({
           where: {
-            id: { in: validatedData.achievementBadges }
+            id: { in: validatedData.achievementBadges },
           },
           select: {
             id: true,
             key: true,
-          }
+          },
         });
 
         for (const badgeDefId of validatedData.achievementBadges) {
-          const badgeDef = badgeDefinitions.find(bd => bd.id === badgeDefId);
+          const badgeDef = badgeDefinitions.find((bd) => bd.id === badgeDefId);
           if (badgeDef) {
             await tx.badge.create({
               data: {

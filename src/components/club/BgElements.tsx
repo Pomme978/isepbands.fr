@@ -28,22 +28,22 @@ export default function BgElements({
   if (variant === 'circle') {
     const borderWidth = lineThickness.includes('px') ? lineThickness : '20px';
     const gapValue = circleGap.includes('%') ? circleGap : '25%';
-    
+
     return (
       <div className={`${sizeClassName} ${className} text-slate-800 blur-[2px]`} aria-hidden>
         {/* Cercle extérieur */}
-        <div 
-          className="absolute inset-0 rounded-full border-current" 
+        <div
+          className="absolute inset-0 rounded-full border-current"
           style={{ borderWidth, borderStyle: 'solid' }}
         />
         {/* Cercle intérieur */}
         <div
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-current"
-          style={{ 
+          style={{
             width: `calc(100% - 2 * ${gapValue})`,
             height: `calc(100% - 2 * ${gapValue})`,
             borderWidth,
-            borderStyle: 'solid'
+            borderStyle: 'solid',
           }}
         />
       </div>

@@ -12,6 +12,7 @@ import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
 import { calculateGraduationYear } from '@/utils/schoolUtils';
+import { getRoleClasses } from '@/utils/roleColors';
 interface HomeLoggedInProps {
   user: User;
   lang: string;
@@ -208,7 +209,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                         )}
                       </p>
                       {userProfile?.primaryRole && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                        <span className={getRoleClasses(userProfile.primaryRole)}>
                           {userProfile.primaryRole}
                         </span>
                       )}

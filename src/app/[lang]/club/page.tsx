@@ -75,8 +75,8 @@ export default function Asso() {
           <div className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-13 mt-20 mb-20">
             <h1 className="font-bold text-2xl tracking-wider">COMMENT NOUS REJOINDRE ?</h1>
             <p className="text-lg mt-3 max-w-xl">
-              Rien de plus simple ! Inscris toi via le bouton rejoindre l&#39;association, remplis le
-              formulaire, attends ta réponse, et tout seras prêt !
+              Rien de plus simple ! Inscris toi via le bouton rejoindre l&#39;association, remplis
+              le formulaire, attends ta réponse, et tout seras prêt !
             </p>
             <span className="italic text-xs mt-1">*(Sous quelques conditions)</span>
 
@@ -84,9 +84,9 @@ export default function Asso() {
               <div className="flex flex-col justify-between items-center text-center max-w-60 h-96">
                 <h3 className="text-xl font-bold">Savoir jouer d&#39;un instrument</h3>
                 <p className="text-md">
-                  Tu pratique d&#39;un instrument, quel qu&#39;il soit ? Guitare, basse, piano, chant,
-                  harpe, batterie ou tout type d&#39;appareil qui produit du son? Alors isep bands est
-                  fait pour toi !
+                  Tu pratique d&#39;un instrument, quel qu&#39;il soit ? Guitare, basse, piano,
+                  chant, harpe, batterie ou tout type d&#39;appareil qui produit du son? Alors isep
+                  bands est fait pour toi !
                 </p>
                 <Button
                   asChild
@@ -103,8 +103,8 @@ export default function Asso() {
                 <h3 className="text-xl font-bold">Être prêt à s'engager</h3>
                 <p className="text-md">
                   Tu es prêt à t'engager et à participer à la vie de l'asso ? Rejoindre un groupe,
-                  monter sur scène, assurer et être présents aux répétitions ? Alors isep bands
-                  est fait pour toi !
+                  monter sur scène, assurer et être présents aux répétitions ? Alors isep bands est
+                  fait pour toi !
                 </p>
                 <Button
                   asChild
@@ -120,10 +120,9 @@ export default function Asso() {
               <div className="flex flex-col justify-between items-center text-center max-w-60 h-96">
                 <h3 className="text-xl font-bold">Kiffer la musique</h3>
                 <p className="text-md">
-                  Tu aimes la musique, tu veux découvrir le monde de la scène, des groupes, du
-                  live ? Tu veux pouvoir vivre cette experience et rencontrer pleins d'autres
-                  personnes qui souhaitent la même chose que toi? Alors isep bands est fait pour
-                  toi !
+                  Tu aimes la musique, tu veux découvrir le monde de la scène, des groupes, du live
+                  ? Tu veux pouvoir vivre cette experience et rencontrer pleins d'autres personnes
+                  qui souhaitent la même chose que toi? Alors isep bands est fait pour toi !
                 </p>
                 <Button
                   asChild

@@ -255,6 +255,14 @@ export default function ProfileSettingsPage() {
         if (!musicResponse.ok) {
           const musicError = await musicResponse.text();
           console.log('Music save error:', musicError);
+
+          // Handle 401 specifically - session expired
+          if (musicResponse.status === 401) {
+            console.log('Session expired during music save, redirecting to login');
+            window.location.href = `/${locale}/login`;
+            return;
+          }
+
           throw new Error(`Failed to save music settings: ${musicError}`);
         }
 

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!user) {
@@ -23,25 +23,21 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     if (user.status === 'DELETED') {
-      return NextResponse.json({ error: 'L\'utilisateur est déjà archivé' }, { status: 400 });
+      return NextResponse.json({ error: "L'utilisateur est déjà archivé" }, { status: 400 });
     }
 
     // Update user status to DELETED (archived)
     await prisma.user.update({
       where: { id: userId },
-      data: { status: 'DELETED' }
+      data: { status: 'DELETED' },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Utilisateur archivé avec succès' 
+    return NextResponse.json({
+      success: true,
+      message: 'Utilisateur archivé avec succès',
     });
-
   } catch (error) {
     console.error('Error archiving user:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de l\'archivage' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erreur lors de l'archivage" }, { status: 500 });
   }
 }

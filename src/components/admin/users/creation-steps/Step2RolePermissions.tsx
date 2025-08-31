@@ -37,9 +37,9 @@ export default function Step2RolePermissions({ formData, setFormData }: Step2Rol
           const data = await response.json();
           setRoles(data.roles || []);
 
-          // Set default role to Member if available
+          // Set default role to Member if available and primaryRole is still the hardcoded default
           const memberRole = data.roles.find((role: Role) => role.name === 'member');
-          if (memberRole && !formData.primaryRole) {
+          if (memberRole && formData.primaryRole === 'Member') {
             setFormData({ ...formData, primaryRole: memberRole.nameFrMale });
           }
         } else {

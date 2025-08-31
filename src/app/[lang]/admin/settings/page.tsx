@@ -64,7 +64,7 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('year');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   // Social Links state
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [socialLinksLoading, setSocialLinksLoading] = useState(false);
@@ -112,7 +112,7 @@ export default function SettingsPage() {
 
   const handleCreateSocialLink = async () => {
     if (!newSocialLink.platform || !newSocialLink.url) {
-      setError('La plateforme et l\'URL sont obligatoires');
+      setError("La plateforme et l'URL sont obligatoires");
       return;
     }
 
@@ -123,8 +123,8 @@ export default function SettingsPage() {
         body: JSON.stringify({
           platform: newSocialLink.platform.toLowerCase(),
           url: newSocialLink.url,
-          sortOrder: socialLinks.length
-        })
+          sortOrder: socialLinks.length,
+        }),
       });
 
       if (response.ok) {
@@ -148,14 +148,12 @@ export default function SettingsPage() {
       const response = await fetch(`/api/admin/social-links/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       });
 
       if (response.ok) {
         const updatedLink = await response.json();
-        setSocialLinks(socialLinks.map(link => 
-          link.id === id ? updatedLink : link
-        ));
+        setSocialLinks(socialLinks.map((link) => (link.id === id ? updatedLink : link)));
         setSuccess('Lien social mis à jour');
         setTimeout(() => setSuccess(null), 3000);
       } else {
@@ -173,11 +171,11 @@ export default function SettingsPage() {
 
     try {
       const response = await fetch(`/api/admin/social-links/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       if (response.ok) {
-        setSocialLinks(socialLinks.filter(link => link.id !== id));
+        setSocialLinks(socialLinks.filter((link) => link.id !== id));
         setSuccess('Lien social supprimé');
         setTimeout(() => setSuccess(null), 3000);
       } else {
@@ -514,7 +512,9 @@ export default function SettingsPage() {
                           </label>
                           <select
                             value={newSocialLink.platform}
-                            onChange={(e) => setNewSocialLink({ ...newSocialLink, platform: e.target.value })}
+                            onChange={(e) =>
+                              setNewSocialLink({ ...newSocialLink, platform: e.target.value })
+                            }
                             className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
                           >
                             <option value="">Sélectionner...</option>
@@ -538,7 +538,9 @@ export default function SettingsPage() {
                           <input
                             type="url"
                             value={newSocialLink.url}
-                            onChange={(e) => setNewSocialLink({ ...newSocialLink, url: e.target.value })}
+                            onChange={(e) =>
+                              setNewSocialLink({ ...newSocialLink, url: e.target.value })
+                            }
                             placeholder="https://..."
                             className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
                           />
@@ -566,7 +568,9 @@ export default function SettingsPage() {
                       ) : socialLinks.length === 0 ? (
                         <div className="text-center py-8 border border-dashed border-border rounded-lg">
                           <Share2 className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">Aucun réseau social configuré</p>
+                          <p className="text-sm text-muted-foreground">
+                            Aucun réseau social configuré
+                          </p>
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -585,7 +589,9 @@ export default function SettingsPage() {
                                       {link.platform}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                      {link.url.length > 50 ? `${link.url.substring(0, 50)}...` : link.url}
+                                      {link.url.length > 50
+                                        ? `${link.url.substring(0, 50)}...`
+                                        : link.url}
                                     </p>
                                   </div>
                                 </div>
@@ -599,7 +605,9 @@ export default function SettingsPage() {
                                   <ExternalLink className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => handleUpdateSocialLink(link.id, { isActive: !link.isActive })}
+                                  onClick={() =>
+                                    handleUpdateSocialLink(link.id, { isActive: !link.isActive })
+                                  }
                                   className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                                     link.isActive
                                       ? 'bg-green-100 text-green-800 hover:bg-green-200'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
-import { prisma } from '@/prisma';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 // import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Removed for performance
 

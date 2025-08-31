@@ -24,7 +24,7 @@ export default function MusicGenresSection({ genres, locale = 'fr' }: MusicGenre
             <p className="text-sm text-gray-500">Styles de musique préférés</p>
           </div>
         </div>
-        <EmptyState 
+        <EmptyState
           icon={<Headphones className="w-8 h-8" />}
           message="Aucun genre musical renseigné"
           description="Les genres musicaux apparaîtront ici une fois ajoutés"
@@ -41,7 +41,10 @@ export default function MusicGenresSection({ genres, locale = 'fr' }: MusicGenre
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Genres musicaux</h3>
-          <p className="text-sm text-gray-500">{genres.length} genre{genres.length > 1 ? 's' : ''} préféré{genres.length > 1 ? 's' : ''}</p>
+          <p className="text-sm text-gray-500">
+            {genres.length} genre{genres.length > 1 ? 's' : ''} préféré
+            {genres.length > 1 ? 's' : ''}
+          </p>
         </div>
       </div>
 

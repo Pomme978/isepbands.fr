@@ -5,6 +5,30 @@ import Image from 'next/image';
 import { Upload, X, Loader2 } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 
+// Function to format French phone numbers
+const formatPhoneNumber = (phone: string): string => {
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+
+  // Handle international format (+33)
+  if (digits.startsWith('33') && digits.length === 11) {
+    return `+33 ${digits.slice(2, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)} ${digits.slice(9, 11)}`;
+  }
+
+  // Handle national format (10 digits starting with 0)
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)} ${digits.slice(8, 10)}`;
+  }
+
+  // Handle mobile format (9 digits starting with 6 or 7)
+  if ((digits.startsWith('6') || digits.startsWith('7')) && digits.length === 9) {
+    return `0${digits.slice(0, 1)} ${digits.slice(1, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+  }
+
+  // Return unformatted if doesn't match patterns
+  return phone;
+};
+
 interface User {
   id: string;
   firstName: string;
@@ -260,7 +284,7 @@ export default function UserEditMain({
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
             <input
               type="tel"
-              value={user.phoneNumber || ''}
+              value={formatPhoneNumber(user.phoneNumber || '')}
               onChange={(e) => updateField('phoneNumber', e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               placeholder="+33 6 12 34 56 78"

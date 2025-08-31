@@ -2,20 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { standardAuth } from '@/utils/authMiddleware';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const socialLink = await prisma.socialLink.findUnique({
-      where: { id: parseInt(params.id) }
+      where: { id: parseInt(params.id) },
     });
 
     if (!socialLink) {
-      return NextResponse.json(
-        { error: 'Lien social non trouvé' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Lien social non trouvé' }, { status: 404 });
     }
 
     return NextResponse.json(socialLink);
@@ -23,18 +17,15 @@ export async function GET(
     console.error('Error fetching social link:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération du lien social' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authResult = await standardAuth(request);
-    
+
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -44,8 +35,8 @@ export async function PUT(
 
     if (!platform || !url) {
       return NextResponse.json(
-        { error: 'La plateforme et l\'URL sont obligatoires' },
-        { status: 400 }
+        { error: "La plateforme et l'URL sont obligatoires" },
+        { status: 400 },
       );
     }
 
@@ -56,64 +47,54 @@ export async function PUT(
         url,
         isActive,
         sortOrder,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
 
     return NextResponse.json(socialLink);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating social link:', error);
-    
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Cette plateforme existe déjà' },
-        { status: 409 }
-      );
-    }
-    
-    if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Lien social non trouvé' },
-        { status: 404 }
-      );
+
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 'P2002') {
+        return NextResponse.json({ error: 'Cette plateforme existe déjà' }, { status: 409 });
+      }
+
+      if (error.code === 'P2025') {
+        return NextResponse.json({ error: 'Lien social non trouvé' }, { status: 404 });
+      }
     }
 
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour du lien social' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authResult = await standardAuth(request);
-    
+
     if (authResult instanceof NextResponse) {
       return authResult;
     }
 
     await prisma.socialLink.delete({
-      where: { id: parseInt(params.id) }
+      where: { id: parseInt(params.id) },
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting social link:', error);
-    
-    if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Lien social non trouvé' },
-        { status: 404 }
-      );
+
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Lien social non trouvé' }, { status: 404 });
     }
 
     return NextResponse.json(
       { error: 'Erreur lors de la suppression du lien social' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

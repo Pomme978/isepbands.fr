@@ -30,7 +30,6 @@ interface BadgeFormData {
   useGradient: boolean;
 }
 
-
 function BadgesContent() {
   const [badges, setBadges] = useState<BadgeDefinition[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,25 +52,25 @@ function BadgesContent() {
   const getOptimalTextColor = (backgroundColor: string): 'white' | 'black' => {
     // Remove # if present
     const hex = backgroundColor.replace('#', '');
-    
+
     // Parse RGB values
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
-    
+
     // Calculate luminance using WCAG formula
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
+
     return luminance > 0.5 ? 'black' : 'white';
   };
 
   // Mise à jour automatique de la couleur de texte quand la couleur de fond change
   const handleColorChange = (newColor: string) => {
     const optimalTextColor = getOptimalTextColor(newColor);
-    setFormData({ 
-      ...formData, 
+    setFormData({
+      ...formData,
       color: newColor,
-      textColor: optimalTextColor
+      textColor: optimalTextColor,
     });
   };
 
@@ -274,7 +273,7 @@ function BadgesContent() {
                   <span
                     className="inline-flex items-center px-5 py-3 rounded-full text-base font-medium shadow-sm transition-all duration-200"
                     style={{
-                      background: formData.useGradient 
+                      background: formData.useGradient
                         ? `linear-gradient(${formData.gradientDirection}, ${formData.color}, ${formData.colorEnd})`
                         : formData.color,
                       color: formData.textColor,
@@ -341,10 +340,12 @@ function BadgesContent() {
                 {formData.useGradient && (
                   <div className="p-4 bg-white rounded-lg border space-y-4">
                     <h4 className="text-sm font-medium text-gray-700">Configuration du dégradé</h4>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-600 mb-2">Couleur de début</label>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">
+                          Couleur de début
+                        </label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -361,9 +362,11 @@ function BadgesContent() {
                           />
                         </div>
                       </div>
-                      
+
                       <div>
-                        <label className="block text-sm font-medium text-gray-600 mb-2">Couleur de fin</label>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">
+                          Couleur de fin
+                        </label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -381,12 +384,16 @@ function BadgesContent() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-2">Direction du dégradé</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        Direction du dégradé
+                      </label>
                       <select
                         value={formData.gradientDirection}
-                        onChange={(e) => setFormData({ ...formData, gradientDirection: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, gradientDirection: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                       >
                         <option value="to right">→ De gauche à droite</option>
@@ -431,7 +438,10 @@ function BadgesContent() {
                       </button>
                     </div>
                     <span className="text-sm text-gray-500">
-                      Suggéré: <strong>{getOptimalTextColor(formData.color) === 'white' ? 'Blanc' : 'Noir'}</strong>
+                      Suggéré:{' '}
+                      <strong>
+                        {getOptimalTextColor(formData.color) === 'white' ? 'Blanc' : 'Noir'}
+                      </strong>
                     </span>
                   </div>
                 </div>

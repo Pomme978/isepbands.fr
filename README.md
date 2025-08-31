@@ -11,6 +11,7 @@ A comprehensive music platform for the ISEP music association, built as a modern
 3. **Back-office Layer** (Admin): Complete administrative control
 
 ### Key Milestones
+
 - **MVP Release**: September 1, 2025
 - **BANDS Module**: September 25, 2025
 - **EVENTS Module**: October 15, 2025
@@ -30,11 +31,13 @@ A comprehensive music platform for the ISEP music association, built as a modern
 ## 📦 Installation
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - MySQL database
 - AWS S3 bucket (for file uploads)
 
 ### Setup
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -112,10 +115,12 @@ prisma/
 ## 🌐 Features Overview
 
 ### 🏠 Homepage
+
 - **Showcase Version** (Not logged in): WHO WE ARE, HIGHLIGHT EVENTS, JOIN US CTA
 - **Member Dashboard** (Logged in): Welcome message, group activities, upcoming events
 
 ### 🎵 Bands Module (Sept 25, 2025)
+
 - **Group Management**: Create, join, and manage music groups
 - **Multi-admin System**: Multiple administrators per group
 - **Instrument Requirements**: Define needed musicians (e.g., 0/2 keyboardists)
@@ -124,6 +129,7 @@ prisma/
 - **Recommendation System**: Suggest groups to available musicians
 
 ### 📅 Events Module (Oct 15, 2025)
+
 - **Event Types**: Concert, Jam, Sale, Showcase, Rehearsal
 - **Dynamic Calendar**: Google Calendar sync with iCal subscription
 - **Email Notifications**: Automatic reminders
@@ -131,7 +137,9 @@ prisma/
 - **Setlist Management**: Collaborative song selection with YouTube/Spotify integration
 
 ### 👑 Admin Dashboard
+
 Complete administrative control with sections for:
+
 - **Users**: Member management, creation, permissions
 - **Bands**: Group oversight and administration
 - **Events**: Event creation and management
@@ -143,13 +151,16 @@ Complete administrative control with sections for:
 ### 🎨 Special Features
 
 #### Garland Design System
+
 Unique responsive design for the team page featuring:
+
 - Dynamic SVG garland generation
 - Responsive card distribution (desktop: 3 cards, mobile: 1 card)
 - Animated lighting effects
 - Calculated positioning between garland curves
 
 #### Search System
+
 - Global search across members, groups, and content
 - Keyword support for instruments ("guitarist", "drummer")
 - Categorized results with different content types
@@ -157,6 +168,7 @@ Unique responsive design for the team page featuring:
 ## 🗄️ Database Schema
 
 ### Core Models
+
 - **User**: Authentication, personal info, ISEP status, association roles
 - **Group**: Music bands with instrument requirements and member management
 - **Event**: Various event types with group and participant associations
@@ -166,6 +178,7 @@ Unique responsive design for the team page featuring:
 ## 🔐 Authentication & Permissions
 
 ### User Roles
+
 - **President**: Full system access
 - **Vice-President**: Complete administrative access except restricted files
 - **Secretary**: Administrative access plus financial documents
@@ -176,7 +189,9 @@ Unique responsive design for the team page featuring:
 - **Former Member**: Limited access
 
 ### Permission System
+
 Granular permissions including:
+
 - Admin dashboard access
 - User management (view, edit, create, delete)
 - Band management
@@ -190,17 +205,20 @@ Granular permissions including:
 Complete French/English support throughout the application:
 
 ### Structure
+
 - All multilingual routes are shared in `app/[lang]/`
 - Translation files are centralized in `src/locales/`
 - The i18n provider is dynamically injected based on URL segment
 - Middleware redirects `/` to preferred language (browser/cookie)
 
 ### Adding a Language
+
 1. Add translation file in `src/locales/`
 2. Add language in `SUPPORTED_LANGS` in `[lang]/layout.tsx` and `middleware.ts`
 3. That's it: no page/layout duplication needed
 
 ### Advantages
+
 - Business code sharing (no duplication per language)
 - SEO-friendly (clean URLs, `<html lang=...>` tag)
 - Easy to maintain and extend
@@ -216,12 +234,15 @@ Complete French/English support throughout the application:
 ## 🎵 Music Features
 
 ### Instruments Support
+
 25+ instruments including:
+
 - Electric/Acoustic Guitar, Bass, Drums
 - Piano/Keyboard, Violin, Saxophone
 - Vocals, Beatbox, and more
 
 ### Skill Levels
+
 - Beginner, Intermediate, Advanced, Expert
 - Multiple instruments per user with individual skill levels
 
@@ -255,7 +276,9 @@ npm run start
 ```
 
 ### Environment Variables
+
 Required environment variables:
+
 ```env
 DATABASE_URL="mysql://user:password@host:port/database"
 NEXTAUTH_SECRET="your-secret-key"
@@ -268,17 +291,20 @@ AWS_BUCKET_NAME="your-s3-bucket"
 ## 📝 Development Guidelines
 
 ### Code Style
+
 - ESLint + Prettier configuration included
 - Husky pre-commit hooks for code quality
 - Conventional commits with commitlint
 
 ### Component Architecture
+
 - 3-tier separation (public/member/admin)
 - Role-based component rendering
 - Reusable UI components with shadcn/ui
 - Type-safe props with TypeScript
 
 ### Database Management
+
 - Prisma ORM with type-safe queries
 - Migration-based schema changes
 - Comprehensive seed data
@@ -293,6 +319,7 @@ AWS_BUCKET_NAME="your-s3-bucket"
 5. Open a Pull Request
 
 ### Commit Convention
+
 ```
 feat: add new feature
 fix: fix bug
@@ -321,6 +348,7 @@ Check the [Issues](https://github.com/anthropics/claude-code/issues) page for cu
 ## 📞 Support
 
 For questions or issues:
+
 - Create an issue in the repository
 - Contact the development team
 

@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { Globe } from 'lucide-react';
-import { 
-  siFacebook, 
-  siInstagram, 
-  siYoutube, 
+import {
+  siFacebook,
+  siInstagram,
+  siYoutube,
   siX,
   siTiktok,
   siDiscord,
   siSpotify,
   siTwitch,
-  siGithub
+  siGithub,
 } from 'simple-icons';
 
 interface SocialLink {
@@ -58,7 +58,7 @@ const platformNames: Record<string, string> = {
 // Plateformes supportées avec icônes
 export const supportedPlatforms = [
   'facebook',
-  'instagram', 
+  'instagram',
   'youtube',
   'twitter',
   'x',
@@ -66,7 +66,7 @@ export const supportedPlatforms = [
   'discord',
   'spotify',
   'twitch',
-  'github'
+  'github',
 ];
 
 export default function SocialsLink({
@@ -74,7 +74,7 @@ export default function SocialsLink({
   iconColor = 'text-gray-600',
   iconHoverColor = 'text-gray-900',
   iconSize = 'w-5 h-5',
-  gap = 'gap-4'
+  gap = 'gap-4',
 }: SocialsLinkProps) {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +106,7 @@ export default function SocialsLink({
       {socialLinks.map((social) => {
         const iconPath = platformIcons[social.platform.toLowerCase()];
         const platformName = platformNames[social.platform.toLowerCase()] || social.platform;
-        
+
         if (!iconPath) {
           console.warn(`No icon found for platform: ${social.platform}`);
           return null;

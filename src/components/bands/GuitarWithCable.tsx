@@ -40,7 +40,8 @@ export default function GuitarWithCable() {
   const CABLE_START_Y = 200; // Position Y du point fixe ampli
 
   // 4. FORME RÉELLE DE LA GUITARE (SVG PATH de guitar_svgbody.svg)
-  const GUITAR_BODY_PATH = "M1328.06 2374.97L1410.36 2379.93C1653.04 2402.35 1702.35 2269.18 1697.76 2184.78C1689.97 2041.62 1607.65 1993.62 1605.9 1898.81C1604.84 1841.06 1662.58 1792.51 1658.34 1695.66C1656.84 1661.46 1622.88 1626.37 1602.28 1639.64C1601.85 1639.92 1601.39 1640.19 1600.93 1640.44C1580.17 1651.82 1580.04 1699.27 1561.9 1731.21C1556.14 1741.34 1529.27 1776.87 1499.93 1772.09C1460.15 1765.61 1466.64 1682.66 1452.7 1661.88L1452.59 1661.72C1450.92 1659.22 1449.16 1656.6 1448.82 1653.62C1445.87 1628.29 1443.05 1602.57 1438.71 1585.12C1438.52 1584.33 1438.41 1583.53 1438.39 1582.72L1426.87 922.848C1425.65 828.808 1425.51 804.747 1466.92 760.229C1481.67 744.383 1496.51 731.451 1482.73 693.29C1468.95 655.131 1467.47 614.341 1475.35 549.876C1477.98 528.388 1485.84 517.408 1472.2 503.311C1452.63 486.511 1427.73 499.558 1413.43 531.678C1399.35 563.293 1349.76 741.634 1336.31 785.976C1334.74 791.134 1337.17 796.825 1342.06 799.111L1351.5 803.53C1355.28 805.296 1357.62 809.164 1357.43 813.329L1349.14 999.313L1336.77 1652.2C1336.73 1654.3 1336 1656.32 1335.17 1658.24C1330.81 1668.3 1330.27 1687.96 1307.56 1676.16C1228.56 1635.15 1278.34 1506.8 1211.12 1510.42C1129.59 1514.8 1156.26 1684.44 1180.49 1752.2C1213.1 1843.36 1204.57 1895.23 1161.85 1982.61C1122.14 2063.81 1085.27 2183.78 1134.32 2269.5C1167.6 2327.66 1222.95 2376.86 1328.06 2374.97Z";
+  const GUITAR_BODY_PATH =
+    'M1328.06 2374.97L1410.36 2379.93C1653.04 2402.35 1702.35 2269.18 1697.76 2184.78C1689.97 2041.62 1607.65 1993.62 1605.9 1898.81C1604.84 1841.06 1662.58 1792.51 1658.34 1695.66C1656.84 1661.46 1622.88 1626.37 1602.28 1639.64C1601.85 1639.92 1601.39 1640.19 1600.93 1640.44C1580.17 1651.82 1580.04 1699.27 1561.9 1731.21C1556.14 1741.34 1529.27 1776.87 1499.93 1772.09C1460.15 1765.61 1466.64 1682.66 1452.7 1661.88L1452.59 1661.72C1450.92 1659.22 1449.16 1656.6 1448.82 1653.62C1445.87 1628.29 1443.05 1602.57 1438.71 1585.12C1438.52 1584.33 1438.41 1583.53 1438.39 1582.72L1426.87 922.848C1425.65 828.808 1425.51 804.747 1466.92 760.229C1481.67 744.383 1496.51 731.451 1482.73 693.29C1468.95 655.131 1467.47 614.341 1475.35 549.876C1477.98 528.388 1485.84 517.408 1472.2 503.311C1452.63 486.511 1427.73 499.558 1413.43 531.678C1399.35 563.293 1349.76 741.634 1336.31 785.976C1334.74 791.134 1337.17 796.825 1342.06 799.111L1351.5 803.53C1355.28 805.296 1357.62 809.164 1357.43 813.329L1349.14 999.313L1336.77 1652.2C1336.73 1654.3 1336 1656.32 1335.17 1658.24C1330.81 1668.3 1330.27 1687.96 1307.56 1676.16C1228.56 1635.15 1278.34 1506.8 1211.12 1510.42C1129.59 1514.8 1156.26 1684.44 1180.49 1752.2C1213.1 1843.36 1204.57 1895.23 1161.85 1982.61C1122.14 2063.81 1085.27 2183.78 1134.32 2269.5C1167.6 2327.66 1222.95 2376.86 1328.06 2374.97Z';
 
   // 5. SCALING FACTOR pour ajuster la taille SVG à nos dimensions de guitare
   const GUITAR_SVG_SCALE = 0.8; // Plus gros pour plus de stabilité
@@ -61,21 +62,26 @@ export default function GuitarWithCable() {
   const GUITAR_INITIAL_Y = CABLE_START_Y + 250; // Position Y juste sous l'ampli
 
   // Fonction pour convertir un path SVG en vertices pour Matter.js
-  const parseSvgPathToVertices = (pathString: string, scale: number = 1): { x: number; y: number }[] => {
+  const parseSvgPathToVertices = (
+    pathString: string,
+    scale: number = 1,
+  ): { x: number; y: number }[] => {
     const vertices: { x: number; y: number }[] = [];
-    
+
     // Simplification basique : extraire les coordonnées M et L
-    const matches = pathString.match(/[ML]\s*([0-9.-]+)\s+([0-9.-]+)|C\s*([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)/g);
-    
+    const matches = pathString.match(
+      /[ML]\s*([0-9.-]+)\s+([0-9.-]+)|C\s*([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)/g,
+    );
+
     if (!matches) return [];
-    
+
     for (const match of matches) {
       if (match.startsWith('M') || match.startsWith('L')) {
         const coords = match.substring(1).trim().split(/\s+/);
         if (coords.length >= 2) {
           vertices.push({
             x: parseFloat(coords[0]) * scale,
-            y: parseFloat(coords[1]) * scale
+            y: parseFloat(coords[1]) * scale,
           });
         }
       } else if (match.startsWith('C')) {
@@ -84,35 +90,35 @@ export default function GuitarWithCable() {
         if (coords.length >= 6) {
           vertices.push({
             x: parseFloat(coords[4]) * scale,
-            y: parseFloat(coords[5]) * scale
+            y: parseFloat(coords[5]) * scale,
           });
         }
       }
     }
-    
+
     // SIMPLIFICATION CRUCIALE : Réduire le nombre de vertices pour stabilité
     const simplifiedVertices = [];
     const step = Math.max(1, Math.floor(vertices.length / 12)); // Max 12 points
     for (let i = 0; i < vertices.length; i += step) {
       simplifiedVertices.push(vertices[i]);
     }
-    
+
     // Centrer les vertices autour de l'origine
     if (simplifiedVertices.length > 0) {
-      const minX = Math.min(...simplifiedVertices.map(v => v.x));
-      const maxX = Math.max(...simplifiedVertices.map(v => v.x));
-      const minY = Math.min(...simplifiedVertices.map(v => v.y));
-      const maxY = Math.max(...simplifiedVertices.map(v => v.y));
-      
+      const minX = Math.min(...simplifiedVertices.map((v) => v.x));
+      const maxX = Math.max(...simplifiedVertices.map((v) => v.x));
+      const minY = Math.min(...simplifiedVertices.map((v) => v.y));
+      const maxY = Math.max(...simplifiedVertices.map((v) => v.y));
+
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
-      
-      return simplifiedVertices.map(v => ({
+
+      return simplifiedVertices.map((v) => ({
         x: v.x - centerX,
-        y: v.y - centerY
+        y: v.y - centerY,
       }));
     }
-    
+
     return simplifiedVertices;
   };
 
@@ -140,7 +146,7 @@ export default function GuitarWithCable() {
     engineRef.current = engine;
     engine.world.gravity.y = 1.0; // Gravité terrestre normale
     engine.timing.timeScale = 1;
-    
+
     // IMPORTANT : Augmenter les itérations pour stabilité des contraintes rigides
     engine.constraintIterations = 10; // MAXIMUM pour empêcher l'étirement
 
@@ -179,7 +185,7 @@ export default function GuitarWithCable() {
         density: GUITAR_DENSITY,
         frictionAir: GUITAR_FRICTION_AIR,
         render: { visible: false },
-      }
+      },
     );
     guitarBodyRef.current = guitar;
 
@@ -187,57 +193,63 @@ export default function GuitarWithCable() {
     const segments = 8; // Moins de segments pour câble court
     const cableBodies: Matter.Body[] = [];
     const segmentLength = 25; // Segments courts pour longueur totale réduite
-    
+
     // Créer les segments du câble
     for (let i = 0; i < segments; i++) {
-      const x = CABLE_START_X + (i * segmentLength * 0.7);
-      const y = CABLE_START_Y + (i * 10);
-      
+      const x = CABLE_START_X + i * segmentLength * 0.7;
+      const y = CABLE_START_Y + i * 10;
+
       const segment = Matter.Bodies.circle(x, y, 5, {
         density: 0.01, // Léger pour ne pas interférer avec la guitare
         frictionAir: 0.02,
         render: { visible: false },
       });
-      
+
       cableBodies.push(segment);
     }
     cableBodiesRef.current = cableBodies;
 
     // Contraintes MANUELLES simples
     const constraints: Matter.Constraint[] = [];
-    
+
     // 1. Ampli → premier segment
-    constraints.push(Matter.Constraint.create({
-      bodyA: ampAnchor,
-      bodyB: cableBodies[0],
-      length: 0,
-      stiffness: 0.9,
-      render: { visible: false }
-    }));
-    
+    constraints.push(
+      Matter.Constraint.create({
+        bodyA: ampAnchor,
+        bodyB: cableBodies[0],
+        length: 0,
+        stiffness: 0.9,
+        render: { visible: false },
+      }),
+    );
+
     // 2. Contraintes SIMPLES mais RIGIDES
     for (let i = 0; i < segments - 1; i++) {
-      constraints.push(Matter.Constraint.create({
-        bodyA: cableBodies[i],
-        bodyB: cableBodies[i + 1],
-        length: segmentLength, // Distance exacte
-        stiffness: 0.99, // Quasi maximum
-        damping: 0.05, // Très peu d'amortissement
-        render: { visible: false }
-      }));
+      constraints.push(
+        Matter.Constraint.create({
+          bodyA: cableBodies[i],
+          bodyB: cableBodies[i + 1],
+          length: segmentLength, // Distance exacte
+          stiffness: 0.99, // Quasi maximum
+          damping: 0.05, // Très peu d'amortissement
+          render: { visible: false },
+        }),
+      );
     }
-    
+
     // 3. Dernier segment → guitare (RIGIDE)
-    constraints.push(Matter.Constraint.create({
-      bodyA: cableBodies[segments - 1],
-      bodyB: guitar,
-      pointB: { x: JACK_X, y: JACK_Y },
-      length: 20,
-      stiffness: 1.0, // MAXIMUM pour empêcher l'étirement
-      damping: 0.1,
-      render: { visible: false }
-    }));
-    
+    constraints.push(
+      Matter.Constraint.create({
+        bodyA: cableBodies[segments - 1],
+        bodyB: guitar,
+        pointB: { x: JACK_X, y: JACK_Y },
+        length: 20,
+        stiffness: 1.0, // MAXIMUM pour empêcher l'étirement
+        damping: 0.1,
+        render: { visible: false },
+      }),
+    );
+
     // PAS de contrainte anti-rotation - ça tire la guitare !
 
     // Contrôle souris avec gestion scroll
@@ -316,15 +328,15 @@ export default function GuitarWithCable() {
       // Générer le path du câble flexible en suivant les segments
       if (cableBodiesRef.current && cableBodiesRef.current.length > 0) {
         const points = [];
-        
+
         // Point de départ : ampli
         points.push({ x: CABLE_START_X, y: CABLE_START_Y });
-        
+
         // Points des segments du câble
         cableBodiesRef.current.forEach((body) => {
           points.push({ x: body.position.x, y: body.position.y });
         });
-        
+
         setCablePoints(points);
       }
 

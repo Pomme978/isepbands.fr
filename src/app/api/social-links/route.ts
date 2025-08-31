@@ -10,8 +10,8 @@ export async function GET() {
         id: true,
         platform: true,
         url: true,
-        sortOrder: true
-      }
+        sortOrder: true,
+      },
     });
 
     return NextResponse.json(socialLinks);
@@ -19,7 +19,7 @@ export async function GET() {
     console.error('Error fetching social links:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des liens sociaux' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

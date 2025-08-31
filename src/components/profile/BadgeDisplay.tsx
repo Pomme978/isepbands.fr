@@ -2,6 +2,7 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import { getRoleColor } from '@/utils/roleColors';
 
 type Pronouns = 'he/him' | 'she/her' | 'they/them' | 'other';
 
@@ -94,11 +95,15 @@ export default function BadgeDisplay({
 
   const config = sizeConfig[size] || sizeConfig.md; // Fallback to 'md' if size is invalid
   const finalTextSize = textSize !== 'text-sm' ? textSize : config.text;
+
+  // Get role colors
+  const roleColors = getRoleColor(role);
+
   return (
     <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
       {/* Badge de rôle principal */}
       <span
-        className={`inline-flex items-center ${config.padding} ${bgColor} text-white rounded-full ${finalTextSize} font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
+        className={`inline-flex items-center ${config.padding} ${roleColors.bg} ${roleColors.text} ${roleColors.border || ''} border rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
       >
         {role}
       </span>
@@ -124,26 +129,30 @@ export default function BadgeDisplay({
             const badgeColorEnd = badge.badgeDefinition?.colorEnd;
             const gradientDirection = badge.badgeDefinition?.gradientDirection || 'to right';
             // Use textColor from badgeDefinition if available, otherwise calculate optimal
-            const textColor = badge.badgeDefinition?.textColor || (isColorDark(badgeColor) ? 'white' : 'black');
+            const textColor =
+              badge.badgeDefinition?.textColor || (isColorDark(badgeColor) ? 'white' : 'black');
             // Use labelFr from badgeDefinition if available, otherwise use badge.name
             const displayName = badge.badgeDefinition?.labelFr || badge.name;
             const description = badge.badgeDefinition?.description || badge.description;
 
-
             // Determine background style (gradient or solid)
-            const backgroundStyle = badgeColorEnd 
-              ? { background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})` }
+            const backgroundStyle = badgeColorEnd
+              ? {
+                  background: `linear-gradient(${gradientDirection}, ${badgeColor}, ${badgeColorEnd})`,
+                }
               : { backgroundColor: badgeColor };
 
             return (
               <span
                 key={badge.id || index}
                 className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out [color:var(--badge-text-color)!important]`}
-                style={{
-                  ...backgroundStyle,
-                  color: textColor,
-                  '--badge-text-color': textColor,
-                } as React.CSSProperties & { '--badge-text-color': string }}
+                style={
+                  {
+                    ...backgroundStyle,
+                    color: textColor,
+                    '--badge-text-color': textColor,
+                  } as React.CSSProperties & { '--badge-text-color': string }
+                }
                 title={description || undefined}
               >
                 {displayName}

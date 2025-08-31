@@ -251,9 +251,11 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             return typeof roleId === 'string' ? parseInt(roleId) : roleId;
           })
           .filter((id) => id !== undefined && id !== null && !isNaN(id)),
-        badges: user.badges?.map((badge: UserBadge) => ({
-          badgeDefinitionId: badge.badgeDefinitionId || badge.badgeDefinition?.id,
-        })).filter(b => b.badgeDefinitionId),
+        badges: user.badges
+          ?.map((badge: UserBadge) => ({
+            badgeDefinitionId: badge.badgeDefinitionId || badge.badgeDefinition?.id,
+          }))
+          .filter((b) => b.badgeDefinitionId),
         preferredGenres: user.preferredGenres || [],
         rejectionReason: user.rejectionReason,
       };
