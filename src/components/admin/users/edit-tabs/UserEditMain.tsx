@@ -397,13 +397,10 @@ export default function UserEditMain({
         </div>
 
         {/* Suspension/Rejection Reason - Show only for suspended or refused users */}
-        {(user.status === 'suspended' ||
-          user.status === 'refused') && (
+        {(user.status === 'suspended' || user.status === 'refused') && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {user.status === 'suspended'
-                ? 'Suspension Reason'
-                : 'Rejection Reason'}
+              {user.status === 'suspended' ? 'Suspension Reason' : 'Rejection Reason'}
             </label>
             <textarea
               value={user.rejectionReason || ''}

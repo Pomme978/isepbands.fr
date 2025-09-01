@@ -82,9 +82,7 @@ export default function Cabinet({ cards }: CabinetProps) {
   const distributedCards = useMemo(() => createDrawers(cards), [cards, isMobile]);
 
   return (
-    <div
-      className={`relative w-full py-16 ${isMobile ? 'overflow-hidden' : 'overflow-visible'}`}
-    >
+    <div className={`relative w-full py-16 ${isMobile ? 'overflow-hidden' : 'overflow-visible'}`}>
       <div
         id="cabinet"
         className="relative bg-gray-800 rounded-xl shadow-2xl w-full md:w-96"
@@ -96,12 +94,16 @@ export default function Cabinet({ cards }: CabinetProps) {
           style={{ zIndex: 999 }}
         >
           <h2 className="text-2xl md:text-3xl font-bold text-white text-center whitespace-nowrap">
-            CE QU'ON PROPOSE
+            CE QU&apos;ON PROPOSE
           </h2>
         </div>
 
         {/* Cabinet Drawers */}
-        <CabinetDrawers drawers={distributedCards} scrollProgress={scrollProgress} isMobile={isMobile} />
+        <CabinetDrawers
+          drawers={distributedCards}
+          scrollProgress={scrollProgress}
+          isMobile={isMobile}
+        />
 
         {/* Cabinet Front Cover - higher z-index to hide drawers */}
         <div

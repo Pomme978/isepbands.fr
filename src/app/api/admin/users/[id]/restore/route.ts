@@ -30,7 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     // Update user status to CURRENT (restored) and clear archive metadata
     await prisma.user.update({
       where: { id: userId },
-      data: { 
+      data: {
         status: 'CURRENT',
         archivedAt: null,
         archivedBy: null,
@@ -43,6 +43,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     });
   } catch (error) {
     console.error('Error restoring user:', error);
-    return NextResponse.json({ error: "Erreur lors de la restauration" }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur lors de la restauration' }, { status: 500 });
   }
 }

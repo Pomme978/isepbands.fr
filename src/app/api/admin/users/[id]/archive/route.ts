@@ -30,7 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     // Update user status to DELETED (archived) with archive metadata
     await prisma.user.update({
       where: { id: userId },
-      data: { 
+      data: {
         status: 'DELETED',
         archivedAt: new Date(),
         archivedBy: currentUserId || null,

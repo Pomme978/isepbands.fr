@@ -578,8 +578,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             <div>
               <h3 className="text-sm font-medium text-orange-900">Compte archivé</h3>
               <p className="text-sm text-orange-700 mt-1">
-                Ce compte utilisateur est actuellement archivé et n'est plus actif. 
-                Vous pouvez le restaurer pour permettre à l'utilisateur de se reconnecter.
+                Ce compte utilisateur est actuellement archivé et n&apos;est plus actif. Vous pouvez
+                le restaurer pour permettre à l&apos;utilisateur de se reconnecter.
               </p>
             </div>
           </div>
@@ -642,14 +642,14 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             </>
           )}
 
-          {currentUserId !== user.id && (
-            isArchived ? (
+          {currentUserId !== user.id &&
+            (isArchived ? (
               <button
                 onClick={() => setShowRestoreConfirm(true)}
                 className="inline-flex items-center px-4 py-2 text-sm bg-white border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Restaurer l'utilisateur
+                Restaurer l&apos;utilisateur
               </button>
             ) : (
               <>
@@ -669,8 +669,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                   Delete User
                 </button>
               </>
-            )
-          )}
+            ))}
 
           {!isArchived && (
             <button
@@ -890,14 +889,14 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
                 <RotateCcw className="w-5 h-5 text-green-600" />
               </div>
-              Restaurer l'utilisateur
+              Restaurer l&apos;utilisateur
             </AlertDialogTitle>
             <AlertDialogDescription className="text-left">
               Êtes-vous sûr de vouloir restaurer{' '}
               <strong>
                 {user?.firstName} {user?.lastName}
               </strong>{' '}
-              ? Ce compte redeviendra actif et l'utilisateur pourra se reconnecter.
+              ? Ce compte redeviendra actif et l&apos;utilisateur pourra se reconnecter.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -20,7 +20,7 @@ const footerColumns = [
   {
     title: 'Association',
     links: [
-      { label: 'Règlement de l\'asso', href: '/rules' },
+      { label: "Règlement de l'asso", href: '/rules' },
       { label: 'Adhésion', href: '/club#adhesion' },
       { label: 'Contact', href: '/team' },
     ],
@@ -28,7 +28,7 @@ const footerColumns = [
   {
     title: 'Légal',
     links: [
-      { label: 'Conditions d\'utilisation', href: '/conditions' },
+      { label: "Conditions d'utilisation", href: '/conditions' },
       { label: 'Politique de confidentialité', href: '/confidentialite' },
       { label: 'Mentions légales', href: '/mentions-legales' },
       { label: 'RGPD', href: '/rgpd' },

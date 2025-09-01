@@ -209,8 +209,8 @@ export default function UserEditPermissions({
                       <div>
                         <h4
                           className={`font-medium ${
-                            isDisabled 
-                              ? 'text-gray-400' 
+                            isDisabled
+                              ? 'text-gray-400'
                               : getRoleTextColor(getRoleDisplayName(role, user.pronouns, 'fr'))
                           }`}
                         >
@@ -261,7 +261,10 @@ export default function UserEditPermissions({
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div className="flex-1">
-              <label htmlFor="fullAccess" className={`text-sm font-medium ${isReadOnly ? 'text-gray-400' : 'text-gray-700'}`}>
+              <label
+                htmlFor="fullAccess"
+                className={`text-sm font-medium ${isReadOnly ? 'text-gray-400' : 'text-gray-700'}`}
+              >
                 Full Access Override
               </label>
               <p className={`text-xs mt-1 ${isReadOnly ? 'text-gray-400' : 'text-gray-500'}`}>

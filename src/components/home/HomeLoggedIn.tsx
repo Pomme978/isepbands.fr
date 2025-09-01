@@ -206,11 +206,17 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                         )}
                       </p>
                       {userProfile?.primaryRole && (
-                        <BadgeDisplay 
+                        <BadgeDisplay
                           role={userProfile.primaryRole}
                           badges={[]}
                           isLookingForGroup={userProfile.isLookingForGroup || false}
-                          pronouns={(userProfile.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other') || 'they/them'}
+                          pronouns={
+                            (userProfile.pronouns as
+                              | 'he/him'
+                              | 'she/her'
+                              | 'they/them'
+                              | 'other') || 'they/them'
+                          }
                           size="sm"
                         />
                       )}

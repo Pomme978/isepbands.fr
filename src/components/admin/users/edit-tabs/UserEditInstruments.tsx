@@ -584,7 +584,9 @@ export default function UserEditInstruments({
             <input
               type="checkbox"
               checked={bandMatchingSettings.isAvailableForBands}
-              onChange={(e) => !isReadOnly && handleBandMatchingChange('isAvailableForBands', e.target.checked)}
+              onChange={(e) =>
+                !isReadOnly && handleBandMatchingChange('isAvailableForBands', e.target.checked)
+              }
               disabled={isReadOnly}
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
@@ -600,7 +602,9 @@ export default function UserEditInstruments({
             <input
               type="checkbox"
               checked={bandMatchingSettings.showInstrumentSkills}
-              onChange={(e) => !isReadOnly && handleBandMatchingChange('showInstrumentSkills', e.target.checked)}
+              onChange={(e) =>
+                !isReadOnly && handleBandMatchingChange('showInstrumentSkills', e.target.checked)
+              }
               disabled={isReadOnly}
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
@@ -616,7 +620,9 @@ export default function UserEditInstruments({
             <input
               type="checkbox"
               checked={bandMatchingSettings.lookingForJamPartners}
-              onChange={(e) => !isReadOnly && handleBandMatchingChange('lookingForJamPartners', e.target.checked)}
+              onChange={(e) =>
+                !isReadOnly && handleBandMatchingChange('lookingForJamPartners', e.target.checked)
+              }
               disabled={isReadOnly}
               className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />

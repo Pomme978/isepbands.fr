@@ -63,7 +63,9 @@ type PendingItem = PendingUser | PendingBand;
 // Real data fetching functions
 const fetchPendingUsers = async (): Promise<PendingUser[]> => {
   try {
-    const response = await fetch('/api/admin/pending-users');
+    const response = await fetch('/api/admin/pending-users', {
+      credentials: 'include',
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch pending users');
     }
@@ -135,6 +137,7 @@ export default function PendingApprovals({
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ action: 'approve' }),
         });
 
@@ -165,6 +168,7 @@ export default function PendingApprovals({
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ action: 'reject', reason }),
         });
 

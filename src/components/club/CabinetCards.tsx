@@ -116,7 +116,9 @@ export default function CabinetCards({ cards }: CabinetCardsProps) {
   if (cardRotations.length === 0) return null;
 
   return (
-    <div className={`flex flex-col gap-6 h-full justify-center ${isMobile ? 'items-center' : 'items-end'} pr-2 overflow-visible`}>
+    <div
+      className={`flex flex-col gap-6 h-full justify-center ${isMobile ? 'items-center' : 'items-end'} pr-2 overflow-visible`}
+    >
       {cards.map((card, index) => (
         <div
           key={index}
@@ -164,7 +166,7 @@ export default function CabinetCards({ cards }: CabinetCardsProps) {
                   onClick={handleMoreInfoClick}
                   className="text-xs text-gray-800 hover:text-primary underline underline-offset-1 cursor-pointer transition-colors"
                 >
-                  Plus d'info &gt;
+                  Plus d&apos;info &gt;
                 </button>
                 <LogoSVG />
               </div>

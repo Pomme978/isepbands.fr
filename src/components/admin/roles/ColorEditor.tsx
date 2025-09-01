@@ -55,7 +55,7 @@ const GRADIENT_PRESETS = [
 const extractColorsFromRole = (roleName: string): { start: string; end: string } => {
   const roleColors = getRoleColor(roleName);
   const gradientBg = roleColors.bg || '';
-  
+
   // Extract colors from Tailwind gradient classes
   // This is a simplified mapping - in a real app, we'd need a complete Tailwind to hex mapping
   const colorMap: Record<string, string> = {
@@ -107,7 +107,7 @@ export default function ColorEditor({
 }: ColorEditorProps) {
   // Get default colors from role configuration
   const defaultColors = extractColorsFromRole(roleName);
-  
+
   const [gradientStart, setGradientStart] = useState(currentGradientStart || defaultColors.start);
   const [gradientEnd, setGradientEnd] = useState(currentGradientEnd || defaultColors.end);
 
@@ -133,7 +133,10 @@ export default function ColorEditor({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex: 9999 }}
+    >
       <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

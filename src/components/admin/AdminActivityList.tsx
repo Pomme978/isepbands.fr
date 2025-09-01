@@ -141,7 +141,9 @@ const AdminActivityItem = ({
               <>
                 <span className="font-medium text-gray-900">{activity.user?.name}</span>
                 {activity.user?.role && (
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleClasses(activity.user.role)}`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleClasses(activity.user.role)}`}
+                  >
                     {activity.user.role}
                   </span>
                 )}

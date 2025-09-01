@@ -7,10 +7,7 @@ const updateColorsSchema = z.object({
   gradientEnd: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i, 'Invalid hex color format'),
 });
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   // Check authentication and permissions
   const authResult = await requireAuth(req);
   if (!authResult.ok) {
@@ -30,7 +27,7 @@ export async function PUT(
     // 1. Update the role record in the database with custom color fields
     // 2. Update the roleColors.ts utility to check database for custom colors first
     // 3. Cache the custom colors for performance
-    
+
     // For now, just return a success response to indicate the API structure is ready
     console.log('Role color update request:', {
       roleId,
@@ -53,14 +50,11 @@ export async function PUT(
           error: 'Validation error',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error('Error updating role colors:', error);
-    return NextResponse.json(
-      { error: 'Failed to update role colors' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update role colors' }, { status: 500 });
   }
 }

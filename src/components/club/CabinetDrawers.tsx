@@ -16,7 +16,6 @@ interface CabinetDrawersProps {
 }
 
 export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: CabinetDrawersProps) {
-
   // =============================================================================
   // CONFIGURATION VARIABLES - Adjust these to fine-tune the cabinet behavior
   // =============================================================================

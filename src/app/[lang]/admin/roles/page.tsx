@@ -136,7 +136,7 @@ export default function AdminRolesPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl lg:text-3xl font-bold">Rôles & Permissions</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Gérez les rôles de l'association et leurs permissions
+              Gérez les rôles de l&apos;association et leurs permissions
             </p>
           </div>
           <div className="flex gap-2">
@@ -173,7 +173,7 @@ export default function AdminRolesPage() {
                     Rôles ({roles.length})
                   </CardTitle>
                   <CardDescription>
-                    Liste des rôles de l'association avec leurs permissions
+                    Liste des rôles de l&apos;association avec leurs permissions
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -193,9 +193,7 @@ export default function AdminRolesPage() {
                             size="sm"
                           />
                           <div>
-                            <h3 className="font-semibold text-lg">
-                              {getRoleDisplayName(role)}
-                            </h3>
+                            <h3 className="font-semibold text-lg">{getRoleDisplayName(role)}</h3>
                             <div className="flex items-center gap-2 text-sm text-gray-600">
                               <Users className="h-3 w-3" />
                               <span>
@@ -216,18 +214,18 @@ export default function AdminRolesPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditColor(role)}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => handleEditColor(role)}>
                             <Palette className="h-3 w-3 mr-1" />
                             Couleurs
                           </Button>
                           <Button variant="outline" size="sm">
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
