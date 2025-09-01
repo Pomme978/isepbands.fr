@@ -301,8 +301,8 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
         </p>
       </div>
 
-      <div className="flex justify-end pt-4">
-        <Button type="submit" className="px-6 py-2">
+      <div className="flex justify-center md:justify-end pt-4">
+        <Button type="submit" className="px-6 md:py-2 py-6 md:w-auto w-full">
           Suivant
         </Button>
       </div>

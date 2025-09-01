@@ -3,6 +3,6 @@ import { requireAuth } from '@/middlewares/auth';
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
-  if (!auth.ok) return NextResponse.json(null, { status: 200 });
+  if (!auth.ok) return auth.res;
   return NextResponse.json({ user: auth.user });
 }

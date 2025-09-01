@@ -156,10 +156,10 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
 
   return (
     <div className="min-h-screen ">
-      <div className="max-w-7xl mx-auto py-8">
+      <div className="max-w-7xl mx-3 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-left text-center font-bold text-gray-900 mb-2">
             Welcome back, {userProfile?.firstName || user.name?.split(' ')[0] || 'User'}
           </h1>
         </div>
@@ -286,9 +286,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
           {/* Right Column - Recent Activities */}
           <div className="lg:col-span-2">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="md:p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Dernières Actualités</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 md:text-left text-center">Dernières Actualités</h2>
                   {feedError && <span className="text-sm text-amber-600">Mode hors ligne</span>}
                 </div>
 

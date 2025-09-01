@@ -26,11 +26,23 @@ const formatText = (text: string) => {
 const formatMetadataField = (key: string, value: unknown) => {
   // Map of field keys to French labels
   const fieldLabels: Record<string, string> = {
+    // User management
     userEmail: 'Email',
+    email: 'Email',
+    role: 'Rôle attribué',
+    promotion: 'Promotion',
+    instrumentsCount: 'Instruments',
+    badgesCount: 'Badges',
+    hasTemporaryPassword: 'Mot de passe temporaire',
+    sendWelcomeEmail: 'Email de bienvenue',
+    
+    // User status changes
     previousStatus: 'Statut précédent', 
     newStatus: 'Nouveau statut',
     rejectionReason: 'Raison du refus',
     updatedFields: 'Champs modifiés',
+    
+    // Actions timing
     sendEmail: 'Email envoyé',
     resetAt: 'Réinitialisé le',
     approvedAt: 'Approuvé le',
@@ -38,23 +50,29 @@ const formatMetadataField = (key: string, value: unknown) => {
     archivedAt: 'Archivé le',
     deletedAt: 'Supprimé le',
     restoredAt: 'Restauré le',
+    loginAt: 'Connecté le',
+    firstLoginAt: 'Première connexion le',
+    
+    // Archive info
     wasArchivedBy: 'Archivé par',
     previousPhotoUrl: 'Ancienne photo',
     newPhotoUrl: 'Nouvelle photo',
     changes: 'Modifications détaillées',
+    
+    // System info
+    userAgent: 'Navigateur',
+    ip: 'Adresse IP',
+    platform: 'Plateforme',
+    url: 'URL',
+    
+    // Configuration
     badgeKey: 'Clé du badge',
     labelFr: 'Label français',
     labelEn: 'Label anglais',
-    platform: 'Plateforme',
-    url: 'URL',
     isActive: 'Actif',
     sortOrder: 'Ordre',
     actionsCount: 'Actions effectuées',
     success: 'Succès',
-    userAgent: 'Navigateur',
-    ip: 'Adresse IP',
-    loginAt: 'Connecté le',
-    firstLoginAt: 'Première connexion le',
   };
 
   // Map status values to French
@@ -98,6 +116,14 @@ const formatMetadataField = (key: string, value: unknown) => {
     }
   } else if (key === 'actionsCount' && typeof value === 'number') {
     displayValue = `${value} action${value > 1 ? 's' : ''}`;
+  } else if (key === 'instrumentsCount' && typeof value === 'number') {
+    displayValue = value === 0 ? 'Aucun' : `${value} instrument${value > 1 ? 's' : ''}`;
+  } else if (key === 'badgesCount' && typeof value === 'number') {
+    displayValue = value === 0 ? 'Aucun' : `${value} badge${value > 1 ? 's' : ''}`;
+  } else if (key === 'role' && typeof value === 'string') {
+    displayValue = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  } else if (key === 'promotion' && typeof value === 'string') {
+    displayValue = value.toUpperCase();
   } else {
     displayValue = String(value);
   }
@@ -121,10 +147,21 @@ export default function ActivityItem({
   // Determine if this is a publication/post (system_announcement with post content)
   const isPost = metadata?.action === 'post_published' || metadata?.postType === 'post';
   
-  // For posts, only show title initially, description on expand
-  // For admin actions, show description initially, metadata on expand
-  const shouldShowDescription = !isPost;
-  const shouldShowExpandButton = isPost || (metadata && Object.keys(metadata).length > 0);
+  // For posts, use the generic title, NOT the post title
+  const displayTitle = title;
+  
+  // Extract post content if it's a post
+  const postContent = isPost ? description.match(/Contenu:\s*(.+)$/s)?.[1]?.trim() : null;
+  
+  // Check if there are any expandable details
+  const hasMetadataToShow = metadata && Object.keys(metadata).filter(key => 
+    !['action', 'postType', 'postTitle', 'publicPostId', 'userId', 'id', '_id', 'previousData', 'newData'].includes(key) &&
+    !(key === 'userEmail' && description.includes(String(metadata[key]))) &&
+    !(key === 'updatedFields' && description.includes('→'))
+  ).length > 0;
+  
+  const hasExpandableContent = (isPost && postContent) || (!isPost && hasMetadataToShow);
+  const shouldShowExpandButton = hasExpandableContent;
   
   const formattedDescription = formatText(description);
 
@@ -140,7 +177,7 @@ export default function ActivityItem({
           <div className="flex justify-between">
             <div className="flex-1 mr-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+                <h3 className="text-sm font-semibold text-gray-900">{displayTitle}</h3>
                 {shouldShowExpandButton && (
                   <button
                     onClick={onToggleExpand}
@@ -154,12 +191,10 @@ export default function ActivityItem({
                   </button>
                 )}
               </div>
-              {/* Show description immediately for admin actions, only on expand for posts */}
-              {shouldShowDescription && (
-                <div className="text-sm text-gray-700 leading-relaxed mt-1">
-                  <span dangerouslySetInnerHTML={{ __html: formattedDescription }} />
-                </div>
-              )}
+              {/* Show description for both posts and admin actions */}
+              <div className="text-sm text-gray-700 leading-relaxed mt-1">
+                <span dangerouslySetInnerHTML={{ __html: formattedDescription }} />
+              </div>
             </div>
             <div className="text-right flex-shrink-0">
               <span className="text-xs text-gray-400 block">{timestamp}</span>
@@ -170,12 +205,21 @@ export default function ActivityItem({
           </div>
           
           {/* Expanded content */}
-          {isExpanded && (
+          {isExpanded && hasExpandableContent && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               {isPost ? (
-                // For posts, show the content/description
-                <div className="text-sm text-gray-700 leading-relaxed">
-                  <span dangerouslySetInnerHTML={{ __html: formattedDescription }} />
+                // For posts, show the post title and content
+                <div className="text-sm text-gray-700 leading-relaxed space-y-2">
+                  {metadata?.postTitle && (
+                    <div className="font-medium text-gray-900">
+                      "{metadata.postTitle}"
+                    </div>
+                  )}
+                  {postContent && (
+                    <div>
+                      <span dangerouslySetInnerHTML={{ __html: formatText(postContent) }} />
+                    </div>
+                  )}
                 </div>
               ) : (
                 // For admin actions, show relevant metadata

@@ -26,11 +26,11 @@ interface Step6ConfirmationProps {
   availableInstruments: { id: number; name: string; nameFr: string; nameEn: string }[];
 }
 export default function Step6Confirmation({
-  data,
-  onBack,
-  onSubmit,
-  availableInstruments,
-}: Step6ConfirmationProps) {
+                                            data,
+                                            onBack,
+                                            onSubmit,
+                                            availableInstruments,
+                                          }: Step6ConfirmationProps) {
   const t = useI18n();
 
   const skillLevelLabels: Record<string, string> = {
@@ -50,7 +50,7 @@ export default function Step6Confirmation({
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header avec titre et icône */}
-      <div className="text-center space-y-3">
+      <div className="text-center space-y-3 md:mt-0 -mt-8 mb-5 md:mb-0">
         <div className="flex justify-center">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
             <CheckCircle className="w-8 h-8 text-primary" />
@@ -63,9 +63,9 @@ export default function Step6Confirmation({
       <div className="space-y-6">
         {/* Photo de profil */}
         <div className="flex justify-center items-center mb-0">
-          <div className="relative">
+          <div className="relative md:mb-0 mb-10">
             {data.profilePhoto ? (
-              <Avatar className="w-24 h-24 border-4 border-primary/20 shadow-lg">
+              <Avatar className="md:w-24 md:h-24 w-32 h-32 border-4 border-primary/20 shadow-lg ">
                 <AvatarImage
                   src={URL.createObjectURL(data.profilePhoto)}
                   className="object-cover"
@@ -76,7 +76,7 @@ export default function Step6Confirmation({
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <Avatar className="w-24 h-24 border-4 border-gray-200 shadow-lg">
+              <Avatar className="w-32 h-32 border-4 border-gray-200 shadow-lg">
                 <AvatarFallback className="text-xl bg-gray-100 text-gray-600 font-bold">
                   {data.firstName.charAt(0)}
                   {data.lastName.charAt(0)}
@@ -271,12 +271,16 @@ export default function Step6Confirmation({
       </div>
 
       {/* Boutons d'action */}
-      <div className="flex justify-between gap-4 pt-6 border-t">
-        <Button type="button" variant="outline" onClick={onBack} className="px-8">
-          <span className="mr-2">←</span>
-          {t('common.goback')}
+      <div className="flex justify-center md:gap-0 gap-4 md:flew-row flex-col md:justify-end pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          className="px-6 md:py-2 py-6 md:w-auto w-full"
+        >
+          Retour
         </Button>
-        <Button type="button" onClick={onSubmit} className="px-8">
+        <Button type="button" onClick={onSubmit} className="px-6 md:py-2 py-6 md:w-auto w-full">
           {t('auth.register.confirm')}
           <CheckCircle className="w-4 h-4 ml-2" />
         </Button>

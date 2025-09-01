@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import LightLeft from '@/assets/svg/light_left.svg';
 import LightCenter from '@/assets/svg/light_center.svg';
+import LightCenterMobile from '@/assets/svg/mobile_centerlight.svg';
 import LightRight from '@/assets/svg/light_right.svg';
 
 interface StageLightsProps {
@@ -22,22 +23,27 @@ const StageLights: React.FC<StageLightsProps> = ({ className = '' }) => {
 
   return (
     <div
-      className={`absolute top-0 left-0 w-full h-screen z-30 opacity-60 overflow-hidden ${className}`}
+      className={`absolute top-0 left-0 w-full h-screen z-30 opacity-100 md:opacity-60 overflow-hidden ${className}`}
     >
       {/* Left Light */}
-      <div className="absolute -top-20 -left-20">
+      <div className="absolute -top-20 -left-20 hidden md:block">
         <div className={`origin-top-left ${isAnimated ? 'animate-gentle-rotate-left' : ''}`}>
           <Image src={LightLeft} alt="Left stage light" className="object-contain" />
         </div>
       </div>
 
       {/* Center Light */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
+      <div className="absolute top-0 left-1/2 transform hidden md:block -translate-x-1/2">
         <Image src={LightCenter} alt="Center stage light" className="object-contain" />
       </div>
 
+      {/* Mobile Center Light */}
+      <div className="absolute top-0 left-1/2 md:hidden block transform -translate-x-1/2 scale-200 brightness-100">
+        <Image src={LightCenterMobile} alt="Center stage light" className="object-contain" />
+      </div>
+
       {/* Right Light */}
-      <div className="absolute -top-20 -right-20">
+      <div className="absolute -top-20 -right-20 hidden md:block">
         <div className={`origin-top-right ${isAnimated ? 'animate-gentle-rotate-right' : ''}`}>
           <Image src={LightRight} alt="Right stage light" className="object-contain" />
         </div>

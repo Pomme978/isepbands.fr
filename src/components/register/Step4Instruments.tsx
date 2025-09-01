@@ -221,11 +221,6 @@ export default function Step4Instruments({
                       className="rounded border-gray-300 text-primary focus:ring-primary/20"
                     />
                     <span className="text-sm font-medium text-gray-700">Instrument principal</span>
-                    <span
-                      className={`text-yellow-500 ${inst.isPrimary ? 'opacity-100' : 'opacity-30'}`}
-                    >
-                      ⭐
-                    </span>
                   </label>
 
                   <button
@@ -305,11 +300,16 @@ export default function Step4Instruments({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onBack} className="px-6 py-2">
+      <div className="flex justify-center md:gap-0 gap-4 md:flew-row flex-col md:justify-end pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          className="px-6 md:py-2 py-6 md:w-auto w-full"
+        >
           Retour
         </Button>
-        <Button type="submit" className="px-6 py-2">
+        <Button type="submit" className="px-6 md:py-2 py-6 md:w-auto w-full">
           Suivant
         </Button>
       </div>

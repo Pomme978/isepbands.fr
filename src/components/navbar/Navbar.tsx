@@ -194,7 +194,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
             </div>
 
             {/* Mobile Navigation */}
-            <div className="lg:hidden flex items-center justify-between w-full min-w-0 z-[200]">
+            <div className="lg:hidden flex items-center justify-between w-full min-w-0 z-[300]">
               {/* Page Title */}
               <div className="flex-1 text-left min-w-0">
                 <h1
@@ -227,7 +227,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
 
       {/* Mobile Menu Dropdown */}
       <div
-        className={`lg:hidden fixed top-12 left-0 right-0 bottom-0 z-[200] transition-all duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-10 left-0 right-0 bottom-0 z-[50] transition-all duration-300 ease-in-out ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -239,8 +239,8 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className={`backdrop-blur-md border rounded-b-lg shadow-xl pt-4 ${
-              style === 'transparent' ? 'bg-black/60 border-none' : 'bg-white'
+            className={` pt-5 rounded-b-lg shadow-xl ${
+              style === 'transparent' ? 'bg-black/90 border-none' : 'bg-white'
             }`}
           >
             <div className="px-4 py-4 space-y-4">

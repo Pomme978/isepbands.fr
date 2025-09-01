@@ -24,7 +24,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ArchiveConfirmModal from '@/components/admin/common/ArchiveConfirmModal';
 import type { ActivityType } from '@/types/activity';
-import { RecentActivity } from '@/components/home/RecentActivity';
+import { AdminRecentActivity } from '@/components/admin/AdminRecentActivity';
 import type { PublicFeedType } from '@/types/publicFeed';
 
 interface ActivityItem {
@@ -227,6 +227,9 @@ export default function AdminClubFeedPage() {
       // Reset form
       setNewActivity({ type: 'custom', title: '', description: '' });
       setShowCreateForm(false);
+
+      // Refresh public feed to show the new post
+      fetchPublicFeed();
 
       // Show success message
       setSaveSuccess(true);
@@ -553,10 +556,14 @@ export default function AdminClubFeedPage() {
                 <Loading text="Chargement du feed public..." size="sm" />
               </div>
             ) : (
-              <RecentActivity
+              <AdminRecentActivity
                 activities={publicFeedItems}
                 maxItems={6}
-                showHistoryButton={false}
+                currentUser={currentUser}
+                onEdit={(activity) => setEditingActivity(activity)}
+                onArchive={(activityId) => handleArchiveActivity(activityId)}
+                onDelete={(activityId) => handleDeleteActivity(activityId)}
+                rawActivities={activities}
               />
             )}
           </CardContent>

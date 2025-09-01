@@ -17,8 +17,10 @@ import {
   MessageSquare,
   Shield,
   Archive,
+  RefreshCw,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
+import AdminActivitiesModal from './AdminActivitiesModal';
 
 interface ApiActivity {
   id: string;
@@ -141,34 +143,44 @@ interface RecentActivityProps {
 
 export default function RecentActivity({
   activities: propActivities = [],
-  maxItems = 10,
+  maxItems = 5, // Changed to 5 by default
 }: RecentActivityProps) {
   const [activities, setActivities] = useState<ActivityData[]>(propActivities);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showAllModal, setShowAllModal] = useState(false);
 
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
+  const fetchActivities = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
         setLoading(true);
-        const response = await fetch('/api/admin/clubfeed');
-        if (response.ok) {
-          const data = await response.json();
-          const transformedActivities = data.activities.map(transformApiActivity);
-          setActivities(transformedActivities);
-        } else {
-          // API failed
-          console.error('API /admin/clubfeed failed with status:', response.status);
-          setActivities([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch admin activities:', error);
+      }
+      const response = await fetch('/api/admin/clubfeed');
+      if (response.ok) {
+        const data = await response.json();
+        const transformedActivities = data.activities.map(transformApiActivity);
+        setActivities(transformedActivities);
+      } else {
+        // API failed
+        console.error('API /admin/clubfeed failed with status:', response.status);
         setActivities([]);
-      } finally {
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin activities:', error);
+      setActivities([]);
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
         setLoading(false);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchActivities();
   }, []);
 
@@ -179,11 +191,24 @@ export default function RecentActivity({
       <div className="px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-foreground">Activité récente</h2>
-          {activities.length > maxItems && (
-            <button className="text-sm text-primary hover:text-primary/80 font-medium">
-              Voir tout
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => fetchActivities(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-400 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Actualisation...' : 'Actualiser'}
             </button>
-          )}
+            {activities.length > maxItems && (
+              <button 
+                onClick={() => setShowAllModal(true)}
+                className="text-sm text-primary hover:text-primary/80 font-medium"
+              >
+                Voir tout ({activities.length - maxItems} autres)
+              </button>
+            )}
+          </div>
         </div>
       </div>
       <div className="p-6">
@@ -246,6 +271,13 @@ export default function RecentActivity({
           </div>
         )}
       </div>
+
+      {/* Modal for all activities */}
+      <AdminActivitiesModal 
+        isOpen={showAllModal}
+        onClose={() => setShowAllModal(false)}
+        activities={activities}
+      />
     </div>
   );
 }

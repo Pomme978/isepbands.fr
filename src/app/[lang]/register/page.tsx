@@ -13,7 +13,6 @@ import Step3Motivation from '@/components/register/Step3Motivation';
 import Step4Instruments from '@/components/register/Step4Instruments';
 import Step5Photo from '@/components/register/Step5Photo';
 import Step6Confirmation from '@/components/register/Step6Confirmation';
-import Loading from '@/components/ui/Loading';
 import { toast } from 'sonner';
 import BackButton from '@/components/ui/back-button';
 import RegisterFormCard from '@/components/register/RegisterFormCard';
@@ -149,32 +148,32 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center relative p-4">
-      <div className="absolute top-6 left-6">
+    <div className="flex min-h-screen items-center flex-col justify-center relative">
+      <div className="absolute top-6 left-6 m:dtop-3 md:left-3 ">
         <BackButton variant="ghost" />
       </div>
       <RegisterFormCard>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex md:mt-0 mt-10 md:flex-row flex-col items-center justify-center md:justify-between p-6 border-b border-gray-200">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t('register.title')}</h1>
-            <p className="text-sm text-gray-600 mt-1">{t(stepTitles[step - 1])}</p>
-            <div className="flex mt-2">
+            <h1 className="text-2xl md:text-left text-center font-bold text-gray-900">{t('register.title')}</h1>
+            <p className="text-sm md:text-left text-center text-gray-600 mt-1">{t(stepTitles[step - 1])}</p>
+            <div className="flex mt-5 md:mt-2">
               {Array.from({ length: 6 }, (_, i) => (
                 <div
                   key={i}
-                  className={`h-1 w-16 mr-1 rounded ${i < step ? 'bg-primary' : 'bg-gray-200'}`}
+                  className={`h-1 md:w-16 w-10 mr-1 rounded ${i < step ? 'bg-primary' : 'bg-gray-200'}`}
                 />
               ))}
             </div>
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm md:mt-0 mt-5 text-gray-500">
             {t('common.step')} {step} {t('common.of')} 6
           </span>
         </div>
 
         {/* Contenu des étapes */}
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 md:max-h-[70vh] md:overflow-y-auto">
           {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} />}
           {step === 2 && (
             <Step2AdditionalInfo

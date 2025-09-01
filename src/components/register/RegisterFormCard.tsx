@@ -6,5 +6,9 @@ interface RegisterFormCard {
 }
 
 export default function RegisterFormCard({ children }: RegisterFormCard) {
-  return <Card className="w-full max-w-2xl bg-white rounded-lg shadow-xl">{children}</Card>;
+  return (
+    <Card className="w-full max-w-2xl md:bg-white md:rounded-lg shadow-none bg-transparent md:shadow-xl">
+      {children}
+    </Card>
+  );
 }

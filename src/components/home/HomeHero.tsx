@@ -18,7 +18,7 @@ const HomeHero = () => {
   const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
 
   return (
-    <div className="w-full h-screen overflow-hidden">
+    <div className="relative w-full min-h-screen overflow-hidden">
       {/* Custom Background Color */}
       <div className="absolute inset-0 z-0 w-full" style={{ backgroundColor: '#2E135F' }} />
       <MusicNotes />
@@ -67,36 +67,36 @@ const HomeHero = () => {
         />
       </div>*/}
 
-      {/* Content Container - Allow glow to show */}
-      <div className="relative z-40 flex items-center justify-center h-full text-white px-6 overflow-hidden">
-        <div className="flex justify-center items-center w-full max-w-6xl mx-auto gap-8 text-center lg:text-left overflow-visible">
-          {/* Logo Section - Allow glow overflow */}
-          <div className="flex justify-center flex-shrink-0 p-4 overflow-visible">
+      {/* Content Container - Mobile responsive */}
+      <div className="relative z-40 flex flex-col md:flex-row items-center justify-start md:justify-center min-h-screen text-white px-4 sm:px-6 overflow-hidden pt-16 md:pt-0">
+        <div className="flex flex-col md:flex-row justify-center items-center w-full max-w-6xl mx-auto gap-4 md:gap-8 text-center lg:text-left overflow-visible">
+          {/* Logo Section - Better mobile positioning */}
+          <div className="flex justify-center flex-shrink-0 p-2 md:p-4 overflow-visible">
             <NeonLogo
               src={isepbands_logo}
               alt="ISEP Bands Logo"
               width={300}
               height={300}
-              className="w-24 h-24 sm:w-32 sm:h-32 md:w-80 md:h-80"
+              className="w-36 h-36 sm:w-52 sm:h-52 md:w-80 md:h-80"
               neon={true}
               intensity={0.3}
             />
           </div>
 
-          {/* Content Section */}
-          <div className="text-center lg:text-left max-w-6/12">
-            {/* Motto */}
-            <h1 className=" text-2xl sm:text-4xl md:text-5xl text-justify  font-bold mb-8">
-              FOR THOSE WHO CAN’T STOP PLAYING
+          {/* Content Section - Compact mobile spacing */}
+          <div className="text-center lg:text-left max-w-xl md:max-w-6/12 px-2">
+            {/* Motto - Compact mobile sizing */}
+            <h1 className="text-lg sm:text-2xl md:text-4xl lg:text-5xl text-center md:text-justify font-bold mb-4 md:mb-8 leading-tight">
+              FOR THOSE WHO CAN'T STOP PLAYING
             </h1>
 
-            {/* Button */}
-            <div className="flex justify-between w-full items-center">
+            {/* Button - Compact mobile layout */}
+            <div className="flex flex-col sm:flex-row justify-between w-full items-center gap-3 sm:gap-0">
               {!user && (
                 <Button
                   asChild
                   size="lg"
-                  className="relative shadow-md overflow-hidden bg-primary text-md py-6 px-12 text-primary-foreground"
+                  className="relative shadow-md overflow-hidden bg-primary text-sm sm:text-md py-3 sm:py-6 px-6 sm:px-12 text-primary-foreground w-full sm:w-auto"
                 >
                   <LangLink href={`/club#adhesion`}>Join Us</LangLink>
                 </Button>
@@ -104,15 +104,16 @@ const HomeHero = () => {
               <SocialsLink
                 iconColor="text-white"
                 iconHoverColor="text-gray-200"
-                iconSize="w-8 h-8"
+                iconSize="w-6 h-6 sm:w-8 sm:h-8"
               />
             </div>
           </div>
-          {/* Scroll hint */}
-          <a href="#next" className="absolute left-1/2 bottom-4 -translate-x-1/2 z-20">
-            <ChevronDown className="inline-block h-8 w-8 text-white animate-bounce-subtle drop-shadow-[0_0_10px_rgba(208,97,252,0.35)]" />
-          </a>
         </div>
+        
+        {/* Scroll hint - Inside hero background with better mobile positioning */}
+        <a href="#next" className="absolute left-1/2 bottom-8 md:bottom-4 -translate-x-1/2 z-20">
+          <ChevronDown className="inline-block h-6 w-6 sm:h-8 sm:w-8 text-white animate-bounce-subtle drop-shadow-[0_0_10px_rgba(208,97,252,0.35)]" />
+        </a>
       </div>
 
       {/* Custom CSS for animations with reduced movement */}

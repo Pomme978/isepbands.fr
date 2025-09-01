@@ -3,6 +3,7 @@ import { requireAuth } from '@/middlewares/auth';
 import { checkAdminPermission } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction } from '@/services/activityLogService';
+import { autoSubscribeUser } from '@/services/newsletterService';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(req);
@@ -105,6 +106,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           hadRegistrationRequest: !!registrationRequest
         }
       );
+
+      // Auto-subscribe to newsletter when user is approved
+      await autoSubscribeUser(user.email, 'approved');
 
       return NextResponse.json({
         success: true,

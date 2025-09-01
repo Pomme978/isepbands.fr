@@ -3,6 +3,8 @@
 
 import { useState } from 'react';
 import { Button } from '../ui/button';
+import Loading from '@/components/ui/Loading';
+import { toast } from 'sonner';
 
 interface NewsletterProps {
   title: string;
@@ -20,13 +22,48 @@ export function Newsletter({
   onSubmit,
 }: NewsletterProps) {
   const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit(email);
+    
+    if (!email.trim()) {
+      toast.error('Veuillez entrer votre email');
+      return;
     }
-    setEmail('');
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          source: 'footer',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Inscription réussie !');
+        setEmail('');
+        // Call legacy onSubmit if provided for backward compatibility
+        if (onSubmit) {
+          onSubmit(email);
+        }
+      } else {
+        toast.error(data.error || 'Une erreur est survenue');
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error);
+      toast.error('Une erreur est survenue lors de l\'inscription');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -45,8 +82,12 @@ export function Newsletter({
             className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             required
           />
-          <Button type="submit" className="px-4 py-2 text-white">
-            {buttonText}
+          <Button type="submit" className="px-4 py-2 text-white" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loading text="" size="sm" variant="spinner" theme="white" />
+            ) : (
+              buttonText
+            )}
           </Button>
         </form>
       </div>

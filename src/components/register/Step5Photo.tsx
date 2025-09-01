@@ -143,11 +143,16 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
         </p>
       </div>
 
-      <div className="flex justify-between gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onBack} className="px-6 py-2">
+      <div className="flex justify-center md:gap-0 gap-4 md:flew-row flex-col md:justify-end pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          className="px-6 md:py-2 py-6 md:w-auto w-full"
+        >
           Retour
         </Button>
-        <Button type="submit" className="px-6 py-2">
+        <Button type="submit" className="px-6 md:py-2 py-6 md:w-auto w-full">
           Suivant
         </Button>
       </div>

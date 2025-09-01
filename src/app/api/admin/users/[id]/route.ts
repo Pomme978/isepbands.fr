@@ -5,6 +5,7 @@ import { z, ZodIssue } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
 import { logAdminAction } from '@/services/activityLogService';
+import { autoUnsubscribeUser } from '@/services/newsletterService';
 
 // Schema pour la validation des données utilisateur
 const updateUserSchema = z.object({
@@ -716,6 +717,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       } catch (err) {
       }
     });
+
+    // Auto-unsubscribe from newsletter when user is deleted
+    await autoUnsubscribeUser(existingUser.email);
 
     // After successful database deletion, clean up physical files
     for (const storageObj of userStorageObjects) {

@@ -65,11 +65,16 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
         </p>
       </div>
 
-      <div className="flex justify-between gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onBack} className="px-6 py-2">
+      <div className="flex md:flew-row flex-col md:gap-0 gap-4 justify-center md:justify-end pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          className="px-6 md:py-2 py-6 md:w-auto w-full"
+        >
           Retour
         </Button>
-        <Button type="submit" className="px-6 py-2">
+        <Button type="submit" className="px-6 md:py-2 py-6 md:w-auto w-full">
           Suivant
         </Button>
       </div>

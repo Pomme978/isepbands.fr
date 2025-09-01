@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { requireAuth } from '@/middlewares/auth';
 import { checkAdminPermission } from '@/middlewares/admin';
 import { logAdminAction } from '@/services/activityLogService';
+import { autoSubscribeUser } from '@/services/newsletterService';
 // import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Moved to manual DB admin page
 
 // Schema for user creation
@@ -241,6 +242,9 @@ export async function POST(req: NextRequest) {
         sendWelcomeEmail: validatedData.sendWelcomeEmail || false
       }
     );
+
+    // Auto-subscribe to newsletter when user is created by admin
+    await autoSubscribeUser(user.email, 'admin_created');
 
     // TODO: Send welcome email if requested
     if (validatedData.sendWelcomeEmail) {

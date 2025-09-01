@@ -91,26 +91,24 @@ const Page = async () => {
   // Group roles by section with custom ordering for executives
   const executiveRoles = roleMapping.filter((r) => r.section === 'executive');
 
-  // Custom sort for executive section to put president in middle
+  // Custom sort for executive section - président first, then vice-presidents
   const sortedExecutiveUsers = () => {
     const vpUsers = teamUsers.filter((u) => u.role === 'vice_president');
     const presidentUsers = teamUsers.filter((u) => u.role === 'president');
 
-    // Arrange as: VP1, President, VP2 (if 2 VPs exist)
-    if (vpUsers.length === 2 && presidentUsers.length === 1) {
-      return [vpUsers[0], presidentUsers[0], vpUsers[1]];
-    } else if (vpUsers.length === 1 && presidentUsers.length === 1) {
-      return [vpUsers[0], presidentUsers[0]];
-    } else {
-      // Fallback to original order
-      return [...vpUsers, ...presidentUsers];
-    }
+    // Always put president first, then vice-presidents
+    return [...presidentUsers, ...vpUsers];
   };
 
   const executiveUsersOrdered = sortedExecutiveUsers();
 
   const otherRoles = roleMapping.filter((r) => r.section === 'other');
   const poleRoles = roleMapping.filter((r) => r.section === 'pole');
+  
+  // Check if there are any pole members to display
+  const poleUsers = teamUsers.filter((user) => 
+    poleRoles.some((role) => role.role === user.role)
+  );
 
   return (
     <main className="min-h-screen">
@@ -146,13 +144,17 @@ const Page = async () => {
       {/* Autres membres */}
       <Garland users={teamUsers} roleInfos={otherRoles} lightType="yellow" className="mb-100" />
 
-      {/* Section "Sans oublier nos responsables pôles" */}
-      <div className="text-center mb-8 w-full text-4xl md:text-3xl text-white font-bold text-glow text-glow-[#F4E0FF]">
-        Sans oublier nos responsables pôles
-      </div>
+      {/* Section "Sans oublier nos responsables pôles" - Only show if there are pole members */}
+      {poleUsers.length > 0 && (
+        <>
+          <div className="text-center mb-8 w-full text-4xl md:text-3xl text-white font-bold text-glow text-glow-[#F4E0FF]">
+            Sans oublier nos responsables pôles
+          </div>
 
-      {/* Pôles */}
-      <Garland users={teamUsers} roleInfos={poleRoles} lightType="blue" className="mb-100" />
+          {/* Pôles */}
+          <Garland users={teamUsers} roleInfos={poleRoles} lightType="blue" className="mb-100" />
+        </>
+      )}
 
       {/* Vision Note */}
       <div className="flex justify-center mb-20 px-4">
