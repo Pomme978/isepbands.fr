@@ -76,12 +76,40 @@ export async function PUT(req: NextRequest) {
       },
     });
 
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      const changes = [];
+      if (key !== existingBadge.key) changes.push(`Clé: ${existingBadge.key} → ${key}`);
+      if (labelFr !== existingBadge.labelFr) changes.push(`Label FR: ${existingBadge.labelFr} → ${labelFr}`);
+      if (labelEn !== existingBadge.labelEn) changes.push(`Label EN: ${existingBadge.labelEn} → ${labelEn}`);
+      if (description !== existingBadge.description) changes.push(`Description modifiée`);
+      if (color !== existingBadge.color) changes.push(`Couleur: ${existingBadge.color} → ${color}`);
+      if (isActive !== existingBadge.isActive) changes.push(`Status: ${existingBadge.isActive ? 'Actif' : 'Inactif'} → ${isActive ? 'Actif' : 'Inactif'}`);
+      
+      await logAdminAction(
+        authResult.user.id,
+        'badge_updated',
+        'Badge modifié',
+        `Badge **${labelFr}** (${key}) a été modifié${changes.length > 0 ? '\n\n' + changes.join('\n') : ''}`,
+        null,
+        {
+          badgeId: badge.id,
+          badgeKey: key,
+          previousData: existingBadge,
+          newData: badge,
+          changes: changes
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
+
     return NextResponse.json({
       success: true,
       badge,
     });
   } catch (error) {
-    console.error('Error updating badge definition:', error);
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la modification du badge' },
       { status: 500 },
@@ -119,16 +147,37 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    // Get badge info before deletion
+    const badgeToDelete = await prisma.badgeDefinition.findUnique({
+      where: { id }
+    });
+
     await prisma.badgeDefinition.delete({
       where: { id },
     });
+
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'badge_deleted',
+        'Badge supprimé',
+        `Badge **${badgeToDelete?.labelFr || 'Inconnu'}** (${badgeToDelete?.key || 'Inconnu'}) a été supprimé définitivement`,
+        null,
+        {
+          deletedBadge: badgeToDelete
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Badge supprimé avec succès',
     });
   } catch (error) {
-    console.error('Error deleting badge definition:', error);
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la suppression du badge' },
       { status: 500 },

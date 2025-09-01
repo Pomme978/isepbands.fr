@@ -565,16 +565,70 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (!transformedUser.id) {
         throw new Error('transformedUser.id is undefined');
       }
+
+      // Build detailed change description
+      const changes = [];
+      const metadata: Record<string, unknown> = {
+        updatedFields: Object.keys(validatedData),
+        userEmail: transformedUser.email,
+        previousData: {},
+        newData: {}
+      };
+
+      // Track specific changes
+      if (validatedData.firstName !== undefined && validatedData.firstName !== existingUser.firstName) {
+        changes.push(`Prénom: ${existingUser.firstName} → ${validatedData.firstName}`);
+        metadata.previousData = { ...metadata.previousData as object, firstName: existingUser.firstName };
+        metadata.newData = { ...metadata.newData as object, firstName: validatedData.firstName };
+      }
+      if (validatedData.lastName !== undefined && validatedData.lastName !== existingUser.lastName) {
+        changes.push(`Nom: ${existingUser.lastName} → ${validatedData.lastName}`);
+        metadata.previousData = { ...metadata.previousData as object, lastName: existingUser.lastName };
+        metadata.newData = { ...metadata.newData as object, lastName: validatedData.lastName };
+      }
+      if (validatedData.email !== undefined && validatedData.email !== existingUser.email) {
+        changes.push(`Email: ${existingUser.email} → ${validatedData.email}`);
+        metadata.previousData = { ...metadata.previousData as object, email: existingUser.email };
+        metadata.newData = { ...metadata.newData as object, email: validatedData.email };
+      }
+      if (validatedData.photoUrl !== undefined && validatedData.photoUrl !== existingUser.photoUrl) {
+        const oldPhoto = existingUser.photoUrl ? 'Photo existante' : 'Aucune photo';
+        const newPhoto = validatedData.photoUrl ? 'Nouvelle photo' : 'Photo supprimée';
+        changes.push(`Photo de profil: ${oldPhoto} → ${newPhoto}`);
+        metadata.previousPhotoUrl = existingUser.photoUrl;
+        metadata.newPhotoUrl = validatedData.photoUrl;
+      }
+      if (validatedData.status !== undefined && validatedData.status !== existingUser.status) {
+        const statusLabels: Record<string, string> = {
+          'PENDING': 'En attente',
+          'CURRENT': 'Actuel',
+          'DELETED': 'Archivé',
+          'REFUSED': 'Refusé',
+          'FORMER': 'Ancien',
+          'GRADUATED': 'Diplômé',
+          'SUSPENDED': 'Suspendu',
+        };
+        const oldStatus = statusLabels[existingUser.status] || existingUser.status;
+        const newStatus = statusLabels[validatedData.status] || validatedData.status;
+        changes.push(`Statut: ${oldStatus} → ${newStatus}`);
+        metadata.previousStatus = existingUser.status;
+        metadata.newStatus = validatedData.status;
+      }
+      if (validatedData.promotion !== undefined && validatedData.promotion !== existingUser.promotion) {
+        changes.push(`Promotion: ${existingUser.promotion || 'Aucune'} → ${validatedData.promotion || 'Aucune'}`);
+        metadata.previousData = { ...metadata.previousData as object, promotion: existingUser.promotion };
+        metadata.newData = { ...metadata.newData as object, promotion: validatedData.promotion };
+      }
+
+      const changeDescription = changes.length > 0 ? `\n\n${changes.join('\n')}` : '';
+
       await logAdminAction(
         authResult.user.id,
         'user_edited',
         'Utilisateur modifié',
-        `**${transformedUser.firstName} ${transformedUser.lastName}** (${transformedUser.email}) a été modifié`,
+        `**${transformedUser.firstName} ${transformedUser.lastName}** (${transformedUser.email}) a été modifié${changeDescription}`,
         String(transformedUser.id),
-        {
-          updatedFields: Object.keys(validatedData),
-          userEmail: transformedUser.email
-        }
+        metadata
       );
     } catch {
       // ignore logger errors

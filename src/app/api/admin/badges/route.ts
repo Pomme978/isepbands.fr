@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
       badges,
     });
   } catch (error) {
-    console.error('Error fetching badge definitions:', error);
     return NextResponse.json(
       { success: false, error: 'Erreur lors du chargement des badges' },
       { status: 500 },
@@ -75,12 +74,35 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'badge_created',
+        'Badge créé',
+        `Badge **${labelFr}** (${key}) a été créé`,
+        null,
+        {
+          badgeId: badge.id,
+          badgeKey: key,
+          labelFr,
+          labelEn,
+          description,
+          color,
+          colorEnd,
+          textColor
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
+
     return NextResponse.json({
       success: true,
       badge,
     });
   } catch (error) {
-    console.error('Error creating badge definition:', error);
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la création du badge' },
       { status: 500 },

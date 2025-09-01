@@ -10,7 +10,6 @@ export async function GET() {
 
     return NextResponse.json(socialLinks);
   } catch (error) {
-    console.error('Error fetching social links:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des liens sociaux' },
       { status: 500 },
@@ -45,10 +44,29 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'social_link_created',
+        'Lien social ajouté',
+        `Lien social **${platform}** ajouté (${url})`,
+        null,
+        {
+          socialLinkId: socialLink.id,
+          platform,
+          url,
+          isActive,
+          sortOrder
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
+
     return NextResponse.json(socialLink, { status: 201 });
   } catch (error: unknown) {
-    console.error('Error creating social link:', error);
-
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return NextResponse.json({ error: 'Cette plateforme existe déjà' }, { status: 409 });
     }

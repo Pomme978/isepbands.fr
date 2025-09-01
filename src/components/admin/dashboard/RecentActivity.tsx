@@ -39,6 +39,7 @@ interface ActivityData {
   timestamp: string;
   type: 'success' | 'info' | 'warning' | 'error' | 'default';
   icon: LucideIcon;
+  metadata?: Record<string, unknown>;
   adminAction?: {
     adminName: string;
     adminRole?: string;
@@ -62,6 +63,10 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
       case 'system_settings_updated':
       case 'year_migration':
         return { icon: Settings, type: 'info' as const };
+      case 'database_integrity_check':
+        return { icon: Settings, type: 'info' as const };
+      case 'root_login':
+        return { icon: Shield, type: 'warning' as const };
       case 'post':
       case 'custom':
         return { icon: MessageSquare, type: 'info' as const };
@@ -88,6 +93,7 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
     }),
     type,
     icon,
+    metadata: apiActivity.metadata as Record<string, unknown>,
     adminAction: apiActivity.createdByName ? {
       adminName: apiActivity.createdByName,
       adminRole: apiActivity.createdByRole,
@@ -95,103 +101,6 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
   };
 };
 
-// Mock data with proper admin tracking (used as fallback)
-const ACTIVITY_DATA: ActivityData[] = [
-  {
-    id: '1',
-    title: 'Utilisateur approuvé',
-    description: 'Alice Martin (A2) a été approuvée et peut maintenant accéder à la plateforme',
-    timestamp: 'il y a 2 heures',
-    type: 'success',
-    icon: UserCheck,
-    adminAction: {
-      adminName: 'Maxime LE ROY MEUNIER',
-      adminRole: 'Président',
-    },
-  },
-  {
-    id: '2',
-    title: 'Groupe créé',
-    description: 'Le groupe "Electric Dreams" a été créé par Paul Durand avec 3 membres',
-    timestamp: 'il y a 3 heures',
-    type: 'info',
-    icon: Megaphone,
-    adminAction: {
-      adminName: 'Sarah LEVY',
-      adminRole: 'Vice-présidente',
-    },
-  },
-  {
-    id: '3',
-    title: 'Événement publié',
-    description:
-      '"Concert de mi-année 2025" a été publié et est maintenant visible par tous les membres',
-    timestamp: 'il y a 4 heures',
-    type: 'info',
-    icon: Calendar,
-    adminAction: {
-      adminName: 'Armand OCTEAU',
-      adminRole: 'Vice-président',
-    },
-  },
-  {
-    id: '4',
-    title: 'Demande refusée',
-    description: "L'inscription de Jean Dupont a été refusée (profil incomplet)",
-    timestamp: 'il y a 5 heures',
-    type: 'error',
-    icon: UserX,
-    adminAction: {
-      adminName: 'Maéva RONCEY',
-      adminRole: 'Secrétaire générale',
-    },
-  },
-  {
-    id: '5',
-    title: 'Groupe approuvé',
-    description: '"Midnight Sessions" (Jazz Fusion) a été approuvé avec 4 membres',
-    timestamp: 'il y a 6 heures',
-    type: 'success',
-    icon: Music,
-    adminAction: {
-      adminName: 'Shane PRADDER',
-      adminRole: 'Trésorier',
-    },
-  },
-  {
-    id: '6',
-    title: 'Paramètres modifiés',
-    description:
-      "Les paramètres de l'association ont été mis à jour (nouveaux instruments disponibles)",
-    timestamp: 'il y a 8 heures',
-    type: 'info',
-    icon: Settings,
-    adminAction: {
-      adminName: 'Maxime LE ROY MEUNIER',
-      adminRole: 'Président',
-    },
-  },
-  {
-    id: '7',
-    title: 'Approbations en attente',
-    description: '5 nouveaux utilisateurs et 2 groupes attendent une validation',
-    timestamp: 'il y a 12 heures',
-    type: 'warning',
-    icon: AlertTriangle,
-  },
-  {
-    id: '8',
-    title: 'Jam session planifiée',
-    description: 'Nouvelle jam session programmée pour samedi 14h-18h en salle de répétition',
-    timestamp: 'il y a 1 jour',
-    type: 'info',
-    icon: Music,
-    adminAction: {
-      adminName: 'Sarah LEVY',
-      adminRole: 'Vice-présidente',
-    },
-  },
-];
 
 const getActivityColors = (type: ActivityData['type']) => {
   switch (type) {
@@ -234,6 +143,7 @@ export default function RecentActivity({
 }: RecentActivityProps) {
   const [activities, setActivities] = useState<ActivityData[]>(propActivities);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -245,13 +155,13 @@ export default function RecentActivity({
           const transformedActivities = data.activities.map(transformApiActivity);
           setActivities(transformedActivities);
         } else {
-          // Use fallback data if API fails
-          setActivities(ACTIVITY_DATA.slice(0, 3)); // Show only first 3 mock items
+          // API failed
+          console.error('API /admin/clubfeed failed with status:', response.status);
+          setActivities([]);
         }
       } catch (error) {
         console.error('Failed to fetch admin activities:', error);
-        // Use fallback data
-        setActivities(ACTIVITY_DATA.slice(0, 3));
+        setActivities([]);
       } finally {
         setLoading(false);
       }
@@ -317,6 +227,9 @@ export default function RecentActivity({
                     iconColor={colors.iconColor}
                     iconBgColor={colors.iconBgColor}
                     createdBy={createdBy}
+                    metadata={activity.metadata}
+                    isExpanded={expandedId === activity.id}
+                    onToggleExpand={() => setExpandedId(expandedId === activity.id ? null : activity.id)}
                   />
                 );
               })}

@@ -57,7 +57,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       message: 'Utilisateur archivé avec succès',
     });
   } catch (error) {
-    console.error('Error archiving user:', error);
     return NextResponse.json({ error: "Erreur lors de l'archivage" }, { status: 500 });
   }
 }
@@ -117,7 +116,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       message: 'Utilisateur restauré avec succès',
     });
   } catch (error) {
-    console.error('Error restoring user:', error);
     return NextResponse.json({ error: "Erreur lors de la restauration" }, { status: 500 });
   }
 }

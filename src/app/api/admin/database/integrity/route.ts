@@ -9,9 +9,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    console.log('🔧 Manual database integrity check initiated by admin');
-
     const result = await ensureDBIntegrity();
+
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'database_integrity_check',
+        'Vérification d\'intégrité BDD',
+        `Vérification d'intégrité de la base de données exécutée${result.actions.length > 0 ? ` - ${result.actions.length} action(s) effectuée(s)` : ' - aucune action nécessaire'}`,
+        null,
+        {
+          success: result.success,
+          actionsCount: result.actions.length,
+          actions: result.actions,
+          error: result.error || null
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
 
     if (result.success) {
       if (result.actions.length === 0) {
@@ -37,7 +55,6 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
-    console.error('Error during manual database integrity check:', error);
     return NextResponse.json(
       {
         success: false,

@@ -15,7 +15,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(socialLink);
   } catch (error) {
-    console.error('Error fetching social link:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération du lien social' },
       { status: 500 },
@@ -42,8 +41,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id } = await params;
+    const socialLinkId = parseInt(id);
+    
+    // Get existing data for comparison
+    const existingLink = await prisma.socialLink.findUnique({
+      where: { id: socialLinkId }
+    });
+    
+    if (!existingLink) {
+      return NextResponse.json({ error: 'Lien social non trouvé' }, { status: 404 });
+    }
+    
     const socialLink = await prisma.socialLink.update({
-      where: { id: parseInt(id) },
+      where: { id: socialLinkId },
       data: {
         platform: platform.toLowerCase(),
         url,
@@ -53,10 +63,34 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
 
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      const changes = [];
+      if (platform !== existingLink.platform) changes.push(`Plateforme: ${existingLink.platform} → ${platform}`);
+      if (url !== existingLink.url) changes.push(`URL: ${existingLink.url} → ${url}`);
+      if (isActive !== existingLink.isActive) changes.push(`Status: ${existingLink.isActive ? 'Actif' : 'Inactif'} → ${isActive ? 'Actif' : 'Inactif'}`);
+      if (sortOrder !== existingLink.sortOrder) changes.push(`Ordre: ${existingLink.sortOrder} → ${sortOrder}`);
+      
+      await logAdminAction(
+        authResult.user.id,
+        'social_link_updated',
+        'Lien social modifié',
+        `Lien social **${platform}** modifié${changes.length > 0 ? '\n\n' + changes.join('\n') : ''}`,
+        null,
+        {
+          socialLinkId: socialLink.id,
+          previousData: existingLink,
+          newData: socialLink,
+          changes: changes
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
+
     return NextResponse.json(socialLink);
   } catch (error: unknown) {
-    console.error('Error updating social link:', error);
-
     if (error && typeof error === 'object' && 'code' in error) {
       if (error.code === 'P2002') {
         return NextResponse.json({ error: 'Cette plateforme existe déjà' }, { status: 409 });
@@ -83,14 +117,36 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     const { id } = await params;
-    await prisma.socialLink.delete({
-      where: { id: parseInt(id) },
+    const socialLinkId = parseInt(id);
+    
+    // Get link info before deletion
+    const linkToDelete = await prisma.socialLink.findUnique({
+      where: { id: socialLinkId }
     });
+    
+    await prisma.socialLink.delete({
+      where: { id: socialLinkId },
+    });
+
+    // Log admin action
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'social_link_deleted',
+        'Lien social supprimé',
+        `Lien social **${linkToDelete?.platform || 'Inconnu'}** (${linkToDelete?.url || 'URL inconnue'}) a été supprimé définitivement`,
+        null,
+        {
+          deletedLink: linkToDelete
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    console.error('Error deleting social link:', error);
-
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Lien social non trouvé' }, { status: 404 });
     }

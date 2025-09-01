@@ -36,6 +36,7 @@ import {
   Send,
   MessageSquare,
   Bell,
+  Mail,
 
   // Analytics & Reports
   BarChart3,
@@ -105,54 +106,14 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         icon: Building2,
       },
       {
-        name: 'Pages Content',
-        href: '/admin/pages',
-        icon: FileText,
-      },
-      {
         name: 'Media Library',
         href: '/admin/media',
         icon: Image,
       },
-      {
-        name: 'Badges',
-        href: '/admin/badges',
-        icon: Award,
-      },
     ],
   },
   {
-    title: 'Communication',
-    items: [
-      {
-        name: 'Newsletter',
-        href: '/admin/newsletter',
-        icon: Send,
-      },
-      {
-        name: 'Notifications',
-        href: '/admin/notifications',
-        icon: Bell,
-      },
-    ],
-  },
-  {
-    title: 'Reports',
-    items: [
-      {
-        name: 'Reports',
-        href: '/admin/reports',
-        icon: BarChart3,
-      },
-      {
-        name: 'Statistics',
-        href: '/admin/statistics',
-        icon: TrendingUp,
-      },
-    ],
-  },
-  {
-    title: 'Board Management',
+    title: 'Management',
     items: [
       {
         name: 'Board Team',
@@ -163,6 +124,11 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         name: 'Roles & Permissions',
         href: '/admin/roles',
         icon: Shield,
+      },
+      {
+        name: 'Badges',
+        href: '/admin/badges',
+        icon: Award,
       },
     ],
   },
@@ -178,6 +144,11 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         name: 'Database',
         href: '/admin/database',
         icon: Database,
+      },
+      {
+        name: 'Newsletter & Emails',
+        href: '/admin/newsletter',
+        icon: Mail,
       },
       {
         name: 'Archives',

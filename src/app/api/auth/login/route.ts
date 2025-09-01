@@ -54,19 +54,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Logger la connexion
-  try {
-    const { createActivityLog } = await import('@/services/activityLogService');
-    await createActivityLog({
-      userId: String(user.id),
-      type: 'login',
-      title: 'Connexion',
-      description: `Connexion réussie pour ${user.email}`,
-      metadata: {},
-      createdBy: String(user.id),
-    });
-  } catch (err) {
-    console.log('Activity log error:', err);
+  // Logger la connexion uniquement pour le root user
+  if (user.id === 'root') {
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        'root',
+        'root_login',
+        'Connexion Root',
+        'Connexion du compte **Root Admin** détectée',
+        null,
+        {
+          userAgent: req.headers.get('user-agent'),
+          ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
+          loginAt: new Date().toISOString()
+        }
+      );
+    } catch (err) {
+      // Activity log error
+    }
   }
   const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email } });
   await setSession(res, { id: user.id, email: user.email });

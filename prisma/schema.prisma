@@ -88,6 +88,8 @@ model User {
   publicFeedItems               PublicFeed[]
   adminActivities               AdminActivity[] @relation("AdminActivityUser")
   systemLogs                    SystemLog[] @relation("SystemLogPerformedBy")
+  createdEmailTemplates         EmailTemplate[]
+  createdNewsletters            Newsletter[]
 }
 
 model StorageObject {
@@ -452,4 +454,130 @@ model SystemLog {
 
   @@index([performedById], map: "SystemLog_performedById_fkey")
   @@index([createdAt], map: "SystemLog_createdAt_idx")
+}
+
+// Newsletter and Email System
+model NewsletterSubscriber {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  isActive      Boolean  @default(true)
+  subscribedAt  DateTime @default(now())
+  unsubscribedAt DateTime?
+  source        String?  // Where they subscribed from: 'footer', 'register', 'manual'
+  metadata      Json?    // Additional subscriber data
+  
+  @@index([email], map: "NewsletterSubscriber_email_idx")
+  @@index([isActive], map: "NewsletterSubscriber_isActive_idx")
+}
+
+model EmailTemplate {
+  id            Int                @id @default(autoincrement())
+  name          String             @unique
+  description   String?
+  subject       String
+  htmlContent   String             @db.LongText
+  cssContent    String?            @db.Text
+  variables     Json?              // Template variables structure
+  templateType  EmailTemplateType
+  isActive      Boolean            @default(true)
+  isDefault     Boolean            @default(false) // For system emails like password reset
+  createdById   String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @default(now()) @updatedAt
+  
+  createdBy     User               @relation(fields: [createdById], references: [id])
+  newsletters   Newsletter[]
+  emailLogs     EmailLog[]
+  
+  @@index([createdById], map: "EmailTemplate_createdById_fkey")
+  @@index([templateType], map: "EmailTemplate_templateType_idx")
+}
+
+model Newsletter {
+  id             Int            @id @default(autoincrement())
+  title          String
+  description    String?
+  templateId     Int
+  subject        String
+  variables      Json?          // Variables to replace in template
+  scheduledAt    DateTime?      // For scheduled sending
+  sentAt         DateTime?
+  status         NewsletterStatus @default(DRAFT)
+  recipientCount Int            @default(0)
+  openCount      Int            @default(0)
+  clickCount     Int            @default(0)
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
+  
+  template       EmailTemplate  @relation(fields: [templateId], references: [id])
+  createdBy      User          @relation(fields: [createdById], references: [id])
+  emailLogs      EmailLog[]
+  
+  @@index([templateId], map: "Newsletter_templateId_fkey")
+  @@index([createdById], map: "Newsletter_createdById_fkey")
+  @@index([status], map: "Newsletter_status_idx")
+  @@index([sentAt], map: "Newsletter_sentAt_idx")
+}
+
+model EmailLog {
+  id           String           @id @default(cuid())
+  templateId   Int?
+  newsletterId Int?
+  recipient    String
+  subject      String
+  emailType    EmailLogType
+  status       EmailLogStatus   @default(PENDING)
+  errorMessage String?          @db.Text
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  metadata     Json?            // Additional tracking data
+  createdAt    DateTime         @default(now())
+  
+  template     EmailTemplate?   @relation(fields: [templateId], references: [id])
+  newsletter   Newsletter?      @relation(fields: [newsletterId], references: [id])
+  
+  @@index([templateId], map: "EmailLog_templateId_fkey")
+  @@index([newsletterId], map: "EmailLog_newsletterId_fkey")
+  @@index([recipient], map: "EmailLog_recipient_idx")
+  @@index([status], map: "EmailLog_status_idx")
+  @@index([emailType], map: "EmailLog_emailType_idx")
+  @@index([createdAt], map: "EmailLog_createdAt_idx")
+}
+
+enum EmailTemplateType {
+  NEWSLETTER      // For marketing newsletters
+  SYSTEM          // For system emails (password reset, welcome, etc.)
+  TRANSACTIONAL   // For transactional emails (confirmations, etc.)
+  CUSTOM          // For custom one-off emails
+}
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+  FAILED
+}
+
+enum EmailLogType {
+  NEWSLETTER
+  WELCOME
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+  SYSTEM_NOTIFICATION
+  CUSTOM
+}
+
+enum EmailLogStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  FAILED
+  SPAM
 }

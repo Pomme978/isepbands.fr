@@ -33,6 +33,8 @@ export type AdminActivityLogType =
   | 'system_settings_updated'
   | 'year_migration'
   | 'system_announcement'
+  | 'database_integrity_check'
+  | 'root_login'
   // Gestion des badges
   | 'badge_created'
   | 'badge_updated'
