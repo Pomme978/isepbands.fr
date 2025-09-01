@@ -18,6 +18,7 @@ import {
   Shield,
   Archive,
 } from 'lucide-react';
+import Loading from '@/components/ui/Loading';
 
 interface ApiActivity {
   id: string;
@@ -27,6 +28,8 @@ interface ApiActivity {
   userName?: string;
   userRole?: string;
   createdAt: string;
+  createdByName?: string;
+  createdByRole?: string;
 }
 
 interface ActivityData {
@@ -85,9 +88,9 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
     }),
     type,
     icon,
-    adminAction: apiActivity.userName ? {
-      adminName: apiActivity.userName,
-      adminRole: apiActivity.userRole,
+    adminAction: apiActivity.createdByName ? {
+      adminName: apiActivity.createdByName,
+      adminRole: apiActivity.createdByRole,
     } : undefined,
   };
 };
@@ -273,27 +276,47 @@ export default function RecentActivity({
       </div>
       <div className="p-6">
         {loading ? (
-          <div className="text-center py-8">
-            <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" />
-            <p className="text-muted-foreground">Chargement des activités...</p>
+          <div className="space-y-4">
+            {/* Skeleton pour 3 activités */}
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="py-4 border-b border-gray-200 last:border-b-0 animate-pulse">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0"></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="h-4 bg-gray-300 rounded w-32"></div>
+                      <div className="text-right ml-3 flex-shrink-0 space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-16"></div>
+                        <div className="h-3 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
+                    <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : displayedActivities.length > 0 ? (
           <div className="divide-y divide-gray-200">
             {displayedActivities.map((activity) => {
                 const colors = getActivityColors(activity.type);
 
-                // Don't add "Par X" since it's already in the description
-                const enhancedDescription = activity.description;
+                // Extract creator info for separate display
+                const createdBy = activity.adminAction 
+                  ? `${activity.adminAction.adminName}${activity.adminAction.adminRole ? ` (${activity.adminAction.adminRole})` : ''}`
+                  : 'Système';
 
                 return (
                   <ActivityItem
                     key={activity.id}
                     title={activity.title}
-                    description={enhancedDescription}
+                    description={activity.description}
                     timestamp={activity.timestamp}
                     icon={activity.icon}
                     iconColor={colors.iconColor}
                     iconBgColor={colors.iconBgColor}
+                    createdBy={createdBy}
                   />
                 );
               })}

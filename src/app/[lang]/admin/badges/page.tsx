@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, Save, X, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import BadgeDisplay from '@/components/profile/BadgeDisplay';
+import Loading from '@/components/ui/Loading';
 
 interface BadgeDefinition {
   id: number;
@@ -222,9 +223,8 @@ function BadgesContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-gray-600">Chargement des badges...</span>
+      <div className="py-12">
+        <Loading text="Chargement des badges..." size="lg" />
       </div>
     );
   }

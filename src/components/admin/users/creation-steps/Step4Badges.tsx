@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { UserFormData } from '../CreateUserModal';
+import Loading from '@/components/ui/Loading';
 
 interface Step4BadgesProps {
   formData: UserFormData;
@@ -59,8 +60,7 @@ export default function Step4Badges({ formData, setFormData }: Step4BadgesProps)
 
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">Chargement des badges...</p>
+            <Loading text="Chargement des badges..." size="sm" />
           </div>
         ) : (
           <div className="space-y-3">

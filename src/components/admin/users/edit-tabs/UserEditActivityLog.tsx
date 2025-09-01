@@ -95,7 +95,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           }
         }
       } catch (error) {
-        console.log('Error fetching activity log:', error);
+        // Error fetching activity log
       } finally {
         setLoadingLog(false);
       }
@@ -114,7 +114,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           }
         }
       } catch (error) {
-        console.log('Error fetching registration details:', error);
+        // Error fetching registration details
       } finally {
         setLoadingRegistration(false);
       }
@@ -140,7 +140,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
             <div className="h-4 w-64 bg-gray-100 rounded mb-2" />
           </div>
         </div>
-      ) : registrationDetails ? (
+      ) : registrationDetails && (registrationDetails.motivation || registrationDetails.experience) ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-2 mb-4">
             <User className="w-5 h-5 text-blue-600" />
@@ -188,7 +188,20 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           <h4 className="text-lg font-medium text-gray-900">Historique des actions</h4>
         </div>
         {loadingLog ? (
-          <div className="text-center py-8 text-gray-500">Chargement du journal...</div>
+          <div className="space-y-6">
+            {/* Skeleton pour 3 activités */}
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="flex items-start space-x-4 animate-pulse">
+                <div className="w-6 h-6 bg-gray-200 rounded-full flex-shrink-0"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-24"></div>
+                  <div className="h-4 bg-gray-300 rounded w-48"></div>
+                  <div className="h-3 bg-gray-200 rounded w-32"></div>
+                  <div className="h-3 bg-gray-100 rounded w-20"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : activityLog.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p>Aucune activité enregistrée</p>
@@ -218,8 +231,10 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                   {log.description && (
                     <span className="text-sm text-gray-700">{log.description}</span>
                   )}
-                  {log.createdByName && (
-                    <span className="text-xs text-gray-500">Par {log.createdByName}</span>
+                  {(log.createdByName || log.createdBy) && (
+                    <span className="text-xs text-gray-500">
+                      Par {log.createdByName || 'Système'}
+                    </span>
                   )}
                 </div>
               </li>

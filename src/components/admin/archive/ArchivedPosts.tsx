@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Calendar, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import Avatar from '@/components/common/Avatar';
 
 interface ArchivedPost {
@@ -109,9 +110,8 @@ export default function ArchivedPosts({ filters }: ArchivedPostsProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-gray-600">Chargement des posts archivés...</span>
+      <div className="py-12">
+        <Loading text="Chargement des posts archivés..." size="lg" />
       </div>
     );
   }

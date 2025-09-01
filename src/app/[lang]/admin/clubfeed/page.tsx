@@ -22,7 +22,6 @@ import {
 import Loading from '@/components/ui/Loading';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { AdminActivityList } from '@/components/admin/AdminActivityList';
 import ArchiveConfirmModal from '@/components/admin/common/ArchiveConfirmModal';
 import type { ActivityType } from '@/types/activity';
 import { RecentActivity } from '@/components/home/RecentActivity';

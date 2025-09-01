@@ -9,12 +9,13 @@ interface ActivityItemProps {
   icon: LucideIcon;
   iconColor?: string;
   iconBgColor?: string;
+  createdBy?: string;
 }
 
 // Simple markdown-like formatting
 const formatText = (text: string) => {
-  // Replace **text** with bold
-  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Replace **text** with bold, ensuring no extra spaces
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>');
 };
 
 export default function ActivityItem({
@@ -24,11 +25,10 @@ export default function ActivityItem({
   icon: Icon,
   iconColor = 'text-primary',
   iconBgColor = 'bg-primary/10',
+  createdBy,
 }: ActivityItemProps) {
-  // Check if description is long (more than 150 chars)
-  const isLongPost = description.length > 150;
   const formattedDescription = formatText(description);
-  
+
   return (
     <div className="py-4 border-b border-gray-200 last:border-b-0">
       <div className="flex items-start space-x-3">
@@ -38,20 +38,19 @@ export default function ActivityItem({
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-            <span className="text-xs text-gray-400 ml-2 flex-shrink-0">{timestamp}</span>
-          </div>
-          <div className={`text-sm text-gray-700 leading-relaxed ${isLongPost ? 'max-w-none' : ''}`}>
-            {isLongPost ? (
-              <div className="space-y-2">
-                {formattedDescription.split('\n\n').map((paragraph, index) => (
-                  <p key={index} className="text-sm" dangerouslySetInnerHTML={{ __html: formatText(paragraph) }} />
-                ))}
+          <div className="flex justify-between">
+            <div className="flex-1 mr-3">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">{title}</h3>
+              <div className="text-sm text-gray-700 leading-relaxed">
+                <span dangerouslySetInnerHTML={{ __html: formattedDescription }} />
               </div>
-            ) : (
-              <span dangerouslySetInnerHTML={{ __html: formattedDescription }} />
-            )}
+            </div>
+            <div className="text-right flex-shrink-0">
+              <span className="text-xs text-gray-400 block">{timestamp}</span>
+              {createdBy && (
+                <span className="text-xs text-gray-500 block mt-0.5">Par {createdBy}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { User, Calendar, AlertCircle, RotateCcw, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import Loading from '@/components/ui/Loading';
 
 interface ArchivedUser {
   id: string;
@@ -99,9 +100,8 @@ export default function ArchivedUsers({ filters }: ArchivedUsersProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-gray-600">Chargement des utilisateurs archivés...</span>
+      <div className="py-12">
+        <Loading text="Chargement des utilisateurs archivés..." size="lg" />
       </div>
     );
   }

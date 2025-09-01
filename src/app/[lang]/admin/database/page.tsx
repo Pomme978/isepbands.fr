@@ -17,6 +17,7 @@ import {
   Trash2,
   Plus,
 } from 'lucide-react';
+import Loading from '@/components/ui/Loading';
 
 interface IntegrityResult {
   success: boolean;
@@ -99,10 +100,7 @@ export default function DatabaseAdminPage() {
                 className="flex items-center space-x-2"
               >
                 {isRunning ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Vérification en cours...</span>
-                  </>
+                  <Loading text="Vérification en cours..." size="sm" />
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4" />

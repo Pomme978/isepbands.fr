@@ -3,12 +3,12 @@ import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction } from '@/services/activityLogService';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireAdminAuth(req);
   if (!authResult.ok) return authResult.res;
 
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
     const currentUserId = authResult.user?.id; // Get the ID of the user performing the archive
 
     if (!userId) {
@@ -62,12 +62,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireAdminAuth(req);
   if (!authResult.ok) return authResult.res;
 
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
     const currentUserId = authResult.user?.id; // Get the ID of the user performing the restore
 
     if (!userId) {

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 // GET /api/admin/users/[id]/activity-log
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const userId = params.id;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: userId } = await params;
   try {
     const activities = await prisma.adminActivity.findMany({
       where: { userId },
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
               createdByName = `${creator.firstName} ${creator.lastName}`;
             }
           } catch (error) {
-            console.log('Error fetching creator name:', error);
+            // Error fetching creator name
           }
         }
         
@@ -47,7 +47,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     return NextResponse.json({ success: true, activities: activitiesWithCreatorNames });
   } catch (error) {
-    console.log('Error fetching activity log:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch activity log.' },
       { status: 500 },
@@ -56,8 +55,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // POST /api/admin/users/[id]/activity-log
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const userId = params.id;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: userId } = await params;
   const body = await req.json();
   try {
     const activity = await prisma.adminActivity.create({
@@ -72,7 +71,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     });
     return NextResponse.json({ success: true, activity });
   } catch (error) {
-    console.log('Error creating activity log:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create activity log.' },
       { status: 500 },

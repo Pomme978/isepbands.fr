@@ -196,11 +196,13 @@ export default function VenueEditPage({ venue: initialVenue, onVenueUpdate }: Ve
             }`}
           >
             {saving ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+              <Loading text="Sauvegarde..." size="sm" variant="spinner" theme="white" />
             ) : (
-              <Save className="w-4 h-4 mr-2" />
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Sauvegarder
+              </>
             )}
-            {saving ? 'Sauvegarde...' : 'Sauvegarder'}
           </button>
         </div>
       </div>
@@ -308,10 +310,7 @@ export default function VenueEditPage({ venue: initialVenue, onVenueUpdate }: Ve
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
                 {deleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Suppression...
-                  </>
+                  <Loading text="Suppression..." size="sm" variant="spinner" theme="white" />
                 ) : (
                   <>
                     <Trash2 className="w-3 h-3 mr-1" />

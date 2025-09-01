@@ -60,24 +60,21 @@ export default function RulesPage() {
   const sanctions = [
     {
       level: 'Avertissement',
-      color: 'bg-yellow-100 border-yellow-300 text-yellow-800',
       description: 'Premier manquement aux règles - discussion avec le bureau',
     },
     {
       level: 'Suspension temporaire',
-      color: 'bg-orange-100 border-orange-300 text-orange-800',
       description: "Interdiction d'accès aux activités pour une durée définie",
     },
     {
       level: 'Exclusion définitive',
-      color: 'bg-red-100 border-red-300 text-red-800',
       description: 'En cas de récidive ou de manquement grave',
     },
   ];
 
   return (
     <BasicLayout showNavbar showFooter navbarMode="static">
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen">
         <div className="max-w-6xl mx-auto px-6 py-12">
           {/* Header */}
           <div className="text-center mb-12">
@@ -91,19 +88,14 @@ export default function RulesPage() {
           </div>
 
           {/* Introduction */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-200">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <ShieldCheck className="w-8 h-8 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold font-outfit text-gray-900">Notre philosophie</h2>
-                <p className="text-gray-600 font-ubuntu">
-                  Construire ensemble une communauté musicale bienveillante
-                </p>
-              </div>
+          <div className="bg-white rounded-2xl p-8 mb-8">
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-bold font-outfit text-gray-900">Notre philosophie</h2>
+              <p className="text-gray-600 font-ubuntu">
+                Construire ensemble une communauté musicale bienveillante
+              </p>
             </div>
-            <p className="text-gray-700 leading-relaxed text-lg font-ubuntu">
+            <p className="text-gray-700 leading-relaxed font-ubuntu">
               ISEPBANDS est plus qu&apos;une simple association musicale : c&apos;est une famille
               qui rassemble étudiants et passionnés autour de l&apos;amour de la musique. Ces règles
               reflètent nos valeurs de respect, d&apos;entraide et d&apos;excellence artistique.
@@ -115,7 +107,7 @@ export default function RulesPage() {
             {rules.map((rule, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="bg-white rounded-2xl p-6"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="bg-primary/10 p-3 rounded-full text-primary">{rule.icon}</div>
@@ -135,28 +127,23 @@ export default function RulesPage() {
           </div>
 
           {/* Sanctions */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-200">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="bg-red-100 p-3 rounded-full">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold font-outfit text-gray-900">
-                  Sanctions disciplinaires
-                </h2>
-                <p className="text-gray-600 font-ubuntu">Application progressive et équitable</p>
-              </div>
+          <div className="bg-white rounded-2xl p-8 mb-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold font-outfit text-gray-900 mb-2">
+                Sanctions disciplinaires
+              </h2>
+              <p className="text-gray-600 font-ubuntu">Application progressive et équitable</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="space-y-4">
               {sanctions.map((sanction, index) => (
-                <div key={index} className={`p-4 rounded-lg border-2 ${sanction.color}`}>
-                  <h4 className="font-bold mb-2">{sanction.level}</h4>
-                  <p className="text-sm font-ubuntu">{sanction.description}</p>
+                <div key={index} className="border-l-4 border-gray-300 pl-6 py-3">
+                  <h4 className="font-semibold text-gray-900 mb-1">{sanction.level}</h4>
+                  <p className="text-gray-600 font-ubuntu">{sanction.description}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-blue-800 text-sm font-ubuntu">
+            <div className="mt-8 p-4 border-l-4 border-blue-400 bg-blue-50/50">
+              <p className="text-gray-700 font-ubuntu">
                 <strong>Note :</strong> Toute sanction est décidée collégialement par le bureau de
                 l&apos;association après avoir entendu la version de la personne concernée.
               </p>
@@ -164,7 +151,7 @@ export default function RulesPage() {
           </div>
 
           {/* Contact */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+          <div className="rounded-2xl p-8">
             <div className="text-center">
               <h2 className="text-2xl font-bold font-outfit text-gray-900 mb-4">
                 Questions ou préoccupations ?
@@ -193,12 +180,6 @@ export default function RulesPage() {
             </div>
           </div>
 
-          {/* Footer note */}
-          <div className="text-center mt-8">
-            <p className="text-gray-500 text-sm font-ubuntu">
-              Dernière mise à jour : Septembre 2025 • Version 2.0
-            </p>
-          </div>
         </div>
       </div>
     </BasicLayout>

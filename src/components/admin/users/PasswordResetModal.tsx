@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { X, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import Loading from '@/components/ui/Loading';
 
 interface PasswordResetModalProps {
   isOpen: boolean;
@@ -247,10 +248,7 @@ export default function PasswordResetModal({
               className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {isLoading ? (
-                <>
-                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                  Resetting...
-                </>
+                <Loading text="Resetting..." size="sm" />
               ) : (
                 'Reset Password'
               )}

@@ -45,15 +45,19 @@ export async function POST(req: NextRequest) {
 
       // Logger l'approbation
       try {
-        const { createActivityLog } = await import('@/services/activityLogService');
-        await createActivityLog({
+        const { logAdminAction } = await import('@/services/activityLogService');
+        await logAdminAction(
+          auth.user.id,
+          'user_approved',
+          'Utilisateur approuvé',
+          `**${user.firstName} ${user.lastName}** (${user.email}) a été approuvé et peut maintenant accéder à la plateforme`,
           userId,
-          type: 'user_approved',
-          title: 'Utilisateur approuvé',
-          description: `Utilisateur ${user.firstName} ${user.lastName} approuvé`,
-          metadata: { userId },
-          createdBy: auth.user?.id ? String(auth.user.id) : undefined,
-        });
+          {
+            userEmail: user.email,
+            previousStatus: user.status,
+            approvedAt: new Date().toISOString()
+          }
+        );
       } catch (err) {
         console.log('Activity log error:', err);
       }

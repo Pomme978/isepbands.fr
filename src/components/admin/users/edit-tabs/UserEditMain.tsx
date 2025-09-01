@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Upload, X, Loader2 } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
+import Loading from '@/components/ui/Loading';
 
 // Function to format French phone numbers
 const formatPhoneNumber = (phone: string): string => {
@@ -209,10 +210,7 @@ export default function UserEditMain({
                   }`}
                 >
                   {uploadingImage ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
+                    <Loading text="Uploading..." size="sm" />
                   ) : (
                     <>
                       <Upload className="w-3 h-3 mr-1" />
@@ -234,10 +232,7 @@ export default function UserEditMain({
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Removing...
-                    </>
+                    <Loading text="Removing..." size="sm" />
                   ) : (
                     <>
                       <X className="w-3 h-3 mr-1" />

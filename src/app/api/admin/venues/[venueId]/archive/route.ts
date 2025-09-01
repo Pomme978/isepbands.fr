@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/utils/authMiddleware';
 
-export async function POST(req: NextRequest, { params }: { params: { venueId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ venueId: string }> }) {
   try {
     const authResult = await requireAdminAuth(req);
     if (authResult instanceof NextResponse) return authResult;
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { venueId: st
       // No JSON body provided, use default reason
     }
 
-    const venueId = params.venueId;
+    const { venueId } = await params;
 
     // Archive the venue
     await prisma.venue.update({
@@ -42,12 +42,12 @@ export async function POST(req: NextRequest, { params }: { params: { venueId: st
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { venueId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ venueId: string }> }) {
   try {
     const authResult = await requireAdminAuth(req);
     if (authResult instanceof NextResponse) return authResult;
 
-    const venueId = params.venueId;
+    const { venueId } = await params;
 
     // Unarchive the venue
     await prisma.venue.update({

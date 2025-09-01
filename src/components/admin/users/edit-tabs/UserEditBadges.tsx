@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, X, Edit2 } from 'lucide-react';
+import Loading from '@/components/ui/Loading';
 
 interface Badge {
   id: number;
@@ -348,8 +349,7 @@ export default function UserEditBadges({
             <div className="space-y-4">
               {loadingBadges ? (
                 <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm text-gray-500 mt-2">Chargement des badges...</p>
+                  <Loading text="Chargement des badges..." size="sm" />
                 </div>
               ) : (
                 <>

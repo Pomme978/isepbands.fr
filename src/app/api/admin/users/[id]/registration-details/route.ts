@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
 import { prisma } from '@/prisma';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.res;
 
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Get user registration details
     const user = await prisma.user.findUnique({
@@ -40,7 +40,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       details,
     });
   } catch (error) {
-    console.error('Error fetching registration details:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch registration details' },
       { status: 500 },

@@ -4,7 +4,7 @@ import { prisma } from '@/prisma';
 import { z, ZodIssue } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
-import { createActivityLog } from '@/services/activityLogService';
+import { logAdminAction } from '@/services/activityLogService';
 
 // Schema pour la validation des données utilisateur
 const updateUserSchema = z.object({
@@ -562,20 +562,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     // Logger la modification d'utilisateur
     try {
-      const adminId = authResult.user?.id ? String(authResult.user.id) : undefined;
       if (!transformedUser.id) {
         throw new Error('transformedUser.id is undefined');
       }
-      await createActivityLog({
-        userId: String(transformedUser.id),
-        type: 'user_updated',
-        title: 'Utilisateur modifié',
-        description: `Utilisateur ${transformedUser.firstName} ${transformedUser.lastName} modifié`,
-        metadata: {
+      await logAdminAction(
+        authResult.user.id,
+        'user_edited',
+        'Utilisateur modifié',
+        `**${transformedUser.firstName} ${transformedUser.lastName}** (${transformedUser.email}) a été modifié`,
+        String(transformedUser.id),
+        {
           updatedFields: Object.keys(validatedData),
-        },
-        createdBy: adminId,
-      });
+          userEmail: transformedUser.email
+        }
+      );
     } catch {
       // ignore logger errors
     }
@@ -647,15 +647,18 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
       // Logger la suppression d'utilisateur
       try {
-        const { createActivityLog } = await import('@/services/activityLogService');
-        await createActivityLog({
+        const { logAdminAction } = await import('@/services/activityLogService');
+        await logAdminAction(
+          authResult.user.id,
+          'user_deleted',
+          'Utilisateur supprimé',
+          `**${existingUser.firstName} ${existingUser.lastName}** (${existingUser.email}) a été supprimé définitivement`,
           userId,
-          type: 'user_deleted',
-          title: 'Utilisateur supprimé',
-          description: `Utilisateur ${existingUser.firstName} ${existingUser.lastName} supprimé`,
-          metadata: {},
-          createdBy: authResult.user?.id ? String(authResult.user.id) : undefined,
-        });
+          {
+            userEmail: existingUser.email,
+            deletedAt: new Date().toISOString()
+          }
+        );
       } catch (err) {
       }
     });

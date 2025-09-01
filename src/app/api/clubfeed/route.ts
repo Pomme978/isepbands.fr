@@ -3,23 +3,8 @@ import { getPublicFeedItems } from '@/services/publicFeedService';
 
 export async function GET() {
   try {
-    console.log('🔍 [PUBLIC API] Fetching from PublicFeed...');
-    
     // Fetch from secure PublicFeed table - no admin logs possible
     const publicFeedItems = await getPublicFeedItems(20);
-
-    console.log(`📊 [PUBLIC API] Found ${publicFeedItems.length} items in PublicFeed`);
-    
-    if (publicFeedItems.length > 0) {
-      console.log('📋 [PUBLIC API] Items:', publicFeedItems.map(a => ({ 
-        id: a.id, 
-        type: a.type, 
-        title: a.title,
-        user: a.user ? `${a.user.firstName} ${a.user.lastName}` : 'No user'
-      })));
-    } else {
-      console.log('❌ [PUBLIC API] No items found in PublicFeed table');
-    }
 
     // Transform public feed items for the frontend
     const transformedActivities = publicFeedItems.map((item) => {
@@ -53,7 +38,6 @@ export async function GET() {
 
     return NextResponse.json({ activities: transformedActivities });
   } catch (error) {
-    console.error('Error fetching public feed:', error);
     // Return empty array if table doesn't exist yet
     return NextResponse.json({ activities: [] });
   }

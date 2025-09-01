@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Calendar, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 
 interface ArchivedVenue {
   id: string;
@@ -87,9 +88,8 @@ export default function ArchivedVenues({ filters }: ArchivedVenuesProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-gray-600">Chargement des venues archivés...</span>
+      <div className="py-12">
+        <Loading text="Chargement des venues archivés..." size="lg" />
       </div>
     );
   }
@@ -139,39 +139,28 @@ export default function ArchivedVenues({ filters }: ArchivedVenuesProps) {
                   <div className="flex items-center gap-2">
                     <h4 className="font-semibold text-gray-900">{venue.name}</h4>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(venue.status)}`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}
                     >
-                      {getStatusLabel(venue.status)}
+                      {getStatusLabel()}
                     </span>
                   </div>
                   {venue.address && <p className="text-gray-600 text-sm mt-1">{venue.address}</p>}
 
                   <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                    {venue.capacity && <span>Capacité: {venue.capacity} personnes</span>}
-                    <span>
-                      {venue.eventCount} événement{venue.eventCount > 1 ? 's' : ''}
-                    </span>
-                    {venue.lastUsed && (
-                      <span>
-                        Dernière utilisation: {new Date(venue.lastUsed).toLocaleDateString('fr-FR')}
-                      </span>
-                    )}
+                    {venue.type && <span>Type: {venue.type}</span>}
+                    {venue.city && <span>Ville: {venue.city}</span>}
                   </div>
 
-                  <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>
-                        Archivé le {new Date(venue.archivedAt).toLocaleDateString('fr-FR')}
-                      </span>
+                  {venue.archivedAt && (
+                    <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>
+                          Archivé le {new Date(venue.archivedAt).toLocaleDateString('fr-FR')}
+                        </span>
+                      </div>
+                      {venue.archivedBy && <span>Par {venue.archivedBy}</span>}
                     </div>
-                    <span>Par {venue.archivedBy}</span>
-                  </div>
-
-                  {venue.reason && (
-                    <p className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                      <strong>Raison:</strong> {venue.reason}
-                    </p>
                   )}
                 </div>
               </div>

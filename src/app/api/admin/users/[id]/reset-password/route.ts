@@ -52,22 +52,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Logger le reset de mot de passe
     try {
-      const { createActivityLog } = await import('@/services/activityLogService');
-      await createActivityLog({
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'user_password_reset',
+        'Mot de passe réinitialisé',
+        `Le mot de passe de **${user.firstName} ${user.lastName}** (${user.email}) a été réinitialisé`,
         userId,
-        type: 'user_password_reset',
-        title: 'Mot de passe réinitialisé',
-        description: `Mot de passe réinitialisé pour ${user.firstName} ${user.lastName}`,
-        metadata: { userId, sendEmail },
-        createdBy: authResult.user?.id ? String(authResult.user.id) : undefined,
-      });
+        {
+          userEmail: user.email,
+          sendEmail: sendEmail,
+          resetAt: new Date().toISOString()
+        }
+      );
     } catch (err) {
-      console.log('Activity log error:', err);
+      // Activity log error
     }
 
     // TODO: Implement email notification if sendEmail is true
     if (sendEmail) {
-      console.log(`Would send email notification to ${user.email} about password reset`);
       // Here you would integrate with your email service
       // await sendPasswordResetNotification(user.email, user.firstName);
     }
@@ -77,7 +80,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       message: 'Password reset successfully',
     });
   } catch (error) {
-    console.error('Password reset error:', error);
     return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 });
   }
 }

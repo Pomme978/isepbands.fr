@@ -1,6 +1,7 @@
 'use client';
 
 import { Save, X, AlertTriangle } from 'lucide-react';
+import Loading from '@/components/ui/Loading';
 
 interface UnsavedChangesModalProps {
   isOpen: boolean;
@@ -66,10 +67,7 @@ export default function UnsavedChangesModal({
             className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors disabled:opacity-50"
           >
             {saving ? (
-              <>
-                <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Saving...
-              </>
+              <Loading text="Saving..." size="sm" variant="spinner" theme="white" />
             ) : (
               <>
                 <Save className="w-3 h-3 mr-1" />

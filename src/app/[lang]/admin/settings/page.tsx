@@ -416,7 +416,7 @@ export default function SettingsPage() {
                                 className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
                               >
                                 {saving ? (
-                                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                  <Loading text="" size="sm" variant="spinner" theme="white" />
                                 ) : (
                                   <Calendar className="w-4 h-4 mr-2" />
                                 )}
@@ -562,8 +562,7 @@ export default function SettingsPage() {
                       <h3 className="font-medium text-foreground mb-4">Liens configurés</h3>
                       {socialLinksLoading ? (
                         <div className="text-center py-8">
-                          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">Chargement...</p>
+                          <Loading text="Chargement..." size="sm" />
                         </div>
                       ) : socialLinks.length === 0 ? (
                         <div className="text-center py-8 border border-dashed border-border rounded-lg">
@@ -760,7 +759,7 @@ export default function SettingsPage() {
                     }`}
                   >
                     {saving ? (
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      <Loading text="" size="sm" variant="spinner" theme="white" />
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}

@@ -7,7 +7,7 @@ const updateColorsSchema = z.object({
   gradientEnd: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i, 'Invalid hex color format'),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // Check authentication and permissions
   const authResult = await requireAuth(req);
   if (!authResult.ok) {
@@ -15,7 +15,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
-    const roleId = parseInt(params.id, 10);
+    const { id } = await params;
+    const roleId = parseInt(id, 10);
     if (isNaN(roleId)) {
       return NextResponse.json({ error: 'Invalid role ID' }, { status: 400 });
     }

@@ -48,15 +48,20 @@ export async function POST(req: NextRequest) {
 
       // Logger le rejet
       try {
-        const { createActivityLog } = await import('@/services/activityLogService');
-        await createActivityLog({
+        const { logAdminAction } = await import('@/services/activityLogService');
+        await logAdminAction(
+          auth.user.id,
+          'user_rejected',
+          'Utilisateur refusé',
+          `**${user.firstName} ${user.lastName}** (${user.email}) a été refusé. Raison : ${reason}`,
           userId,
-          type: 'user_rejected',
-          title: 'Utilisateur refusé',
-          description: `Utilisateur ${user.firstName} ${user.lastName} refusé. Raison : ${reason}`,
-          metadata: { userId, reason },
-          createdBy: auth.user?.id ? String(auth.user.id) : undefined,
-        });
+          {
+            userEmail: user.email,
+            previousStatus: user.status,
+            rejectionReason: reason,
+            rejectedAt: new Date().toISOString()
+          }
+        );
       } catch (err) {
         console.log('Activity log error:', err);
       }

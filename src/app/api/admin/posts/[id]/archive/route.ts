@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/utils/authMiddleware';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const authResult = await requireAdminAuth(req);
     if (authResult instanceof NextResponse) return authResult;
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // No JSON body provided, use default reason
     }
 
-    const postId = params.id;
+    const { id: postId } = await params;
 
     // Archive the admin activity
     await prisma.adminActivity.update({
@@ -42,12 +42,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const authResult = await requireAdminAuth(req);
     if (authResult instanceof NextResponse) return authResult;
 
-    const postId = params.id;
+    const { id: postId } = await params;
 
     // Unarchive the admin activity
     await prisma.adminActivity.update({

@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { standardAuth } from '@/utils/authMiddleware';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const socialLink = await prisma.socialLink.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
     });
 
     if (!socialLink) {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const authResult = await standardAuth(request);
 
@@ -40,8 +41,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       );
     }
 
+    const { id } = await params;
     const socialLink = await prisma.socialLink.update({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
       data: {
         platform: platform.toLowerCase(),
         url,
@@ -72,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const authResult = await standardAuth(request);
 
@@ -80,8 +82,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return authResult;
     }
 
+    const { id } = await params;
     await prisma.socialLink.delete({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
     });
 
     return NextResponse.json({ success: true });
