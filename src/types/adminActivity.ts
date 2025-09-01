@@ -35,6 +35,7 @@ export type AdminActivityLogType =
   | 'system_announcement'
   | 'database_integrity_check'
   | 'root_login'
+  | 'first_login'
   // Gestion des badges
   | 'badge_created'
   | 'badge_updated'

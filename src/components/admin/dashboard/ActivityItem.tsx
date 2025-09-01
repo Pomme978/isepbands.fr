@@ -54,6 +54,7 @@ const formatMetadataField = (key: string, value: unknown) => {
     userAgent: 'Navigateur',
     ip: 'Adresse IP',
     loginAt: 'Connecté le',
+    firstLoginAt: 'Première connexion le',
   };
 
   // Map status values to French

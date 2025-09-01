@@ -67,6 +67,8 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
         return { icon: Settings, type: 'info' as const };
       case 'root_login':
         return { icon: Shield, type: 'warning' as const };
+      case 'first_login':
+        return { icon: UserCheck, type: 'success' as const };
       case 'post':
       case 'custom':
         return { icon: MessageSquare, type: 'info' as const };
