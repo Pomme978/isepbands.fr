@@ -248,11 +248,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       // Handle photo URL changes and cleanup
       if (validatedData.photoUrl !== undefined) {
         // If we're removing/changing the photo, clean up the old one
+        // Only clean up if we're explicitly removing (null/'') OR changing to a different URL
         if (
           existingUser.photoUrl &&
-          (validatedData.photoUrl === null ||
-            validatedData.photoUrl === '' ||
-            validatedData.photoUrl !== existingUser.photoUrl)
+          ((validatedData.photoUrl === null || validatedData.photoUrl === '') ||
+           (validatedData.photoUrl && validatedData.photoUrl !== existingUser.photoUrl))
         ) {
           try {
             // Find the storage object for the old photo

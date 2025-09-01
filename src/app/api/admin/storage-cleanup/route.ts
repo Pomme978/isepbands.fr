@@ -11,6 +11,7 @@ export async function DELETE() {
     const storageObjects = await prisma.storageObject.findMany();
 
     // Check which storage objects are actually being used as profile pictures
+    // Include ALL users (even archived/deleted ones) to preserve their photos
     const usedIds = new Set<string>();
     const users = await prisma.user.findMany({
       where: {
@@ -18,6 +19,7 @@ export async function DELETE() {
       },
       select: {
         photoUrl: true,
+        status: true, // Include status for debugging/logging purposes
       },
     });
 

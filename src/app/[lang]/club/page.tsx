@@ -9,6 +9,7 @@ import BgElements from '@/components/club/BgElements';
 import { Button } from '@/components/ui/button';
 import LangLink from '@/components/common/LangLink';
 import Cabinet from '@/components/club/Cabinet';
+ import { Mail } from 'lucide-react';
 
 export default function Asso() {
   const items = [
@@ -104,7 +105,7 @@ export default function Asso() {
 
           <BgElements
             variant="circle"
-            sizeClassName="w-75 h-75 absolute -right-20 -top-25 z-[0]"
+            sizeClassName="w-75 h-75 absolute -right-20 -top-25  z-[0]"
             lineThickness="25px"
             circleGap="18%"
           />
@@ -174,8 +175,92 @@ export default function Asso() {
             </div>
           </div>
         </div>
-      </div>
+        <div className="relative">
+          <div className="relative bg-white z-20 rounded-xl w-[80%] mx-auto flex flex-row justify-between items-center text-center py-9 px-10 mt-20 mb-20">
+            <h2 className="font-bold text-2xl tracking-wider">PRÊT À REJOINDRE L'AVENTURE ?</h2>
+            <Button
+              asChild
+              size="sm"
+              className="shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground"
+            >
+              <LangLink href={`/register`}>Rejoindre</LangLink>
+            </Button>
+          </div>
+        </div>
 
+        <div className="relative">
+          <h2 className="font-bold text-xl py-5 mb-5">En savoir plus</h2>
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-stretch mb-20">
+            <div className="bg-white rounded-xl px-10 py-8">
+              <div className="flex flex-row justify-between items-center mb-6">
+                <span className="font-semibold text-lg">Notre bureau:</span>
+                <Button
+                  asChild
+                  size="sm"
+                  className="shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground"
+                >
+                  <LangLink href={`/team`}>Voir</LangLink>
+                </Button>
+              </div>
+              <div className="flex flex-row justify-between items-center mb-6">
+                <span className="font-semibold text-lg">Mentions légales:</span>
+                <Button
+                  asChild
+                  size="sm"
+                  className="shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground"
+                >
+                  <LangLink href={`/legal`}>Voir</LangLink>
+                </Button>
+              </div>
+              <div className="flex flex-row justify-between items-center mb-6">
+                <span className="font-semibold text-lg">Conditions d&#39;utilisation:</span>
+                <Button
+                  asChild
+                  size="sm"
+                  className="shadow-md overflow-hidden bg-primary text-sm py-5 px-12 text-primary-foreground"
+                >
+                  <LangLink href={`/terms`}>Voir</LangLink>
+                </Button>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="mb-3 font-semibold text-lg">Contact Technique du site:</span>
+                <div className="flex items-center justify-start gap-2">
+                  <Mail className="w-5 h-5 text-primary" />
+                  <a 
+                    href="mailto:armand@solyzon.com" 
+                    className="text-primary underline"
+                  >
+                    armand@solyzon.com
+                  </a>
+                </div>
+                <div className="flex items-center justify-start gap-2">
+                  <Mail className="w-5 h-5 text-primary" />
+                  <a
+                    href="mailto:sarah@solyzon.com"
+                    className="text-primary underline"
+                  >
+                    sarah@solyzon.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden md:block w-px bg-gray-300 self-stretch my-4"></div>
+            
+            <div className="bg-white rounded-xl px-10 py-8">
+              <h3 className="text-xl font-bold mb-4">Sur le site</h3>
+              <p className="text-justify">
+                Les pages du site ont été designés et pensées par Armand OCTEAU et Sarah LÉVY.
+                Chaque pages du site de la partie vitrine est conceptuelle et dite &#34; à thème&#34; . Le
+                rendu final est voulu, et nous avons voulu imaginer un site à notre image, à l&#39;image
+                de l&#39;association, et qui promouvoit les différences de design et l&#39;artistique. Car
+                après tout, c&#39;est de ça qu&#39;il est question à Bands: l&#39;art.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

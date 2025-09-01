@@ -33,7 +33,13 @@ export async function GET(req: NextRequest) {
     }
 
     if (status && status !== 'all') {
-      whereClause.status = status;
+      if (status === 'DELETED' || status === 'ARCHIVED') {
+        // Only show deleted/archived users when explicitly requested
+        whereClause.status = status;
+      } else {
+        // For all other statuses, set the specific status (deleted/archived are already excluded by design)
+        whereClause.status = status;
+      }
     } else if (!status || status === 'all') {
       // Exclude archived/deleted users from normal user lists
       whereClause.status = {

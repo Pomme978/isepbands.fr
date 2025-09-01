@@ -1,75 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { getPublicFeedItems } from '@/services/publicFeedService';
 
 export async function GET() {
   try {
-    // Fetch public activities (no auth required for reading)
-    // For now, return mock data until Activity table is properly set up
-    const activities = await prisma.activity
-      .findMany({
-        where: {
-          isArchived: false, // Exclure les posts archivés
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 20, // Limit to recent activities
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              photoUrl: true,
-              pronouns: true,
-              roles: {
-                include: {
-                  role: {
-                    select: {
-                      nameFrFemale: true,
-                      nameFrMale: true,
-                      weight: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      })
-      .catch(() => []);
+    // Fetch from secure PublicFeed table - no admin logs possible
+    const publicFeedItems = await getPublicFeedItems(20);
 
-    // Transform activities for the frontend
-    const transformedActivities = activities.map((activity) => {
+    console.log('Public feed items:', publicFeedItems.length, publicFeedItems.map(a => ({ type: a.type, title: a.title })));
+
+    // Transform public feed items for the frontend
+    const transformedActivities = publicFeedItems.map((item) => {
       // Get the highest weight role (most important role)
       let userRole = null;
-      if (activity.user?.roles && activity.user.roles.length > 0) {
-        const sortedRoles = activity.user.roles.sort((a, b) => b.role.weight - a.role.weight);
+      if (item.user?.roles && item.user.roles.length > 0) {
+        const sortedRoles = item.user.roles.sort((a, b) => b.role.weight - a.role.weight);
         const topRole = sortedRoles[0].role;
         // Use appropriate gender version based on user pronouns
         const useFeminine =
-          activity.user.pronouns &&
-          (activity.user.pronouns.toLowerCase().includes('she') ||
-            activity.user.pronouns.toLowerCase().includes('elle'));
+          item.user.pronouns &&
+          (item.user.pronouns.toLowerCase().includes('she') ||
+            item.user.pronouns.toLowerCase().includes('elle'));
         userRole = useFeminine ? topRole.nameFrFemale : topRole.nameFrMale;
       }
 
       return {
-        id: activity.id,
-        type: activity.type,
-        title: activity.title,
-        description: activity.description,
-        userId: activity.userId,
-        userName: activity.user ? `${activity.user.firstName} ${activity.user.lastName}` : null,
-        userAvatar: activity.user?.photoUrl,
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        userId: item.userId,
+        userName: item.user ? `${item.user.firstName} ${item.user.lastName}` : null,
+        userAvatar: item.user?.photoUrl,
         userRole: userRole,
-        metadata: activity.metadata,
-        createdAt: activity.createdAt,
-        createdBy: activity.createdBy,
+        metadata: item.metadata,
+        createdAt: item.createdAt,
+        createdBy: null, // Public feed has no createdBy field
       };
     });
 
     return NextResponse.json({ activities: transformedActivities });
   } catch (error) {
-    console.error('Error fetching public activities:', error);
+    console.error('Error fetching public feed:', error);
     // Return empty array if table doesn't exist yet
     return NextResponse.json({ activities: [] });
   }

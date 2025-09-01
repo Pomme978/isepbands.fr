@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import ActivityItem from './ActivityItem';
 import {
   CheckCircle,
@@ -14,6 +15,16 @@ import {
   Crown,
 } from 'lucide-react';
 
+interface ApiActivity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  userName?: string;
+  userRole?: string;
+  createdAt: string;
+}
+
 interface ActivityData {
   id: string;
   title: string;
@@ -27,7 +38,46 @@ interface ActivityData {
   };
 }
 
-// Mock data with proper admin tracking
+// Transform API activity to internal format
+const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
+  const getIconAndType = (type: string) => {
+    switch (type) {
+      case 'new_member':
+        return { icon: UserCheck, type: 'success' as const };
+      case 'post':
+      case 'custom':
+        return { icon: Megaphone, type: 'info' as const };
+      case 'system_announcement':
+        return { icon: Settings, type: 'warning' as const };
+      case 'event':
+        return { icon: Calendar, type: 'info' as const };
+      default:
+        return { icon: Settings, type: 'default' as const };
+    }
+  };
+
+  const { icon, type } = getIconAndType(apiActivity.type);
+  
+  return {
+    id: apiActivity.id,
+    title: apiActivity.title,
+    description: apiActivity.description,
+    timestamp: new Date(apiActivity.createdAt).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    type,
+    icon,
+    adminAction: apiActivity.userName ? {
+      adminName: apiActivity.userName,
+      adminRole: apiActivity.userRole,
+    } : undefined,
+  };
+};
+
+// Mock data with proper admin tracking (used as fallback)
 const ACTIVITY_DATA: ActivityData[] = [
   {
     id: '1',
@@ -161,9 +211,37 @@ interface RecentActivityProps {
 }
 
 export default function RecentActivity({
-  activities = [], // Empty for now since we don't log activity yet
+  activities: propActivities = [],
   maxItems = 10,
 }: RecentActivityProps) {
+  const [activities, setActivities] = useState<ActivityData[]>(propActivities);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/admin/clubfeed');
+        if (response.ok) {
+          const data = await response.json();
+          const transformedActivities = data.activities.map(transformApiActivity);
+          setActivities(transformedActivities);
+        } else {
+          // Use fallback data if API fails
+          setActivities(ACTIVITY_DATA.slice(0, 3)); // Show only first 3 mock items
+        }
+      } catch (error) {
+        console.error('Failed to fetch admin activities:', error);
+        // Use fallback data
+        setActivities(ACTIVITY_DATA.slice(0, 3));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
   const displayedActivities = activities.slice(0, maxItems);
 
   return (
@@ -179,7 +257,12 @@ export default function RecentActivity({
         </div>
       </div>
       <div className="p-6">
-        {displayedActivities.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" />
+            <p className="text-muted-foreground">Chargement des activités...</p>
+          </div>
+        ) : displayedActivities.length > 0 ? (
           <div className="flow-root">
             <ul className="-my-5 divide-y divide-border">
               {displayedActivities.map((activity) => {
@@ -209,7 +292,7 @@ export default function RecentActivity({
             <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-muted-foreground mb-2">Aucune activité pour le moment</p>
             <p className="text-sm text-gray-500">
-              Les actions administratives apparaîtront ici lorsque le système de logs sera activé
+              Les actions administratives apparaîtront ici
             </p>
           </div>
         )}

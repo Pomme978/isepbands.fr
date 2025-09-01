@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const userId = params.id;
   try {
-    const activities = await prisma.activity.findMany({
+    const activities = await prisma.adminActivity.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 100,
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const userId = params.id;
   const body = await req.json();
   try {
-    const activity = await prisma.activity.create({
+    const activity = await prisma.adminActivity.create({
       data: {
         userId,
         type: body.type || 'custom',

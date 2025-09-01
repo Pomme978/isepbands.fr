@@ -15,9 +15,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    // Fetch activities - we'll use a generic Activity model
-    // For now, we'll return mock data until the model is created
-    const activities = await prisma.activity
+    // Fetch admin activities - includes ALL activity types including system logs
+    const activities = await prisma.adminActivity
       .findMany({
         where: {
           isArchived: false, // Exclure les posts archivés
@@ -140,11 +139,11 @@ export async function POST(req: NextRequest) {
       metadata: {},
     });
 
-    // Create activity - always include user information
+    // Create admin activity - can include system logs
     let activity;
     try {
-      console.log('Creating activity with user information...');
-      activity = await prisma.activity.create({
+      console.log('Creating admin activity with user information...');
+      activity = await prisma.adminActivity.create({
         data: {
           type: type || 'custom',
           title,
@@ -154,7 +153,7 @@ export async function POST(req: NextRequest) {
           metadata: {},
         },
       });
-      console.log('Activity created successfully:', activity);
+      console.log('Admin activity created successfully:', activity);
     } catch (error) {
       console.error('Activity creation failed:', {
         message: error instanceof Error ? error.message : 'Unknown error',

@@ -2,7 +2,7 @@
 
 import Avatar from '@/components/common/Avatar';
 import { Badge } from '@/components/ui/badge';
-import type { ActivityType } from '@/types/activity';
+import type { PublicFeedType } from '@/types/publicFeed';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Image from 'next/image';
@@ -18,13 +18,13 @@ import {
 } from 'lucide-react';
 
 interface RecentActivityProps {
-  activities: ActivityType[];
+  activities: PublicFeedType[];
   onShowHistory?: () => void;
   showHistoryButton?: boolean;
   maxItems?: number;
 }
 
-const getActivityIcon = (type: ActivityType['type']) => {
+const getActivityIcon = (type: PublicFeedType['type']) => {
   switch (type) {
     case 'new_member':
       return <UserPlus className="h-4 w-4 text-green-600" />;
@@ -38,14 +38,13 @@ const getActivityIcon = (type: ActivityType['type']) => {
       return <Calendar className="h-4 w-4 text-red-600" />;
     case 'announcement':
       return <Megaphone className="h-4 w-4 text-yellow-600" />;
-    case 'system_announcement':
-      return <Settings className="h-4 w-4 text-gray-600" />;
+    // system_announcement removed from public feed
     default:
       return <MessageSquare className="h-4 w-4 text-gray-600" />;
   }
 };
 
-const getActivityLabel = (type: ActivityType['type']) => {
+const getActivityLabel = (type: PublicFeedType['type']) => {
   switch (type) {
     case 'new_member':
       return 'Nouveau membre';
@@ -59,20 +58,20 @@ const getActivityLabel = (type: ActivityType['type']) => {
       return 'Événement';
     case 'announcement':
       return 'Annonce';
-    case 'system_announcement':
-      return 'Annonce système';
+    // system_announcement removed from public feed
     default:
       return 'Activité';
   }
 };
 
-const ActivityItem = ({ activity }: { activity: ActivityType }) => {
+const ActivityItem = ({ activity }: { activity: PublicFeedType }) => {
   const timeAgo = formatDistanceToNow(activity.timestamp, {
     addSuffix: true,
     locale: fr,
   });
 
-  const isSystemMessage = activity.isSystemMessage || !activity.user;
+  // Public feed never has system messages - all activities have users
+  const isSystemMessage = false;
 
   const getNewMemberName = (description: string) => {
     const match = description.match(/^(.+?)\s+vient de rejoindre|^(.+?)\s+a rejoint/);
@@ -103,27 +102,24 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
             </div>
           ) : (
             <Avatar
-              src={activity.user?.avatar}
-              name={activity.user?.name || 'Utilisateur inconnu'}
+              src={activity.user.avatar}
+              name={activity.user.name}
               size="sm"
               className="flex-shrink-0"
             />
           )}
 
           <div className="flex items-center space-x-2 text-sm">
-            {!isSystemMessage && (
-              <>
-                <span className="font-medium text-gray-900">{activity.user?.name}</span>
-                {activity.user?.role && (
-                  <BadgeDisplay 
-                    role={activity.user.role}
-                    badges={[]}
-                    isLookingForGroup={false}
-                    pronouns="they/them"
-                    size="xs"
-                  />
-                )}
-              </>
+            {/* Public feed always has user info */}
+            <span className="font-medium text-gray-900">{activity.user.name}</span>
+            {activity.user.role && (
+              <BadgeDisplay 
+                role={activity.user.role}
+                badges={[]}
+                isLookingForGroup={false}
+                pronouns="they/them"
+                size="xs"
+              />
             )}
           </div>
         </div>
@@ -131,7 +127,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
         {/* Droite: Type d'activité + Heure */}
         <div className="flex items-center space-x-2 text-sm text-gray-500">
           <div className="flex items-center space-x-1">
-            {!isSystemMessage && getActivityIcon(activity.type)}
+            {getActivityIcon(activity.type)}
             <span className="text-xs">{getActivityLabel(activity.type)}</span>
           </div>
           <span className="text-gray-400">•</span>

@@ -391,7 +391,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
   const shouldShowSuspendedMembers =
     filters.memberStatus === 'all' || filters.memberStatus === 'suspended';
   const shouldShowDeletedMembers =
-    filters.memberStatus === 'all' || filters.memberStatus === 'deleted';
+    filters.memberStatus === 'deleted'; // Only show deleted users when explicitly filtering for them
   const shouldShowBoardMembers = filters.memberStatus === 'board';
 
   // For board filter, only show board members in a special section

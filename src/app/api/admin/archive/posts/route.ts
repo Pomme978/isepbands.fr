@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
     const sortBy = url.searchParams.get('sortBy') || 'newest';
     const dateRange = url.searchParams.get('dateRange') || 'all';
 
-    // Build where clause for archived posts
-    const whereClause: Prisma.ActivityWhereInput = {
+    // Build where clause for archived admin activities
+    const whereClause: Prisma.AdminActivityWhereInput = {
       isArchived: true,
     };
 
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Build order by clause
-    let orderBy: Prisma.ActivityOrderByWithRelationInput = { archivedAt: 'desc' };
+    let orderBy: Prisma.AdminActivityOrderByWithRelationInput = { archivedAt: 'desc' };
 
     switch (sortBy) {
       case 'oldest':
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         break;
     }
 
-    const archivedPosts = await prisma.activity.findMany({
+    const archivedPosts = await prisma.adminActivity.findMany({
       where: whereClause,
       orderBy,
       select: {

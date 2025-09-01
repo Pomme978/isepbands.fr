@@ -7,7 +7,7 @@ import Avatar from '@/components/common/Avatar';
 import LangLink from '@/components/common/LangLink';
 import { User } from 'next-auth';
 import { RecentActivity } from '@/components/home/RecentActivity';
-import type { ActivityType } from '@/types/activity';
+import type { PublicFeedType } from '@/types/publicFeed';
 import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
@@ -44,7 +44,7 @@ const calculateAge = (birthDate: string | null | undefined): number | null => {
 };
 
 export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLoggedInProps) {
-  const [activities, setActivities] = useState<ActivityType[]>([]);
+  const [activities, setActivities] = useState<PublicFeedType[]>([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -58,12 +58,12 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
         setFeedError(null);
 
         // Try to fetch from public club feed API
-        const response = await fetch('/api/clubfeed');
+        const response = await fetch('/api/clubfeed?t=' + Date.now());
         if (response.ok) {
           const data = await response.json();
 
-          // Transform API data to ActivityType format
-          const transformedActivities: ActivityType[] =
+          // Transform API data to PublicFeedType format
+          const transformedActivities: PublicFeedType[] =
             data.activities?.map(
               (activity: {
                 id: string;
@@ -76,18 +76,15 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                 userRole?: string;
               }) => ({
                 id: activity.id,
-                type: activity.type === 'custom' ? 'post' : activity.type,
+                type: activity.type === 'custom' ? 'post' : (activity.type as PublicFeedType['type']),
                 timestamp: new Date(activity.createdAt),
                 title: activity.title, // Titre séparé
                 description: activity.description || '', // Description séparée (peut être vide)
-                user: activity.userName
-                  ? {
-                      name: activity.userName,
-                      avatar: activity.userAvatar || '/avatars/default.jpg',
-                      role: activity.userRole || null, // Use real role from API
-                    }
-                  : undefined,
-                isSystemMessage: activity.type !== 'custom',
+                user: {
+                  name: activity.userName || 'Utilisateur',
+                  avatar: activity.userAvatar || '/avatars/default.jpg',
+                  role: activity.userRole || undefined, // Use real role from API
+                },
               }),
             ) || [];
 

@@ -17,8 +17,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     const { id } = params;
 
-    // Delete activity
-    await prisma.activity
+    // Delete admin activity
+    await prisma.adminActivity
       .delete({
         where: { id },
       })
@@ -51,8 +51,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
-    // Check if activity exists and if user is the creator
-    const existingActivity = await prisma.activity
+    // Check if admin activity exists and if user is the creator
+    const existingActivity = await prisma.adminActivity
       .findUnique({
         where: { id },
         include: {
@@ -77,8 +77,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'You can only edit your own activities' }, { status: 403 });
     }
 
-    // Update activity
-    const updatedActivity = await prisma.activity
+    // Update admin activity
+    const updatedActivity = await prisma.adminActivity
       .update({
         where: { id },
         data: {

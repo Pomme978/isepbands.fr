@@ -1,8 +1,8 @@
 import prisma from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
 
-export interface CreateActivityLogOptions {
-  userId: string;
+export interface CreateAdminActivityLogOptions {
+  userId?: string | null; // Optional for system logs
   type?: string;
   title?: string;
   description?: string;
@@ -10,23 +10,22 @@ export interface CreateActivityLogOptions {
   createdBy?: string | null;
 }
 
-export interface UpdateActivityLogOptions {
+export interface UpdateAdminActivityLogOptions {
   id: string;
   title?: string;
   description?: string;
   metadata?: Prisma.InputJsonValue;
 }
 
-export async function createActivityLog({
-  userId,
+export async function createAdminActivityLog({
+  userId = null,
   type = 'custom',
   title = '',
   description = '',
   metadata = {},
   createdBy = null,
-}: CreateActivityLogOptions) {
-  if (!userId) throw new Error('userId is required');
-  return prisma.activity.create({
+}: CreateAdminActivityLogOptions) {
+  return prisma.adminActivity.create({
     data: {
       userId,
       type,
@@ -38,28 +37,60 @@ export async function createActivityLog({
   });
 }
 
-export async function getActivityLogById(id: string) {
+export async function getAdminActivityLogById(id: string) {
   if (!id) throw new Error('id is required');
-  return prisma.activity.findUnique({ where: { id } });
+  return prisma.adminActivity.findUnique({ where: { id } });
 }
 
-export async function getUserActivityLogs(userId: string, limit = 100) {
+export async function getUserAdminActivityLogs(userId: string, limit = 100) {
   if (!userId) throw new Error('userId is required');
-  return prisma.activity.findMany({
+  return prisma.adminActivity.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
     take: limit,
   });
 }
 
-export async function updateActivityLog({
+export async function getAllAdminActivityLogs(limit = 50) {
+  return prisma.adminActivity.findMany({
+    where: {
+      isArchived: false,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          photoUrl: true,
+          pronouns: true,
+          roles: {
+            include: {
+              role: {
+                select: {
+                  nameFrFemale: true,
+                  nameFrMale: true,
+                  weight: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function updateAdminActivityLog({
   id,
   title,
   description,
   metadata,
-}: UpdateActivityLogOptions) {
+}: UpdateAdminActivityLogOptions) {
   if (!id) throw new Error('id is required');
-  return prisma.activity.update({
+  return prisma.adminActivity.update({
     where: { id },
     data: {
       ...(title !== undefined ? { title } : {}),
@@ -69,7 +100,20 @@ export async function updateActivityLog({
   });
 }
 
-export async function deleteActivityLog(id: string) {
+export async function deleteAdminActivityLog(id: string) {
   if (!id) throw new Error('id is required');
-  return prisma.activity.delete({ where: { id } });
+  return prisma.adminActivity.delete({ where: { id } });
+}
+
+export async function archiveAdminActivityLog(id: string, archivedBy: string, reason?: string) {
+  if (!id) throw new Error('id is required');
+  return prisma.adminActivity.update({
+    where: { id },
+    data: {
+      isArchived: true,
+      archivedAt: new Date(),
+      archivedBy,
+      archiveReason: reason || 'Archivé par un administrateur',
+    },
+  });
 }

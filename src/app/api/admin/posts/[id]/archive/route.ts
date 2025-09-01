@@ -18,8 +18,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const postId = params.id;
 
-    // Archive the post
-    await prisma.activity.update({
+    // Archive the admin activity
+    await prisma.adminActivity.update({
       where: { id: postId },
       data: {
         isArchived: true,
@@ -49,8 +49,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     const postId = params.id;
 
-    // Unarchive the post
-    await prisma.activity.update({
+    // Unarchive the admin activity
+    await prisma.adminActivity.update({
       where: { id: postId },
       data: {
         isArchived: false,

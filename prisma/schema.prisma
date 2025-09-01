@@ -85,7 +85,8 @@ model User {
   instruments                   UserInstrument[]
   roles                         UserRole[]
   votes                         Vote[]
-  activities                    Activity[]
+  publicFeedItems               PublicFeed[]
+  adminActivities               AdminActivity[] @relation("AdminActivityUser")
   systemLogs                    SystemLog[] @relation("SystemLogPerformedBy")
 }
 
@@ -315,13 +316,30 @@ model News {
   @@index([authorId], map: "News_authorId_fkey")
 }
 
-model Activity {
+// Public feed - Only member activities visible to all users
+model PublicFeed {
   id          String   @id @default(cuid())
-  type        String   // 'user_joined', 'group_created', 'event_created', 'achievement', 'custom'
+  type        String   // 'new_member', 'post', 'event', 'announcement' (NO system_announcement)
   title       String
   description String?  @db.Text
   metadata    Json?    // Additional data specific to activity type
-  userId      String?  // User this activity is about
+  userId      String   // REQUIRED - no system posts in public feed
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "PublicFeed_userId_fkey")
+  @@index([createdAt], map: "PublicFeed_createdAt_idx")
+}
+
+// Admin activity logs - System logs, admin actions, sensitive data
+model AdminActivity {
+  id          String   @id @default(cuid())
+  type        String   // 'user_joined', 'group_created', 'event_created', 'achievement', 'custom', 'system_announcement'
+  title       String
+  description String?  @db.Text
+  metadata    Json?    // Additional data specific to activity type
+  userId      String?  // User this activity is about (can be null for system logs)
   createdBy   String?  // Admin who created manual activity
   createdAt   DateTime @default(now())
   
@@ -331,10 +349,10 @@ model Activity {
   archivedBy  String?
   archiveReason String?
   
-  user        User?    @relation(fields: [userId], references: [id])
+  user        User?    @relation("AdminActivityUser", fields: [userId], references: [id])
 
-  @@index([userId], map: "Activity_userId_fkey")
-  @@index([createdAt], map: "Activity_createdAt_idx")
+  @@index([userId], map: "AdminActivity_userId_fkey")
+  @@index([createdAt], map: "AdminActivity_createdAt_idx")
 }
 
 enum UserStatus {
