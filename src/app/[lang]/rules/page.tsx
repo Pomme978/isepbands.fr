@@ -84,7 +84,7 @@ export default function RulesPage() {
             <h1 className="text-5xl font-bold font-outfit mb-4 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent leading-tight">
               Règlement de l&apos;association
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-ubuntu">
               Bienvenue dans la communauté ISEPBANDS ! Ces règles garantissent une expérience
               positive et enrichissante pour tous nos membres passionnés de musique.
             </p>
@@ -98,12 +98,12 @@ export default function RulesPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold font-outfit text-gray-900">Notre philosophie</h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 font-ubuntu">
                   Construire ensemble une communauté musicale bienveillante
                 </p>
               </div>
             </div>
-            <p className="text-gray-700 leading-relaxed text-lg">
+            <p className="text-gray-700 leading-relaxed text-lg font-ubuntu">
               ISEPBANDS est plus qu&apos;une simple association musicale : c&apos;est une famille
               qui rassemble étudiants et passionnés autour de l&apos;amour de la musique. Ces règles
               reflètent nos valeurs de respect, d&apos;entraide et d&apos;excellence artistique.
@@ -121,12 +121,12 @@ export default function RulesPage() {
                   <div className="bg-primary/10 p-3 rounded-full text-primary">{rule.icon}</div>
                   <h3 className="text-xl font-bold font-outfit text-gray-900">{rule.title}</h3>
                 </div>
-                <p className="text-gray-700 mb-4 leading-relaxed">{rule.description}</p>
+                <p className="text-gray-700 mb-4 leading-relaxed font-ubuntu">{rule.description}</p>
                 <ul className="space-y-2">
                   {rule.details.map((detail, detailIndex) => (
                     <li key={detailIndex} className="flex items-start gap-3 text-gray-600">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
-                      <span className="text-sm">{detail}</span>
+                      <span className="text-sm font-ubuntu">{detail}</span>
                     </li>
                   ))}
                 </ul>
@@ -144,19 +144,19 @@ export default function RulesPage() {
                 <h2 className="text-2xl font-bold font-outfit text-gray-900">
                   Sanctions disciplinaires
                 </h2>
-                <p className="text-gray-600">Application progressive et équitable</p>
+                <p className="text-gray-600 font-ubuntu">Application progressive et équitable</p>
               </div>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
               {sanctions.map((sanction, index) => (
                 <div key={index} className={`p-4 rounded-lg border-2 ${sanction.color}`}>
                   <h4 className="font-bold mb-2">{sanction.level}</h4>
-                  <p className="text-sm">{sanction.description}</p>
+                  <p className="text-sm font-ubuntu">{sanction.description}</p>
                 </div>
               ))}
             </div>
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-blue-800 text-sm">
+              <p className="text-blue-800 text-sm font-ubuntu">
                 <strong>Note :</strong> Toute sanction est décidée collégialement par le bureau de
                 l&apos;association après avoir entendu la version de la personne concernée.
               </p>
@@ -164,12 +164,12 @@ export default function RulesPage() {
           </div>
 
           {/* Contact */}
-          <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl shadow-lg p-8 border border-gray-200">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
             <div className="text-center">
               <h2 className="text-2xl font-bold font-outfit text-gray-900 mb-4">
                 Questions ou préoccupations ?
               </h2>
-              <p className="text-gray-700 mb-6">
+              <p className="text-gray-700 mb-6 font-ubuntu">
                 Notre équipe est là pour vous accompagner et répondre à toutes vos questions.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -195,7 +195,7 @@ export default function RulesPage() {
 
           {/* Footer note */}
           <div className="text-center mt-8">
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm font-ubuntu">
               Dernière mise à jour : Septembre 2025 • Version 2.0
             </p>
           </div>
