@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { standardAuth } from '@/utils/authMiddleware';
 import { prisma } from '@/lib/prisma';
+import { logAdminAction } from '@/services/activityLogService';
 
 // POST /api/admin/settings/migrate-year - Migrate to next school year
 export async function POST(request: NextRequest) {
@@ -131,8 +132,33 @@ export async function POST(request: NextRequest) {
       return { oldYear: currentYear, newYear: newYear };
     });
 
-    // Log the successful migration
+    // Log the successful migration in console
     console.log(`Year migration completed: ${result.oldYear} → ${result.newYear}`);
+
+    // Log admin action
+    await logAdminAction(
+      user.id,
+      'year_migration',
+      'Migration d\'année scolaire',
+      `Migration vers l'année scolaire **${result.newYear}** effectuée par **${user.firstName} ${user.lastName}**\n\n` +
+      `- Ancien année : ${result.oldYear}\n` +
+      `- Nouvelle année : ${result.newYear}\n` +
+      `- Utilisateurs migrés vers statut Alumni\n` +
+      `- Groupes archivés\n` +
+      `- Événements de l'année archivés`,
+      null, // System-wide action
+      {
+        oldYear: result.oldYear,
+        newYear: result.newYear,
+        migrationDate: new Date().toISOString(),
+        systemChanges: {
+          usersStatusChanged: 'CURRENT → ALUMNI',
+          groupsArchived: true,
+          eventsArchived: true,
+          yearSpecificBadgesRemoved: true
+        }
+      }
+    );
 
     return NextResponse.json({
       success: true,

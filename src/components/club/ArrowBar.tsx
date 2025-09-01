@@ -146,7 +146,7 @@ export default function ArrowBar({
   const VerticalSVG = (
     <svg
       viewBox={`0 0 ${VIEW_H} ${VIEW_W}`}
-      className={`w-full ${mobileHeightClass}`} // 👈 control height via Tailwind
+      className={`w-20 ${mobileHeightClass}`} // 👈 increased width from w-full to w-20
       preserveAspectRatio="xMidYMid meet" // 👈 keep proportions, no stretching
     >
       <g transform={`translate(${VIEW_H}, 0) rotate(90)`}>
@@ -157,16 +157,16 @@ export default function ArrowBar({
 
   if (rotateOnMobile) {
     return (
-      <div className={`relative w-full ${className}`} aria-hidden>
+      <div className={`relative w-full md:w-full ${className} overflow-hidden`} aria-hidden>
         <div className="hidden md:block">{HorizontalSVG}</div>
-        <div className="block md:hidden">{VerticalSVG}</div>
+        <div className="block md:hidden w-20">{VerticalSVG}</div>
       </div>
     );
   }
 
   if (orientation === 'vertical') {
     return (
-      <div className={`relative w-full ${className}`} aria-hidden>
+      <div className={`relative w-20 ${className} overflow-hidden`} aria-hidden>
         {VerticalSVG}
       </div>
     );

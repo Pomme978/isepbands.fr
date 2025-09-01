@@ -1,9 +1,10 @@
 import prisma from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
+import type { AdminActivityLogType } from '@/types/adminActivity';
 
 export interface CreateAdminActivityLogOptions {
   userId?: string | null; // Optional for system logs
-  type?: string;
+  type?: AdminActivityLogType;
   title?: string;
   description?: string;
   metadata?: Prisma.InputJsonValue;
@@ -116,4 +117,28 @@ export async function archiveAdminActivityLog(id: string, archivedBy: string, re
       archiveReason: reason || 'Archivé par un administrateur',
     },
   });
+}
+
+// Helper function standardisée pour logger les actions admin
+export async function logAdminAction(
+  adminId: string,
+  type: AdminActivityLogType,
+  title: string,
+  description: string,
+  targetUserId?: string | null,
+  metadata?: Prisma.InputJsonValue
+) {
+  try {
+    await createAdminActivityLog({
+      userId: targetUserId || null,
+      type,
+      title,
+      description,
+      metadata: metadata || {},
+      createdBy: adminId
+    });
+  } catch (error) {
+    console.error('Failed to log admin action:', error);
+    // Ne pas faire échouer l'opération principale
+  }
 }

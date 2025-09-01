@@ -205,13 +205,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id: userId } = await params;
     const body = await req.json();
 
-    console.log('API received body:', JSON.stringify(body, null, 2));
-    console.log('roleIds in body:', body.roleIds, typeof body.roleIds);
-
     // Validate input
-    console.log('About to validate data...');
     const validatedData = updateUserSchema.parse(body);
-    console.log('Data validation successful:', validatedData);
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -279,7 +274,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               );
               try {
                 await fs.unlink(filePath);
-                console.log(`Deleted old profile picture: ${oldStorageObject.key}`);
               } catch (fileError) {
                 console.warn(
                   `Failed to delete old profile picture file ${oldStorageObject.key}:`,
@@ -337,8 +331,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             [],
           );
 
-          console.log('Original instruments:', validatedData.instruments);
-          console.log('Unique instruments after deduplication:', uniqueInstruments);
 
           await tx.userInstrument.createMany({
             data: uniqueInstruments.map((inst) => ({
@@ -381,9 +373,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             }
 
             // Debug logging
-            console.log(
-              `Role validation: ${role.name}, current: ${currentUsersWithRole}, max: ${maxUsers}`,
-            );
 
             // Check if assigning this role would exceed the limit
             if (currentUsersWithRole >= maxUsers) {
@@ -599,7 +588,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     console.error('Error updating user:', error);
 
     if (error instanceof z.ZodError) {
-      console.log('Zod validation error:', JSON.stringify(error.issues, null, 2));
       return NextResponse.json(
         {
           error: 'Validation error',
@@ -669,7 +657,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
           createdBy: authResult.user?.id ? String(authResult.user.id) : undefined,
         });
       } catch (err) {
-        console.log('Activity log error:', err);
       }
     });
 
@@ -678,7 +665,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       try {
         const filePath = path.join(process.cwd(), 'public', 'storage', 'uploads', storageObj.key);
         await fs.unlink(filePath);
-        console.log(`Deleted storage file: ${storageObj.key}`);
       } catch (error) {
         console.warn(`Failed to delete storage file ${storageObj.key}:`, error);
         // Continue even if file cleanup fails - the user is already deleted

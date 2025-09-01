@@ -16,6 +16,16 @@ interface CabinetDrawersProps {
 }
 
 export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: CabinetDrawersProps) {
+  const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   // =============================================================================
   // CONFIGURATION VARIABLES - Adjust these to fine-tune the cabinet behavior
   // =============================================================================
@@ -27,10 +37,19 @@ export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: Ca
   const CARDS_TOTAL_WIDTH = CARD_WIDTH + DRAWER_PADDING; // Space needed for 1 card + padding
 
   // Drawer extensions - adjust these values to control how far each drawer opens
-  const DRAWER_EXTENSIONS = {
-    mobile: 300, // Mobile vertical spacing between drawers - much bigger opening
-    desktop: [650, 430, 220, 100], // Bottom to top drawer extensions - can handle any number of cards
+  const getDrawerExtensions = () => {
+    if (isMobile) {
+      return { mobile: 300 };
+    }
+    
+    if (screenWidth < 1024) { // md to lg breakpoint
+      return { desktop: [550, 360, 150, 60] }; // Reduced extensions for md-lg screens
+    } else { // lg and above
+      return { desktop: [650, 430, 220, 100] }; // Original extensions for lg+ screens
+    }
   };
+
+  const DRAWER_EXTENSIONS = getDrawerExtensions();
 
   // Animation timing - adjust these to control when and how fast drawers open
   const ANIMATION_CONFIG = {

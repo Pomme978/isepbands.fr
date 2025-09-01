@@ -79,7 +79,6 @@ export default function UserEditBadges({
         setBadgeDefinitions(data.badges || []);
       }
     } catch (error) {
-      console.log('Error fetching badge definitions:', error);
     } finally {
       setLoadingBadges(false);
     }
@@ -166,15 +165,6 @@ export default function UserEditBadges({
       badge.badgeDefinition ||
       badgeDefinitions.find((b) => b.id === badge.badgeDefinitionId || b.key === badge.name);
 
-    // Debug badge display (non bloquant)
-    console.log('Badge display debug:', {
-      badgeName: badge.name,
-      badgeColor: badge.color,
-      badgeDefFound: badgeDef?.labelFr,
-      badgeDefColor: badgeDef?.color,
-      isSystemBadge,
-      finalColor: (isSystemBadge && badgeDef?.color) || badge.color || '#FF6B35',
-    });
 
     return (
       <div className="p-4 border-2 border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors">

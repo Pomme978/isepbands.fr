@@ -25,6 +25,8 @@ import { fr } from 'date-fns/locale';
 import { AdminActivityList } from '@/components/admin/AdminActivityList';
 import ArchiveConfirmModal from '@/components/admin/common/ArchiveConfirmModal';
 import type { ActivityType } from '@/types/activity';
+import { RecentActivity } from '@/components/home/RecentActivity';
+import type { PublicFeedType } from '@/types/publicFeed';
 
 interface ActivityItem {
   id: string;
@@ -43,7 +45,9 @@ interface ActivityItem {
 export default function AdminClubFeedPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [displayActivities, setDisplayActivities] = useState<ActivityType[]>([]);
+  const [publicFeedItems, setPublicFeedItems] = useState<PublicFeedType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPublicFeed, setIsLoadingPublicFeed] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -70,6 +74,7 @@ export default function AdminClubFeedPage() {
   useEffect(() => {
     fetchActivities();
     fetchCurrentUser();
+    fetchPublicFeed();
   }, []);
 
   const fetchCurrentUser = async () => {
@@ -81,6 +86,49 @@ export default function AdminClubFeedPage() {
       }
     } catch (error) {
       console.error('Error fetching current user:', error);
+    }
+  };
+
+  const fetchPublicFeed = async () => {
+    try {
+      setIsLoadingPublicFeed(true);
+      const response = await fetch('/api/clubfeed?t=' + Date.now());
+      if (response.ok) {
+        const data = await response.json();
+        const transformedActivities: PublicFeedType[] =
+          data.activities?.map(
+            (activity: {
+              id: string;
+              type: string;
+              createdAt: string;
+              title: string;
+              description?: string;
+              userName?: string;
+              userAvatar?: string;
+              userRole?: string;
+            }) => ({
+              id: activity.id,
+              type: activity.type === 'custom' ? 'post' : (activity.type as PublicFeedType['type']),
+              timestamp: new Date(activity.createdAt),
+              title: activity.title,
+              description: activity.description || '',
+              user: {
+                name: activity.userName || 'Utilisateur',
+                avatar: activity.userAvatar || '/avatars/default.jpg',
+                role: activity.userRole || undefined,
+              },
+            }),
+          ) || [];
+        setPublicFeedItems(transformedActivities);
+      } else {
+        console.warn('Failed to fetch public feed');
+        setPublicFeedItems([]);
+      }
+    } catch (error) {
+      console.error('Error fetching public feed:', error);
+      setPublicFeedItems([]);
+    } finally {
+      setIsLoadingPublicFeed(false);
     }
   };
 
@@ -492,35 +540,29 @@ export default function AdminClubFeedPage() {
           </Card>
         )}
 
-        {/* Activities List */}
-        <Card>
+        {/* Public Feed Preview */}
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Activités récentes</CardTitle>
+            <CardTitle>Feed Public (Aperçu)</CardTitle>
             <CardDescription className="text-base">
-              Les 50 dernières activités du club
+              Ce que voient les membres sur leur page d&apos;accueil
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoadingPublicFeed ? (
               <div className="flex items-center justify-center py-8">
-                <Loading text="Chargement des activités..." size="sm" />
+                <Loading text="Chargement du feed public..." size="sm" />
               </div>
             ) : (
-              <AdminActivityList
-                activities={displayActivities}
-                onEdit={(id) => {
-                  const activity = activities.find((a) => a.id === id);
-                  if (activity) {
-                    setEditingActivity(activity);
-                  }
-                }}
-                onDelete={handleDeleteActivity}
-                onArchive={handleArchiveActivity}
-                currentUserId={currentUser?.id}
+              <RecentActivity
+                activities={publicFeedItems}
+                maxItems={6}
+                showHistoryButton={false}
               />
             )}
           </CardContent>
         </Card>
+
 
         {/* Archive Confirmation Modal */}
         <ArchiveConfirmModal

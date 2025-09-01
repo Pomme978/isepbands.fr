@@ -78,7 +78,6 @@ export default function UserEditPermissions({
           // Roles data loaded, permissions will be initialized in separate useEffect
         }
       } catch (error) {
-        console.log('Error fetching roles:', error);
       } finally {
         setLoading(false);
       }

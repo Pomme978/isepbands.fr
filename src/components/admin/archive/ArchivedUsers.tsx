@@ -49,7 +49,6 @@ export default function ArchivedUsers({ filters }: ArchivedUsersProps) {
           params.append(key, value);
         }
       });
-      console.log('Fetching archived users with params:', params.toString());
 
       const response = await fetch(`/api/admin/archive/users?${params}`);
 
@@ -60,7 +59,6 @@ export default function ArchivedUsers({ filters }: ArchivedUsersProps) {
       }
 
       const data = await response.json();
-      console.log('Received archived users data:', data);
       setUsers(data.users || []);
     } catch (err) {
       console.error('Error fetching archived users:', err);

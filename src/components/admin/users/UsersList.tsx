@@ -146,7 +146,6 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
   // Handle restore (approve a refused user)
   const handleRestore = async (userId: string) => {
     try {
-      console.log('Restoring user:', userId);
       const response = await fetch(`/api/admin/pending-users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -154,7 +153,6 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       });
 
       if (response.ok) {
-        console.log('User restored successfully');
         await fetchUsers(); // Refresh the list
       } else {
         const errorData = await response.json();
@@ -302,33 +300,22 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
 
   // Transform API user data to match UserCard interface
   const transformUser = (user: User) => {
-    console.log(`=== TRANSFORM DEBUG for ${user.firstName} ${user.lastName} ===`);
-
     // Check if user has roles and get the appropriate display name
     let roleDisplay = 'Membre'; // Default for users with no roles
-    console.log('Initial roleDisplay:', roleDisplay);
 
     // If user is suspended, show "Former" as role regardless of actual roles
     if (user.status === 'SUSPENDED') {
       roleDisplay = 'Former';
-      console.log('User is suspended, setting roleDisplay to Former');
     } else if (user.status === 'PENDING' || user.status === 'REFUSED') {
       roleDisplay = ''; // No role displayed for pending or refused users
-      console.log(`User is ${user.status.toLowerCase()}, setting roleDisplay to empty`);
     } else if (user.roles && user.roles.length > 0) {
-      console.log('User has roles:', user.roles.length, 'roles');
       try {
         roleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
-        console.log('getPrimaryRoleName returned:', roleDisplay);
       } catch (error) {
         console.error('Error getting role display name:', error);
         roleDisplay = 'Membre';
       }
-    } else {
-      console.log('User has no roles');
     }
-
-    console.log('Final roleDisplay before object creation:', roleDisplay);
 
     const result = {
       id: user.id,
@@ -352,9 +339,6 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       groups: user.groups.map((g) => g.name),
       badges: user.badges,
     };
-
-    console.log('Final result object role field:', result.role);
-    console.log('=== END TRANSFORM DEBUG ===');
 
     return result;
   };
@@ -479,13 +463,6 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         >
           <div className="space-y-4">
             {displayPendingMembers.map((user) => {
-              console.log(
-                'Passing to UserCard:',
-                user.firstName,
-                user.lastName,
-                'with role:',
-                user.role,
-              );
               return (
                 <UserCard
                   key={user.id}
@@ -511,13 +488,6 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
           ) : (
             <div className="space-y-4">
               {displayCurrentMembers.map((user) => {
-                console.log(
-                  'Passing to UserCard (current):',
-                  user.firstName,
-                  user.lastName,
-                  'with role:',
-                  user.role,
-                );
                 return <UserCard key={user.id} user={user} currentUserId={currentUserId} />;
               })}
             </div>

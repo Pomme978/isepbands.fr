@@ -9,8 +9,43 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 100,
+      include: {
+        // Inclure les informations de l'utilisateur concerné par l'activité
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
-    return NextResponse.json({ success: true, activities });
+
+    // Récupérer les noms des utilisateurs ayant créé les activités
+    const activitiesWithCreatorNames = await Promise.all(
+      activities.map(async (activity) => {
+        let createdByName = null;
+        if (activity.createdBy) {
+          try {
+            const creator = await prisma.user.findUnique({
+              where: { id: activity.createdBy },
+              select: { firstName: true, lastName: true },
+            });
+            if (creator) {
+              createdByName = `${creator.firstName} ${creator.lastName}`;
+            }
+          } catch (error) {
+            console.log('Error fetching creator name:', error);
+          }
+        }
+        
+        return {
+          ...activity,
+          createdByName,
+        };
+      })
+    );
+
+    return NextResponse.json({ success: true, activities: activitiesWithCreatorNames });
   } catch (error) {
     console.log('Error fetching activity log:', error);
     return NextResponse.json(

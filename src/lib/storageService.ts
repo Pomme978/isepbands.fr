@@ -35,7 +35,6 @@ export async function uploadToStorage(file: File, userId?: string) {
       throw new Error('Only image files are allowed');
     }
 
-    console.log(`Processing image: ${file.name} (${originalSize} bytes)`);
 
     let processedBuffer = originalBuffer;
 
@@ -44,10 +43,6 @@ export async function uploadToStorage(file: File, userId?: string) {
       try {
         // Get image metadata
         const metadata = await sharp(originalBuffer).metadata();
-        console.log('Original image dimensions:', {
-          width: metadata.width,
-          height: metadata.height,
-        });
 
         // Resize and compress the image
         const maxDimension = 800; // Max width or height
@@ -79,9 +74,6 @@ export async function uploadToStorage(file: File, userId?: string) {
           ((originalSize - processedBuffer.length) / originalSize) *
           100
         ).toFixed(1);
-        console.log(
-          `Image processed: ${originalSize} -> ${processedBuffer.length} bytes (${compressionRatio}% reduction)`,
-        );
       } catch (imageError) {
         console.warn('Image processing failed, using original:', imageError);
         processedBuffer = originalBuffer;
@@ -93,14 +85,12 @@ export async function uploadToStorage(file: File, userId?: string) {
     await fs.mkdir(UPLOADS_DIR, { recursive: true });
     await fs.writeFile(filePath, processedBuffer);
 
-    console.log('File written successfully, creating database record');
 
     const baseData = { key, url, size: finalSize, contentType };
     const dbRecord = await prisma.storageObject.create({
       data: userId ? { ...baseData, userId: userId } : baseData,
     });
 
-    console.log('Database record created:', dbRecord.id);
 
     return dbRecord;
   } catch (error) {

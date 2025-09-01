@@ -77,7 +77,6 @@ export async function GET(req: NextRequest) {
         break;
     }
 
-    console.log('Searching for archived users with clause:', whereClause);
 
     const archivedUsers = await prisma.user.findMany({
       where: whereClause,
@@ -95,7 +94,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    console.log(`Found ${archivedUsers.length} archived users`);
 
     // Get unique archivedBy IDs to fetch user names
     const archivedByIds = [

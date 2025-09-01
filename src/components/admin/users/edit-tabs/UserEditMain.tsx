@@ -152,7 +152,6 @@ export default function UserEditMain({
       }
     }
 
-    console.log('Setting preview and avatar to null');
     setPreviewImage(null);
     setPendingImageFile(null);
     onPendingImageChange?.(null);

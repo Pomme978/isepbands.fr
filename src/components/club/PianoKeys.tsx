@@ -88,11 +88,11 @@ const PianoKeys = ({ title = "L'ASSOCIATION", subtitle = 'QUI SOMMES-NOUS ?' }) 
   };
 
   return (
-    <div className="w-full absolute top-0 left-0 z-40">
+    <div className="w-full absolute top-0 left-0 z-40 overflow-x-hidden">
       {/* Version Desktop */}
       <div className="hidden md:block">
-        <div className="flex items-end w-full px-4">
-          <div className="flex gap-4 w-full justify-center">
+        <div className="flex items-end w-full px-4 overflow-x-hidden">
+          <div className="flex gap-4 w-full justify-center min-w-0">
             {/* Touches de gauche */}
             {renderKeyGroups(leftGroups, 'h-52')}
 
@@ -119,9 +119,9 @@ const PianoKeys = ({ title = "L'ASSOCIATION", subtitle = 'QUI SOMMES-NOUS ?' }) 
 
       {/* Version Mobile */}
       <div className="md:hidden">
-        <div className="flex justify-center items-center gap-3 px-4 mb-6">
+        <div className="flex justify-center items-center gap-3 px-4 mb-6 overflow-x-hidden">
           {/* Touches générées dynamiquement pour mobile */}
-          <div className="flex gap-3 w-full justify-center">
+          <div className="flex gap-3 w-full justify-center min-w-0">
             {renderKeyGroups(leftGroups, 'h-25')}
             <div className="w-3" />
             {renderTwoKeys('h-25')}

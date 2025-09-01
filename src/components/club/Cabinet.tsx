@@ -21,7 +21,13 @@ export default function Cabinet({ cards }: CabinetProps) {
     // Set mobile state
     setIsMobile(window.innerWidth < 768);
 
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      // Recalculate scroll progress after resize to fix positioning
+      setTimeout(() => {
+        handleScroll();
+      }, 100);
+    };
     window.addEventListener('resize', handleResize);
 
     const handleScroll = () => {
@@ -82,10 +88,12 @@ export default function Cabinet({ cards }: CabinetProps) {
   const distributedCards = useMemo(() => createDrawers(cards), [cards, isMobile]);
 
   return (
-    <div className={`relative w-full py-16 ${isMobile ? 'overflow-hidden' : 'overflow-visible'}`}>
+    <div
+      className={`relative w-full py-16 overflow-x-hidden ${isMobile ? 'overflow-y-hidden' : 'overflow-y-visible'}`}
+    >
       <div
         id="cabinet"
-        className="relative bg-gray-800 rounded-xl shadow-2xl w-full md:w-96"
+        className="relative bg-gray-800 rounded-xl shadow-2xl w-full md:w-80 lg:w-96"
         style={{ minHeight: isMobile ? '300px' : '600px' }}
       >
         {/* Cabinet Title - higher z-index */}

@@ -107,19 +107,8 @@ export async function DELETE(req: NextRequest) {
   );
   const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot || hasAdminRole;
 
-  console.log('DELETE request:', {
-    userId: sessionUser.id,
-    fileOwnerId: file.userId,
-    isOwner,
-    isAdmin,
-    isFullAccess: sessionUser.isFullAccess,
-    isRoot: sessionUser.isRoot,
-    hasAdminRole,
-    roles: sessionUser.roles?.map((r: { role?: { name: string } }) => r.role?.name),
-  });
 
   if (!isOwner && !isAdmin) {
-    console.log('DELETE DENIED - Not owner or admin');
     return NextResponse.json(
       { error: 'Forbidden - You do not have permission to delete this file' },
       { status: 403 },
@@ -127,9 +116,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    console.log('Deleting file from storage:', id);
     await deleteFromStorage(id);
-    console.log('File deleted successfully:', id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting file:', error);
@@ -162,12 +149,6 @@ export async function PUT(req: NextRequest) {
   const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot;
 
   if (!isOwner && !isAdmin) {
-    console.log(
-      'Access forbidden - Not owner or admin. User:',
-      sessionUser.id,
-      'File owner:',
-      file.userId,
-    );
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   try {

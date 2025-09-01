@@ -96,8 +96,6 @@ export default function UserEditInstruments({
             mapping[inst.nameFr] = inst.id;
           });
           setInstrumentMapping(mapping);
-          console.log('Loaded instruments:', data.instruments);
-          console.log('Created mapping:', mapping);
 
           // Set default instrument name
           if (data.instruments.length > 0 && !newInstrument.name) {
@@ -114,7 +112,6 @@ export default function UserEditInstruments({
   // Load real user instruments when component mounts or user changes
   useEffect(() => {
     if (user?.instruments) {
-      console.log('Loading real user instruments:', user.instruments);
       const userInstruments = user.instruments.map((inst) => ({
         id: inst.instrumentId?.toString() || inst.id?.toString(),
         name:
@@ -123,17 +120,14 @@ export default function UserEditInstruments({
         yearsPlaying: inst.yearsPlaying || 0,
         primary: inst.isPrimary || false,
       }));
-      console.log('Mapped instruments:', userInstruments);
       setInstruments(userInstruments);
     } else {
-      console.log('No instruments found for user:', user);
       setInstruments([]);
     }
 
     // Load preferred genres from user using utility function
     const genres = parsePreferredGenres(user?.preferredGenres);
     setPreferredGenres(genres);
-    console.log('Loaded user preferred genres:', genres);
   }, [user]);
 
   const addInstrument = () => {
@@ -201,7 +195,6 @@ export default function UserEditInstruments({
         },
       };
     });
-    console.log('[ADD] Final user.instruments being set:', updatedUserInstruments);
     setUser({ ...user, instruments: updatedUserInstruments });
 
     setNewInstrument({

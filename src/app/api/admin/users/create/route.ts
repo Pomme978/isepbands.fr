@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/prisma';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { requireAuth } from '@/middlewares/auth';
+import { checkAdminPermission } from '@/middlewares/admin';
+import { logAdminAction } from '@/services/activityLogService';
 // import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Moved to manual DB admin page
 
 // Schema for user creation
@@ -63,6 +66,16 @@ const createUserSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Check authentication
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.res;
+
+    // Check admin permission
+    const adminCheck = await checkAdminPermission(auth.user);
+    if (!adminCheck.hasPermission) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const body = await req.json();
     const validatedData = createUserSchema.parse(body);
 
@@ -210,6 +223,24 @@ export async function POST(req: NextRequest) {
 
       return newUser;
     });
+
+    // Log admin action
+    await logAdminAction(
+      auth.user.id,
+      'user_created',
+      'Utilisateur créé',
+      `**${user.firstName} ${user.lastName}** (${user.email}) a été créé avec le rôle **${validatedData.primaryRole}**`,
+      user.id,
+      {
+        email: user.email,
+        role: validatedData.primaryRole,
+        promotion: validatedData.promotion,
+        instrumentsCount: validatedData.instruments?.length || 0,
+        badgesCount: validatedData.achievementBadges?.length || 0,
+        hasTemporaryPassword: true,
+        sendWelcomeEmail: validatedData.sendWelcomeEmail || false
+      }
+    );
 
     // TODO: Send welcome email if requested
     if (validatedData.sendWelcomeEmail) {

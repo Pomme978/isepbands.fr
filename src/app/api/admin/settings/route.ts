@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { standardAuth } from '@/utils/authMiddleware';
 import { prisma } from '@/lib/prisma';
+import { logAdminAction } from '@/services/activityLogService';
 import fs from 'fs';
 import path from 'path';
 
@@ -139,6 +140,32 @@ export async function PUT(request: NextRequest) {
     if (body.primaryColor) {
       await updatePrimaryColorInCSS(body.primaryColor);
     }
+
+    // Log admin action
+    await logAdminAction(
+      user.id,
+      'system_settings_updated',
+      'Paramètres système modifiés',
+      `Paramètres de l'association mis à jour par **${user.firstName} ${user.lastName}**`,
+      null, // No specific user targeted
+      {
+        changes: {
+          associationName: body.association.name !== (settings.associationName || 'ISEP Bands'),
+          associationLegalStatus: body.association.legalStatus !== (settings.associationLegalStatus || 'Association loi 1901'),
+          associationAddress: body.association.address !== (settings.associationAddress || ''),
+          associationEmail: body.association.email !== (settings.associationEmail || 'contact@isepbands.fr'),
+          publicationDirectorName: body.publicationDirector.name !== (settings.publicationDirectorName || ''),
+          primaryColor: body.primaryColor !== (settings.primaryColor || 'oklch(0.559 0.238 307.331)'),
+          currentYear: body.currentYear !== (settings.currentYear || new Date().getFullYear().toString()),
+        },
+        newValues: {
+          associationName: body.association.name,
+          associationEmail: body.association.email,
+          primaryColor: body.primaryColor,
+          currentYear: body.currentYear
+        }
+      }
+    );
 
     return NextResponse.json({ success: true, settings });
   } catch (error) {

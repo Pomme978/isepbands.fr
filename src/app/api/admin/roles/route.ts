@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
-import { prisma } from '@/prisma';
+import { checkAdminPermission } from '@/middlewares/admin';
+import { prisma } from '@/lib/prisma';
+import { logAdminAction } from '@/services/activityLogService';
 import { z } from 'zod';
 // import { ensureDBIntegrity } from '@/utils/dbIntegrity'; // Moved to manual DB admin page
 
@@ -96,10 +98,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Check authentication and permissions
+  // Check authentication
   const authResult = await requireAuth(req);
   if (!authResult.ok) {
     return authResult.res;
+  }
+
+  // Check admin permission
+  const adminCheck = await checkAdminPermission(authResult.user);
+  if (!adminCheck.hasPermission) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
   }
 
   try {
@@ -182,6 +190,24 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    // Log admin action
+    await logAdminAction(
+      authResult.user.id,
+      'role_created',
+      'Nouveau rôle créé',
+      `**${validatedData.nameFrMale}** (${validatedData.name}) créé avec ${validatedData.permissionIds.length} permission(s)`,
+      null, // No specific user targeted
+      {
+        roleName: validatedData.name,
+        nameFrMale: validatedData.nameFrMale,
+        nameFrFemale: validatedData.nameFrFemale,
+        weight: validatedData.weight,
+        isCore: validatedData.isCore,
+        permissionCount: validatedData.permissionIds.length,
+        permissionIds: validatedData.permissionIds
+      }
+    );
 
     return NextResponse.json(
       {

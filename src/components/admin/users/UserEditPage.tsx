@@ -162,7 +162,6 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         }
 
         const data = await response.json();
-        console.log('Fetched user data:', data.user);
         // Map API fields to component expected fields
         const mappedUser = {
           ...data.user,
@@ -182,11 +181,9 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           // Map rejectionReason
           rejectionReason: data.user.rejectionReason,
         };
-        console.log('Mapped user data:', mappedUser);
         setUser(mappedUser);
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to fetch user');
-        console.error('Error fetching user:', error);
       } finally {
         setLoading(false);
       }
@@ -237,7 +234,6 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         status: user.status,
         isLookingForGroup: user.isLookingForGroup,
         instruments: user.instruments?.map((inst: UserInstrument) => {
-          console.log('Mapping instrument for API:', inst);
           return {
             instrumentId: inst.instrument?.id || inst.instrumentId,
             skillLevel: inst.skillLevel,
@@ -247,9 +243,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         }),
         roleIds: user.roles
           ?.map((role: UserRole) => {
-            console.log('Processing role:', role);
             const roleId = role.role?.id || role.id || role.roleId;
-            console.log('Extracted roleId:', roleId, typeof roleId);
             // Ensure we return a number, not string
             return typeof roleId === 'string' ? parseInt(roleId) : roleId;
           })
@@ -263,7 +257,6 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         rejectionReason: user.rejectionReason,
       };
 
-      console.log('Request body being sent:', JSON.stringify(requestBody, null, 2));
 
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
@@ -278,14 +271,9 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         try {
           errorData = await response.json();
         } catch (e) {
-          console.log('Failed to parse error response as JSON:', e);
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        console.log('API error response:', errorData);
         const errorMessage = errorData.message || errorData.error || 'Failed to save user';
-        if (errorData.details) {
-          console.log('Validation details:', errorData.details);
-        }
         throw new Error(errorMessage);
       }
 
@@ -315,9 +303,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       setPendingImageFile(null);
 
       // Show success message (you might want to add a toast system)
-      console.log('User saved successfully');
     } catch (error) {
-      console.error('Error saving user:', error);
       setError(error instanceof Error ? error.message : 'Failed to save user');
     } finally {
       setSaving(false);
@@ -326,7 +312,6 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleSendEmail = () => {
     if (!user) return;
-    console.log('Opening email modal for user:', user.email);
     // TODO: Implement email modal
   };
 

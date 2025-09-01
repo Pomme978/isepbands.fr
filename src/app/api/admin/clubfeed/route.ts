@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import { requireAuth } from '@/middlewares/auth';
 import { checkAdminPermission } from '@/middlewares/admin';
+import { getAllAdminActivityLogs } from '@/services/activityLogService';
+import { createPublicFeedItem } from '@/services/publicFeedService';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,38 +17,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    // Fetch admin activities - includes ALL activity types including system logs
-    const activities = await prisma.adminActivity
-      .findMany({
-        where: {
-          isArchived: false, // Exclure les posts archivés
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 50,
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              photoUrl: true,
-              pronouns: true,
-              roles: {
-                include: {
-                  role: {
-                    select: {
-                      nameFrFemale: true,
-                      nameFrMale: true,
-                      weight: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      })
-      .catch(() => []);
+    // Admin dashboard shows only admin activity logs (system logs)
+    const activities = await getAllAdminActivityLogs(50);
 
     // Transform activities for the frontend
     const transformedActivities = activities.map((activity) => {
@@ -111,6 +83,12 @@ export async function POST(req: NextRequest) {
 
     console.log('Creating activity with:', { type, title, description, userId: auth.user.id });
 
+    // Determine if this should be a public post or admin log
+    const publicTypes = ['new_member', 'post', 'event', 'announcement', 'custom'];
+    const isPublicPost = publicTypes.includes(type || 'custom');
+    
+    console.log(`📋 Post type: "${type || 'custom'}", isPublicPost: ${isPublicPost}`);
+
     // First, verify the user exists in the database
     const userExists = await prisma.user.findUnique({
       where: { id: auth.user.id },
@@ -139,21 +117,57 @@ export async function POST(req: NextRequest) {
       metadata: {},
     });
 
-    // Create admin activity - can include system logs
+    // Create activity in appropriate table
     let activity;
+    let activityLog;
     try {
-      console.log('Creating admin activity with user information...');
-      activity = await prisma.adminActivity.create({
-        data: {
-          type: type || 'custom',
-          title,
-          description: description || null,
-          createdBy: auth.user.id,
+      if (isPublicPost) {
+        console.log('Creating public feed item...');
+        // 1. Create the public post
+        activity = await createPublicFeedItem({
           userId: auth.user.id,
+          type: type === 'custom' ? 'post' : type,
+          title: title || '',
+          description: description || '',
           metadata: {},
-        },
-      });
-      console.log('Admin activity created successfully:', activity);
+        });
+        console.log('Public feed item created successfully:', activity);
+
+        // 2. Create admin log of this action
+        const userName = userExists ? `${userExists.firstName} ${userExists.lastName}` : 'Admin';
+        const logTitle = `Publication sur le feed public`;
+        const logDescription = `${userName} a publié "${title}"${description ? `\n\nContenu: ${description}` : ''}`;
+        
+        activityLog = await prisma.adminActivity.create({
+          data: {
+            type: 'system_announcement',
+            title: logTitle,
+            description: logDescription,
+            createdBy: auth.user.id,
+            userId: auth.user.id,
+            metadata: { 
+              publicPostId: activity.id,
+              action: 'post_published',
+              postType: activity.type,
+              postTitle: title
+            },
+          },
+        });
+        console.log('Admin log created successfully:', activityLog);
+      } else {
+        console.log('Creating admin activity (system log)...');
+        activity = await prisma.adminActivity.create({
+          data: {
+            type: type || 'system_announcement',
+            title,
+            description: description || null,
+            createdBy: auth.user.id,
+            userId: auth.user.id,
+            metadata: {},
+          },
+        });
+        console.log('Admin activity created successfully:', activity);
+      }
     } catch (error) {
       console.error('Activity creation failed:', {
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -218,11 +232,11 @@ export async function POST(req: NextRequest) {
         description: activity.description,
         userId: activity.userId,
         userName: userName,
-        userAvatar: null, // Will be fetched if needed
+        userAvatar: userExists?.photoUrl || null,
         userRole: userRole,
         metadata: activity.metadata,
         createdAt: activity.createdAt,
-        createdBy: activity.createdBy,
+        createdBy: isPublicPost ? null : activity.createdBy, // Public feed has no createdBy
       },
     });
   } catch (error) {

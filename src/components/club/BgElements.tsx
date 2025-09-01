@@ -11,6 +11,7 @@ interface BgElementsProps {
   lineThickness?: string; // épaisseur (ex: "12%" ou "20px")
   lineGap?: string; // espacement vertical/horizontal entre barres (ex: "20px" ou "15%")
   lineAngle?: number; // angle en degrés (ex: -35 pour diagonale)
+  mobileAngle?: number; // angle différent pour mobile
   circleGap?: string; // espacement entre les cercles (pour variant circle)
 }
 
@@ -23,6 +24,7 @@ export default function BgElements({
   lineThickness = '12%',
   lineGap = '18%',
   lineAngle = -35,
+  mobileAngle,
   circleGap = '20%',
 }: BgElementsProps) {
   if (variant === 'circle') {
@@ -51,24 +53,49 @@ export default function BgElements({
   }
 
   // variant === "lines"
+  const finalAngle = mobileAngle !== undefined ? mobileAngle : lineAngle;
+  
   return (
-    <div
-      className={`${sizeClassName} ${className} text-slate-800 blur-[2px]`}
-      style={{ transform: `rotate(${lineAngle}deg)` }}
-      aria-hidden
-    >
-      {Array.from({ length: lineCount }).map((_, i) => (
-        <div
-          key={i}
-          className="absolute bg-current rounded-sm z-0"
-          style={{
-            width: lineLength,
-            height: lineThickness,
-            top: `calc(${i} * ${lineGap})`,
-            left: '',
-          }}
-        />
-      ))}
-    </div>
+    <>
+      {/* Desktop */}
+      <div
+        className={`${sizeClassName} ${className} text-slate-800 blur-[2px] hidden md:block`}
+        style={{ transform: `rotate(${lineAngle}deg)` }}
+        aria-hidden
+      >
+        {Array.from({ length: lineCount }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute bg-current rounded-sm z-0"
+            style={{
+              width: lineLength,
+              height: lineThickness,
+              top: `calc(${i} * ${lineGap})`,
+              left: `calc(${i} * 8px)`,
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Mobile */}
+      <div
+        className={`${sizeClassName} ${className} text-slate-800 blur-[2px] block md:hidden`}
+        style={{ transform: `rotate(${finalAngle}deg)` }}
+        aria-hidden
+      >
+        {Array.from({ length: lineCount }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute bg-current rounded-sm z-0"
+            style={{
+              width: lineLength,
+              height: lineThickness,
+              top: `calc(${i} * ${lineGap})`,
+              left: `calc(${i} * 8px)`,
+            }}
+          />
+        ))}
+      </div>
+    </>
   );
 }

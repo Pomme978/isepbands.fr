@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
-import { prisma } from '@/prisma';
+import { checkAdminPermission } from '@/middlewares/admin';
+import { prisma } from '@/lib/prisma';
+import { logAdminAction } from '@/services/activityLogService';
 import { z } from 'zod';
 
 const createPermissionSchema = z.object({
@@ -53,11 +55,17 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // TODO: Re-enable auth check once we have test users
-  // const authResult = await requireAuth(req);
-  // if (!authResult.ok) {
-  //   return authResult.res;
-  // }
+  // Check authentication
+  const authResult = await requireAuth(req);
+  if (!authResult.ok) {
+    return authResult.res;
+  }
+
+  // Check admin permission
+  const adminCheck = await checkAdminPermission(authResult.user);
+  if (!adminCheck.hasPermission) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
@@ -93,6 +101,21 @@ export async function POST(req: NextRequest) {
         description: true,
       },
     });
+
+    // Log admin action
+    await logAdminAction(
+      authResult.user.id,
+      'permission_created',
+      'Nouvelle permission créée',
+      `**${validatedData.nameFr}** (${validatedData.name}) créée`,
+      null, // No specific user targeted
+      {
+        permissionName: validatedData.name,
+        nameFr: validatedData.nameFr,
+        nameEn: validatedData.nameEn,
+        description: validatedData.description || null
+      }
+    );
 
     return NextResponse.json(
       {

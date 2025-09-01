@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/middlewares/auth';
+import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/prisma';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await requireAuth(req);
-  if (!auth.ok) return auth.res;
+  const authResult = await requireAdminAuth(req);
+  if (!authResult.ok) return authResult.res;
 
   try {
     const userId = params.id;
-    const currentUserId = auth.user?.id; // Get the ID of the user performing the restore
+    const currentUserId = authResult.user?.id; // Get the ID of the user performing the restore
 
     if (!userId) {
       return NextResponse.json({ error: 'ID utilisateur requis' }, { status: 400 });

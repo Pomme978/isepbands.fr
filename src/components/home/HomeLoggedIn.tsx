@@ -51,8 +51,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   // Fetch club feed activities
-  useEffect(() => {
-    const fetchActivities = async () => {
+  const fetchActivities = async () => {
       try {
         setIsLoadingFeed(true);
         setFeedError(null);
@@ -105,7 +104,13 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
       }
     };
 
+  useEffect(() => {
     fetchActivities();
+
+    // Auto-refresh every 30 seconds to catch new posts
+    const interval = setInterval(fetchActivities, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Fetch user profile data

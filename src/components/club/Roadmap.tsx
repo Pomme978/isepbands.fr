@@ -53,20 +53,31 @@ export default function Roadmap({
       </div>
 
       {/* Mobile */}
-      <div className="md:hidden">
-        <div className="flex flex-row justify-between items-center">
-          <ArrowBar showTitle={false} orientation="vertical" className={colorClass} />
-          <div className="flex flex-col justify-center items-center">
+      <div className="md:hidden mx-4">
+        {/* Titre NOTRE VISION affiché en haut sur mobile */}
+        <h2 className="text-2xl font-bold text-center mb-15 tracking-wider">{title}</h2>
+        
+        <div className="flex flex-row items-start gap-4">
+          {/* ArrowBar à gauche - augmentée */}
+          <div className="flex-shrink-0">
+            <ArrowBar 
+              showTitle={false} 
+              orientation="vertical" 
+              className={colorClass}
+              mobileHeightClass="h-[28rem]"
+              height={120}
+            />
+          </div>
+          
+          {/* Cartes en colonne à droite - rectangulaires et ajustées à la hauteur de la flèche */}
+          <div className="flex flex-col justify-between flex-1 h-[28rem] gap-2">
             {items.map((it, i) => (
-              <div key={i} className="grid grid-cols-[28px_1fr] items-start gap-3">
-                <div className="relative">
-                  {/* connecteur centré verticalement vers la carte */}
-                  <div className="w-full max-w-[220px] aspect-square rounded-xl bg-slate-900 text-white p-4 text-center shadow-lg flex flex-col items-center justify-center">
-                    <div className="text-sm font-semibold">{it.title}</div>
-                    {it.subtitle && (
-                      <div className="mt-1 text-xs opacity-80 leading-snug">{it.subtitle}</div>
-                    )}
-                  </div>
+              <div key={i} className="flex-1">
+                <div className="w-full h-full rounded-xl bg-slate-800 text-white p-3 text-center shadow-lg flex flex-col items-center justify-center">
+                  <div className="text-sm font-semibold">{it.title}</div>
+                  {it.subtitle && (
+                    <div className="mt-1 text-xs opacity-80 leading-snug">{it.subtitle}</div>
+                  )}
                 </div>
               </div>
             ))}

@@ -1,7 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, User, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { 
+  FileText, 
+  User, 
+  MessageSquare, 
+  Clock, 
+  CheckCircle, 
+  AlertCircle,
+  UserCheck,
+  UserX,
+  Settings,
+  Calendar,
+  Shield,
+  Edit3,
+  Archive,
+  LucideIcon 
+} from 'lucide-react';
 interface ActivityLog {
   id: string;
   type: string;
@@ -10,6 +25,7 @@ interface ActivityLog {
   metadata?: Record<string, unknown>;
   createdAt: string;
   createdBy?: string;
+  createdByName?: string; // Nom résolu de l'utilisateur
 }
 
 interface RegistrationDetails {
@@ -29,6 +45,43 @@ interface UserEditActivityLogProps {
 export default function UserEditActivityLog({ userId }: UserEditActivityLogProps) {
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [loadingLog, setLoadingLog] = useState(true);
+
+  // Helper function pour obtenir l'icône et la couleur selon le type d'activité
+  const getActivityIconAndColor = (type: string): { icon: LucideIcon; color: string } => {
+    switch (type) {
+      case 'user_approved':
+        return { icon: UserCheck, color: 'text-green-600' };
+      case 'user_rejected':
+        return { icon: UserX, color: 'text-red-600' };
+      case 'user_created':
+        return { icon: User, color: 'text-blue-600' };
+      case 'user_archived':
+        return { icon: Archive, color: 'text-red-600' };
+      case 'user_restored':
+        return { icon: UserCheck, color: 'text-green-600' };
+      case 'profile_updated':
+      case 'user_edited':
+        return { icon: Edit3, color: 'text-amber-600' };
+      case 'role_assigned':
+      case 'role_created':
+      case 'permissions_updated':
+      case 'permission_created':
+        return { icon: Shield, color: 'text-purple-600' };
+      case 'event_created':
+      case 'event_updated':
+        return { icon: Calendar, color: 'text-indigo-600' };
+      case 'archived':
+      case 'unarchived':
+        return { icon: Archive, color: 'text-gray-600' };
+      case 'system_settings_updated':
+      case 'year_migration':
+        return { icon: Settings, color: 'text-blue-500' };
+      case 'system_announcement':
+        return { icon: Settings, color: 'text-gray-500' };
+      default:
+        return { icon: CheckCircle, color: 'text-primary' };
+    }
+  };
   const [registrationDetails, setRegistrationDetails] = useState<RegistrationDetails | null>(null);
   const [loadingRegistration, setLoadingRegistration] = useState(true);
   useEffect(() => {
@@ -143,21 +196,20 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           </div>
         ) : (
           <ol className="relative border-l-2 border-primary/30 ml-4">
-            {activityLog.map((log) => (
+            {activityLog.map((log) => {
+              const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
+              return (
               <li key={log.id} className="mb-8 ml-6">
-                <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary rounded-full ring-4 ring-white">
-                  {log.type === 'custom' ? (
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-white" />
-                  )}
+                <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white border-2 border-gray-200 rounded-full">
+                  <IconComponent className={`w-3 h-3 ${color}`} />
                 </span>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-gray-400">
-                    {new Date(log.createdAt).toLocaleString('fr-FR', {
+                    {new Date(log.createdAt).toLocaleDateString('fr-FR', {
                       day: '2-digit',
                       month: '2-digit',
                       year: 'numeric',
+                    })} à {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -166,12 +218,13 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                   {log.description && (
                     <span className="text-sm text-gray-700">{log.description}</span>
                   )}
-                  {log.createdBy && (
-                    <span className="text-xs text-gray-500">Ajouté par : {log.createdBy}</span>
+                  {log.createdByName && (
+                    <span className="text-xs text-gray-500">Par {log.createdByName}</span>
                   )}
                 </div>
               </li>
-            ))}
+            );
+            })}
           </ol>
         )}
       </div>

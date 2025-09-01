@@ -13,6 +13,10 @@ import {
   Settings,
   LucideIcon,
   Crown,
+  Activity,
+  MessageSquare,
+  Shield,
+  Archive,
 } from 'lucide-react';
 
 interface ApiActivity {
@@ -43,12 +47,23 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
   const getIconAndType = (type: string) => {
     switch (type) {
       case 'new_member':
+      case 'user_created':
         return { icon: UserCheck, type: 'success' as const };
+      case 'user_archived':
+        return { icon: Archive, type: 'warning' as const };
+      case 'user_restored':
+        return { icon: UserCheck, type: 'success' as const };
+      case 'role_created':
+      case 'permission_created':
+        return { icon: Shield, type: 'info' as const };
+      case 'system_settings_updated':
+      case 'year_migration':
+        return { icon: Settings, type: 'info' as const };
       case 'post':
       case 'custom':
-        return { icon: Megaphone, type: 'info' as const };
+        return { icon: MessageSquare, type: 'info' as const };
       case 'system_announcement':
-        return { icon: Settings, type: 'warning' as const };
+        return { icon: Activity, type: 'info' as const };
       case 'event':
         return { icon: Calendar, type: 'info' as const };
       default:
@@ -263,15 +278,12 @@ export default function RecentActivity({
             <p className="text-muted-foreground">Chargement des activités...</p>
           </div>
         ) : displayedActivities.length > 0 ? (
-          <div className="flow-root">
-            <ul className="-my-5 divide-y divide-border">
-              {displayedActivities.map((activity) => {
+          <div className="divide-y divide-gray-200">
+            {displayedActivities.map((activity) => {
                 const colors = getActivityColors(activity.type);
 
-                // Enhanced description with admin info
-                const enhancedDescription = activity.adminAction
-                  ? `${activity.description} • Par ${activity.adminAction.adminName}${activity.adminAction.adminRole ? ` (${activity.adminAction.adminRole})` : ''}`
-                  : activity.description;
+                // Don't add "Par X" since it's already in the description
+                const enhancedDescription = activity.description;
 
                 return (
                   <ActivityItem
@@ -285,7 +297,6 @@ export default function RecentActivity({
                   />
                 );
               })}
-            </ul>
           </div>
         ) : (
           <div className="text-center py-8">
