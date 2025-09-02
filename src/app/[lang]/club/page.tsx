@@ -223,7 +223,7 @@ export default function Asso() {
                   size="sm"
                   className="shadow-md overflow-hidden bg-primary text-sm py-3 md:py-5 px-8 md:px-12 text-primary-foreground w-full md:w-auto"
                 >
-                  <LangLink href={`/legal`}>Voir</LangLink>
+                  <LangLink href={`/mentions-legales`}>Voir</LangLink>
                 </Button>
               </div>
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3 md:gap-0">
