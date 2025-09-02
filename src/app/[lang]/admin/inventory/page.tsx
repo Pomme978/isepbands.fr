@@ -40,6 +40,7 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  Copy,
 } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -55,6 +56,7 @@ interface InventoryItem {
   quantity: number;
   comment?: string;
   images?: string[];
+  usable: boolean;
   createdAt: string;
   creator?: {
     id: string;
@@ -141,6 +143,7 @@ export default function InventoryPage() {
     state: 'GOOD' as const,
     quantity: 1,
     comment: '',
+    usable: true,
   });
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -246,6 +249,7 @@ export default function InventoryPage() {
       state: 'GOOD',
       quantity: 1,
       comment: '',
+      usable: true,
     });
     setUploadedImages([]);
     setEditingItem(null);
@@ -273,6 +277,26 @@ export default function InventoryPage() {
         throw new Error(errorData.error || 'Failed to save');
       }
 
+      const result = await response.json();
+      
+      // Log d'activité
+      await fetch('/api/admin/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: editingItem ? 'inventory_updated' : 'inventory_created',
+          title: editingItem ? `Équipement modifié: ${formData.name}` : `Nouvel équipement ajouté: ${formData.name}`,
+          description: `${formData.category} - ${[formData.brand, formData.model].filter(Boolean).join(' ')} (Qté: ${formData.quantity})`,
+          metadata: {
+            itemId: result.item?.id || editingItem?.id,
+            category: formData.category,
+            name: formData.name,
+            quantity: formData.quantity,
+            state: formData.state,
+          }
+        }),
+      }).catch(console.error);
+
       toast.success(editingItem ? 'Article modifié' : 'Article créé');
       setShowCreateModal(false);
       resetForm();
@@ -292,13 +316,58 @@ export default function InventoryPage() {
       state: item.state,
       quantity: item.quantity,
       comment: item.comment || '',
+      usable: item.usable,
     });
     setUploadedImages(item.images || []);
     setEditingItem(item);
     setShowCreateModal(true);
   };
 
+  const handleDuplicate = async (item: InventoryItem) => {
+    try {
+      const response = await fetch('/api/admin/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: item.category,
+          name: item.name + ' (copie)',
+          brand: item.brand,
+          model: item.model,
+          state: item.state,
+          quantity: item.quantity,
+          comment: item.comment,
+          images: item.images || [],
+          usable: item.usable,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchItems();
+        
+        // Activity log
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inventory_created',
+            title: 'Article dupliqué',
+            description: `Article "${item.name}" dupliqué`,
+            metadata: { originalId: item.id, originalName: item.name },
+          }),
+        });
+
+        toast.success('Article dupliqué avec succès');
+      } else {
+        throw new Error('Erreur lors de la duplication');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la duplication:', error);
+      toast.error('Erreur lors de la duplication');
+    }
+  };
+
   const handleDelete = async (id: string) => {
+    const item = items.find(i => i.id === id);
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
 
     try {
@@ -307,6 +376,26 @@ export default function InventoryPage() {
       });
 
       if (!response.ok) throw new Error('Failed to delete');
+
+      // Log d'activité
+      if (item) {
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inventory_deleted',
+            title: `Équipement supprimé: ${item.name}`,
+            description: `${item.category} - ${[item.brand, item.model].filter(Boolean).join(' ')} (Qté: ${item.quantity})`,
+            metadata: {
+              itemId: id,
+              category: item.category,
+              name: item.name,
+              quantity: item.quantity,
+              state: item.state,
+            }
+          }),
+        }).catch(console.error);
+      }
 
       toast.success('Article supprimé');
       fetchItems();
@@ -395,71 +484,52 @@ export default function InventoryPage() {
     }
 
     if (isExpanded) {
-      // Mode déroulé : prend toute la largeur disponible
+      // Mode déroulé : les cartes se placent dans la continuité de la grille
       return (
-        <div key={key} className="col-span-full">
-          {/* Fond spécial pour les cartes déroulées */}
-          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-xl p-6 border-2 border-primary/20">
-            {/* Header avec bouton replier stylé */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Layers className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {representative.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {items.length} fiches • {totalQuantity} quantité totale
-                  </p>
-                </div>
-              </div>
-              
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleStack(key);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-medium rounded-lg transition-all duration-200 hover:scale-105"
-              >
-                <ChevronUp className="w-4 h-4" />
-                Replier le stack
-              </button>
-            </div>
-            
-            {/* Cartes déroulées dans une sous-grille avec fond */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {items.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="transform transition-all duration-300 ease-out"
-                  style={{
-                    animationDelay: `${index * 80}ms`,
-                    animation: `expandFromStack 0.4s ease-out forwards`,
-                  }}
-                >
-                  <div onClick={(e) => e.stopPropagation()}>
-                    {renderItemCard(item)}
-                  </div>
-                </div>
-              ))}
-            </div>
+        <>
+          {/* Header replié en première position */}
+          <div 
+            key={`${key}-header`} 
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleStack(key);
+            }}
+            className="cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg p-6 w-16 flex items-center justify-center transition-all duration-200"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
           </div>
+
+          {/* Cartes individuelles qui s'insèrent dans la grille avec fond d'enveloppe */}
+          {items.map((item, index) => (
+            <div
+              key={item.id}
+              className="transform transition-all duration-300 ease-out relative"
+              style={{
+                animationDelay: `${index * 60}ms`,
+                animation: `expandFromStack 0.3s ease-out forwards`,
+              }}
+            >
+              {/* Fond d'enveloppe */}
+              <div className="absolute inset-0 bg-primary/10 rounded-lg -z-10 scale-105"></div>
+              <div onClick={(e) => e.stopPropagation()}>
+                {renderItemCard(item)}
+              </div>
+            </div>
+          ))}
           
           <style jsx>{`
             @keyframes expandFromStack {
               0% {
                 opacity: 0;
-                transform: translateY(-20px) scale(0.9) rotateX(10deg);
+                transform: scale(0.8) rotateY(-10deg);
               }
               100% {
                 opacity: 1;
-                transform: translateY(0) scale(1) rotateX(0deg);
+                transform: scale(1) rotateY(0deg);
               }
             }
           `}</style>
-        </div>
+        </>
       );
     }
 
@@ -526,10 +596,10 @@ export default function InventoryPage() {
   const renderItemCard = (item: InventoryItem) => (
     <div
       key={item.id}
-      className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
+      className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200 w-64 flex-shrink-0"
     >
       {/* Images avec carrousel - Compact */}
-      <div className="relative h-48 bg-gray-50">
+      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
         {item.images && item.images.length > 0 ? (
           <div className="relative group h-full">
             <Image
@@ -582,7 +652,7 @@ export default function InventoryPage() {
             </div>
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
             <Camera className="w-8 h-8 text-gray-400 mb-1" />
             <p className="text-xs text-gray-500 font-ubuntu">Aucune photo</p>
           </div>
@@ -652,6 +722,53 @@ export default function InventoryPage() {
     </div>
   );
 
+  // Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent, item: InventoryItem) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ itemId: item.id, currentCategory: item.category }));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetCategory: string) => {
+    e.preventDefault();
+    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+    const { itemId, currentCategory } = data;
+
+    if (currentCategory === targetCategory) return;
+
+    try {
+      const response = await fetch(`/api/admin/inventory/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: targetCategory }),
+      });
+
+      if (response.ok) {
+        await fetchItems();
+        
+        // Activity log
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inventory_updated',
+            title: 'Catégorie modifiée par drag & drop',
+            description: `Catégorie changée de "${currentCategory}" vers "${targetCategory}"`,
+            metadata: { itemId, oldCategory: currentCategory, newCategory: targetCategory },
+          }),
+        });
+
+        toast.success(`Catégorie changée vers "${targetCategory}"`);
+      }
+    } catch (error) {
+      toast.error('Erreur lors du changement de catégorie');
+    }
+  };
+
   const renderTableView = () => (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
@@ -677,6 +794,9 @@ export default function InventoryPage() {
                 Qté
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Utilisable
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -696,13 +816,13 @@ export default function InventoryPage() {
                         onClick={() => setViewingImage(item.images![0])}
                       />
                       {item.images.length > 1 && (
-                        <span className="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                           {item.images.length}
                         </span>
                       )}
                     </div>
                   ) : (
-                    <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                       <Camera className="w-5 h-5 text-gray-400" />
                     </div>
                   )}
@@ -720,12 +840,26 @@ export default function InventoryPage() {
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-center">{item.quantity}</td>
+                <td className="px-4 py-3 text-center">
+                  <Badge className={`text-xs ${item.usable ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>
+                    {item.usable ? 'Oui' : 'Non'}
+                  </Badge>
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => handleDuplicate(item)}
+                      title="Dupliquer"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleEdit(item)}
+                      title="Modifier"
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -734,6 +868,7 @@ export default function InventoryPage() {
                       size="sm"
                       onClick={() => handleDelete(item.id)}
                       className="text-red-600 hover:text-red-700"
+                      title="Supprimer"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -750,20 +885,40 @@ export default function InventoryPage() {
   const renderBoardView = () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {boardItems.map(([category, categoryItems]) => (
-        <div key={category} className="bg-gray-50 rounded-lg p-4">
+        <div 
+          key={category} 
+          className="bg-gray-50 rounded-lg p-4"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, category)}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-sm uppercase text-gray-700">{category}</h3>
             <Badge className="text-xs">{categoryItems.length}</Badge>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 min-h-24">
             {categoryItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow cursor-move relative group"
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
                 onClick={() => handleEdit(item)}
               >
+                {/* Bouton d'édition qui apparaît au hover */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-200 hover:bg-gray-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(item);
+                  }}
+                >
+                  <Edit className="w-3 h-3" />
+                </Button>
+
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium text-sm line-clamp-2">{item.name}</h4>
+                  <h4 className="font-medium text-sm line-clamp-2 pr-8">{item.name}</h4>
                   {item.images && item.images.length > 0 && (
                     <div className="flex -space-x-2">
                       {item.images.slice(0, 2).map((img, idx) => (
@@ -839,13 +994,13 @@ export default function InventoryPage() {
                     className="w-10 h-10 rounded object-cover"
                   />
                 ) : (
-                  <div key={idx} className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                  <div key={idx} className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                     <Camera className="w-4 h-4 text-gray-400" />
                   </div>
                 )
               ))}
               {group.items.length > 3 && (
-                <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                   <span className="text-xs text-gray-600">+{group.items.length - 3}</span>
                 </div>
               )}
@@ -963,12 +1118,26 @@ export default function InventoryPage() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Sélectionnez un état">
+                          {formData.state && (
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className={`w-3 h-3 rounded-full border ${STATE_COLORS[formData.state as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
+                              />
+                              {STATE_LABELS[formData.state as keyof typeof STATE_LABELS]}
+                            </div>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(STATE_LABELS).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
-                            {label}
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className={`w-3 h-3 rounded-full border ${STATE_COLORS[value as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
+                              />
+                              {label}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -988,6 +1157,24 @@ export default function InventoryPage() {
                         }))
                       }
                     />
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium font-ubuntu">
+                      <input
+                        type="checkbox"
+                        checked={formData.usable}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            usable: e.target.checked,
+                          }))
+                        }
+                        className="rounded border-gray-300"
+                      />
+                      Utilisable
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">L'article est-il actuellement utilisable ?</p>
                   </div>
 
                   <div>
@@ -1132,16 +1319,23 @@ export default function InventoryPage() {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold font-outfit text-primary">{items.length}</p>
-              <p className="text-xs text-gray-600 font-ubuntu">instruments</p>
+              <p className="text-xs text-gray-600 font-ubuntu">objets</p>
             </div>
           </div>
           
           <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="bg-white p-2 text-center">
               <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {items.filter((i) => ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length}
+                {items.filter((i) => i.usable && ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length}
               </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Opérationnels</p>
+              <p className="text-xs text-gray-600 font-ubuntu">Utilisables</p>
+            </div>
+
+            <div className="bg-white p-2 text-center">
+              <p className="text-lg font-bold font-outfit text-primary mb-1">
+                {items.filter((i) => !i.usable).length}
+              </p>
+              <p className="text-xs text-gray-600 font-ubuntu">Non utilisables</p>
             </div>
             
             <div className="bg-white p-2 text-center">
@@ -1149,11 +1343,6 @@ export default function InventoryPage() {
                 {items.filter((i) => ['DEFECTIVE', 'OUT_OF_SERVICE'].includes(i.state)).length}
               </p>
               <p className="text-xs text-gray-600 font-ubuntu">Hors service</p>
-            </div>
-            
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">{categories.length}</p>
-              <p className="text-xs text-gray-600 font-ubuntu">Catégories</p>
             </div>
           </div>
           
@@ -1185,7 +1374,7 @@ export default function InventoryPage() {
             <p className="text-gray-600 font-ubuntu">Aucun article trouvé</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+          <div className="flex flex-wrap gap-4 p-4 justify-start">
             {stackedItems.map(renderStackCard)}
           </div>
         ) : viewMode === 'table' ? (

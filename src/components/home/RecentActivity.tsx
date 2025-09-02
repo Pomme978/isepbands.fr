@@ -84,15 +84,15 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
   };
 
   return (
-    <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-4">
+    <div className="px-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-3 md:mb-4">
       {/* Titre en gras si présent - plus gros */}
-      {activity.title && <h3 className="font-bold text-lg text-gray-900">{activity.title}</h3>}
+      {activity.title && <h3 className="font-bold text-base md:text-lg text-gray-900">{activity.title}</h3>}
 
       {/* Description */}
-      {activity.description && <p className="text-md text-gray-600 mb-4">{activity.description}</p>}
+      {activity.description && <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4">{activity.description}</p>}
 
       {/* Informations utilisateur sur une ligne avec séparation gauche/droite */}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mt-2">
         {/* Gauche: Avatar + Nom + Rôle */}
         <div className="flex items-center space-x-3">
           {isSystemMessage ? (
@@ -110,7 +110,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
             />
           )}
 
-          <div className="flex items-center space-x-2 text-sm">
+          <div className="flex items-center space-x-2 text-xs md:text-sm">
             {!isSystemMessage && (
               <>
                 <span className="font-medium text-gray-900">{activity.user?.name}</span>
@@ -129,7 +129,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
         </div>
 
         {/* Droite: Type d'activité + Heure */}
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
+        <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-500">
           <div className="flex items-center space-x-1">
             {!isSystemMessage && getActivityIcon(activity.type)}
             <span className="text-xs">{getActivityLabel(activity.type)}</span>
@@ -142,7 +142,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
       {/* Images et contenu supplémentaire */}
       {activity.type === 'post_with_image' && activity.images && activity.images.length > 0 && (
         <div className="mt-3 mb-3">
-          <div className="grid grid-cols-2 gap-2 max-w-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xs">
             {activity.images.map((image, index) => (
               <Image
                 key={index}
@@ -150,7 +150,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
                 alt={`Post image ${index + 1}`}
                 width={96}
                 height={96}
-                className="rounded-lg w-full h-24 object-cover"
+                className="rounded-lg w-full h-20 md:h-24 object-cover"
               />
             ))}
           </div>
@@ -164,14 +164,14 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
             alt="Post image"
             width={200}
             height={128}
-            className="rounded-lg max-w-full h-32 object-cover"
+            className="rounded-lg max-w-full h-24 md:h-32 object-cover"
           />
         </div>
       )}
 
       {activity.type === 'event' && (
         <div className="mt-3">
-          <button className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-md border border-red-200 transition-colors">
+          <button className="px-2 md:px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-md border border-red-200 transition-colors">
             Voir l&apos;événement
           </button>
         </div>
@@ -179,7 +179,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
 
       {activity.type === 'new_group' && (
         <div className="mt-3">
-          <button className="px-3 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs rounded-md border border-orange-200 transition-colors">
+          <button className="px-2 md:px-3 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs rounded-md border border-orange-200 transition-colors">
             Voir le groupe
           </button>
         </div>
@@ -213,16 +213,16 @@ export const RecentActivity = ({
   const hasMore = activities.length > maxItems;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2 md:space-y-1">
       {recentActivities.map((activity) => (
         <ActivityItem key={activity.id} activity={activity} />
       ))}
 
       {hasMore && showHistoryButton && onShowHistory && (
-        <div className="pt-4 border-t border-gray-200 mt-4">
+        <div className="pt-3 md:pt-4 border-t border-gray-200 mt-3 md:mt-4">
           <button
             onClick={onShowHistory}
-            className="w-full py-2 px-4 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
+            className="w-full py-2 px-3 md:px-4 text-xs md:text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
           >
             Voir l&apos;historique complet ({activities.length - maxItems} activités
             supplémentaires)

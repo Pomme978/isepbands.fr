@@ -175,6 +175,27 @@ export default function WishlistPage() {
         throw new Error(errorData.error || 'Failed to save');
       }
 
+      const result = await response.json();
+      
+      // Log d'activité
+      await fetch('/api/admin/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: editingItem ? 'wishlist_updated' : 'wishlist_created',
+          title: editingItem ? `Souhait modifié: ${formData.name}` : `Nouveau souhait ajouté: ${formData.name}`,
+          description: `${formData.category} - ${[formData.brand, formData.model].filter(Boolean).join(' ')} (${PRIORITIES[formData.priority].label}${formData.estimatedPrice ? ` - ${formData.estimatedPrice}€` : ''})`,
+          metadata: {
+            itemId: result.item?.id || editingItem?.id,
+            category: formData.category,
+            name: formData.name,
+            priority: formData.priority,
+            status: formData.status,
+            estimatedPrice: payload.estimatedPrice,
+          }
+        }),
+      }).catch(console.error);
+
       toast.success(editingItem ? 'Souhait modifié' : 'Souhait ajouté');
       setShowCreateModal(false);
       resetForm();
@@ -203,6 +224,7 @@ export default function WishlistPage() {
   };
 
   const handleDelete = async (id: string) => {
+    const item = items.find(i => i.id === id);
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce souhait ?')) return;
 
     try {
@@ -211,6 +233,27 @@ export default function WishlistPage() {
       });
 
       if (!response.ok) throw new Error('Failed to delete');
+
+      // Log d'activité
+      if (item) {
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'wishlist_deleted',
+            title: `Souhait supprimé: ${item.name}`,
+            description: `${item.category} - ${[item.brand, item.model].filter(Boolean).join(' ')} (${PRIORITIES[item.priority].label}${item.estimatedPrice ? ` - ${item.estimatedPrice}€` : ''})`,
+            metadata: {
+              itemId: id,
+              category: item.category,
+              name: item.name,
+              priority: item.priority,
+              status: item.status,
+              estimatedPrice: item.estimatedPrice,
+            }
+          }),
+        }).catch(console.error);
+      }
 
       toast.success('Souhait supprimé');
       fetchItems();

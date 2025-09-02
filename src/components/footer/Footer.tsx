@@ -33,7 +33,6 @@ const footerColumns = [
       { label: "Conditions d'utilisation", href: '/conditions' },
       { label: 'Politique de confidentialité', href: '/confidentialite' },
       { label: 'Mentions légales', href: '/mentions-legales' },
-      { label: 'RGPD', href: '/rgpd' },
     ],
   },
 ];
@@ -56,7 +55,7 @@ export default function Footer() {
               alt="ISEPBANDS Logo"
               width={120}
               height={120}
-              className="object-contain w-28 h-28 md:w-24 md:h-24"
+              className="object-contain w-28 h-28 md:w-24 md:h-24 hover:scale-105 transition-transform duration-300 cursor-pointer"
             />
           </div>
 

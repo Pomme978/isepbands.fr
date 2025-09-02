@@ -463,23 +463,25 @@ model SystemLog {
 }
 
 model Inventory {
-  id        String        @id @default(uuid())
-  category  String        // Instruments, Matériel Audio, Accessoires, etc.
-  name      String        // Nom de l'item
-  brand     String?       // Marque
-  model     String?       // Modèle
-  state     InventoryState @default(GOOD)
-  quantity  Int           @default(1)
-  comment   String?       @db.Text
-  images    Json?         // Array of image URLs
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @default(now()) @updatedAt
-  createdBy String?
+  id         String        @id @default(uuid())
+  category   String        // Instruments, Matériel Audio, Accessoires, etc.
+  name       String        // Nom de l'item
+  brand      String?       // Marque
+  model      String?       // Modèle
+  state      InventoryState @default(GOOD)
+  quantity   Int           @default(1)
+  comment    String?       @db.Text
+  images     Json?         // Array of image URLs
+  usable     Boolean       @default(true) // Indique si l'item est actuellement utilisable
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @default(now()) @updatedAt
+  createdBy  String?
   
   creator   User?         @relation(fields: [createdBy], references: [id])
   
   @@index([category], map: "Inventory_category_idx")
   @@index([state], map: "Inventory_state_idx")
+  @@index([usable], map: "Inventory_usable_idx")
   @@index([createdBy], map: "Inventory_createdBy_fkey")
 }
 

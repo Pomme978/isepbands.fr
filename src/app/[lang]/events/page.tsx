@@ -6,6 +6,7 @@ import EventPosters from '@/components/events/EventPosters';
 import ChristmasGarland from '@/components/events/ChristmasGarland';
 import SignBoard from '@/components/events/SignBoard';
 import Calendar from '@/components/events/Calendar';
+import WaveDivider from '@/components/events/WaveDivider';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import React from 'react';
 
@@ -75,7 +76,15 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="py-20 "></div>
+        {/* Séparateur avec vagues */}
+        <WaveDivider 
+          numberOfWaves={5}
+          backgroundColor="#2D0446"
+          height={120}
+          amplitude={60}
+          spacing={12}
+          className="mt-20"
+        />
       </div>
 
       <h5 className="text-[10px] text-white/70 relative max-w-7xl flex font-press-start-2p justify-center md:justify-end mx-auto pt-8">

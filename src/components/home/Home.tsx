@@ -22,7 +22,7 @@ export function Home({ lang }: HomeProps) {
   return (
     <>
       <div className="relative bg-gray-100 w-full">
-        <div className="max-w-7xl mx-auto pb-8 flex justify-center items-center flex-col">
+        <div className="max-w-7xl mx-auto px-2 pb-8 flex justify-center items-center flex-col">
           <div className="flex items-center justify-center flex-col">
             {/* Left floating guitar */}
             <div className="absolute -left-30 top-20 z-10 hidden lg:inline">
@@ -71,7 +71,7 @@ export function Home({ lang }: HomeProps) {
                   SO IF YOU&#39;RE READY, WHAT ARE YOU WAITING FOR ?
                 </h2>
                 <Button asChild className="bg-primary text-white px-8 py-3">
-                  <LangLink href="/club#adhesion">Join Us</LangLink>
+                  <LangLink href="/#comment-nous-rejoindre">Join Us</LangLink>
                 </Button>
               </div>
             </div>
@@ -80,7 +80,14 @@ export function Home({ lang }: HomeProps) {
           {/* Divider */}
           <hr className="border-gray-300 mb-16" />
 
-          <UpcomingEvents />
+          {/* Upcoming Events Section - Commented out */}
+          <div className="w-full text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">UPCOMING EVENTS</h2>
+            <p className="text-xs text-gray-500 py-12">
+              Fonctionnalité à venir
+            </p>
+          </div>
+          {/* <UpcomingEvents /> */}
         </div>
       </div>
     </>

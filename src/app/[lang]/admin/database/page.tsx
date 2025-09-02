@@ -116,7 +116,7 @@ export default function DatabaseAdminPage() {
                 className="flex items-center space-x-2"
               >
                 {isRunning ? (
-                  <Loading text="Vérification en cours..." size="sm" />
+                  <Loading text="Vérification en cours..." size="sm" variant="spinner" theme="white" />
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4" />
