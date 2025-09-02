@@ -90,6 +90,7 @@ model User {
   systemLogs                    SystemLog[] @relation("SystemLogPerformedBy")
   createdEmailTemplates         EmailTemplate[]
   createdNewsletters            Newsletter[]
+  inventoryItems                Inventory[]
 }
 
 model StorageObject {
@@ -456,6 +457,27 @@ model SystemLog {
   @@index([createdAt], map: "SystemLog_createdAt_idx")
 }
 
+model Inventory {
+  id        String        @id @default(uuid())
+  category  String        // Instruments, Matériel Audio, Accessoires, etc.
+  name      String        // Nom de l'item
+  brand     String?       // Marque
+  model     String?       // Modèle
+  state     InventoryState @default(GOOD)
+  quantity  Int           @default(1)
+  comment   String?       @db.Text
+  images    Json?         // Array of image URLs
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+  createdBy String?
+  
+  creator   User?         @relation(fields: [createdBy], references: [id])
+  
+  @@index([category], map: "Inventory_category_idx")
+  @@index([state], map: "Inventory_state_idx")
+  @@index([createdBy], map: "Inventory_createdBy_fkey")
+}
+
 // Newsletter and Email System
 model NewsletterSubscriber {
   id            Int      @id @default(autoincrement())
@@ -580,4 +602,14 @@ enum EmailLogStatus {
   BOUNCED
   FAILED
   SPAM
+}
+
+enum InventoryState {
+  NEW
+  VERY_GOOD
+  GOOD
+  AVERAGE
+  DAMAGED
+  DEFECTIVE
+  OUT_OF_SERVICE
 }

@@ -31,6 +31,7 @@ import {
   Building2,
   FileText,
   Image,
+  Package,
 
   // Newsletter & Communication
   Send,
@@ -109,6 +110,11 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         name: 'Media Library',
         href: '/admin/media',
         icon: Image,
+      },
+      {
+        name: 'Inventory',
+        href: '/admin/inventory',
+        icon: Package,
       },
     ],
   },

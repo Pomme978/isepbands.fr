@@ -9,7 +9,7 @@ import BgElements from '@/components/club/BgElements';
 import { Button } from '@/components/ui/button';
 import LangLink from '@/components/common/LangLink';
 import Cabinet from '@/components/club/Cabinet';
- import { Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 
 export default function Asso() {
   const items = [
@@ -116,7 +116,9 @@ export default function Asso() {
             id="adhesion"
             className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-8 md:py-13 mt-10 md:mt-20 mb-10 md:mb-20 px-4"
           >
-            <h1 className="font-bold text-xl md:text-2xl tracking-wider">COMMENT NOUS REJOINDRE ?</h1>
+            <h1 className="font-bold text-xl md:text-2xl tracking-wider">
+              COMMENT NOUS REJOINDRE ?
+            </h1>
             <p className="text-base md:text-lg mt-3 max-w-xl">
               Rien de plus simple ! Inscris toi via le bouton rejoindre l&#39;association, remplis
               le formulaire, attends ta réponse, et tout seras prêt !
@@ -125,7 +127,9 @@ export default function Asso() {
 
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-6 md:gap-10 max-w-7xl mx-auto mt-10 mb-6 px-4">
               <div className="flex flex-col justify-between items-center text-center w-full md:max-w-60 h-auto md:h-96 p-4 md:p-0">
-                <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-0">Savoir jouer d&#39;un instrument</h3>
+                <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-0">
+                  Savoir jouer d&#39;un instrument
+                </h3>
                 <p className="text-sm md:text-md mb-6 md:mb-0">
                   Tu pratique d&#39;un instrument, quel qu&#39;il soit ? Guitare, basse, piano,
                   chant, harpe, batterie ou tout type d&#39;appareil qui produit du son? Alors isep
@@ -143,11 +147,13 @@ export default function Asso() {
               <div className="hidden md:block w-px bg-gray-300 self-stretch"></div>
 
               <div className="flex flex-col justify-between items-center text-center w-full md:max-w-60 h-auto md:h-96 p-4 md:p-0">
-                <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-0">Être prêt à s&#39;engager</h3>
+                <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-0">
+                  Être prêt à s&#39;engager
+                </h3>
                 <p className="text-sm md:text-md mb-6 md:mb-0">
-                  Tu es prêt à t&#39;engager et à participer à la vie de l&#39;asso ? Rejoindre un groupe,
-                  monter sur scène, assurer et être présents aux répétitions ? Alors isep bands est
-                  fait pour toi !
+                  Tu es prêt à t&#39;engager et à participer à la vie de l&#39;asso ? Rejoindre un
+                  groupe, monter sur scène, assurer et être présents aux répétitions ? Alors isep
+                  bands est fait pour toi !
                 </p>
                 <Button
                   asChild
@@ -164,8 +170,9 @@ export default function Asso() {
                 <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-0">Kiffer la musique</h3>
                 <p className="text-sm md:text-md mb-6 md:mb-0">
                   Tu aimes la musique, tu veux découvrir le monde de la scène, des groupes, du live
-                  ? Tu veux pouvoir vivre cette experience et rencontrer pleins d&#39;autres personnes
-                  qui souhaitent la même chose que toi? Alors isep bands est fait pour toi !
+                  ? Tu veux pouvoir vivre cette experience et rencontrer pleins d&#39;autres
+                  personnes qui souhaitent la même chose que toi? Alors isep bands est fait pour toi
+                  !
                 </p>
                 <Button
                   asChild
@@ -180,7 +187,9 @@ export default function Asso() {
         </div>
         <div className="relative mx-4 md:mx-0 mb-16 md:mb-24">
           <div className="relative bg-white z-20 rounded-xl w-full md:w-[80%] mx-auto flex flex-col md:flex-row justify-between items-center text-center py-6 md:py-9 px-6 md:px-10 mt-10 md:mt-20 mb-10 md:mb-20 gap-4 md:gap-0">
-            <h2 className="font-bold text-xl md:text-2xl tracking-wider">PRÊT À REJOINDRE L&#39;AVENTURE ?</h2>
+            <h2 className="font-bold text-xl md:text-2xl tracking-wider">
+              PRÊT À REJOINDRE L&#39;AVENTURE ?
+            </h2>
             <Button
               asChild
               size="sm"
@@ -192,7 +201,9 @@ export default function Asso() {
         </div>
 
         <div className="relative mx-4 md:mx-0">
-          <h2 className="font-bold text-xl py-5 md:mb-3 text-center md:text-left">En savoir plus</h2>
+          <h2 className="font-bold text-xl py-5 md:mb-3 text-center md:text-left">
+            En savoir plus
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-stretch mb-10 md:mb-20">
             <div className="bg-white rounded-xl px-6 md:px-10 py-6 md:py-8">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3 md:gap-0">
@@ -230,8 +241,8 @@ export default function Asso() {
                 <span className="mb-3 font-semibold text-md">Contact Technique du site:</span>
                 <div className="flex items-center justify-start gap-2 mb-2">
                   <Mail className="w-4 md:w-5 h-4 md:h-5 text-primary flex-shrink-0" />
-                  <a 
-                    href="mailto:armand@solyzon.com" 
+                  <a
+                    href="mailto:armand@solyzon.com"
                     className="text-primary underline text-sm md:text-base break-all"
                   >
                     armand@solyzon.com
@@ -250,15 +261,16 @@ export default function Asso() {
             </div>
 
             <div className="hidden md:block w-px bg-gray-300 self-stretch my-4"></div>
-            
+
             <div className="bg-white rounded-xl px-6 md:px-10 py-6 md:py-8">
               <h3 className="text-lg md:text-xl font-bold mb-4">Sur le site</h3>
               <p className="text-sm md:text-base text-justify leading-relaxed">
                 Les pages du site ont été designés et pensées par Armand OCTEAU et Sarah LÉVY.
-                Chaque pages du site de la partie vitrine est conceptuelle et dite &#34; à thème&#34; . Le
-                rendu final est voulu, et nous avons voulu imaginer un site à notre image, à l&#39;image
-                de l&#39;association, et qui promouvoit les différences de design et l&#39;artistique. Car
-                après tout, c&#39;est de ça qu&#39;il est question à Bands: l&#39;art.
+                Chaque pages du site de la partie vitrine est conceptuelle et dite &#34; à
+                thème&#34; . Le rendu final est voulu, et nous avons voulu imaginer un site à notre
+                image, à l&#39;image de l&#39;association, et qui promouvoit les différences de
+                design et l&#39;artistique. Car après tout, c&#39;est de ça qu&#39;il est question à
+                Bands: l&#39;art.
               </p>
             </div>
           </div>
