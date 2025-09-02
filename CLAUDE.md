@@ -36,3 +36,8 @@
 Utilise toujours langlink pour les liens de page
 prisma est localisé à @/lib/prisma
 utiliser en priorité les components de @/components/common au lieu de shadcn si disponibles.
+Ne jamais build le projet.
+Le serveur de dev est en ligne au port 3000.
+les données de seed sont dans /src/data.
+uniformise toujours les components et modal.
+Aucun emojis dans le code.

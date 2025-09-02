@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
           },
         });
 
+
         return NextResponse.json({
           success: true,
           message: 'Votre abonnement à la newsletter a été réactivé avec succès !',
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
         isActive: true,
       },
     });
+
 
     return NextResponse.json({
       success: true,

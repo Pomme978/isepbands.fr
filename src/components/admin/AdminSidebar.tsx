@@ -1,6 +1,8 @@
 'use client';
 
 import LangLink from '@/components/common/LangLink';
+import Image from 'next/image';
+import isepbands_logo from '@/assets/images/logo_bands.png';
 
 interface User {
   id: string;
@@ -30,7 +32,7 @@ import {
   Calendar,
   Building2,
   FileText,
-  Image,
+  Image as ImageIcon,
   Package,
 
   // Newsletter & Communication
@@ -38,6 +40,7 @@ import {
   MessageSquare,
   Bell,
   Mail,
+  ShoppingCart,
 
   // Analytics & Reports
   BarChart3,
@@ -109,12 +112,17 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
       {
         name: 'Media Library',
         href: '/admin/media',
-        icon: Image,
+        icon: ImageIcon,
       },
       {
         name: 'Inventory',
         href: '/admin/inventory',
         icon: Package,
+      },
+      {
+        name: 'Wishlist',
+        href: '/admin/wishlist',
+        icon: ShoppingCart,
       },
     ],
   },
@@ -171,11 +179,15 @@ export default function AdminSidebar({ user }: AdminSidebarProps = {}) {
       {/* Logo Section */}
       <div className="p-6 border-b border-gray-200">
         <LangLink href="/" className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">IB</span>
-          </div>
+          <Image
+            src={isepbands_logo}
+            alt="ISEPBANDS Logo"
+            width={40}
+            height={40}
+            className="object-contain w-10 h-10"
+          />
           <div>
-            <h1 className="text-xl font-bold text-primary">ISEP Bands</h1>
+            <h1 className="text-xl font-bold text-primary">ISEPBANDS</h1>
             <p className="text-base md:text-sm text-muted-foreground">Admin Panel</p>
           </div>
         </LangLink>

@@ -5,6 +5,8 @@ import { FooterColumn } from './FooterColumn';
 import { Newsletter } from './Newsletter';
 import SocialsLink from '@/components/common/SocialsLink';
 import { useI18n } from '@/locales/client';
+import Image from 'next/image';
+import isepbands_logo from '@/assets/images/logo_bands.png';
 
 const footerColumns = [
   {
@@ -48,10 +50,14 @@ export default function Footer() {
     <footer className="bg-white relative mt-6 rounded-t-lg md:rounded-lg w-full max-w-7xl mx-auto">
       <div className="px-6 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
-          <div className="col-span-1 mb-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <div className="w-5 h-5 bg-white rounded-sm transform rotate-12"></div>
-            </div>
+          <div className="col-span-1 mb-4 flex justify-center md:justify-start">
+            <Image
+              src={isepbands_logo}
+              alt="ISEPBANDS Logo"
+              width={120}
+              height={120}
+              className="object-contain w-28 h-28 md:w-24 md:h-24"
+            />
           </div>
 
           <div className="col-span-3 flex-1 max-w-4xl grid grid-cols-2 md:grid-cols-3 gap-8">
@@ -61,15 +67,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 py-8">
-          <Newsletter
-            title="Subscribe to our newsletter"
-            description="The latest news, articles, and resources, sent to your inbox weekly."
-            placeholder="Enter your email"
-            buttonText="Subscribe"
-            onSubmit={handleNewsletterSubmit}
-          />
-        </div>
+        <Newsletter
+          title="Subscribe to our newsletter"
+          description="The latest news, articles, and resources, sent to your inbox weekly."
+          placeholder="Enter your email"
+          buttonText="Subscribe"
+          onSubmit={handleNewsletterSubmit}
+        />
 
         <div className="border-t border-gray-200 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">

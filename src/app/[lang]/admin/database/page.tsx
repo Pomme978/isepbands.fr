@@ -16,6 +16,10 @@ import {
   Settings,
   Trash2,
   Plus,
+  Activity,
+  Clock,
+  Zap,
+  Shield,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 
@@ -23,6 +27,12 @@ interface IntegrityResult {
   success: boolean;
   message: string;
   details?: string[];
+  stats?: {
+    created: number;
+    deleted: number;
+    checked: number;
+    duration: number;
+  };
 }
 
 export default function DatabaseAdminPage() {
@@ -45,6 +55,12 @@ export default function DatabaseAdminPage() {
           success: true,
           message: "Vérification d'intégrité terminée avec succès",
           details: data.details || [],
+          stats: data.stats || {
+            created: 0,
+            deleted: 0,
+            checked: 0,
+            duration: 0
+          }
         });
       } else {
         setResult({
@@ -118,39 +134,144 @@ export default function DatabaseAdminPage() {
 
             {/* Result Display */}
             {result && (
-              <Alert
-                className={
-                  result.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
-                }
-              >
-                <div className="flex items-start space-x-2">
-                  {result.success ? (
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
-                  )}
-                  <div className="flex-1">
-                    <AlertDescription
-                      className={`text-base md:text-sm ${result.success ? 'text-green-800' : 'text-red-800'}`}
-                    >
-                      <strong>{result.message}</strong>
-                    </AlertDescription>
-                    {result.details && result.details.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-base md:text-sm font-medium mb-1">Détails :</p>
-                        <ul className="text-base md:text-sm space-y-1">
-                          {result.details.map((detail, index) => (
-                            <li key={index} className="flex items-start space-x-1">
-                              <span className="text-gray-500">•</span>
-                              <span>{detail}</span>
-                            </li>
-                          ))}
-                        </ul>
+              <div className="space-y-6">
+                {/* Status Header */}
+                <div className={`rounded-lg border-2 p-6 ${result.success 
+                  ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' 
+                  : 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className={`rounded-full p-3 ${result.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                        {result.success ? (
+                          <CheckCircle className="w-8 h-8 text-green-600" />
+                        ) : (
+                          <XCircle className="w-8 h-8 text-red-600" />
+                        )}
                       </div>
-                    )}
+                      <div>
+                        <h3 className={`text-xl font-semibold ${result.success ? 'text-green-800' : 'text-red-800'}`}>
+                          {result.success ? 'Vérification Terminée avec Succès' : 'Erreur lors de la Vérification'}
+                        </h3>
+                        <p className={`text-sm ${result.success ? 'text-green-700' : 'text-red-700'}`}>
+                          {result.message}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge 
+                      variant={result.success ? 'default' : 'destructive'} 
+                      className="text-sm px-3 py-1"
+                    >
+                      {result.success ? 'Succès' : 'Échec'}
+                    </Badge>
                   </div>
                 </div>
-              </Alert>
+
+                {/* Statistics Cards */}
+                {result.success && result.stats && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="border-green-200 bg-green-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <Plus className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-green-800">{result.stats.created}</p>
+                            <p className="text-sm text-green-600">Éléments créés</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-red-200 bg-red-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-red-100 rounded-lg">
+                            <Trash2 className="w-5 h-5 text-red-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-red-800">{result.stats.deleted}</p>
+                            <p className="text-sm text-red-600">Doublons supprimés</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-blue-200 bg-blue-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <Shield className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-blue-800">{result.stats.checked}</p>
+                            <p className="text-sm text-blue-600">Éléments vérifiés</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-purple-200 bg-purple-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-purple-100 rounded-lg">
+                            <Zap className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-purple-800">{result.stats.duration}ms</p>
+                            <p className="text-sm text-purple-600">Durée d'exécution</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Detailed Results */}
+                {result.details && result.details.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Activity className="w-5 h-5" />
+                        <span>Détails des Opérations</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {result.details.map((detail, index) => {
+                          const isCreation = detail.toLowerCase().includes('créé') || detail.toLowerCase().includes('ajouté');
+                          const isDeletion = detail.toLowerCase().includes('supprimé') || detail.toLowerCase().includes('doublons');
+                          const isCheck = detail.toLowerCase().includes('vérif') || detail.toLowerCase().includes('contrôl');
+                          
+                          return (
+                            <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
+                              <div className={`p-2 rounded-full ${
+                                isCreation ? 'bg-green-100' : 
+                                isDeletion ? 'bg-red-100' : 
+                                isCheck ? 'bg-blue-100' : 'bg-gray-100'
+                              }`}>
+                                {isCreation ? (
+                                  <Plus className={`w-4 h-4 ${
+                                    isCreation ? 'text-green-600' : 
+                                    isDeletion ? 'text-red-600' : 
+                                    isCheck ? 'text-blue-600' : 'text-gray-600'
+                                  }`} />
+                                ) : isDeletion ? (
+                                  <Trash2 className="w-4 h-4 text-red-600" />
+                                ) : (
+                                  <Shield className="w-4 h-4 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-sm font-medium text-gray-800">{detail}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

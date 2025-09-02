@@ -19,8 +19,18 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
+  UserCheck,
+  UserX,
+  Archive,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
+import { toast } from 'sonner';
+import DeleteConfirmModal from '@/components/admin/common/DeleteConfirmModal';
+import EmailTemplateEditor from '@/components/admin/newsletter/EmailTemplateEditor';
+import EmailTestModal from '@/components/admin/newsletter/EmailTestModal';
+import TemplatePreviewModal from '@/components/admin/newsletter/TemplatePreviewModal';
 
 interface Subscriber {
   id: number;
@@ -28,6 +38,8 @@ interface Subscriber {
   isActive: boolean;
   subscribedAt: string;
   source?: string;
+  hasAccount?: boolean;
+  isArchived?: boolean;
 }
 
 interface EmailTemplate {
@@ -72,10 +84,135 @@ export default function NewsletterPage() {
   const [stats, setStats] = useState<NewsletterStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAddSubscriberModal, setShowAddSubscriberModal] = useState(false);
+  const [newSubscriberEmail, setNewSubscriberEmail] = useState('');
+  const [isAddingSubscriber, setIsAddingSubscriber] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [subscriberToDelete, setSubscriberToDelete] = useState<Subscriber | null>(null);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [subscriberToArchive, setSubscriberToArchive] = useState<Subscriber | null>(null);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
+  const [showDeleteTemplateModal, setShowDeleteTemplateModal] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleDeleteSubscriber = (subscriber: Subscriber) => {
+    setSubscriberToDelete(subscriber);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSubscriber = async () => {
+    if (!subscriberToDelete) return;
+
+    try {
+      const response = await fetch(`/api/admin/newsletter/subscribers?id=${subscriberToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Abonné supprimé avec succès');
+        fetchData();
+      } else {
+        toast.error(data.error || 'Erreur lors de la suppression');
+      }
+    } catch (error) {
+      console.error('Error deleting subscriber:', error);
+      toast.error('Erreur lors de la suppression de l\'abonné');
+    }
+  };
+
+  const handleToggleSubscriberStatus = async (subscriber: Subscriber) => {
+    try {
+      const response = await fetch(`/api/admin/newsletter/subscribers/${subscriber.id}/toggle`, {
+        method: 'PUT',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Abonné ${subscriber.isActive ? 'désactivé' : 'activé'} avec succès`);
+        fetchData();
+      } else {
+        toast.error(data.error || 'Erreur lors de la modification du statut');
+      }
+    } catch (error) {
+      console.error('Error toggling subscriber status:', error);
+      toast.error('Erreur lors de la modification du statut');
+    }
+  };
+
+  const handleArchiveSubscriber = (subscriber: Subscriber) => {
+    setSubscriberToArchive(subscriber);
+    setShowArchiveModal(true);
+  };
+
+  const confirmArchiveSubscriber = async () => {
+    if (!subscriberToArchive) return;
+
+    try {
+      const response = await fetch(`/api/admin/newsletter/subscribers/${subscriberToArchive.id}/archive`, {
+        method: 'PUT',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Abonné archivé avec succès');
+        fetchData();
+      } else {
+        toast.error(data.error || 'Erreur lors de l\'archivage');
+      }
+    } catch (error) {
+      console.error('Error archiving subscriber:', error);
+      toast.error('Erreur lors de l\'archivage de l\'abonné');
+    }
+  };
+
+  const handleAddSubscriber = async () => {
+    if (!newSubscriberEmail || !newSubscriberEmail.includes('@')) {
+      toast.error('Veuillez entrer un email valide');
+      return;
+    }
+
+    setIsAddingSubscriber(true);
+    try {
+      const response = await fetch('/api/admin/newsletter/subscribers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: newSubscriberEmail,
+          source: 'admin',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Abonné ajouté avec succès');
+        setShowAddSubscriberModal(false);
+        setNewSubscriberEmail('');
+        fetchData();
+      } else {
+        toast.error(data.error || 'Erreur lors de l\'ajout');
+      }
+    } catch (error) {
+      console.error('Error adding subscriber:', error);
+      toast.error('Erreur lors de l\'ajout de l\'abonné');
+    } finally {
+      setIsAddingSubscriber(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -131,18 +268,135 @@ export default function NewsletterPage() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'SENT':
+        return 'Envoyée';
+      case 'DRAFT':
+        return 'Brouillon';
+      case 'SCHEDULED':
+        return 'Programmée';
+      case 'SENDING':
+        return 'En cours d\'envoi';
+      case 'FAILED':
+        return 'Échoué';
+      default:
+        return status;
+    }
+  };
+
   const getTemplateTypeColor = (type: string) => {
     switch (type) {
       case 'NEWSLETTER':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'SYSTEM':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'TRANSACTIONAL':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-200';
       case 'CUSTOM':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getTemplateTypeIcon = (type: string) => {
+    switch (type) {
+      case 'NEWSLETTER':
+        return <Mail className="w-4 h-4" />;
+      case 'SYSTEM':
+        return <AlertCircle className="w-4 h-4" />;
+      case 'TRANSACTIONAL':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'CUSTOM':
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const getTemplateTypeLabel = (type: string) => {
+    switch (type) {
+      case 'NEWSLETTER':
+        return 'Newsletter';
+      case 'SYSTEM':
+        return 'Système';
+      case 'TRANSACTIONAL':
+        return 'Transactionnel';
+      case 'CUSTOM':
+        return 'Personnalisé';
+      default:
+        return type;
+    }
+  };
+
+  const handleSaveTemplate = async (templateData: EmailTemplate) => {
+    try {
+      const url = templateData.id 
+        ? `/api/admin/newsletter/templates/${templateData.id}`
+        : '/api/admin/newsletter/templates';
+      
+      const method = templateData.id ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(templateData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(templateData.id ? 'Template mis à jour' : 'Template créé avec succès');
+        setShowTemplateEditor(false);
+        setSelectedTemplate(null);
+        fetchData();
+      } else {
+        throw new Error(data.error || 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handlePreviewTemplate = (template: EmailTemplate) => {
+    setPreviewTemplate(template);
+    setShowPreviewModal(true);
+  };
+
+  const handleDeleteTemplate = (template: EmailTemplate) => {
+    // Empêcher la suppression des templates système par défaut
+    if (template.templateType === 'SYSTEM' && template.isDefault) {
+      toast.error('Les templates système par défaut ne peuvent pas être supprimés');
+      return;
+    }
+    setTemplateToDelete(template);
+    setShowDeleteTemplateModal(true);
+  };
+
+  const confirmDeleteTemplate = async () => {
+    if (!templateToDelete) return;
+
+    try {
+      const response = await fetch(`/api/admin/newsletter/templates/${templateToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Template supprimé avec succès');
+        setShowDeleteTemplateModal(false);
+        setTemplateToDelete(null);
+        fetchData();
+      } else {
+        toast.error(data.error || 'Erreur lors de la suppression');
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      toast.error('Erreur lors de la suppression du template');
     }
   };
 
@@ -168,7 +422,10 @@ export default function NewsletterPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => {
+              setSelectedTemplate(null);
+              setShowTemplateEditor(true);
+            }}>
               <FileText className="w-4 h-4" />
               Nouveau Template
             </Button>
@@ -181,7 +438,7 @@ export default function NewsletterPage() {
 
         {/* Statistics Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -218,17 +475,6 @@ export default function NewsletterPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Taux d'ouverture</p>
-                    <p className="text-3xl font-bold">{stats.averageOpenRate.toFixed(1)}%</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-orange-500" />
-                </div>
-              </CardContent>
-            </Card>
           </div>
         )}
 
@@ -261,7 +507,7 @@ export default function NewsletterPage() {
                           </p>
                         </div>
                         <Badge className={getStatusColor(newsletter.status)}>
-                          {newsletter.status}
+                          {getStatusLabel(newsletter.status)}
                         </Badge>
                       </div>
                     ))}
@@ -288,9 +534,9 @@ export default function NewsletterPage() {
                     <Users className="w-4 h-4 mr-2" />
                     Gérer les abonnés
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    Voir les statistiques
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setShowTestModal(true)}>
+                    <Send className="w-4 h-4 mr-2" />
+                    Tester les emails
                   </Button>
                 </CardContent>
               </Card>
@@ -307,7 +553,7 @@ export default function NewsletterPage() {
                     {subscribers.length} abonnés au total
                   </CardDescription>
                 </div>
-                <Button size="sm">
+                <Button size="sm" onClick={() => setShowAddSubscriberModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   Ajouter
                 </Button>
@@ -321,19 +567,58 @@ export default function NewsletterPage() {
                         <div>
                           <p className="font-medium">{subscriber.email}</p>
                           <p className="text-sm text-gray-600">
-                            Inscrit le {new Date(subscriber.subscribedAt).toLocaleDateString('fr-FR')}
+                            Inscrit le {new Date(subscriber.subscribedAt).toLocaleDateString('fr-FR')} à {new Date(subscriber.subscribedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {subscriber.source && (
-                          <Badge variant="secondary" className="text-xs">
-                            {subscriber.source}
-                          </Badge>
-                        )}
                         <Badge className={subscriber.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                           {subscriber.isActive ? 'Actif' : 'Inactif'}
                         </Badge>
+                        <div className="flex items-center gap-1">
+                          {/* Bouton toggle actif/inactif */}
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 px-2"
+                            onClick={() => handleToggleSubscriberStatus(subscriber)}
+                            title={subscriber.isActive ? 'Désactiver l\'abonné' : 'Activer l\'abonné'}
+                          >
+                            {subscriber.isActive ? (
+                              <ToggleRight className="w-3 h-3 text-green-600" />
+                            ) : (
+                              <ToggleLeft className="w-3 h-3 text-gray-400" />
+                            )}
+                          </Button>
+                          
+                          {/* Icône compte utilisateur ou boutons d'action */}
+                          {subscriber.hasAccount ? (
+                            <div className="h-6 px-2 flex items-center">
+                              <UserCheck className="w-3 h-3 text-blue-500" title="A un compte utilisateur" />
+                            </div>
+                          ) : (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 px-2"
+                                onClick={() => handleArchiveSubscriber(subscriber)}
+                                title="Archiver l'abonné"
+                              >
+                                <Archive className="w-3 h-3 text-orange-500" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 px-2"
+                                onClick={() => handleDeleteSubscriber(subscriber)}
+                                title="Supprimer l'abonné"
+                              >
+                                <Trash2 className="w-3 h-3 text-red-500" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -352,53 +637,136 @@ export default function NewsletterPage() {
                     {templates.length} templates disponibles
                   </CardDescription>
                 </div>
-                <Button size="sm">
+                <Button size="sm" onClick={() => {
+                  setSelectedTemplate(null);
+                  setShowTemplateEditor(true);
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   Nouveau Template
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {templates.map((template) => (
-                    <Card key={template.id}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-base">{template.name}</CardTitle>
-                            <CardDescription>{template.description}</CardDescription>
+                <div className="space-y-6">
+                  {/* Templates par type */}
+                  {['SYSTEM', 'NEWSLETTER', 'TRANSACTIONAL', 'CUSTOM'].map((type) => {
+                    const templatesByType = templates.filter(t => t.templateType === type);
+                    if (templatesByType.length === 0) return null;
+
+                    return (
+                      <div key={type} className="space-y-3">
+                        <div className="flex items-center gap-3 pb-2 border-b">
+                          <div className={`p-2 rounded-lg ${getTemplateTypeColor(type)}`}>
+                            {getTemplateTypeIcon(type)}
                           </div>
-                          <Badge className={getTemplateTypeColor(template.templateType)}>
-                            {template.templateType}
+                          <div>
+                            <h3 className="font-semibold text-lg">{getTemplateTypeLabel(type)}</h3>
+                            <p className="text-sm text-gray-600">
+                              {type === 'SYSTEM' && 'Templates pour les emails système (bienvenue, mot de passe, etc.)'}
+                              {type === 'NEWSLETTER' && 'Templates pour les campagnes newsletter'}
+                              {type === 'TRANSACTIONAL' && 'Templates pour les emails transactionnels'}
+                              {type === 'CUSTOM' && 'Templates personnalisés'}
+                            </p>
+                          </div>
+                          <Badge variant="default" className="ml-auto">
+                            {templatesByType.length} template{templatesByType.length > 1 ? 's' : ''}
                           </Badge>
                         </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {template.isDefault && (
-                              <Badge variant="secondary" className="text-xs">
-                                Par défaut
-                              </Badge>
-                            )}
-                            <Badge className={template.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                              {template.isActive ? 'Actif' : 'Inactif'}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button size="sm" variant="ghost">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost">
-                              <Edit3 className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {templatesByType.map((template) => (
+                            <Card key={template.id} className="hover:shadow-md transition-shadow">
+                              <CardHeader className="pb-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                      {template.name}
+                                      {template.isDefault && (
+                                        <Badge variant="default" className="text-xs px-1.5 py-0.5">
+                                          Défaut
+                                        </Badge>
+                                      )}
+                                    </CardTitle>
+                                    <CardDescription className="mt-1">
+                                      {template.description || 'Aucune description'}
+                                    </CardDescription>
+                                  </div>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="pt-0">
+                                <div className="space-y-3">
+                                  {/* Subject preview */}
+                                  <div className="p-2 bg-gray-50 rounded text-sm">
+                                    <span className="text-gray-600">Sujet:</span> {template.subject}
+                                  </div>
+                                  
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Badge className={template.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                                        {template.isActive ? 'Actif' : 'Inactif'}
+                                      </Badge>
+                                      {template.createdBy && (
+                                        <span className="text-xs text-gray-500">
+                                          par {template.createdBy.firstName}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        title="Aperçu"
+                                        onClick={() => handlePreviewTemplate(template)}
+                                      >
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        title="Modifier"
+                                        onClick={() => {
+                                          setSelectedTemplate(template);
+                                          setShowTemplateEditor(true);
+                                        }}
+                                      >
+                                        <Edit3 className="w-4 h-4" />
+                                      </Button>
+                                      {/* Bouton supprimer seulement pour les templates non-système */}
+                                      {template.templateType !== 'SYSTEM' && (
+                                        <Button 
+                                          size="sm" 
+                                          variant="ghost" 
+                                          title="Supprimer"
+                                          onClick={() => handleDeleteTemplate(template)}
+                                        >
+                                          <Trash2 className="w-4 h-4 text-red-500" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      </div>
+                    );
+                  })}
+                  
+                  {templates.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Aucun template d'email trouvé</p>
+                      <Button 
+                        className="mt-4" 
+                        onClick={() => {
+                          setSelectedTemplate(null);
+                          setShowTemplateEditor(true);
+                        }}
+                      >
+                        Créer votre premier template
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -429,7 +797,7 @@ export default function NewsletterPage() {
                             <div className="flex items-center gap-3 mb-2">
                               <h4 className="font-semibold">{newsletter.title}</h4>
                               <Badge className={getStatusColor(newsletter.status)}>
-                                {newsletter.status}
+                                {getStatusLabel(newsletter.status)}
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 mb-3">{newsletter.subject}</p>
@@ -465,6 +833,117 @@ export default function NewsletterPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Modal d'ajout d'abonné */}
+        {showAddSubscriberModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Ajouter un abonné</h3>
+                <input
+                  type="email"
+                  value={newSubscriberEmail}
+                  onChange={(e) => setNewSubscriberEmail(e.target.value)}
+                  placeholder="Email de l'abonné"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddSubscriber()}
+                />
+                <div className="flex justify-end gap-3 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowAddSubscriberModal(false);
+                      setNewSubscriberEmail('');
+                    }}
+                    disabled={isAddingSubscriber}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={handleAddSubscriber}
+                    disabled={isAddingSubscriber}
+                  >
+                    {isAddingSubscriber ? (
+                      <Loading text="Ajout..." size="sm" variant="spinner" theme="white" />
+                    ) : (
+                      'Ajouter'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de confirmation de suppression */}
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setSubscriberToDelete(null);
+          }}
+          onConfirm={confirmDeleteSubscriber}
+          title="Supprimer l'abonné"
+          description="Cette action est irréversible. L'abonné sera définitivement supprimé de la liste de diffusion."
+          itemName={subscriberToDelete?.email || ''}
+          confirmButtonText="Supprimer l'abonné"
+        />
+
+        {/* Éditeur de templates */}
+        {showTemplateEditor && (
+          <EmailTemplateEditor
+            template={selectedTemplate}
+            onSave={handleSaveTemplate}
+            onClose={() => {
+              setShowTemplateEditor(false);
+              setSelectedTemplate(null);
+            }}
+          />
+        )}
+
+        {/* Modal de test d'emails */}
+        <EmailTestModal
+          isOpen={showTestModal}
+          onClose={() => setShowTestModal(false)}
+        />
+
+        {/* Modal de prévisualisation */}
+        <TemplatePreviewModal
+          template={previewTemplate}
+          isOpen={showPreviewModal}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setPreviewTemplate(null);
+          }}
+        />
+
+        {/* Modal de confirmation de suppression de template */}
+        <DeleteConfirmModal
+          isOpen={showDeleteTemplateModal}
+          onClose={() => {
+            setShowDeleteTemplateModal(false);
+            setTemplateToDelete(null);
+          }}
+          onConfirm={confirmDeleteTemplate}
+          title="Supprimer le template"
+          description="Cette action est irréversible. Le template sera définitivement supprimé."
+          itemName={templateToDelete?.name || ''}
+          confirmButtonText="Supprimer le template"
+        />
+
+        {/* Modal de confirmation d'archivage */}
+        <DeleteConfirmModal
+          isOpen={showArchiveModal}
+          onClose={() => {
+            setShowArchiveModal(false);
+            setSubscriberToArchive(null);
+          }}
+          onConfirm={confirmArchiveSubscriber}
+          title="Archiver l'abonné"
+          description="L'abonné sera désactivé et ne recevra plus les newsletters. Cette action peut être annulée en réactivant l'abonné."
+          itemName={subscriberToArchive?.email || ''}
+          confirmButtonText="Archiver l'abonné"
+        />
       </div>
     </AdminLayout>
   );

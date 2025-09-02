@@ -90,9 +90,9 @@ const HomeHero = () => {
           </div>
 
           {/* Content Section - Compact mobile spacing */}
-          <div className="text-center lg:text-left max-w-xl md:max-w-6/12 px-2 md:px-0">
+          <div className="text-center lg:text-left max-w-xl md:max-w-5/12 px-2 md:px-0">
             {/* Motto - Responsive text sizing */}
-            <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl text-center md:text-justify font-bold mb-6 md:mb-8 leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl text-center md:text-left font-bold mb-6 md:mb-8 leading-tight">
               FOR THOSE WHO CAN&apos;T STOP PLAYING
             </h1>
 

@@ -52,12 +52,6 @@ export interface UserFormData {
   profilePhoto?: File;
   bio: string;
   pronouns: 'he/him' | 'she/her' | 'they/them' | 'other' | '';
-  emailPreferences: {
-    newsletter: boolean;
-    events: boolean;
-    groupInvitations: boolean;
-    systemUpdates: boolean;
-  };
 
   // Step 6: Account Setup
   sendWelcomeEmail: boolean;
@@ -92,12 +86,6 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
     achievementBadges: [],
     bio: '',
     pronouns: '' as const,
-    emailPreferences: {
-      newsletter: true,
-      events: true,
-      groupInvitations: true,
-      systemUpdates: true,
-    },
     sendWelcomeEmail: true,
     temporaryPassword: generatePassword(),
     requirePasswordChange: true,
@@ -189,12 +177,6 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
       achievementBadges: [],
       bio: '',
       pronouns: '' as const,
-      emailPreferences: {
-        newsletter: true,
-        events: true,
-        groupInvitations: true,
-        systemUpdates: true,
-      },
       sendWelcomeEmail: true,
       temporaryPassword: generatePassword(),
       requirePasswordChange: true,

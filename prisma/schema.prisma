@@ -95,6 +95,7 @@ model User {
   createdEmailTemplates         EmailTemplate[]
   createdNewsletters            Newsletter[]
   inventoryItems                Inventory[]
+  wishlistItems                 WishlistItem[]
 }
 
 model StorageObject {
@@ -616,4 +617,42 @@ enum InventoryState {
   DAMAGED
   DEFECTIVE
   OUT_OF_SERVICE
+}
+
+model WishlistItem {
+  id             String          @id @default(uuid())
+  name           String          // Nom du produit souhaité
+  category       String          // Catégorie (même que Inventory)
+  brand          String?         // Marque
+  model          String?         // Modèle
+  estimatedPrice Float?          // Prix estimé
+  priority       WishlistPriority @default(MEDIUM)
+  status         WishlistStatus   @default(WANTED)
+  productUrl     String?         // Lien vers le produit
+  description    String?         @db.Text // Pourquoi ce produit est souhaité
+  imageUrl       String?         // URL de l'image du produit
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now()) @updatedAt
+  creatorId      String
+  
+  creator        User            @relation(fields: [creatorId], references: [id])
+  
+  @@index([category], map: "WishlistItem_category_idx")
+  @@index([priority], map: "WishlistItem_priority_idx")
+  @@index([status], map: "WishlistItem_status_idx")
+  @@index([creatorId], map: "WishlistItem_creatorId_fkey")
+}
+
+enum WishlistPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WishlistStatus {
+  WANTED      // Souhaité
+  ORDERED     // Commandé
+  PURCHASED   // Acheté
+  CANCELLED   // Annulé
 }

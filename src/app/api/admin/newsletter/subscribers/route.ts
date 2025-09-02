@@ -29,7 +29,8 @@ export async function GET(req: NextRequest) {
       where.isActive = false;
     }
 
-    const [subscribers, total] = await Promise.all([
+    // Get subscribers with user association check
+    const [subscribersData, total] = await Promise.all([
       prisma.newsletterSubscriber.findMany({
         where,
         orderBy: { subscribedAt: 'desc' },
@@ -38,6 +39,27 @@ export async function GET(req: NextRequest) {
       }),
       prisma.newsletterSubscriber.count({ where }),
     ]);
+
+    // Check which subscribers have associated user accounts
+    const subscriberEmails = subscribersData.map(s => s.email);
+    const users = await prisma.user.findMany({
+      where: {
+        email: { in: subscriberEmails },
+      },
+      select: {
+        email: true,
+        id: true,
+      },
+    });
+
+    // Create a case-insensitive email set for comparison
+    const userEmailsSet = new Set(users.map(u => u.email.toLowerCase()));
+
+    // Add hasAccount flag to each subscriber
+    const subscribers = subscribersData.map(subscriber => ({
+      ...subscriber,
+      hasAccount: userEmailsSet.has(subscriber.email.toLowerCase()),
+    }));
 
     return NextResponse.json({
       success: true,
@@ -53,6 +75,73 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching newsletter subscribers:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch subscribers' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const auth = await requireAdminAuth(req);
+  if (!auth.ok) return auth.res;
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const subscriberId = searchParams.get('id');
+
+    if (!subscriberId) {
+      return NextResponse.json(
+        { success: false, error: 'ID de l\'abonné requis' },
+        { status: 400 }
+      );
+    }
+
+    // Get subscriber
+    const subscriber = await prisma.newsletterSubscriber.findUnique({
+      where: { id: parseInt(subscriberId) },
+    });
+
+    if (!subscriber) {
+      return NextResponse.json(
+        { success: false, error: 'Abonné non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    // Check if subscriber has an associated user account
+    const userAccount = await prisma.user.findUnique({
+      where: { email: subscriber.email },
+    });
+
+    if (userAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Impossible de supprimer un abonné ayant un compte utilisateur' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the subscriber
+    await prisma.newsletterSubscriber.delete({
+      where: { id: parseInt(subscriberId) },
+    });
+
+    // Log admin action
+    await logAdminAction(
+      auth.user.id,
+      'newsletter_subscriber_deleted',
+      'Abonné newsletter supprimé',
+      `L'email **${subscriber.email}** a été supprimé de la newsletter`,
+      undefined,
+      { email: subscriber.email }
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Abonné supprimé avec succès',
+    });
+  } catch (error) {
+    console.error('Error deleting newsletter subscriber:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete subscriber' },
       { status: 500 }
     );
   }

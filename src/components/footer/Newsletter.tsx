@@ -1,10 +1,11 @@
 // Newsletter.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import Loading from '@/components/ui/Loading';
 import { toast } from 'sonner';
+import { useSession } from '@/lib/auth-client';
 
 interface NewsletterProps {
   title: string;
@@ -23,6 +24,23 @@ export function Newsletter({
 }: NewsletterProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAlreadySubscribed, setIsAlreadySubscribed] = useState(false);
+  const { user } = useSession();
+
+  useEffect(() => {
+    // Check if user recently subscribed (stored in localStorage)
+    const recentSubscription = localStorage.getItem('newsletter_subscribed');
+    if (recentSubscription) {
+      const subscriptionTime = parseInt(recentSubscription);
+      const now = Date.now();
+      // Consider subscribed if within last 30 days
+      if (now - subscriptionTime < 30 * 24 * 60 * 60 * 1000) {
+        setIsAlreadySubscribed(true);
+      } else {
+        localStorage.removeItem('newsletter_subscribed');
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +69,9 @@ export function Newsletter({
       if (data.success) {
         toast.success(data.message || 'Inscription réussie !');
         setEmail('');
+        // Store subscription in localStorage
+        localStorage.setItem('newsletter_subscribed', Date.now().toString());
+        setIsAlreadySubscribed(true);
         // Call legacy onSubmit if provided for backward compatibility
         if (onSubmit) {
           onSubmit(email);
@@ -66,8 +87,39 @@ export function Newsletter({
     }
   };
 
+  // Don't show newsletter if user is logged in (any status)
+  if (user) {
+    // Special message for pending users
+    if (user.status === 'PENDING') {
+      return (
+        <div className="p-2 md:p-6 w-full">
+          <div className="mx-auto text-center">
+            <p className="text-blue-600 font-medium">Vous serez automatiquement inscrit à la newsletter après validation de votre compte</p>
+          </div>
+        </div>
+      );
+    }
+    // For all other logged in users (ACTIVE, etc.), don't show newsletter
+    return null;
+  }
+
+  // Show message if already subscribed
+  if (isAlreadySubscribed) {
+    return (
+      <div className="border-t border-gray-200 py-8">
+        <div className="p-2 md:p-6 w-full">
+          <div className="mx-auto text-center">
+            <p className="text-green-600 font-medium">✓ Vous êtes déjà inscrit à notre newsletter</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
   return (
-    <div className="p-2 md:p-6 w-full">
+    <div className="border-t border-gray-200 py-8">
+      <div className="p-2 md:p-6 w-full">
       <div className=" mx-auto text-center md:text-left flex justify-between items-center flex-col md:flex-row">
         <div className="flex items-center md:items-start justify-center flex-col mb-8 md:mb-0">
           <h3 className="text-gray-900 font-medium text-lg">{title}</h3>
@@ -90,6 +142,7 @@ export function Newsletter({
             )}
           </Button>
         </form>
+      </div>
       </div>
     </div>
   );

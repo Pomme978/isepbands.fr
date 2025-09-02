@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { baseEmailTemplates } from '../src/data/emailTemplates';
 
 const prisma = new PrismaClient();
 
@@ -359,11 +360,62 @@ async function seedRoles() {
   console.log(`✅ Successfully seeded ${defaultRoles.length} roles!`);
 }
 
+async function seedEmailTemplates() {
+  console.log('📧 Seeding email templates...');
+
+  // Chercher un utilisateur admin pour créer les templates
+  const adminUser = await prisma.user.findFirst({
+    where: {
+      roles: {
+        some: {
+          role: {
+            name: 'admin'
+          }
+        }
+      }
+    }
+  });
+
+  if (!adminUser) {
+    console.log('⚠️  No admin user found, skipping email templates seeding');
+    return;
+  }
+
+  for (const template of baseEmailTemplates) {
+    // Vérifier si le template existe déjà
+    const existingTemplate = await prisma.emailTemplate.findUnique({
+      where: { name: template.name }
+    });
+
+    if (!existingTemplate) {
+      await prisma.emailTemplate.create({
+        data: {
+          name: template.name,
+          description: template.description,
+          subject: template.subject,
+          htmlContent: template.htmlContent,
+          variables: template.variables,
+          templateType: template.templateType,
+          isActive: true,
+          isDefault: template.isDefault,
+          createdById: adminUser.id,
+        }
+      });
+      console.log(`   ✓ Created template: ${template.name}`);
+    } else {
+      console.log(`   - Template already exists: ${template.name}`);
+    }
+  }
+
+  console.log(`✅ Successfully processed ${baseEmailTemplates.length} email templates!`);
+}
+
 async function main() {
   try {
     await seedInstruments();
     await seedPermissions();
     await seedRoles();
+    await seedEmailTemplates();
 
     console.log('🎉 All seeding completed successfully!');
   } catch (error) {

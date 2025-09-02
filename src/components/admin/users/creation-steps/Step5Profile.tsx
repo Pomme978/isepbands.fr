@@ -17,13 +17,6 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
     setFormData({ ...formData, [field]: value });
   };
 
-  const updateEmailPreferences = (preference: string, value: boolean) => {
-    const updatedPreferences = {
-      ...formData.emailPreferences,
-      [preference]: value,
-    };
-    setFormData({ ...formData, emailPreferences: updatedPreferences });
-  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -145,86 +138,10 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
         </div>
       </div>
 
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Preferences</h3>
-        <div className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              id="newsletter"
-              checked={formData.emailPreferences.newsletter}
-              onChange={(e) => updateEmailPreferences('newsletter', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
-            />
-            <div>
-              <label htmlFor="newsletter" className="text-sm font-medium text-gray-700">
-                Receive Newsletter
-              </label>
-              <p className="text-xs text-gray-500">
-                Monthly newsletter with association updates and events
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              id="events"
-              checked={formData.emailPreferences.events}
-              onChange={(e) => updateEmailPreferences('events', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
-            />
-            <div>
-              <label htmlFor="events" className="text-sm font-medium text-gray-700">
-                Event Notifications
-              </label>
-              <p className="text-xs text-gray-500">
-                Notifications about upcoming events and registration reminders
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              id="groupInvitations"
-              checked={formData.emailPreferences.groupInvitations}
-              onChange={(e) => updateEmailPreferences('groupInvitations', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
-            />
-            <div>
-              <label htmlFor="groupInvitations" className="text-sm font-medium text-gray-700">
-                Group Invitations
-              </label>
-              <p className="text-xs text-gray-500">Invitations to join bands and musical groups</p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              id="systemUpdates"
-              checked={formData.emailPreferences.systemUpdates}
-              onChange={(e) => updateEmailPreferences('systemUpdates', e.target.checked)}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
-            />
-            <div>
-              <label htmlFor="systemUpdates" className="text-sm font-medium text-gray-700">
-                System Updates
-              </label>
-              <p className="text-xs text-gray-500">
-                Important announcements and system maintenance notifications
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="bg-indigo-50 p-4 rounded-lg">
         <h4 className="font-medium text-indigo-900 mb-2">Privacy & Communication</h4>
         <ul className="text-sm text-indigo-700 space-y-1">
           <li>• Profile information can be updated later by the user</li>
-          <li>• Email preferences can be changed at any time in user settings</li>
           <li>• All profiles are visible to association members</li>
           <li>• Bio information appears on the user&apos;s profile page</li>
         </ul>
