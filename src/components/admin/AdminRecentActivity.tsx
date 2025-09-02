@@ -19,6 +19,7 @@ import {
   Edit,
   Trash2,
   XCircle,
+  Archive,
 } from 'lucide-react';
 
 interface PublicFeedType {
@@ -38,7 +39,7 @@ interface PublicFeedType {
 interface AdminRecentActivityProps {
   activities: PublicFeedType[];
   maxItems?: number;
-  currentUser?: { id: string } | null;
+  currentUser?: { id: string; isFullAccess?: boolean } | null;
   onEdit?: (activity: any) => void;
   onArchive?: (activityId: string) => void;
   onDelete?: (activityId: string) => void;
@@ -88,7 +89,7 @@ function ActivityItem({
   rawActivity,
 }: {
   activity: PublicFeedType;
-  currentUser?: { id: string } | null;
+  currentUser?: { id: string; isFullAccess?: boolean } | null;
   onEdit?: (activity: any) => void;
   onArchive?: (activityId: string) => void;
   onDelete?: (activityId: string) => void;
@@ -101,42 +102,51 @@ function ActivityItem({
 
   const isSystemMessage = activity.type === 'new_member';
 
-  // Check if current user can edit this activity
-  const canEdit =
-    currentUser &&
-    rawActivity &&
-    rawActivity.createdBy === currentUser.id &&
-    activity.type === 'post';
+  // Check permissions for different actions
+  const isOwner = currentUser && rawActivity && rawActivity.createdBy === currentUser.id;
+  const isFullAccess = currentUser && currentUser.isFullAccess;
+  
+  const canEdit = isOwner && activity.type === 'post';
+  const canArchive = (isOwner || isFullAccess) && activity.type === 'post';
+  const canDelete = (isOwner || isFullAccess) && activity.type === 'post';
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-4 relative">
       {/* Action buttons - top right */}
-      {canEdit && (
+      {(canEdit || canArchive || canDelete) && (
         <div className="absolute top-2 right-2 flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit && onEdit(rawActivity)}
-            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onArchive && onArchive(activity.id)}
-            className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete && onDelete(activity.id)}
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <XCircle className="h-4 w-4" />
-          </Button>
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit && onEdit(rawActivity)}
+              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
+          {canArchive && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onArchive && onArchive(activity.id)}
+              className="h-8 w-8 p-0 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+              title="Archiver"
+            >
+              <Archive className="h-4 w-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete && onDelete(activity.id)}
+              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              title="Supprimer"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )}
 

@@ -2,7 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useSession, useAuth } from '@/lib/auth-client';
-import BasicLayout from '@/components/layouts/BasicLayout';
+import FullLayout from '@/components/layouts/FullLayout';
 import HeroBanner from '@/components/home/HomeHero';
 import { Home } from '@/components/home/Home';
 import HomeLoggedIn from '@/components/home/HomeLoggedIn';
@@ -30,23 +30,27 @@ export default function HomePage() {
   const navbarMode = user ? 'fixed' : loading ? 'static' : 'scroll';
 
   return (
-    <BasicLayout navbarMode={navbarMode} offsetContent={false}>
-      <main className="flex flex-col items-center justify-center">
-        <HeroBanner />
-
-        {user ? (
-          user.status === 'PENDING' ? (
-            <div className="w-full max-w-7xl mx-auto px-4 py-8">
-              <PendingValidationBanner />
-              <Home lang={lang} />
-            </div>
+    <FullLayout navbarMode={navbarMode}>
+      {/* Hero Banner - Full width */}
+      <HeroBanner />
+      
+      {/* Page content with max-w-7xl constraint */}
+      <div className="max-w-7xl mx-auto">
+        <main className="flex flex-col items-center justify-center">
+          {user ? (
+            user.status === 'PENDING' ? (
+              <div className="w-full px-4 py-8">
+                <PendingValidationBanner />
+                <Home lang={lang} />
+              </div>
+            ) : (
+              <HomeLoggedIn user={user} lang={lang} onLogout={handleLogout} loading={loading} />
+            )
           ) : (
-            <HomeLoggedIn user={user} lang={lang} onLogout={handleLogout} loading={loading} />
-          )
-        ) : (
-          <Home lang={lang} />
-        )}
-      </main>
-    </BasicLayout>
+            <Home lang={lang} />
+          )}
+        </main>
+      </div>
+    </FullLayout>
   );
 }

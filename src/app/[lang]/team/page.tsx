@@ -124,20 +124,22 @@ const Page = async () => {
         </div>
       </DecoratedText>
 
-      {/* Group Photo - Using dynamic or fallback image */}
-      <GroupPhoto
-        src={teamSettings.groupPhotoUrl || wallpaperImage}
-        alt="Bureau ISEP 2025-2026"
-        scotchCount={2}
-        className="mt-10"
-      />
+      {/* Group Photo - Only display if photo exists */}
+      {teamSettings.groupPhotoUrl && (
+        <GroupPhoto
+          src={teamSettings.groupPhotoUrl}
+          alt="Bureau ISEP 2025-2026"
+          scotchCount={2}
+          className="mt-10"
+        />
+      )}
 
       {/* Membres exécutifs */}
       <Garland
         users={executiveUsersOrdered}
         roleInfos={executiveRoles}
         lightType="yellow"
-        className="mb-0"
+        className={`mb-0 ${!teamSettings.groupPhotoUrl ? 'mt-10' : ''}`}
         preserveUserOrder={true}
       />
 

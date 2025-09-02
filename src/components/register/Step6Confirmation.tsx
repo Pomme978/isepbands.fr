@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatPreferredGenres } from '@/utils/genreUtils';
 import { calculateAge } from '@/utils/schoolUtils';
+import Loading from '@/components/ui/Loading';
 import {
   User,
   Mail,
@@ -24,12 +25,14 @@ interface Step6ConfirmationProps {
   onBack: () => void;
   onSubmit: () => void;
   availableInstruments: { id: number; name: string; nameFr: string; nameEn: string }[];
+  isSubmitting?: boolean;
 }
 export default function Step6Confirmation({
                                             data,
                                             onBack,
                                             onSubmit,
                                             availableInstruments,
+                                            isSubmitting = false,
                                           }: Step6ConfirmationProps) {
   const t = useI18n();
 
@@ -277,12 +280,27 @@ export default function Step6Confirmation({
           variant="outline"
           onClick={onBack}
           className="px-6 md:py-2 py-6 md:w-auto w-full"
+          disabled={isSubmitting}
         >
           Retour
         </Button>
-        <Button type="button" onClick={onSubmit} className="px-6 md:py-2 py-6 md:w-auto w-full">
-          {t('auth.register.confirm')}
-          <CheckCircle className="w-4 h-4 ml-2" />
+        <Button 
+          type="button" 
+          onClick={onSubmit} 
+          className="px-6 md:py-2 py-6 md:w-auto w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loading size="sm" theme="white" text="" />
+              <span className="ml-2">Inscription...</span>
+            </>
+          ) : (
+            <>
+              {t('auth.register.confirm')}
+              <CheckCircle className="w-4 h-4 ml-2" />
+            </>
+          )}
         </Button>
       </div>
     </div>

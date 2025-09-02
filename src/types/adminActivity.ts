@@ -15,6 +15,7 @@ export type AdminActivityLogType =
   | 'user_rejected' 
   | 'user_archived'
   | 'user_restored'
+  | 'user_registered'
   | 'user_password_reset'
   // Gestion des rôles et permissions
   | 'role_created'

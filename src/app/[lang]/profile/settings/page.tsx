@@ -337,7 +337,7 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <div className="h-screen max-w-7xl flex flex-col">
+    <div className="min-h-screen max-w-7xl flex flex-col">
       {/* Toast notifications using Alert component */}
       {saveSuccess && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
@@ -359,7 +359,7 @@ export default function ProfileSettingsPage() {
       )}
 
       {/* Header avec back button - only show if there's history */}
-      <div className="px-6 py-4 flex-shrink-0">
+      <div className="px-4 md:px-6 py-4 flex-shrink-0">
         {typeof window !== 'undefined' && window.history.length > 1 && (
           <BackButton
             variant="ghost"
@@ -376,9 +376,9 @@ export default function ProfileSettingsPage() {
         )}
       </div>
 
-      {/* Layout principal */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar with save button at bottom */}
+      {/* Layout principal - responsive */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        {/* Sidebar with save button at bottom - responsive */}
         <SettingsSidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
@@ -389,7 +389,7 @@ export default function ProfileSettingsPage() {
 
         {/* Contenu principal - scrollable */}
         <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="mx-auto max-w-7xl px-4 md:px-6 py-4 md:py-8">
             <SettingsContent
               activeSection={activeSection}
               userProfile={userProfile}

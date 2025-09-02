@@ -186,33 +186,18 @@ export default function RecentActivity({
 
   const displayedActivities = activities.slice(0, maxItems);
 
-  return (
-    <div className="bg-card rounded-lg shadow border">
-      <div className="px-6 py-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-foreground">Activité récente</h2>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => fetchActivities(true)}
-              disabled={refreshing}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-400 transition-colors"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Actualisation...' : 'Actualiser'}
-            </button>
-            {activities.length > maxItems && (
-              <button 
-                onClick={() => setShowAllModal(true)}
-                className="text-sm text-primary hover:text-primary/80 font-medium"
-              >
-                Voir tout ({activities.length - maxItems} autres)
-              </button>
-            )}
+  if (loading) {
+    return (
+      <div className="bg-card rounded-lg">
+        <div className="px-6 py-4 border-b border-border animate-pulse">
+          <div className="flex items-center">
+            <div className="h-6 bg-gray-200 rounded w-32 flex-1"></div>
+            <div className="flex items-center gap-3">
+              <div className="h-8 bg-gray-200 rounded w-20"></div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="p-6">
-        {loading ? (
+        <div className="p-6">
           <div className="space-y-4">
             {/* Skeleton pour 3 activités */}
             {[1, 2, 3].map((index) => (
@@ -234,7 +219,38 @@ export default function RecentActivity({
               </div>
             ))}
           </div>
-        ) : displayedActivities.length > 0 ? (
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card rounded-lg shadow border">
+      <div className="px-6 py-4 border-b border-border">
+        <div className="flex items-center">
+          <h2 className="text-lg font-medium text-foreground flex-1">Activité récente</h2>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => fetchActivities(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-400 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Actualisation...' : 'Actualiser'}
+            </button>
+            {activities.length > maxItems && (
+              <button 
+                onClick={() => setShowAllModal(true)}
+                className="text-sm text-primary hover:text-primary/80 font-medium"
+              >
+                Voir tout ({activities.length - maxItems} autres)
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        {displayedActivities.length > 0 ? (
           <div className="divide-y divide-gray-200">
             {displayedActivities.map((activity) => {
                 const colors = getActivityColors(activity.type);

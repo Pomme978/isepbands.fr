@@ -17,6 +17,7 @@ export interface RegistrationData {
   birthDate: string;
   phone: string;
   motivation: string;
+  experience: string;
   instruments: RegistrationInstrument[];
   preferredGenres: string[];
   profilePhoto: File | null;

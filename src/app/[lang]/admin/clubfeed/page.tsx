@@ -52,7 +52,7 @@ export default function AdminClubFeedPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingActivity, setEditingActivity] = useState<ActivityItem | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; isFullAccess?: boolean } | null>(null);
   const [archiveModal, setArchiveModal] = useState<{
     isOpen: boolean;
     activityId: string;
@@ -94,7 +94,7 @@ export default function AdminClubFeedPage() {
       const response = await fetch('/api/clubfeed?t=' + Date.now());
       if (response.ok) {
         const data = await response.json();
-        const transformedActivities: PublicFeedType[] =
+        const transformedActivities: (PublicFeedType & { createdBy?: string })[] =
           data.activities?.map(
             (activity: {
               id: string;
@@ -105,6 +105,7 @@ export default function AdminClubFeedPage() {
               userName?: string;
               userAvatar?: string;
               userRole?: string;
+              createdBy?: string;
             }) => ({
               id: activity.id,
               type: activity.type === 'custom' ? 'post' : (activity.type as PublicFeedType['type']),
@@ -116,6 +117,7 @@ export default function AdminClubFeedPage() {
                 avatar: activity.userAvatar || '/avatars/default.jpg',
                 role: activity.userRole || undefined,
               },
+              createdBy: activity.createdBy,
             }),
           ) || [];
         setPublicFeedItems(transformedActivities);
@@ -310,31 +312,43 @@ export default function AdminClubFeedPage() {
   };
 
   const handleDeleteActivity = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer définitivement cette publication ?')) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/admin/clubfeed/${id}`, {
+      const response = await fetch(`/api/clubfeed/${id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
+        // Remove from all lists
         setActivities(activities.filter((a) => a.id !== id));
         setDisplayActivities(displayActivities.filter((a) => a.id !== id));
+        setPublicFeedItems(publicFeedItems.filter((a) => a.id !== id));
+
+        // Show success message
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setSaveError(errorData.error || 'Erreur lors de la suppression');
+        setTimeout(() => setSaveError(null), 5000);
       }
     } catch (error) {
       console.error('Error deleting activity:', error);
+      setSaveError('Erreur lors de la suppression');
+      setTimeout(() => setSaveError(null), 5000);
     }
   };
 
   const handleArchiveActivity = (id: string) => {
-    const activity = activities.find((a) => a.id === id);
+    const activity = publicFeedItems.find((a) => a.id === id);
     if (activity) {
       setArchiveModal({
         isOpen: true,
         activityId: id,
-        activityTitle: activity.title,
+        activityTitle: activity.title || 'Post sans titre',
       });
     }
   };
@@ -353,10 +367,14 @@ export default function AdminClubFeedPage() {
         // Remove from current list
         setActivities(activities.filter((a) => a.id !== archiveModal.activityId));
         setDisplayActivities(displayActivities.filter((a) => a.id !== archiveModal.activityId));
+        setPublicFeedItems(publicFeedItems.filter((a) => a.id !== archiveModal.activityId));
 
         // Show success message
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
+        
+        // Close modal
+        closeArchiveModal();
       }
     } catch (error) {
       console.error('Error archiving activity:', error);
@@ -563,7 +581,7 @@ export default function AdminClubFeedPage() {
                 onEdit={(activity) => setEditingActivity(activity)}
                 onArchive={(activityId) => handleArchiveActivity(activityId)}
                 onDelete={(activityId) => handleDeleteActivity(activityId)}
-                rawActivities={activities}
+                rawActivities={publicFeedItems}
               />
             )}
           </CardContent>

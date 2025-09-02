@@ -2,7 +2,7 @@ import { RegistrationData } from '@/types/registration';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useI18n } from '@/locales/client';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -10,9 +10,11 @@ interface Step1BasicInfoProps {
   data: RegistrationData;
   onChange: (fields: Partial<RegistrationData>) => void;
   onNext: () => void;
+  fieldErrors?: { [key: string]: string };
+  onClearError?: (errors: { [key: string]: string }) => void;
 }
 
-export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInfoProps) {
+export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {}, onClearError }: Step1BasicInfoProps) {
   const t = useI18n();
   // States d'erreur par champ
   const [firstNameError, setFirstNameError] = useState('');
@@ -25,6 +27,9 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
   // States pour la visibilité des mots de passe
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Ref pour le timeout de la vérification email
+  const emailCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Validation manuelle
   const validateFirstName = (value: string) => {
@@ -39,6 +44,31 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
     if (!value.trim()) return t('validator.required');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) return t('validator.invalidEmail');
     return '';
+  };
+
+  // Validation email côté serveur
+  const checkEmailExists = async (email: string) => {
+    if (!email || validateEmail(email)) return; // Skip si pas d'email ou email invalide
+
+    try {
+      const res = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      
+      if (data.exists) {
+        setEmailError('Un utilisateur avec cet email existe déjà.');
+      } else {
+        // Si l'email n'existe pas, effacer l'erreur précédente si c'était une erreur serveur
+        if (emailError && emailError.includes('existe déjà')) {
+          setEmailError('');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+    }
   };
   const validatePassword = (value: string) => {
     if (!value) return t('validator.required');
@@ -66,7 +96,13 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
     let valid = true;
     setFirstNameError(validateFirstName(data.firstName));
     setLastNameError(validateLastName(data.lastName));
-    setEmailError(validateEmail(data.email));
+    
+    // Pour l'email, ne pas écraser l'erreur existante si elle vient du serveur
+    const clientEmailError = validateEmail(data.email);
+    if (!emailError || emailError.includes('requis') || emailError.includes('Invalid')) {
+      setEmailError(clientEmailError);
+    }
+    
     setPasswordError(validatePassword(data.password));
     setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, data.password));
     setCycleError(validateCycle(data.cycle));
@@ -74,6 +110,8 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
       validateFirstName(data.firstName) ||
       validateLastName(data.lastName) ||
       validateEmail(data.email) ||
+      emailError || // Inclure l'erreur email existant
+      fieldErrors.email || // Inclure les erreurs serveur
       validatePassword(data.password) ||
       validateConfirmPassword(data.confirmPassword, data.password) ||
       validateCycle(data.cycle)
@@ -141,11 +179,27 @@ export default function Step1BasicInfo({ data, onChange, onNext }: Step1BasicInf
               onChange={(e) => {
                 onChange({ email: e.target.value });
                 setEmailError(validateEmail(e.target.value));
+                // Effacer l'erreur serveur quand l'utilisateur modifie l'email
+                if (fieldErrors.email && onClearError) {
+                  onClearError({ ...fieldErrors, email: '' });
+                }
+              }}
+              onBlur={(e) => {
+                const clientError = validateEmail(e.target.value);
+                if (!clientError) {
+                  // Debounce la vérification pour éviter trop d'appels API
+                  if (emailCheckTimeoutRef.current) {
+                    clearTimeout(emailCheckTimeoutRef.current);
+                  }
+                  emailCheckTimeoutRef.current = setTimeout(() => {
+                    checkEmailExists(e.target.value);
+                  }, 500);
+                }
               }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
             />
-            {emailError && <div className="text-red-500 text-xs mt-1">{emailError}</div>}
+            {(emailError || fieldErrors.email) && <div className="text-red-500 text-xs mt-1">{emailError || fieldErrors.email}</div>}
           </div>
         </div>
       </div>

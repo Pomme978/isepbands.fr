@@ -15,8 +15,13 @@ import {
   Shield,
   Edit3,
   Archive,
-  LucideIcon 
+  LucideIcon,
+  ChevronDown,
+  ChevronRight,
+  Info
 } from 'lucide-react';
+import { formatActivityDescription } from '@/services/activityLogService';
+import { useAuth } from '@/lib/auth-client';
 interface ActivityLog {
   id: string;
   type: string;
@@ -45,6 +50,62 @@ interface UserEditActivityLogProps {
 export default function UserEditActivityLog({ userId }: UserEditActivityLogProps) {
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [loadingLog, setLoadingLog] = useState(true);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+
+  const toggleExpanded = (logId: string) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(logId)) {
+      newExpanded.delete(logId);
+    } else {
+      newExpanded.add(logId);
+    }
+    setExpandedItems(newExpanded);
+  };
+
+  // Helper function pour formater les métadonnées de manière lisible
+  const formatMetadata = (metadata: Record<string, unknown>) => {
+    if (!metadata || Object.keys(metadata).length === 0) return null;
+
+    const formatValue = (value: unknown): string => {
+      if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
+      if (typeof value === 'number') return value.toString();
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value.join(', ');
+      if (typeof value === 'object' && value !== null) {
+        return JSON.stringify(value, null, 2);
+      }
+      return String(value);
+    };
+
+    const formatKey = (key: string): string => {
+      const keyMap: Record<string, string> = {
+        'email': 'Email',
+        'role': 'Rôle',
+        'promotion': 'Promotion',
+        'instrumentsCount': 'Nombre d\'instruments',
+        'badgesCount': 'Nombre de badges',
+        'hasTemporaryPassword': 'Mot de passe temporaire',
+        'sendWelcomeEmail': 'Email de bienvenue envoyé',
+        'postTitle': 'Titre du post',
+        'targetUserId': 'Utilisateur cible',
+        'originalAction': 'Action originale',
+        'adminAction': 'Action administrateur',
+        'deletedByOwner': 'Supprimé par le propriétaire',
+        'deletedByAdmin': 'Supprimé par un admin'
+      };
+      return keyMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
+    };
+
+    return Object.entries(metadata)
+      .filter(([key]) => !['adminAction', 'originalAction'].includes(key)) // Masquer les champs techniques
+      .map(([key, value]) => (
+        <div key={key} className="flex justify-between py-1">
+          <span className="text-sm font-medium text-gray-600">{formatKey(key)}:</span>
+          <span className="text-sm text-gray-800 ml-2">{formatValue(value)}</span>
+        </div>
+      ));
+  };
 
   // Helper function pour obtenir l'icône et la couleur selon le type d'activité
   const getActivityIconAndColor = (type: string): { icon: LucideIcon; color: string } => {
@@ -182,16 +243,16 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
       ) : null}
 
       {/* Section : Timeline d'activité */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <div className="flex items-center space-x-2 mb-4">
-          <FileText className="w-5 h-5 text-primary" />
-          <h4 className="text-lg font-medium text-gray-900">Historique des actions</h4>
-        </div>
-        {loadingLog ? (
+      {loadingLog ? (
+        <div className="animate-pulse">
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="w-5 h-5 bg-gray-200 rounded" />
+            <div className="h-5 w-48 bg-gray-200 rounded" />
+          </div>
           <div className="space-y-6">
             {/* Skeleton pour 3 activités */}
             {[1, 2, 3].map((index) => (
-              <div key={index} className="flex items-start space-x-4 animate-pulse">
+              <div key={index} className="flex items-start space-x-4">
                 <div className="w-6 h-6 bg-gray-200 rounded-full flex-shrink-0"></div>
                 <div className="flex-1 space-y-2">
                   <div className="h-3 bg-gray-200 rounded w-24"></div>
@@ -202,47 +263,87 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
               </div>
             ))}
           </div>
-        ) : activityLog.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p>Aucune activité enregistrée</p>
-            <p className="text-sm">Les actions de l&apos;utilisateur apparaîtront ici</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center space-x-2 mb-4">
+            <FileText className="w-5 h-5 text-primary" />
+            <h4 className="text-lg font-medium text-gray-900">Historique des actions</h4>
           </div>
-        ) : (
-          <ol className="relative border-l-2 border-primary/30 ml-4">
-            {activityLog.map((log) => {
-              const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
-              return (
-              <li key={log.id} className="mb-8 ml-6">
-                <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white border-2 border-gray-200 rounded-full">
-                  <IconComponent className={`w-3 h-3 ${color}`} />
-                </span>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-gray-400">
-                    {new Date(log.createdAt).toLocaleDateString('fr-FR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })} à {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                  <span className="font-semibold text-gray-900">{log.title}</span>
-                  {log.description && (
-                    <span className="text-sm text-gray-700">{log.description}</span>
-                  )}
-                  {(log.createdByName || log.createdBy) && (
-                    <span className="text-xs text-gray-500">
-                      Par {log.createdByName || 'Système'}
+          {activityLog.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>Aucune activité enregistrée</p>
+              <p className="text-sm">Les actions de l&apos;utilisateur apparaîtront ici</p>
+            </div>
+          ) : (
+            <ol className="relative border-l-2 border-primary/30 ml-4">
+              {activityLog.map((log) => {
+                const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
+                const isExpanded = expandedItems.has(log.id);
+                const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
+                const formattedDescription = formatActivityDescription(log, user?.id);
+                
+                return (
+                  <li key={log.id} className="mb-8 ml-6">
+                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white border-2 border-gray-200 rounded-full">
+                      <IconComponent className={`w-3 h-3 ${color}`} />
                     </span>
-                  )}
-                </div>
-              </li>
-            );
-            })}
-          </ol>
-        )}
-      </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-gray-400">
+                        {new Date(log.createdAt).toLocaleDateString('fr-FR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        })} à {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                      <span className="font-semibold text-gray-900">{log.title}</span>
+                      {formattedDescription && (
+                        <span className="text-sm text-gray-700">{formattedDescription}</span>
+                      )}
+                      {(log.createdByName || log.createdBy) && (
+                        <span className="text-xs text-gray-500">
+                          Par {log.createdByName || 'Système'}
+                        </span>
+                      )}
+                      
+                      {/* Bouton pour afficher/masquer les détails */}
+                      {hasMetadata && (
+                        <button
+                          onClick={() => toggleExpanded(log.id)}
+                          className="flex items-center space-x-1 text-xs text-primary hover:text-primary/80 mt-1 w-fit"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3" />
+                          )}
+                          <span>Détails</span>
+                        </button>
+                      )}
+                      
+                      {/* Détails expandables */}
+                      {isExpanded && hasMetadata && (
+                        <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex items-center space-x-1 mb-2">
+                            <Info className="w-3 h-3 text-gray-500" />
+                            <span className="text-xs font-medium text-gray-600">Détails de l'action</span>
+                          </div>
+                          <div className="space-y-1">
+                            {formatMetadata(log.metadata)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+      )}
     </div>
   );
 }

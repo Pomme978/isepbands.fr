@@ -56,6 +56,12 @@ interface User {
     isAdmin: boolean;
   }>;
   badges: string[];
+  registrationRequest?: {
+    motivation: string;
+    experience: string;
+    status: string;
+    rejectionReason: string;
+  };
 }
 
 interface UsersApiResponse {

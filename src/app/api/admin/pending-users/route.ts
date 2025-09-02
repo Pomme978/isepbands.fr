@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
-import { prisma } from '@/prisma';
+import { checkAdminPermission } from '@/middlewares/admin';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.res;
+
+  // Check admin permission
+  const adminCheck = await checkAdminPermission(auth.user);
+  if (!adminCheck.hasPermission) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
 
   try {
     // Get all users with PENDING status
@@ -39,6 +46,7 @@ export async function GET(req: NextRequest) {
       isOutOfSchool: user.status === 'GRADUATED' || user.status === 'ALUMNI',
       pronouns: user.pronouns,
       motivation: user.registrationRequest?.motivation || '',
+      experience: user.registrationRequest?.experience || '',
       instruments: user.instruments.map((ui) => ({
         instrumentId: ui.instrument.id,
         instrumentName: ui.instrument.name,

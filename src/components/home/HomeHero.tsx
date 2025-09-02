@@ -13,12 +13,16 @@ import { useSession } from '@/lib/auth-client';
 import { useParams } from 'next/navigation';
 
 const HomeHero = () => {
-  const { user } = useSession();
+  const { user, loading } = useSession();
   const params = useParams();
   const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
 
+  // When user is logged in, navbar is fixed and adds pt-16, so we need to compensate
+  // Use loading state to prevent layout shift during initial load
+  const marginClass = (user && !loading) ? '-mt-16' : '';
+
   return (
-    <div className="relative w-full min-h-screen overflow-hidden">
+    <div className={`relative w-full min-h-screen overflow-hidden ${marginClass}`}>
       {/* Custom Background Color */}
       <div className="absolute inset-0 z-0 w-full" style={{ backgroundColor: '#2E135F' }} />
       <MusicNotes />
@@ -68,8 +72,8 @@ const HomeHero = () => {
       </div>*/}
 
       {/* Content Container - Mobile responsive */}
-      <div className="relative z-40 flex flex-col md:flex-row items-center justify-start md:justify-center min-h-screen text-white px-4 sm:px-6 overflow-hidden pt-16 md:pt-0">
-        <div className="flex flex-col md:flex-row justify-center items-center w-full max-w-6xl mx-auto gap-4 md:gap-8 text-center lg:text-left overflow-visible">
+      <div className="relative z-40 flex flex-col md:flex-row items-center justify-center min-h-screen text-white px-4 sm:px-6 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-center items-center w-full gap-4 md:gap-8 text-center lg:text-left overflow-visible">
           {/* Logo Section - Better mobile positioning */}
           <div className="flex justify-center flex-shrink-0 p-2 md:p-4 overflow-visible">
             <NeonLogo
@@ -77,22 +81,22 @@ const HomeHero = () => {
               alt="ISEP Bands Logo"
               width={300}
               height={300}
-              className="w-36 h-36 sm:w-52 sm:h-52 md:w-80 md:h-80"
+              className="w-52 h-52 md:w-80 md:h-80"
               neon={true}
               intensity={0.3}
             />
           </div>
 
           {/* Content Section - Compact mobile spacing */}
-          <div className="text-center lg:text-left max-w-xl md:max-w-6/12 px-2">
-            {/* Motto - Compact mobile sizing */}
-            <h1 className="text-lg sm:text-2xl md:text-4xl lg:text-5xl text-center md:text-justify font-bold mb-4 md:mb-8 leading-tight">
+          <div className="text-center lg:text-left max-w-xl md:max-w-6/12 px-2 md:px-0">
+            {/* Motto - Responsive text sizing */}
+            <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl text-center md:text-justify font-bold mb-6 md:mb-8 leading-tight">
               FOR THOSE WHO CAN'T STOP PLAYING
             </h1>
 
             {/* Button - Compact mobile layout */}
             <div className="flex flex-col sm:flex-row justify-between w-full items-center gap-3 sm:gap-0">
-              {!user && (
+              {!user && !loading && (
                 <Button
                   asChild
                   size="lg"

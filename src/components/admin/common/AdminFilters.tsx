@@ -46,7 +46,7 @@ export default function AdminFilters({
 
         {/* Select Filters */}
         {selectFilters.length > 0 && (
-          <div className="flex gap-4">
+          <div className="flex gap-4 justify-end">
             {selectFilters.map((filter) => (
               <select
                 key={filter.key}

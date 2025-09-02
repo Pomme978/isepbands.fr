@@ -155,10 +155,10 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   });
 
   return (
-    <div className="min-h-screen ">
-      <div className="max-w-7xl mx-3 py-8">
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
+        <div className="pt-8 mb-8">
           <h1 className="text-2xl md:text-left text-center font-bold text-gray-900 mb-2">
             Welcome back, {userProfile?.firstName || user.name?.split(' ')[0] || 'User'}
           </h1>

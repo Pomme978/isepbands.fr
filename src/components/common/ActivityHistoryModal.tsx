@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -13,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type { ActivityType } from '@/types/activity';
 import { RecentActivity } from '@/components/home/RecentActivity';
-import { ArrowLeft, Search, Filter, X } from 'lucide-react';
+import { ArrowLeft, Search, Filter, X, History } from 'lucide-react';
 import {
   format,
   isAfter,
@@ -138,30 +137,31 @@ export const ActivityHistoryModal = ({
     }));
   }, [filteredActivities]);
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] h-[95vh] p-0 sm:rounded-lg flex flex-col z-100">
-        <DialogHeader className="flex-shrink-0 bg-white border-b px-6 py-4 z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm" onClick={onClose} className="md:hidden p-2">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
-                <p className="text-sm text-gray-500 mt-1">
-                  {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
-                  trouvée{filteredActivities.length !== 1 ? 's' : ''}
-                </p>
-              </div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[95vh] h-[95vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <History className="w-6 h-6 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
+                trouvée{filteredActivities.length !== 1 ? 's' : ''}
+              </p>
             </div>
-
-            <Button variant="ghost" size="sm" onClick={onClose} className="hidden md:flex p-2">
-              <X className="h-5 w-5" />
-            </Button>
           </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          <div className="relative mt-4">
+        {/* Filters */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="Rechercher dans l'historique..."
@@ -171,7 +171,7 @@ export const ActivityHistoryModal = ({
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Select
                 value={periodFilter}
@@ -256,9 +256,10 @@ export const ActivityHistoryModal = ({
               </Button>
             </div>
           )}
-        </DialogHeader>
+        </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
           {activitiesByMonth.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 mb-4">Aucune activité trouvée avec ces filtres</p>
@@ -281,7 +282,7 @@ export const ActivityHistoryModal = ({
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };

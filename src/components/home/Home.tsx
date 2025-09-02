@@ -22,7 +22,7 @@ export function Home({ lang }: HomeProps) {
   return (
     <>
       <div className="relative bg-gray-100 w-full">
-        <div className="max-w-7xl mx-auto px-4 py-8 flex justify-center items-center flex-col">
+        <div className="max-w-7xl mx-auto pb-8 flex justify-center items-center flex-col">
           <div className="flex items-center justify-center flex-col">
             {/* Left floating guitar */}
             <div className="absolute -left-30 top-20 z-10 hidden lg:inline">
@@ -43,7 +43,7 @@ export function Home({ lang }: HomeProps) {
                 priority={false}
               />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-10 z-20">WHO ARE WE?</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-8 z-20">WHO ARE WE?</h1>
             <p className="text-gray-700 text-md mt-4 text-center mb-6 max-w-2xl z-20">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam id lobortis purus.
               Vivamus sed varius risus. Sed a purus sit amet nisl feugiat mollis. Nullam dignissim,

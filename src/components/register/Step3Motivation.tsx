@@ -15,14 +15,22 @@ interface Step3MotivationProps {
 export default function Step3Motivation({ data, onChange, onNext, onBack }: Step3MotivationProps) {
   const t = useI18n();
   const [motivationError, setMotivationError] = useState('');
+  const [experienceError, setExperienceError] = useState('');
+  
   const validateMotivation = (value: string) => {
+    if (!value.trim()) return t('validator.required');
+    return '';
+  };
+  
+  const validateExperience = (value: string) => {
     if (!value.trim()) return t('validator.required');
     return '';
   };
 
   const validateAll = () => {
     setMotivationError(validateMotivation(data.motivation));
-    return !validateMotivation(data.motivation);
+    setExperienceError(validateExperience(data.experience || ''));
+    return !validateMotivation(data.motivation) && !validateExperience(data.experience || '');
   };
 
   return (
@@ -53,6 +61,25 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
               required
             />
             {motivationError && <div className="text-red-500 text-xs mt-1">{motivationError}</div>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Parlez-nous de votre expérience musicale *
+            </label>
+            <textarea
+              id="experience"
+              placeholder="Décrivez votre parcours musical : instruments pratiqués, années d'expérience, formations suivies, groupes ou orchestres rejoints, style musical préféré, etc."
+              value={data.experience || ''}
+              onChange={(e) => {
+                onChange({ experience: e.target.value });
+                setExperienceError(validateExperience(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+              rows={5}
+              required
+            />
+            {experienceError && <div className="text-red-500 text-xs mt-1">{experienceError}</div>}
           </div>
         </div>
       </div>

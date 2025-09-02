@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth, useSession } from '../../lib/auth-client';
 import Avatar from '../common/Avatar';
 import { useRouter, useParams } from 'next/navigation';
+import LangLink from '@/components/common/LangLink';
 
 interface NavbarProps {
   mode?: 'scroll' | 'static' | 'fixed';
@@ -197,13 +198,15 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
             <div className="lg:hidden flex items-center justify-between w-full min-w-0 z-[300]">
               {/* Page Title */}
               <div className="flex-1 text-left min-w-0">
-                <h1
-                  className={`text-xl font-bold truncate ${
-                    style === 'transparent' ? 'text-white' : 'text-black'
-                  }`}
-                >
-                  ISEPBANDS
-                </h1>
+                <LangLink href="/" className="block">
+                  <h1
+                    className={`text-xl font-bold truncate ${
+                      style === 'transparent' ? 'text-white' : 'text-black'
+                    }`}
+                  >
+                    ISEPBANDS
+                  </h1>
+                </LangLink>
               </div>
 
               {/* Hamburger Button */}
@@ -250,13 +253,13 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
               </div>
 
               {/* User Section */}
-              <div className={`pt-4 border-t ${style === 'transparent' ? 'border-white/10' : ''}`}>
+              <div className={`border-t ${style === 'transparent' ? 'border-white/10' : ''}`}>
                 {mounted && !authLoading ? (
                   user ? (
                     <div className="space-y-3">
                       {/* User Profile */}
                       <div
-                        className={`flex items-center gap-3 px-3 py-3 border-b ${style === 'transparent' ? 'border-white/10' : 'border-gray-200'}`}
+                        className={`flex items-center justify-center w-full h-full gap-3 px-3 py-3 border-b ${style === 'transparent' ? 'border-white/10' : 'border-gray-200'}`}
                       >
                         <Avatar
                           src={user?.photoUrl}

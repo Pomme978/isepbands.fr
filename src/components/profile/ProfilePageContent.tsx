@@ -264,6 +264,13 @@ export default function ProfilePageContent({
           email: user.email,
           photoUrl: user.photoUrl,
           createdAt: user.createdAt.toString(),
+          phone: user.phone,
+          birthDate: user.birthDate,
+          promotion: user.promotion,
+          biography: user.biography,
+          preferredGenres: user.preferredGenres,
+          instruments: user.instruments,
+          registrationRequest: user.registrationRequest,
         }}
         lang={lang}
       />

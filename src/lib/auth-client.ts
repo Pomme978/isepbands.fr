@@ -28,12 +28,23 @@ export async function signIn(email: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
+  
+  const data = await res.json().catch(() => ({}));
+  
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
     // Use message field first, then error field, then default
-    throw new Error(error?.message || error?.error || 'Invalid credentials');
+    throw new Error(data?.message || data?.error || 'Invalid credentials');
   }
-  return res.json();
+  
+  // Check if password change is required
+  if (data?.requirePasswordChange) {
+    const error = new Error(data.message || 'Password change required');
+    (error as any).requirePasswordChange = true;
+    (error as any).userData = data.user;
+    throw error;
+  }
+  
+  return data;
 }
 
 export async function signOut() {

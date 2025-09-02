@@ -2,6 +2,15 @@ import prisma from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
 import type { AdminActivityLogType } from '@/types/adminActivity';
 
+// Fonction pour formater les descriptions pour l'affichage public
+export function formatActivityDescription(
+  activity: any,
+  currentViewerId?: string
+): string {
+  // Toujours retourner la description originale - plus de messages personnalisés
+  return activity.description;
+}
+
 export interface CreateAdminActivityLogOptions {
   userId?: string | null; // Optional for system logs
   type?: AdminActivityLogType;
@@ -129,6 +138,7 @@ export async function logAdminAction(
   metadata?: Prisma.InputJsonValue
 ) {
   try {
+    // Un seul log : action générale visible par tous
     await createAdminActivityLog({
       userId: targetUserId || null,
       type,

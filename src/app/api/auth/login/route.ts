@@ -72,39 +72,6 @@ export async function POST(req: NextRequest) {
           loginAt: new Date().toISOString()
         }
       );
-    } else {
-      // Check if this is the user's first login
-      const userFromDb = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { 
-          firstLoginAt: true,
-          firstName: true,
-          lastName: true,
-          email: true
-        }
-      });
-
-      if (userFromDb && !userFromDb.firstLoginAt) {
-        // This is the first login - update the user and log it
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { firstLoginAt: new Date() }
-        });
-
-        await logAdminAction(
-          'system',
-          'first_login',
-          'Première connexion',
-          `**${userFromDb.firstName} ${userFromDb.lastName}** (${userFromDb.email}) s'est connecté pour la première fois`,
-          user.id,
-          {
-            userEmail: userFromDb.email,
-            userAgent: req.headers.get('user-agent'),
-            ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
-            firstLoginAt: new Date().toISOString()
-          }
-        );
-      }
     }
   } catch (err) {
     // Activity log error

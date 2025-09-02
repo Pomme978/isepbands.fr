@@ -72,18 +72,30 @@ export default function LoginPage() {
     setLoginError(null);
 
     try {
-      await signIn(email, password, () => {
-        // Handle "Remember me" functionality
-        if (typeof window !== 'undefined') {
-          if (rememberMe) {
-            localStorage.setItem('rememberedEmail', email);
-          } else {
-            localStorage.removeItem('rememberedEmail');
-          }
+      await signIn(email, password);
+      
+      // Handle "Remember me" functionality
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem('rememberedEmail', email);
+        } else {
+          localStorage.removeItem('rememberedEmail');
         }
-        router.push('/' + lang);
-      });
+      }
+      router.push('/' + lang);
     } catch (error) {
+      // Check if password change is required
+      if (error instanceof Error && (error as any).requirePasswordChange) {
+        const userData = (error as any).userData;
+        // Redirect to password change page with user data
+        const params = new URLSearchParams({
+          email: userData?.email || email,
+          temp: userData?.hasTemporaryPassword ? 'true' : 'false'
+        });
+        router.push(`/${lang}/change-password?${params.toString()}`);
+        return;
+      }
+      
       setLoginError(error instanceof Error ? error.message : 'Login failed');
     } finally {
       setIsLoggingIn(false);

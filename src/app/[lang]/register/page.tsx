@@ -42,6 +42,7 @@ const initialData: RegistrationData = {
   birthDate: '',
   phone: '',
   motivation: '',
+  experience: '',
   instruments: [],
   preferredGenres: [],
   profilePhoto: null,
@@ -66,6 +67,7 @@ export default function RegisterPage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registerError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const router = useRouter();
   const params = useParams();
   const lang = typeof params.lang === 'string' ? params.lang : 'fr';
@@ -123,7 +125,16 @@ export default function RegisterPage() {
         router.push('/');
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('register.error.submit'));
+      const errorMessage = err instanceof Error ? err.message : t('register.error.submit');
+      
+      // Vérifier si c'est une erreur d'email déjà utilisé
+      if (errorMessage.includes('email existe déjà') || errorMessage.includes('email already exists')) {
+        setFieldErrors({ email: 'Un utilisateur avec cet email existe déjà.' });
+        setStep(1); // Retourner au Step 1 pour afficher l'erreur
+        toast.error('Email déjà utilisé. Veuillez en choisir un autre.');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -174,7 +185,7 @@ export default function RegisterPage() {
 
         {/* Contenu des étapes */}
         <div className="p-6 md:max-h-[70vh] md:overflow-y-auto">
-          {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} />}
+          {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} fieldErrors={fieldErrors} onClearError={setFieldErrors} />}
           {step === 2 && (
             <Step2AdditionalInfo
               data={data}
@@ -214,6 +225,7 @@ export default function RegisterPage() {
               onBack={handleBack}
               onSubmit={handleSubmit}
               availableInstruments={availableInstruments}
+              isSubmitting={isSubmitting}
             />
           )}
         </div>
@@ -238,14 +250,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Loading state */}
-        {isSubmitting && (
-          <div className="mx-6 mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-center">
-              <Loading text="Inscription en cours..." size="sm" />
-            </div>
-          </div>
-        )}
       </RegisterFormCard>
     </div>
   );

@@ -420,10 +420,10 @@ export default function UserEditInstruments({
           {!isReadOnly && (
             <button
               onClick={() => setIsAddingInstrument(true)}
-              className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 border border-transparent rounded-lg shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2"
             >
-              <Plus className="w-3 h-3 mr-1" />
-              Add Instrument
+              <Plus className="w-4 h-4" />
+              Ajouter un instrument
             </button>
           )}
         </div>

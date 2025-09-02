@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAuth } from '@/middlewares/auth';
+import { requireAuth } from '@/middlewares/auth';
+import { checkAdminPermission } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction } from '@/services/activityLogService';
 
 export async function GET(req: NextRequest) {
-  const auth = await requireAdminAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.ok) return auth.res;
+
+  // Check admin permission
+  const adminCheck = await checkAdminPermission(auth.user);
+  if (!adminCheck.hasPermission) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);

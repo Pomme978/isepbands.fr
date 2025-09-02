@@ -32,7 +32,7 @@ export async function GET() {
         userRole: userRole,
         metadata: item.metadata,
         createdAt: item.createdAt,
-        createdBy: null, // Public feed has no createdBy field
+        createdBy: item.userId, // User who created this public feed item
       };
     });
 

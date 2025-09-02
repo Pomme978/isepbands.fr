@@ -90,9 +90,52 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    /* Fix mobile Chrome viewport issues */
+    height: 100%;
+    height: -webkit-fill-available;
+    /* Prevent iOS safari zoom */
+    -webkit-text-size-adjust: 100%;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    /* Fix mobile Chrome viewport issues */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+    /* Fix Chrome mobile viewport unit issues */
+    position: relative;
   }
+  
+  /* Fix for mobile Chrome address bar */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      min-height: -webkit-fill-available;
+    }
+  }
+  
+  /* Specific fix for Chrome mobile viewport */
+  @media screen and (max-width: 768px) {
+    body {
+      /* Force body to fill available space */
+      min-height: 100dvh; /* Dynamic viewport height */
+      min-height: -webkit-fill-available;
+    }
+    
+    /* Ensure main containers fill available space */
+    #__next, [data-reactroot] {
+      min-height: 100dvh;
+      min-height: -webkit-fill-available;
+    }
+  }
+  
   h1,
   h2,
   h3 {

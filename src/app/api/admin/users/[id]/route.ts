@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/middlewares/admin';
-import { prisma } from '@/prisma';
+import { prisma } from '@/lib/prisma';
 import { z, ZodIssue } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
@@ -689,34 +689,37 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       select: { id: true, key: true },
     });
 
-    await prisma.$transaction(async (tx) => {
-      await tx.userInstrument.deleteMany({ where: { userId } });
-      await tx.userRole.deleteMany({ where: { userId } });
-      await tx.groupMembership.deleteMany({ where: { userId } });
-      await tx.badge.deleteMany({ where: { userId } });
-      await tx.storageObject.deleteMany({ where: { userId } });
-      await tx.registrationRequest.deleteMany({ where: { userId } });
-      await tx.vote.deleteMany({ where: { userId } });
-      await tx.news.deleteMany({ where: { authorId: userId } });
-      await tx.user.delete({ where: { id: userId } });
+    // Delete related data in multiple smaller transactions to avoid timeout
+    await prisma.userInstrument.deleteMany({ where: { userId } });
+    await prisma.userRole.deleteMany({ where: { userId } });
+    await prisma.groupMembership.deleteMany({ where: { userId } });
+    await prisma.badge.deleteMany({ where: { userId } });
+    await prisma.registrationRequest.deleteMany({ where: { userId } });
+    await prisma.vote.deleteMany({ where: { userId } });
+    await prisma.news.deleteMany({ where: { authorId: userId } });
+    await prisma.storageObject.deleteMany({ where: { userId } });
+    
+    // Finally delete the user
+    await prisma.user.delete({ where: { id: userId } });
 
-      // Logger la suppression d'utilisateur
-      try {
-        const { logAdminAction } = await import('@/services/activityLogService');
-        await logAdminAction(
-          authResult.user.id,
-          'user_deleted',
-          'Utilisateur supprimé',
-          `**${existingUser.firstName} ${existingUser.lastName}** (${existingUser.email}) a été supprimé définitivement`,
-          userId,
-          {
-            userEmail: existingUser.email,
-            deletedAt: new Date().toISOString()
-          }
-        );
-      } catch (err) {
-      }
-    });
+    // Logger la suppression d'utilisateur
+    try {
+      const { logAdminAction } = await import('@/services/activityLogService');
+      await logAdminAction(
+        authResult.user.id,
+        'user_deleted',
+        'Utilisateur supprimé',
+        `**${existingUser.firstName} ${existingUser.lastName}** (${existingUser.email}) a été supprimé définitivement`,
+        userId,
+        {
+          userEmail: existingUser.email,
+          deletedAt: new Date().toISOString()
+        }
+      );
+    } catch (err) {
+      // Log error but don't fail the deletion
+      console.warn('Failed to log user deletion:', err);
+    }
 
     // Auto-unsubscribe from newsletter when user is deleted
     await autoUnsubscribeUser(existingUser.email);
