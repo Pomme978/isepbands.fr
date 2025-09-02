@@ -34,6 +34,21 @@ interface SystemSettings {
   };
 }
 
+interface LegalMentions {
+  presidentName: string;
+  contactEmail: string;
+  technicalEmail: string;
+  hostingProvider?: string;
+  hostingAddress?: string;
+  hostingPhone?: string;
+  hostingEmail?: string;
+  domainProvider?: string;
+  domainAddress?: string;
+  domainPhone?: string;
+  developmentTeam?: string;
+  designTeam?: string;
+}
+
 interface SocialLink {
   id: number;
   platform: string;
@@ -70,12 +85,31 @@ export default function SettingsPage() {
   const [socialLinksLoading, setSocialLinksLoading] = useState(false);
   const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
 
+  // Legal mentions state
+  const [legalMentions, setLegalMentions] = useState<LegalMentions>({
+    presidentName: '',
+    contactEmail: 'contact@isepbands.fr',
+    technicalEmail: 'tech@isepbands.fr',
+    hostingProvider: '',
+    hostingAddress: '',
+    hostingPhone: '',
+    hostingEmail: '',
+    domainProvider: '',
+    domainAddress: '',
+    domainPhone: '',
+    developmentTeam: '',
+    designTeam: '',
+  });
+  const [legalMentionsLoading, setLegalMentionsLoading] = useState(false);
+  const [hasLegalChanges, setHasLegalChanges] = useState(false);
+
   // Check if current month is August (migration allowed)
   const isAugust = new Date().getMonth() === 7;
 
   useEffect(() => {
     loadSettings();
     loadSocialLinks();
+    loadLegalMentions();
   }, []);
 
   const loadSettings = async () => {
@@ -107,6 +141,22 @@ export default function SettingsPage() {
       setError('Erreur lors du chargement des liens sociaux');
     } finally {
       setSocialLinksLoading(false);
+    }
+  };
+
+  const loadLegalMentions = async () => {
+    try {
+      setLegalMentionsLoading(true);
+      const response = await fetch('/api/admin/legal-mentions');
+      if (response.ok) {
+        const data = await response.json();
+        setLegalMentions(data);
+      }
+    } catch (error) {
+      console.error('Failed to load legal mentions:', error);
+      setError('Erreur lors du chargement des mentions légales');
+    } finally {
+      setLegalMentionsLoading(false);
     }
   };
 
@@ -188,27 +238,49 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveSettings = async () => {
+  const handleSaveAll = async () => {
     try {
       setSaving(true);
       setError(null);
       setSuccess(null);
 
-      const response = await fetch('/api/admin/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
-      });
+      const promises = [];
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la sauvegarde');
+      // Save system settings if there are changes
+      if (hasUnsavedChanges) {
+        promises.push(
+          fetch('/api/admin/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings),
+          }),
+        );
+      }
+
+      // Save legal mentions if there are changes
+      if (hasLegalChanges) {
+        promises.push(
+          fetch('/api/admin/legal-mentions', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(legalMentions),
+          }),
+        );
+      }
+
+      const responses = await Promise.all(promises);
+
+      // Check if all requests succeeded
+      for (const response of responses) {
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erreur lors de la sauvegarde');
+        }
       }
 
       setHasUnsavedChanges(false);
-      setSuccess('Paramètres sauvegardés avec succès');
+      setHasLegalChanges(false);
+      setSuccess('Tous les paramètres ont été sauvegardés avec succès');
 
       // Apply primary color change
       if (activeSection === 'appearance') {
@@ -278,6 +350,11 @@ export default function SettingsPage() {
       publicationDirector: { ...prev.publicationDirector, ...updates },
     }));
     setHasUnsavedChanges(true);
+  };
+
+  const updateLegalMentions = (updates: Partial<LegalMentions>) => {
+    setLegalMentions((prev) => ({ ...prev, ...updates }));
+    setHasLegalChanges(true);
   };
 
   const predefinedColors = [
@@ -640,101 +717,207 @@ export default function SettingsPage() {
                     <h2 className="text-xl font-semibold">Mentions légales</h2>
                   </div>
 
-                  <div className="space-y-6">
-                    {/* Association Identity */}
-                    <div>
-                      <h3 className="font-medium text-foreground mb-4 flex items-center">
-                        <Building2 className="w-5 h-5 mr-2 text-primary" />
-                        Identité de l&apos;association
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            Nom officiel *
-                          </label>
-                          <input
-                            type="text"
-                            value={settings.association.name}
-                            onChange={(e) => updateAssociation({ name: e.target.value })}
-                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            Statut juridique *
-                          </label>
-                          <select
-                            value={settings.association.legalStatus}
-                            onChange={(e) => updateAssociation({ legalStatus: e.target.value })}
-                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          >
-                            <option value="Association loi 1901">Association loi 1901</option>
-                            <option value="Association loi 1908">
-                              Association loi 1908 (Alsace-Moselle)
-                            </option>
-                            <option value="Autre">Autre</option>
-                          </select>
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            Adresse du siège social *
-                          </label>
-                          <textarea
-                            value={settings.association.address}
-                            onChange={(e) => updateAssociation({ address: e.target.value })}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                            placeholder="Adresse complète du siège social..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            Numéro SIRET
-                          </label>
-                          <input
-                            type="text"
-                            value={settings.association.siret || ''}
-                            onChange={(e) => updateAssociation({ siret: e.target.value })}
-                            placeholder="Si activités économiques"
-                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            Email de contact *
-                          </label>
-                          <input
-                            type="email"
-                            value={settings.association.email}
-                            onChange={(e) => updateAssociation({ email: e.target.value })}
-                            className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          />
+                  {legalMentionsLoading ? (
+                    <div className="text-center py-8">
+                      <Loading text="Chargement des mentions légales..." size="lg" />
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Contact Information */}
+                      <div>
+                        <h3 className="font-medium text-foreground mb-4 flex items-center">
+                          <Building2 className="w-5 h-5 mr-2 text-primary" />
+                          Informations de contact
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Nom du président *
+                            </label>
+                            <input
+                              type="text"
+                              value={legalMentions.presidentName}
+                              onChange={(e) =>
+                                updateLegalMentions({ presidentName: e.target.value })
+                              }
+                              placeholder="Nom du président de l'association"
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Email de contact *
+                            </label>
+                            <input
+                              type="email"
+                              value={legalMentions.contactEmail}
+                              onChange={(e) =>
+                                updateLegalMentions({ contactEmail: e.target.value })
+                              }
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Email technique *
+                            </label>
+                            <input
+                              type="email"
+                              value={legalMentions.technicalEmail}
+                              onChange={(e) =>
+                                updateLegalMentions({ technicalEmail: e.target.value })
+                              }
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Publication Director */}
-                    <div className="border-t pt-6">
-                      <h3 className="font-medium text-foreground mb-4">
-                        Responsable de publication
-                      </h3>
-                      <div className="max-w-md">
-                        <label className="block text-sm font-medium text-foreground mb-2">
-                          Nom du responsable *
-                        </label>
-                        <input
-                          type="text"
-                          value={settings.publicationDirector.name}
-                          onChange={(e) => updatePublicationDirector({ name: e.target.value })}
-                          placeholder="Président ou responsable désigné"
-                          className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Généralement le président de l&apos;association
-                        </p>
+                      {/* Hosting Information */}
+                      <div className="border-t pt-6">
+                        <h3 className="font-medium text-foreground mb-4">
+                          Informations d&apos;hébergement
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Nom de l&apos;hébergeur
+                            </label>
+                            <input
+                              type="text"
+                              value={legalMentions.hostingProvider || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ hostingProvider: e.target.value })
+                              }
+                              placeholder="Ex: OVH, Scaleway..."
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Email hébergeur
+                            </label>
+                            <input
+                              type="email"
+                              value={legalMentions.hostingEmail || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ hostingEmail: e.target.value })
+                              }
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Adresse hébergeur
+                            </label>
+                            <textarea
+                              value={legalMentions.hostingAddress || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ hostingAddress: e.target.value })
+                              }
+                              rows={2}
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                              placeholder="Adresse complète de l'hébergeur"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Téléphone hébergeur
+                            </label>
+                            <input
+                              type="tel"
+                              value={legalMentions.hostingPhone || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ hostingPhone: e.target.value })
+                              }
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Domain Information */}
+                      <div className="border-t pt-6">
+                        <h3 className="font-medium text-foreground mb-4">Fournisseur de domaine</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Nom du registrar
+                            </label>
+                            <input
+                              type="text"
+                              value={legalMentions.domainProvider || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ domainProvider: e.target.value })
+                              }
+                              placeholder="Ex: Gandi, OVH..."
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Téléphone registrar
+                            </label>
+                            <input
+                              type="tel"
+                              value={legalMentions.domainPhone || ''}
+                              onChange={(e) => updateLegalMentions({ domainPhone: e.target.value })}
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Adresse registrar
+                            </label>
+                            <textarea
+                              value={legalMentions.domainAddress || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ domainAddress: e.target.value })
+                              }
+                              rows={2}
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                              placeholder="Adresse complète du registrar"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Team Information */}
+                      <div className="border-t pt-6">
+                        <h3 className="font-medium text-foreground mb-4">
+                          Équipe de développement
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Équipe de développement
+                            </label>
+                            <input
+                              type="text"
+                              value={legalMentions.developmentTeam || ''}
+                              onChange={(e) =>
+                                updateLegalMentions({ developmentTeam: e.target.value })
+                              }
+                              placeholder="Noms des développeurs"
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Équipe de design
+                            </label>
+                            <input
+                              type="text"
+                              value={legalMentions.designTeam || ''}
+                              onChange={(e) => updateLegalMentions({ designTeam: e.target.value })}
+                              placeholder="Noms des designers"
+                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -742,18 +925,24 @@ export default function SettingsPage() {
               <div className="border-t border-border px-6 py-4 bg-muted/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    {hasUnsavedChanges && (
+                    {(hasUnsavedChanges || hasLegalChanges) && (
                       <div className="flex items-center space-x-2 text-amber-600">
                         <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                        <span className="text-sm font-medium">Modifications non sauvegardées</span>
+                        <span className="text-sm font-medium">
+                          {hasUnsavedChanges && hasLegalChanges
+                            ? 'Paramètres et mentions légales modifiés'
+                            : hasUnsavedChanges
+                              ? 'Paramètres modifiés'
+                              : 'Mentions légales modifiées'}
+                        </span>
                       </div>
                     )}
                   </div>
                   <button
-                    onClick={handleSaveSettings}
-                    disabled={saving || !hasUnsavedChanges}
+                    onClick={handleSaveAll}
+                    disabled={saving || (!hasUnsavedChanges && !hasLegalChanges)}
                     className={`inline-flex items-center px-4 py-2 rounded-md transition-colors ${
-                      hasUnsavedChanges && !saving
+                      (hasUnsavedChanges || hasLegalChanges) && !saving
                         ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                         : 'bg-muted text-muted-foreground cursor-not-allowed'
                     }`}
@@ -763,7 +952,7 @@ export default function SettingsPage() {
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                    {saving ? 'Sauvegarde...' : 'Sauvegarder tous les changements'}
                   </button>
                 </div>
               </div>

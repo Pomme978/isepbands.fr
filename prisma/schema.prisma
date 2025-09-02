@@ -658,3 +658,22 @@ enum WishlistStatus {
   PURCHASED   // Acheté
   CANCELLED   // Annulé
 }
+
+model LegalMentions {
+  id                  String   @id @default(uuid())
+  presidentName       String   // Nom du président
+  contactEmail        String   @default("contact@isepbands.fr")
+  technicalEmail      String   @default("tech@isepbands.fr")
+  hostingProvider     String?  // Nom de l'hébergeur
+  hostingAddress      String?  // Adresse de l'hébergeur
+  hostingPhone        String?  // Téléphone de l'hébergeur
+  hostingEmail        String?  // Email de l'hébergeur
+  domainProvider      String?  // Nom du registrar
+  domainAddress       String?  // Adresse du registrar
+  domainPhone         String?  // Téléphone du registrar
+  developmentTeam     String?  // Équipe de développement
+  designTeam          String?  // Équipe de design
+  updatedAt           DateTime @default(now()) @updatedAt
+  
+  @@map("legal_mentions")
+}
