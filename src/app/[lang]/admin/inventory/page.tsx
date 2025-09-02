@@ -127,7 +127,7 @@ export default function InventoryPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const [expandedStacks, setExpandedStacks] = useState<Set<string>>(new Set());
@@ -273,6 +273,26 @@ export default function InventoryPage() {
         throw new Error(errorData.error || 'Failed to save');
       }
 
+      const result = await response.json();
+      
+      // Log d'activité
+      await fetch('/api/admin/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: editingItem ? 'inventory_updated' : 'inventory_created',
+          title: editingItem ? `Équipement modifié: ${formData.name}` : `Nouvel équipement ajouté: ${formData.name}`,
+          description: `${formData.category} - ${[formData.brand, formData.model].filter(Boolean).join(' ')} (Qté: ${formData.quantity})`,
+          metadata: {
+            itemId: result.item?.id || editingItem?.id,
+            category: formData.category,
+            name: formData.name,
+            quantity: formData.quantity,
+            state: formData.state,
+          }
+        }),
+      }).catch(console.error);
+
       toast.success(editingItem ? 'Article modifié' : 'Article créé');
       setShowCreateModal(false);
       resetForm();
@@ -299,6 +319,7 @@ export default function InventoryPage() {
   };
 
   const handleDelete = async (id: string) => {
+    const item = items.find(i => i.id === id);
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
 
     try {
@@ -307,6 +328,26 @@ export default function InventoryPage() {
       });
 
       if (!response.ok) throw new Error('Failed to delete');
+
+      // Log d'activité
+      if (item) {
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inventory_deleted',
+            title: `Équipement supprimé: ${item.name}`,
+            description: `${item.category} - ${[item.brand, item.model].filter(Boolean).join(' ')} (Qté: ${item.quantity})`,
+            metadata: {
+              itemId: id,
+              category: item.category,
+              name: item.name,
+              quantity: item.quantity,
+              state: item.state,
+            }
+          }),
+        }).catch(console.error);
+      }
 
       toast.success('Article supprimé');
       fetchItems();
@@ -395,71 +436,62 @@ export default function InventoryPage() {
     }
 
     if (isExpanded) {
-      // Mode déroulé : prend toute la largeur disponible
+      // Mode déroulé : les cartes se placent dans la continuité de la grille
       return (
-        <div key={key} className="col-span-full">
-          {/* Fond spécial pour les cartes déroulées */}
-          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-xl p-6 border-2 border-primary/20">
-            {/* Header avec bouton replier stylé */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Layers className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {representative.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {items.length} fiches • {totalQuantity} quantité totale
-                  </p>
-                </div>
+        <>
+          {/* Header replié en première position */}
+          <div key={`${key}-header`} className="bg-gray-100 rounded-lg p-3 border border-gray-200 flex items-center justify-between hover:bg-gray-200 transition-colors">
+            <div className="flex items-center gap-2">
+              <div className="p-1 bg-gray-200 rounded">
+                <Layers className="w-4 h-4 text-gray-600" />
               </div>
-              
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleStack(key);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-medium rounded-lg transition-all duration-200 hover:scale-105"
-              >
-                <ChevronUp className="w-4 h-4" />
-                Replier le stack
-              </button>
+              <div>
+                <span className="text-sm font-bold text-gray-900">{representative.name}</span>
+                <span className="ml-2 text-xs text-gray-600">({items.length} items)</span>
+              </div>
             </div>
             
-            {/* Cartes déroulées dans une sous-grille avec fond */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {items.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="transform transition-all duration-300 ease-out"
-                  style={{
-                    animationDelay: `${index * 80}ms`,
-                    animation: `expandFromStack 0.4s ease-out forwards`,
-                  }}
-                >
-                  <div onClick={(e) => e.stopPropagation()}>
-                    {renderItemCard(item)}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStack(key);
+              }}
+              className="flex items-center gap-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium rounded transition-all duration-200"
+            >
+              <ChevronUp className="w-3 h-3" />
+              Replier
+            </button>
           </div>
+
+          {/* Cartes individuelles qui s'insèrent dans la grille */}
+          {items.map((item, index) => (
+            <div
+              key={item.id}
+              className="transform transition-all duration-300 ease-out"
+              style={{
+                animationDelay: `${index * 60}ms`,
+                animation: `expandFromStack 0.3s ease-out forwards`,
+              }}
+            >
+              <div onClick={(e) => e.stopPropagation()}>
+                {renderItemCard(item)}
+              </div>
+            </div>
+          ))}
           
           <style jsx>{`
             @keyframes expandFromStack {
               0% {
                 opacity: 0;
-                transform: translateY(-20px) scale(0.9) rotateX(10deg);
+                transform: scale(0.8) rotateY(-10deg);
               }
               100% {
                 opacity: 1;
-                transform: translateY(0) scale(1) rotateX(0deg);
+                transform: scale(1) rotateY(0deg);
               }
             }
           `}</style>
-        </div>
+        </>
       );
     }
 
@@ -529,7 +561,7 @@ export default function InventoryPage() {
       className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
     >
       {/* Images avec carrousel - Compact */}
-      <div className="relative h-48 bg-gray-50">
+      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
         {item.images && item.images.length > 0 ? (
           <div className="relative group h-full">
             <Image
@@ -582,7 +614,7 @@ export default function InventoryPage() {
             </div>
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
             <Camera className="w-8 h-8 text-gray-400 mb-1" />
             <p className="text-xs text-gray-500 font-ubuntu">Aucune photo</p>
           </div>
@@ -702,7 +734,7 @@ export default function InventoryPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                       <Camera className="w-5 h-5 text-gray-400" />
                     </div>
                   )}
@@ -839,13 +871,13 @@ export default function InventoryPage() {
                     className="w-10 h-10 rounded object-cover"
                   />
                 ) : (
-                  <div key={idx} className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                  <div key={idx} className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                     <Camera className="w-4 h-4 text-gray-400" />
                   </div>
                 )
               ))}
               {group.items.length > 3 && (
-                <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                   <span className="text-xs text-gray-600">+{group.items.length - 3}</span>
                 </div>
               )}
@@ -963,12 +995,26 @@ export default function InventoryPage() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Sélectionnez un état">
+                          {formData.state && (
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className={`w-3 h-3 rounded-full border ${STATE_COLORS[formData.state as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
+                              />
+                              {STATE_LABELS[formData.state as keyof typeof STATE_LABELS]}
+                            </div>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(STATE_LABELS).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
-                            {label}
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className={`w-3 h-3 rounded-full border ${STATE_COLORS[value as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
+                              />
+                              {label}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1136,7 +1182,7 @@ export default function InventoryPage() {
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="bg-white p-2 text-center">
               <p className="text-lg font-bold font-outfit text-primary mb-1">
                 {items.filter((i) => ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length}
@@ -1149,11 +1195,6 @@ export default function InventoryPage() {
                 {items.filter((i) => ['DEFECTIVE', 'OUT_OF_SERVICE'].includes(i.state)).length}
               </p>
               <p className="text-xs text-gray-600 font-ubuntu">Hors service</p>
-            </div>
-            
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">{categories.length}</p>
-              <p className="text-xs text-gray-600 font-ubuntu">Catégories</p>
             </div>
           </div>
           

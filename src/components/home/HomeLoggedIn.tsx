@@ -156,7 +156,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-2">
         {/* Header */}
         <div className="pt-8 mb-8">
           <h1 className="text-2xl md:text-left text-center font-bold text-gray-900 mb-2">
@@ -164,14 +164,14 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           {/* Left Column - Actions rapides */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-2 lg:order-1">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 {/* User Profile Section */}
                 {isLoadingProfile ? (
-                  <div className="flex items-center space-x-4 mb-6">
+                  <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                     <div className="h-16 w-16 bg-gray-200 rounded-full animate-pulse"></div>
                     <div className="space-y-2">
                       <div className="h-5 bg-gray-200 rounded w-32 animate-pulse"></div>
@@ -180,7 +180,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-start space-x-4 mb-6">
+                  <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-6">
                     <Avatar
                       src={userProfile?.photoUrl || user.image}
                       name={
@@ -191,17 +191,17 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                       size="lg"
                     />
                     <div className="space-y-0">
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="font-semibold text-base md:text-lg">
                         {userProfile
                           ? `${userProfile.firstName} ${userProfile.lastName}`
                           : user.name || 'User'}
                       </h3>
                       {userProfile && userProfile.promotion && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs md:text-sm text-gray-600">
                           Promotion {calculateGraduationYear(userProfile.promotion)}
                         </p>
                       )}
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">
                         {userProfile && userProfile.promotion && (
                           <>
                             {userProfile.promotion}
@@ -229,12 +229,12 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                   </div>
                 )}
 
-                <h4 className="font-semibold text-gray-900 mb-4">Actions rapides</h4>
+                <h4 className="font-semibold text-gray-900 mb-3 md:mb-4">Actions rapides</h4>
 
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left h-auto py-3"
+                    className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                     asChild
                   >
                     <LangLink href={`/${lang}/profile`}>Mon profil</LangLink>
@@ -242,7 +242,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
 
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left h-auto py-3"
+                    className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                     asChild
                   >
                     <LangLink href={`/${lang}/groups`}>Mes groupes</LangLink>
@@ -251,7 +251,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                   {userProfile?.primaryRole && (
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left h-auto py-3"
+                      className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                       asChild
                     >
                       <LangLink href={`/${lang}/admin`}>Admin</LangLink>
@@ -260,7 +260,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
 
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left h-auto py-3"
+                    className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                     asChild
                   >
                     <LangLink href={`/${lang}/profile/settings`}>Paramètres</LangLink>
@@ -268,13 +268,13 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                 </div>
 
                 {/* Logout Button */}
-                <div className="mt-8 pt-6 border-t">
+                <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     type="button"
                     variant="destructive"
                     onClick={onLogout}
                     disabled={loading}
-                    className="w-full cursor-pointer"
+                    className="w-full cursor-pointer text-sm md:text-base"
                   >
                     {loading ? 'Déconnexion...' : 'Logout'}
                   </Button>
@@ -284,11 +284,11 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
           </div>
 
           {/* Right Column - Recent Activities */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-1 lg:order-2">
             <Card>
-              <CardContent className="md:p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 md:text-left text-center">Dernières Actualités</h2>
+              <CardContent className="p-4 md:p-6">
+                <div className="flex justify-between items-center mb-4 md:mb-6">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Dernières Actualités</h2>
                   {feedError && <span className="text-sm text-amber-600">Mode hors ligne</span>}
                 </div>
 
@@ -301,7 +301,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     activities={activities}
                     onShowHistory={activityHistory.openHistory}
                     showHistoryButton={true}
-                    maxItems={6}
+                    maxItems={8}
                   />
                 )}
               </CardContent>
