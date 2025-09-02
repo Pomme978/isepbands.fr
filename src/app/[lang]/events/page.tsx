@@ -80,6 +80,7 @@ export default function EventsPage() {
         <WaveDivider 
           numberOfWaves={5}
           backgroundColor="#2D0446"
+          previousBackgroundColor="#19192B"
           height={120}
           amplitude={60}
           spacing={12}

@@ -146,8 +146,8 @@ export default function ChristmasGarland({
       const isMobile = screenWidth < 768;
       const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-      // Largeur réelle du conteneur - ajustée pour éviter le overflow sur mobile
-      const containerWidth = isMobile ? Math.min(screenWidth - 20, 500) : screenWidth; // Marge de 20px sur mobile
+      // Largeur réelle du conteneur - utilise toute la largeur d'écran
+      const containerWidth = screenWidth; // Utilise toujours la largeur complète
       const containerHeight = isMobile ? 50 : isTablet ? 140 : 160; // TRÈS petite sur mobile
 
       // Plus de points d'ancrage sur mobile pour une belle courbe

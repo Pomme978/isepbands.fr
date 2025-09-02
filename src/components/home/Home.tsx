@@ -43,22 +43,20 @@ export function Home({ lang }: HomeProps) {
                 priority={false}
               />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-8 z-20">WHO ARE WE?</h1>
-            <p className="text-gray-700 text-md mt-4 text-center mb-6 max-w-2xl z-20">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam id lobortis purus.
-              Vivamus sed varius risus. Sed a purus sit amet nisl feugiat mollis. Nullam dignissim,
-              dolor sit amet hendrerit blandit, erat est efficitur mi, quis egestas odio dui sit
-              amet orci. Sed pulvinar, lorem vitae convallis blandit, turpis massa sagittis ex,
-              vitae interdum metus elit et sapien. Nam eget felis scelerisque libero fringilla
-              venenatis. Ut elementum vel enim eu pellentesque. Pellentesque tincidunt iaculis
-              velit, eu condimentum lorem cursus in. Vestibulum semper ex eu mi venenatis, a dictum
-              sem elementum. Suspendisse potenti. Duis in nisi sodales, placerat velit vitae,
-              rhoncus metus. Curabitur in suscipit sem, nec posuere tellus. Ut sed enim turpis.
-              Nulla iaculis risus in tempor cursus.
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-8 z-20">QUI SOMMES-NOUS?</h1>
+            <p className="text-gray-700 text-md mt-4 text-center max-w-2xl z-20">
+              Chez ISEPBands, la musique ne s’arrête jamais. Notre association réunit les étudiants
+              passionnés, débutants comme confirmés, autour de jams, de concerts et de projets de
+              groupe. Ici, chacun trouve sa place : que tu veuilles simplement jouer pour le
+              plaisir, progresser avec d’autres musiciens, ou monter sur scène, on t’accompagne.
+            </p>
+            <p className="text-gray-700 text-md text-center mb-6 mt-5 max-w-2xl z-20">
+              Notre mission : créer un espace convivial où la créativité et l’énergie de la musique
+              live se partagent sans limite.
             </p>
 
             <Button asChild className="mb-12">
-              <LangLink href={`/${lang}/asso`}>Learn More</LangLink>
+              <LangLink href={`/${lang}/asso`}>En savoir plus</LangLink>
             </Button>
           </div>
           <OurFamousEvents />
@@ -83,9 +81,7 @@ export function Home({ lang }: HomeProps) {
           {/* Upcoming Events Section - Commented out */}
           <div className="w-full text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">UPCOMING EVENTS</h2>
-            <p className="text-xs text-gray-500 py-12">
-              Fonctionnalité à venir
-            </p>
+            <p className="text-xs text-gray-500 py-12">Fonctionnalité à venir</p>
           </div>
           {/* <UpcomingEvents /> */}
         </div>

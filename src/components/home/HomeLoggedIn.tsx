@@ -167,8 +167,8 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           {/* Left Column - Actions rapides */}
           <div className="lg:col-span-1 order-2 lg:order-1">
-            <Card>
-              <CardContent className="p-4 md:p-6">
+            <Card className="p-4 py-8">
+              <CardContent>
                 {/* User Profile Section */}
                 {isLoadingProfile ? (
                   <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
@@ -285,8 +285,8 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
 
           {/* Right Column - Recent Activities */}
           <div className="lg:col-span-2 order-1 lg:order-2">
-            <Card>
-              <CardContent className="p-4 md:p-6">
+            <Card className="p-4 py-8">
+              <CardContent>
                 <div className="flex justify-between items-center mb-4 md:mb-6">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center md:text-left">Dernières Actualités</h2>
                   {feedError && <span className="text-sm text-amber-600">Mode hors ligne</span>}

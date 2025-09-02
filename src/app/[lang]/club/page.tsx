@@ -57,8 +57,8 @@ export default function Asso() {
               ISEPBANDS, ASSOCIATION DE MUSIQUE DE L’ISEP DEPUIS 2013
             </h2>
             <p className="text-base mt-4 text-justify md:text-right">
-              C’est en 2013, que l’association fu fondé. Elle fut la première asso de musique de
-              l’isep blahblah blah jsp quoi dire. bref. on a capté l’idée.
+              C’est en 2013 que l’association fut fondée. Elle fut la première association de
+              musique de l’Isep, qui est donc maintenant la plus ancienne de l’école.
             </p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function Asso() {
           <div className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-8 md:py-13 mt-10 md:mt-20 mb-10 md:mb-24 px-4">
             <h1 className="font-bold text-xl md:text-2xl tracking-wider">ISEPBANDS, POUR QUI?</h1>
             <p className="text-base max-w-[80%] md:max-w-full md:text-lg font-light mt-3 tracking-wider">
-              Pour tout les musiciens, peu importe leur niveau
+              Pour tout les musiciens, peu importe leur niveau.
             </p>
           </div>
           <div className="absolute -right-15 md:-right-20 top-5 md:-top-10 overflow-hidden">
