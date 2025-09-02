@@ -14,6 +14,7 @@ const createInventorySchema = z.object({
   quantity: z.number().int().min(1, 'Quantité doit être positive').default(1),
   comment: z.string().optional(),
   images: z.array(z.string()).optional(),
+  usable: z.boolean().default(true),
 });
 
 type InventoryState =

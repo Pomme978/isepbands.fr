@@ -40,6 +40,7 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  Copy,
 } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -55,6 +56,7 @@ interface InventoryItem {
   quantity: number;
   comment?: string;
   images?: string[];
+  usable: boolean;
   createdAt: string;
   creator?: {
     id: string;
@@ -127,7 +129,7 @@ export default function InventoryPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const [expandedStacks, setExpandedStacks] = useState<Set<string>>(new Set());
@@ -141,6 +143,7 @@ export default function InventoryPage() {
     state: 'GOOD' as const,
     quantity: 1,
     comment: '',
+    usable: true,
   });
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -246,6 +249,7 @@ export default function InventoryPage() {
       state: 'GOOD',
       quantity: 1,
       comment: '',
+      usable: true,
     });
     setUploadedImages([]);
     setEditingItem(null);
@@ -312,10 +316,54 @@ export default function InventoryPage() {
       state: item.state,
       quantity: item.quantity,
       comment: item.comment || '',
+      usable: item.usable,
     });
     setUploadedImages(item.images || []);
     setEditingItem(item);
     setShowCreateModal(true);
+  };
+
+  const handleDuplicate = async (item: InventoryItem) => {
+    try {
+      const response = await fetch('/api/admin/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: item.category,
+          name: item.name + ' (copie)',
+          brand: item.brand,
+          model: item.model,
+          state: item.state,
+          quantity: item.quantity,
+          comment: item.comment,
+          images: item.images || [],
+          usable: item.usable,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchItems();
+        
+        // Activity log
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inventory_created',
+            title: 'Article dupliqué',
+            description: `Article "${item.name}" dupliqué`,
+            metadata: { originalId: item.id, originalName: item.name },
+          }),
+        });
+
+        toast.success('Article dupliqué avec succès');
+      } else {
+        throw new Error('Erreur lors de la duplication');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la duplication:', error);
+      toast.error('Erreur lors de la duplication');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -440,39 +488,29 @@ export default function InventoryPage() {
       return (
         <>
           {/* Header replié en première position */}
-          <div key={`${key}-header`} className="bg-gray-100 rounded-lg p-3 border border-gray-200 flex items-center justify-between hover:bg-gray-200 transition-colors">
-            <div className="flex items-center gap-2">
-              <div className="p-1 bg-gray-200 rounded">
-                <Layers className="w-4 h-4 text-gray-600" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-gray-900">{representative.name}</span>
-                <span className="ml-2 text-xs text-gray-600">({items.length} items)</span>
-              </div>
-            </div>
-            
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleStack(key);
-              }}
-              className="flex items-center gap-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium rounded transition-all duration-200"
-            >
-              <ChevronUp className="w-3 h-3" />
-              Replier
-            </button>
+          <div 
+            key={`${key}-header`} 
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleStack(key);
+            }}
+            className="cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg p-6 w-16 flex items-center justify-center transition-all duration-200"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
           </div>
 
-          {/* Cartes individuelles qui s'insèrent dans la grille */}
+          {/* Cartes individuelles qui s'insèrent dans la grille avec fond d'enveloppe */}
           {items.map((item, index) => (
             <div
               key={item.id}
-              className="transform transition-all duration-300 ease-out"
+              className="transform transition-all duration-300 ease-out relative"
               style={{
                 animationDelay: `${index * 60}ms`,
                 animation: `expandFromStack 0.3s ease-out forwards`,
               }}
             >
+              {/* Fond d'enveloppe */}
+              <div className="absolute inset-0 bg-primary/10 rounded-lg -z-10 scale-105"></div>
               <div onClick={(e) => e.stopPropagation()}>
                 {renderItemCard(item)}
               </div>
@@ -558,7 +596,7 @@ export default function InventoryPage() {
   const renderItemCard = (item: InventoryItem) => (
     <div
       key={item.id}
-      className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
+      className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200 w-64 flex-shrink-0"
     >
       {/* Images avec carrousel - Compact */}
       <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -684,6 +722,53 @@ export default function InventoryPage() {
     </div>
   );
 
+  // Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent, item: InventoryItem) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ itemId: item.id, currentCategory: item.category }));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetCategory: string) => {
+    e.preventDefault();
+    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+    const { itemId, currentCategory } = data;
+
+    if (currentCategory === targetCategory) return;
+
+    try {
+      const response = await fetch(`/api/admin/inventory/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: targetCategory }),
+      });
+
+      if (response.ok) {
+        await fetchItems();
+        
+        // Activity log
+        await fetch('/api/admin/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inventory_updated',
+            title: 'Catégorie modifiée par drag & drop',
+            description: `Catégorie changée de "${currentCategory}" vers "${targetCategory}"`,
+            metadata: { itemId, oldCategory: currentCategory, newCategory: targetCategory },
+          }),
+        });
+
+        toast.success(`Catégorie changée vers "${targetCategory}"`);
+      }
+    } catch (error) {
+      toast.error('Erreur lors du changement de catégorie');
+    }
+  };
+
   const renderTableView = () => (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
@@ -709,6 +794,9 @@ export default function InventoryPage() {
                 Qté
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Utilisable
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -728,7 +816,7 @@ export default function InventoryPage() {
                         onClick={() => setViewingImage(item.images![0])}
                       />
                       {item.images.length > 1 && (
-                        <span className="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                           {item.images.length}
                         </span>
                       )}
@@ -752,12 +840,26 @@ export default function InventoryPage() {
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-center">{item.quantity}</td>
+                <td className="px-4 py-3 text-center">
+                  <Badge className={`text-xs ${item.usable ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>
+                    {item.usable ? 'Oui' : 'Non'}
+                  </Badge>
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => handleDuplicate(item)}
+                      title="Dupliquer"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleEdit(item)}
+                      title="Modifier"
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -766,6 +868,7 @@ export default function InventoryPage() {
                       size="sm"
                       onClick={() => handleDelete(item.id)}
                       className="text-red-600 hover:text-red-700"
+                      title="Supprimer"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -782,20 +885,40 @@ export default function InventoryPage() {
   const renderBoardView = () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {boardItems.map(([category, categoryItems]) => (
-        <div key={category} className="bg-gray-50 rounded-lg p-4">
+        <div 
+          key={category} 
+          className="bg-gray-50 rounded-lg p-4"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, category)}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-sm uppercase text-gray-700">{category}</h3>
             <Badge className="text-xs">{categoryItems.length}</Badge>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 min-h-24">
             {categoryItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow cursor-move relative group"
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
                 onClick={() => handleEdit(item)}
               >
+                {/* Bouton d'édition qui apparaît au hover */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-200 hover:bg-gray-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(item);
+                  }}
+                >
+                  <Edit className="w-3 h-3" />
+                </Button>
+
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium text-sm line-clamp-2">{item.name}</h4>
+                  <h4 className="font-medium text-sm line-clamp-2 pr-8">{item.name}</h4>
                   {item.images && item.images.length > 0 && (
                     <div className="flex -space-x-2">
                       {item.images.slice(0, 2).map((img, idx) => (
@@ -1037,6 +1160,24 @@ export default function InventoryPage() {
                   </div>
 
                   <div>
+                    <label className="flex items-center gap-2 text-sm font-medium font-ubuntu">
+                      <input
+                        type="checkbox"
+                        checked={formData.usable}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            usable: e.target.checked,
+                          }))
+                        }
+                        className="rounded border-gray-300"
+                      />
+                      Utilisable
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">L'article est-il actuellement utilisable ?</p>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium mb-2 font-ubuntu">
                       Commentaire
                     </label>
@@ -1178,16 +1319,23 @@ export default function InventoryPage() {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold font-outfit text-primary">{items.length}</p>
-              <p className="text-xs text-gray-600 font-ubuntu">instruments</p>
+              <p className="text-xs text-gray-600 font-ubuntu">objets</p>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="bg-white p-2 text-center">
               <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {items.filter((i) => ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length}
+                {items.filter((i) => i.usable && ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length}
               </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Opérationnels</p>
+              <p className="text-xs text-gray-600 font-ubuntu">Utilisables</p>
+            </div>
+
+            <div className="bg-white p-2 text-center">
+              <p className="text-lg font-bold font-outfit text-primary mb-1">
+                {items.filter((i) => !i.usable).length}
+              </p>
+              <p className="text-xs text-gray-600 font-ubuntu">Non utilisables</p>
             </div>
             
             <div className="bg-white p-2 text-center">
@@ -1226,7 +1374,7 @@ export default function InventoryPage() {
             <p className="text-gray-600 font-ubuntu">Aucun article trouvé</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+          <div className="flex flex-wrap gap-4 p-4 justify-start">
             {stackedItems.map(renderStackCard)}
           </div>
         ) : viewMode === 'table' ? (

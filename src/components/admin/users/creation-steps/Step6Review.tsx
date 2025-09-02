@@ -169,24 +169,6 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
           </div>
         </InfoSection>
 
-        {/* Email Preferences */}
-        <InfoSection title="Email Preferences">
-          <div className="space-y-1">
-            <InfoRow
-              label="Newsletter"
-              value={formData.emailPreferences.newsletter ? 'Yes' : 'No'}
-            />
-            <InfoRow label="Events" value={formData.emailPreferences.events ? 'Yes' : 'No'} />
-            <InfoRow
-              label="Group Invitations"
-              value={formData.emailPreferences.groupInvitations ? 'Yes' : 'No'}
-            />
-            <InfoRow
-              label="System Updates"
-              value={formData.emailPreferences.systemUpdates ? 'Yes' : 'No'}
-            />
-          </div>
-        </InfoSection>
       </div>
 
       {/* Account Setup */}

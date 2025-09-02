@@ -14,6 +14,7 @@ const updateInventorySchema = z.object({
   quantity: z.number().int().min(1, 'Quantité doit être positive').optional(),
   comment: z.string().optional(),
   images: z.array(z.string()).optional(),
+  usable: z.boolean().optional(),
 });
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

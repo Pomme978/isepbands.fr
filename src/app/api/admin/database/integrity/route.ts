@@ -37,12 +37,14 @@ export async function POST(req: NextRequest) {
           success: true,
           message: 'Base de données intègre - aucune action nécessaire',
           details: [],
+          stats: result.stats,
         });
       } else {
         return NextResponse.json({
           success: true,
           message: `Vérification terminée - ${result.actions.length} action(s) effectuée(s)`,
           details: result.actions,
+          stats: result.stats,
         });
       }
     } else {

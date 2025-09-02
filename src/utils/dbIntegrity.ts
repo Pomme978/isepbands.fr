@@ -9,7 +9,13 @@ import { MUSIC_GENRES } from '@/data/musicGenres';
  */
 export async function ensureDBIntegrity() {
   console.log('🔍 Checking database integrity...');
+  const startTime = Date.now();
   const actions = [];
+  const stats = {
+    created: 0,
+    deleted: 0,
+    checked: 0
+  };
 
   try {
     // Remove database duplicates first
@@ -33,6 +39,7 @@ export async function ensureDBIntegrity() {
         await prisma.instrument.delete({ where: { id: deleteId } });
         console.log(`🗑️ Removed duplicate instrument with id: ${deleteId}`);
         actions.push(`Supprimé l'instrument dupliqué avec l'ID ${deleteId}`);
+        stats.deleted++;
       }
     }
 
@@ -56,6 +63,7 @@ export async function ensureDBIntegrity() {
         await prisma.permission.delete({ where: { id: deleteId } });
         console.log(`🗑️ Removed duplicate permission with id: ${deleteId}`);
         actions.push(`Supprimé la permission dupliquée avec l'ID ${deleteId}`);
+        stats.deleted++;
       }
     }
 
@@ -80,6 +88,7 @@ export async function ensureDBIntegrity() {
         await prisma.role.delete({ where: { id: deleteId } });
         console.log(`🗑️ Removed duplicate role with id: ${deleteId}`);
         actions.push(`Supprimé le rôle dupliqué avec l'ID ${deleteId}`);
+        stats.deleted++;
       }
     }
 
@@ -98,6 +107,7 @@ export async function ensureDBIntegrity() {
         await prisma.musicGenre.delete({ where: { id: existing[i].id } });
         console.log(`🗑️ Removed duplicate music genre with id: ${existing[i].id}`);
         actions.push(`Supprimé le genre musical dupliqué ${existing[i].id}`);
+        stats.deleted++;
       }
     }
     // Ensure instruments exist
@@ -106,6 +116,8 @@ export async function ensureDBIntegrity() {
       const existing = await prisma.instrument.findFirst({
         where: { name: instrument.name },
       });
+      
+      stats.checked++;
 
       if (!existing) {
         await prisma.instrument.create({
@@ -118,6 +130,7 @@ export async function ensureDBIntegrity() {
         });
         console.log(`✅ Created missing instrument: ${instrument.name}`);
         actions.push(`Créé l'instrument manquant: ${instrument.nameFr}`);
+        stats.created++;
       }
     }
 
@@ -127,6 +140,8 @@ export async function ensureDBIntegrity() {
       const existing = await prisma.permission.findFirst({
         where: { name: permission.name },
       });
+      
+      stats.checked++;
 
       if (!existing) {
         await prisma.permission.create({
@@ -139,6 +154,7 @@ export async function ensureDBIntegrity() {
         });
         console.log(`✅ Created missing permission: ${permission.name}`);
         actions.push(`Créé la permission manquante: ${permission.nameFr}`);
+        stats.created++;
       }
     }
 
@@ -148,6 +164,8 @@ export async function ensureDBIntegrity() {
       let role = await prisma.role.findFirst({
         where: { name: roleData.name },
       });
+      
+      stats.checked++;
 
       if (!role) {
         role = await prisma.role.create({
@@ -163,6 +181,7 @@ export async function ensureDBIntegrity() {
         });
         console.log(`✅ Created missing role: ${roleData.name}`);
         actions.push(`Créé le rôle manquant: ${roleData.nameFrMale}`);
+        stats.created++;
 
         // Add permissions for this role
         if (roleData.permissions.length > 0) {
@@ -194,6 +213,8 @@ export async function ensureDBIntegrity() {
       const existing = await prisma.musicGenre.findFirst({
         where: { id: genre.id },
       });
+      
+      stats.checked++;
 
       if (!existing) {
         await prisma.musicGenre.create({
@@ -205,11 +226,15 @@ export async function ensureDBIntegrity() {
         });
         console.log(`✅ Created missing music genre: ${genre.nameFr}`);
         actions.push(`Créé le genre musical manquant: ${genre.nameFr}`);
+        stats.created++;
       }
     }
 
+    // Calculer la durée d'exécution
+    const duration = Date.now() - startTime;
+    
     console.log('✅ Database integrity check completed successfully!');
-    return { success: true, actions };
+    return { success: true, actions, stats: { ...stats, duration } };
   } catch (error) {
     console.error('❌ Error during database integrity check:', error);
     return {
