@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminAuth } from '@/middlewares/admin';
 
 // GET /api/admin/users/[id]/activity-log
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await requireAdminAuth(req);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const { id: userId } = await params;
+  console.log('Fetching activity log for userId:', userId);
+
   try {
     const activities = await prisma.adminActivity.findMany({
       where: { userId },
@@ -37,14 +45,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             // Error fetching creator name
           }
         }
-        
+
         return {
           ...activity,
           createdByName,
         };
-      })
+      }),
     );
 
+    console.log(`Found ${activitiesWithCreatorNames.length} activities for user ${userId}`);
     return NextResponse.json({ success: true, activities: activitiesWithCreatorNames });
   } catch (error) {
     return NextResponse.json(
@@ -56,6 +65,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // POST /api/admin/users/[id]/activity-log
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await requireAdminAuth(req);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const { id: userId } = await params;
   const body = await req.json();
   try {

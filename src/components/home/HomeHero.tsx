@@ -18,8 +18,9 @@ const HomeHero = () => {
   const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
 
   // When user is logged in, navbar is fixed and adds pt-16, so we need to compensate
+  // When loading, navbar is static and adds spacer, so we need to compensate too
   // Use loading state to prevent layout shift during initial load
-  const marginClass = (user && !loading) ? '-mt-16' : '';
+  const marginClass = user && !loading ? '-mt-16' : loading ? '-mt-20 md:-mt-16' : '';
 
   return (
     <div className={`relative w-full min-h-screen overflow-hidden ${marginClass}`}>
@@ -91,7 +92,7 @@ const HomeHero = () => {
           <div className="text-center lg:text-left max-w-xl md:max-w-6/12 px-2 md:px-0">
             {/* Motto - Responsive text sizing */}
             <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl text-center md:text-justify font-bold mb-6 md:mb-8 leading-tight">
-              FOR THOSE WHO CAN'T STOP PLAYING
+              FOR THOSE WHO CAN&apos;T STOP PLAYING
             </h1>
 
             {/* Button - Compact mobile layout */}
@@ -113,7 +114,7 @@ const HomeHero = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Scroll hint - Inside hero background with better mobile positioning */}
         <a href="#next" className="absolute left-1/2 bottom-8 md:bottom-4 -translate-x-1/2 z-20">
           <ChevronDown className="inline-block h-6 w-6 sm:h-8 sm:w-8 text-white animate-bounce-subtle drop-shadow-[0_0_10px_rgba(208,97,252,0.35)]" />
