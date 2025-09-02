@@ -288,7 +288,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
             <Card>
               <CardContent className="p-4 md:p-6">
                 <div className="flex justify-between items-center mb-4 md:mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Dernières Actualités</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center md:text-left">Dernières Actualités</h2>
                   {feedError && <span className="text-sm text-amber-600">Mode hors ligne</span>}
                 </div>
 

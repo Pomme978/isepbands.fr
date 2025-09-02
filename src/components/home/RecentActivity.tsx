@@ -84,7 +84,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
   };
 
   return (
-    <div className="p-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-3 md:mb-4">
+    <div className="px-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-3 md:mb-4">
       {/* Titre en gras si présent - plus gros */}
       {activity.title && <h3 className="font-bold text-base md:text-lg text-gray-900">{activity.title}</h3>}
 
