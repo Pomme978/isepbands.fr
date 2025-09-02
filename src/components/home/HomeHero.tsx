@@ -117,14 +117,17 @@ const HomeHero = () => {
         </div>
 
         {/* Scroll hint - Inside hero background with better mobile positioning */}
-        <a href="#next" className="absolute left-1/2 bottom-8 md:bottom-4 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+        <button
+          onClick={() => window.scrollBy({ top: window.innerHeight * 0.5, behavior: 'smooth' })}
+          className="absolute left-1/2 bottom-8 md:bottom-4 -translate-x-1/2 z-20 flex flex-col items-center gap-2 cursor-pointer bg-transparent border-none"
+        >
           {user && !loading && (
             <span className="text-xs text-white/70 animate-bounce-subtle font-light">
               Scroll pour voir plus
             </span>
           )}
           <ChevronDown className="inline-block h-6 w-6 sm:h-8 sm:w-8 text-white animate-bounce-subtle drop-shadow-[0_0_10px_rgba(208,97,252,0.35)]" />
-        </a>
+        </button>
       </div>
 
       {/* Custom CSS for animations with reduced movement */}
