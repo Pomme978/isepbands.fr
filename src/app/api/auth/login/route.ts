@@ -76,7 +76,26 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     // Activity log error
   }
-  const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email } });
+  // Check if user needs to change password
+  const userWithPasswordChangeFlag = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: {
+      requirePasswordChange: true,
+      firstName: true,
+      lastName: true,
+    },
+  });
+
+  const res = NextResponse.json({ 
+    success: true, 
+    user: { 
+      id: user.id, 
+      email: user.email,
+      firstName: userWithPasswordChangeFlag?.firstName,
+      lastName: userWithPasswordChangeFlag?.lastName,
+      requirePasswordChange: userWithPasswordChangeFlag?.requirePasswordChange || false
+    }
+  });
   await setSession(res, { id: user.id, email: user.email });
   return res;
 }

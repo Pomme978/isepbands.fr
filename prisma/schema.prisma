@@ -59,6 +59,7 @@ model User {
   biography                     String?
   phone                         String?
   password                      String
+  requirePasswordChange         Boolean         @default(false)
   email                         String               @unique
   emailVerified                 Boolean              @default(false)
   emailVerificationToken        String?

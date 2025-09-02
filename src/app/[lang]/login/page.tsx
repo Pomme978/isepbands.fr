@@ -72,31 +72,42 @@ export default function LoginPage() {
     setLoginError(null);
 
     try {
-      await signIn(email, password);
-      
-      // Handle "Remember me" functionality
-      if (typeof window !== 'undefined') {
-        if (rememberMe) {
-          localStorage.setItem('rememberedEmail', email);
-        } else {
-          localStorage.removeItem('rememberedEmail');
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Handle "Remember me" functionality
+        if (typeof window !== 'undefined') {
+          if (rememberMe) {
+            localStorage.setItem('rememberedEmail', email);
+          } else {
+            localStorage.removeItem('rememberedEmail');
+          }
         }
+
+        // Check if user needs to change password
+        if (data.user.requirePasswordChange) {
+          const searchParams = new URLSearchParams(window.location.search);
+          const redirectTo = searchParams.get('redirect') || `/${lang}`;
+          router.push(`/${lang}/change-password?redirect=${encodeURIComponent(redirectTo)}`);
+          return;
+        }
+
+        // Set user and redirect normally
+        await signIn(email, password);
+        router.push('/' + lang);
+      } else {
+        setLoginError(data.message || data.error || 'Erreur de connexion');
       }
-      router.push('/' + lang);
     } catch (error) {
-      // Check if password change is required
-      if (error instanceof Error && (error as any).requirePasswordChange) {
-        const userData = (error as any).userData;
-        // Redirect to password change page with user data
-        const params = new URLSearchParams({
-          email: userData?.email || email,
-          temp: userData?.hasTemporaryPassword ? 'true' : 'false'
-        });
-        router.push(`/${lang}/change-password?${params.toString()}`);
-        return;
-      }
-      
-      setLoginError(error instanceof Error ? error.message : 'Login failed');
+      setLoginError(error instanceof Error ? error.message : 'Erreur de connexion');
     } finally {
       setIsLoggingIn(false);
     }

@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import LangLink from '@/components/common/LangLink';
 import BackButton from '@/components/ui/back-button';
-import { SettingsSidebar } from '@/components/profile/settings/SettingsSidebar';
 import { SettingsContent } from '@/components/profile/settings/SettingsContent';
 import Loading from '@/components/ui/Loading';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, User, Music, Shield, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadImageToStorage } from '@/utils/imageUpload';
+import Navbar from '@/components/navbar/Navbar';
+import Footer from '@/components/footer/Footer';
+import { cn } from '@/utils/utils';
 
 interface UserSession {
   user: {
@@ -34,6 +36,30 @@ interface UserProfile {
   status?: string;
   birthDate?: string;
 }
+
+interface SettingsItem {
+  id: string;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const settingsItems: SettingsItem[] = [
+  {
+    id: 'profile',
+    title: 'Profil',
+    icon: User,
+  },
+  {
+    id: 'music',
+    title: 'Musique',
+    icon: Music,
+  },
+  {
+    id: 'privacy',
+    title: 'Confidentialité',
+    icon: Shield,
+  },
+];
 
 export default function ProfileSettingsPage() {
   const params = useParams();
@@ -337,7 +363,10 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen max-w-7xl flex flex-col">
+    <div className="min-h-screen flex flex-col">
+      {/* Navbar static */}
+      <Navbar mode="static" lang={locale} />
+
       {/* Toast notifications using Alert component */}
       {saveSuccess && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
@@ -358,49 +387,102 @@ export default function ProfileSettingsPage() {
         </div>
       )}
 
-      {/* Header avec back button - only show if there's history */}
-      <div className="px-4 md:px-6 py-4 flex-shrink-0">
-        {typeof window !== 'undefined' && window.history.length > 1 && (
-          <BackButton
-            variant="ghost"
-            onClick={() => {
-              if (hasUnsavedChanges) {
-                const confirmLeave = window.confirm(
-                  'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?',
-                );
-                if (!confirmLeave) return;
-              }
-              window.history.back();
-            }}
-          />
-        )}
-      </div>
+      {/* Main Content */}
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Header avec navigation sticky */}
+          <div className="border-b border-gray-200 pb-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              {/* Back button à gauche */}
+              <div>
+                {typeof window !== 'undefined' && window.history.length > 1 && (
+                  <BackButton
+                    variant="ghost"
+                    onClick={() => {
+                      if (hasUnsavedChanges) {
+                        const confirmLeave = window.confirm(
+                          'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?',
+                        );
+                        if (!confirmLeave) return;
+                      }
+                      window.history.back();
+                    }}
+                  />
+                )}
+              </div>
 
-      {/* Layout principal - responsive */}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        {/* Sidebar with save button at bottom - responsive */}
-        <SettingsSidebar
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-          onSave={handleSaveAll}
-          isSaving={isSaving}
-          hasUnsavedChanges={hasUnsavedChanges}
-        />
+              {/* Titre au centre */}
+              <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
 
-        {/* Contenu principal - scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 md:px-6 py-4 md:py-8">
-            <SettingsContent
-              activeSection={activeSection}
-              userProfile={userProfile}
-              currentUserId={userSession.user.id}
-              formData={formData}
-              onFormDataChange={updateFormData}
-              onPendingPhotoChange={setPendingPhotoFile}
-            />
+              {/* Save button à droite */}
+              <Button
+                onClick={handleSaveAll}
+                disabled={!hasUnsavedChanges || isSaving}
+                className={cn(
+                  hasUnsavedChanges
+                    ? 'bg-primary hover:bg-primary/90 text-white'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed',
+                )}
+              >
+                {isSaving ? (
+                  <>
+                    <Loading text="" size="sm" centered={false} />
+                    <span className="ml-2 hidden sm:inline">Enregistrement...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Enregistrer</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Navigation sections - tabs style */}
+            <div className="flex justify-center">
+              <nav className="flex space-x-8 border-b border-gray-200 w-full justify-center">
+                {settingsItems.map((item) => (
+                  <button
+                    key={item.id}
+                    className={cn(
+                      'flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors',
+                      activeSection === item.id
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    )}
+                    onClick={() => setActiveSection(item.id)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.title}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+            
+            {/* Status message */}
+            {hasUnsavedChanges && !isSaving && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-orange-600">
+                  Des modifications non sauvegardées
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Contenu des sections */}
+          <SettingsContent
+            activeSection={activeSection}
+            userProfile={userProfile}
+            currentUserId={userSession.user.id}
+            formData={formData}
+            onFormDataChange={updateFormData}
+            onPendingPhotoChange={setPendingPhotoFile}
+          />
         </div>
       </div>
+
+      {/* Footer static */}
+      <Footer />
     </div>
   );
 }

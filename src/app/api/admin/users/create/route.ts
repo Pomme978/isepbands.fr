@@ -160,6 +160,7 @@ export async function POST(req: NextRequest) {
           emailVerified: false,
           isFullAccess: validatedData.isFullAccess || false,
           photoUrl: validatedData.photoUrl || null,
+          requirePasswordChange: validatedData.requirePasswordChange || false,
           preferredGenres: validatedData.preferredGenres
             ? JSON.stringify(validatedData.preferredGenres)
             : null,
