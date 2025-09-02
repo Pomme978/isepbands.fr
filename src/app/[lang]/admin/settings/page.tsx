@@ -353,7 +353,9 @@ export default function SettingsPage() {
   };
 
   const updateLegalMentions = (updates: Partial<LegalMentions>) => {
-    setLegalMentions((prev) => ({ ...prev, ...updates }));
+    // Ne pas permettre la modification du nom du président (il est automatique)
+    const { presidentName, ...validUpdates } = updates;
+    setLegalMentions((prev) => ({ ...prev, ...validUpdates }));
     setHasLegalChanges(true);
   };
 
@@ -732,17 +734,18 @@ export default function SettingsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-foreground mb-2">
-                              Nom du président *
+                              Nom du président
                             </label>
                             <input
                               type="text"
                               value={legalMentions.presidentName}
-                              onChange={(e) =>
-                                updateLegalMentions({ presidentName: e.target.value })
-                              }
-                              placeholder="Nom du président de l'association"
-                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                              readOnly
+                              placeholder="Récupéré automatiquement du rôle président"
+                              className="w-full px-3 py-2 border border-input rounded-md bg-muted text-muted-foreground cursor-not-allowed"
                             />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Récupéré automatiquement de l&apos;utilisateur ayant le rôle président
+                            </p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-foreground mb-2">
@@ -885,35 +888,21 @@ export default function SettingsPage() {
                       {/* Team Information */}
                       <div className="border-t pt-6">
                         <h3 className="font-medium text-foreground mb-4">
-                          Équipe de développement
+                          Équipe de création du site
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">
-                              Équipe de développement
-                            </label>
-                            <input
-                              type="text"
-                              value={legalMentions.developmentTeam || ''}
-                              onChange={(e) =>
-                                updateLegalMentions({ developmentTeam: e.target.value })
-                              }
-                              placeholder="Noms des développeurs"
-                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">
-                              Équipe de design
-                            </label>
-                            <input
-                              type="text"
-                              value={legalMentions.designTeam || ''}
-                              onChange={(e) => updateLegalMentions({ designTeam: e.target.value })}
-                              placeholder="Noms des designers"
-                              className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                            />
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            Développement & Design
+                          </label>
+                          <input
+                            type="text"
+                            value="Armand OCTEAU, Sarah LEVY"
+                            readOnly
+                            className="w-full px-3 py-2 border border-input rounded-md bg-muted text-muted-foreground cursor-not-allowed"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Créateurs et développeurs du site ISEP Bands
+                          </p>
                         </div>
                       </div>
                     </div>
