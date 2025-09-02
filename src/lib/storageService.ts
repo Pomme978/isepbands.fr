@@ -87,8 +87,21 @@ export async function uploadToStorage(file: File, userId?: string) {
 
 
     const baseData = { key, url, size: finalSize, contentType };
+    
+    // Vérifier si l'utilisateur existe avant de l'associer
+    let validUserId = null;
+    if (userId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+      if (userExists) {
+        validUserId = userId;
+      }
+    }
+    
     const dbRecord = await prisma.storageObject.create({
-      data: userId ? { ...baseData, userId: userId } : baseData,
+      data: validUserId ? { ...baseData, userId: validUserId } : baseData,
     });
 
 
