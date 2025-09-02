@@ -27,7 +27,18 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
   intensity = 1.0,
   flickerFrequency = 'high',
 }) => {
-  const baseFilter = `brightness(0) saturate(100%) invert(1)`;
+  // Detect if the image is PNG by checking the src
+  const isPNG = useMemo(() => {
+    if (typeof src === 'string') {
+      return src.toLowerCase().includes('.png');
+    }
+    if (typeof src === 'object' && src.src) {
+      return src.src.toLowerCase().includes('.png');
+    }
+    return false;
+  }, [src]);
+
+  const baseFilter = isPNG ? `` : `brightness(0) saturate(100%) invert(1)`;
 
   const getNeonFilter = (hexColor: string, glowIntensity: number = 1.0): string => {
     // Convert hex to RGB for drop-shadow
@@ -36,7 +47,16 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
 
-    // Enhanced multi-layer glow for more realistic neon effect
+    // For PNG images, only apply backdrop-filter style glow effects
+    if (isPNG) {
+      return `drop-shadow(0 0 ${2 * glowIntensity}px rgba(${r}, ${g}, ${b}, 1)) 
+              drop-shadow(0 0 ${8 * glowIntensity}px rgba(${r}, ${g}, ${b}, 0.8)) 
+              drop-shadow(0 0 ${16 * glowIntensity}px rgba(${r}, ${g}, ${b}, 0.6)) 
+              drop-shadow(0 0 ${32 * glowIntensity}px rgba(${r}, ${g}, ${b}, 0.4))
+              drop-shadow(0 0 ${64 * glowIntensity}px rgba(${r}, ${g}, ${b}, 0.2))`;
+    }
+
+    // Enhanced multi-layer glow for more realistic neon effect (SVG)
     return `${baseFilter} 
             drop-shadow(0 0 ${2 * glowIntensity}px rgba(${r}, ${g}, ${b}, 1)) 
             drop-shadow(0 0 ${8 * glowIntensity}px rgba(${r}, ${g}, ${b}, 0.8)) 
@@ -50,6 +70,11 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
+
+    // For PNG images, only apply subtle glow without color inversion
+    if (isPNG) {
+      return `drop-shadow(0 0 3px rgba(${r}, ${g}, ${b}, 0.5))`;
+    }
 
     return `${baseFilter} drop-shadow(0 0 3px rgba(${r}, ${g}, ${b}, 0.5))`;
   };
@@ -103,6 +128,36 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
 
   const rgbColor = getRGBFromHex(color);
 
+  // Helper function to generate filters for keyframes
+  const generateKeyframeFilter = (intensityMultiplier: number = 1) => {
+    if (isPNG) {
+      return `drop-shadow(0 0 ${2 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${1 * intensityMultiplier}))
+              drop-shadow(0 0 ${8 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.8 * intensityMultiplier}))
+              drop-shadow(0 0 ${16 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.6 * intensityMultiplier}))
+              drop-shadow(0 0 ${32 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.4 * intensityMultiplier}))
+              drop-shadow(0 0 ${64 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.2 * intensityMultiplier}))`;
+    } else {
+      return `brightness(0) saturate(100%) invert(1)
+              drop-shadow(0 0 ${2 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${1 * intensityMultiplier}))
+              drop-shadow(0 0 ${8 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.8 * intensityMultiplier}))
+              drop-shadow(0 0 ${16 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.6 * intensityMultiplier}))
+              drop-shadow(0 0 ${32 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.4 * intensityMultiplier}))
+              drop-shadow(0 0 ${64 * intensity * intensityMultiplier}px rgba(${rgbColor}, ${0.2 * intensityMultiplier}))`;
+    }
+  };
+
+  const generateFlickerOffFilter = () => {
+    if (isPNG) {
+      // Pour PNG, on diminue juste l'intensité du glow au lieu de l'éteindre complètement
+      return `drop-shadow(0 0 ${2 * intensity * 0.1}px rgba(${rgbColor}, ${1 * 0.1}))
+              drop-shadow(0 0 ${8 * intensity * 0.1}px rgba(${rgbColor}, ${0.8 * 0.1}))`;
+    } else {
+      return `brightness(0) saturate(100%) invert(1) 
+              drop-shadow(0 0 ${2 * intensity * 0.1}px rgba(${rgbColor}, ${1 * 0.1}))
+              drop-shadow(0 0 ${8 * intensity * 0.1}px rgba(${rgbColor}, ${0.8 * 0.1}))`;
+    }
+  };
+
   // Generate more realistic flicker patterns
   const generateFlickerKeyframes = () => {
     const { random } = stableValues;
@@ -151,27 +206,16 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
           // Slight dim before flicker
           keyframes += `
                         ${(currentTime - 0.02).toFixed(3)}% {
-                            filter: brightness(0) saturate(100%) invert(1)
-                            drop-shadow(0 0 ${2 * intensity * 0.7}px rgba(${rgbColor}, ${1 * 0.7}))
-                            drop-shadow(0 0 ${8 * intensity * 0.7}px rgba(${rgbColor}, ${0.8 * 0.7}))
-                            drop-shadow(0 0 ${16 * intensity * 0.7}px rgba(${rgbColor}, ${0.6 * 0.7}))
-                            drop-shadow(0 0 ${32 * intensity * 0.7}px rgba(${rgbColor}, ${0.4 * 0.7}))
-                            drop-shadow(0 0 ${64 * intensity * 0.7}px rgba(${rgbColor}, ${0.2 * 0.7}));
+                            filter: ${generateKeyframeFilter(0.7)};
                         }`;
         }
 
         keyframes += `
                     ${currentTime.toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 1px rgba(${rgbColor}, 0.3));
+                        filter: ${generateFlickerOffFilter()};
                     }
                     ${(currentTime + flickerDuration).toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 ${2 * intensity * flickerIntensity}px rgba(${rgbColor}, ${1 * flickerIntensity}))
-                        drop-shadow(0 0 ${8 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.8 * flickerIntensity}))
-                        drop-shadow(0 0 ${16 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.6 * flickerIntensity}))
-                        drop-shadow(0 0 ${32 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.4 * flickerIntensity}))
-                        drop-shadow(0 0 ${64 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.2 * flickerIntensity}));
+                        filter: ${generateKeyframeFilter(flickerIntensity)};
                     }`;
 
         currentTime += flickerDuration;
@@ -184,16 +228,10 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
         // First flicker
         keyframes += `
                     ${currentTime.toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 1px rgba(${rgbColor}, 0.2));
+                        filter: ${generateFlickerOffFilter()};
                     }
                     ${(currentTime + flicker1Duration).toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 ${2 * intensity * flickerIntensity}px rgba(${rgbColor}, ${1 * flickerIntensity}))
-                        drop-shadow(0 0 ${8 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.8 * flickerIntensity}))
-                        drop-shadow(0 0 ${16 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.6 * flickerIntensity}))
-                        drop-shadow(0 0 ${32 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.4 * flickerIntensity}))
-                        drop-shadow(0 0 ${64 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.2 * flickerIntensity}));
+                        filter: ${generateKeyframeFilter(flickerIntensity)};
                     }`;
 
         currentTime += flicker1Duration + gap;
@@ -201,16 +239,10 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
         // Second flicker
         keyframes += `
                     ${currentTime.toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 1px rgba(${rgbColor}, 0.2));
+                        filter: ${generateFlickerOffFilter()};
                     }
                     ${(currentTime + flicker2Duration).toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 ${2 * intensity * flickerIntensity}px rgba(${rgbColor}, ${1 * flickerIntensity}))
-                        drop-shadow(0 0 ${8 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.8 * flickerIntensity}))
-                        drop-shadow(0 0 ${16 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.6 * flickerIntensity}))
-                        drop-shadow(0 0 ${32 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.4 * flickerIntensity}))
-                        drop-shadow(0 0 ${64 * intensity * flickerIntensity}px rgba(${rgbColor}, ${0.2 * flickerIntensity}));
+                        filter: ${generateKeyframeFilter(flickerIntensity)};
                     }`;
 
         currentTime += flicker2Duration;
@@ -221,18 +253,10 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
 
         keyframes += `
                     ${currentTime.toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 ${2 * intensity * dimIntensity}px rgba(${rgbColor}, ${1 * dimIntensity}))
-                        drop-shadow(0 0 ${8 * intensity * dimIntensity}px rgba(${rgbColor}, ${0.8 * dimIntensity}))
-                        drop-shadow(0 0 ${16 * intensity * dimIntensity}px rgba(${rgbColor}, ${0.6 * dimIntensity}));
+                        filter: ${generateKeyframeFilter(dimIntensity)};
                     }
                     ${(currentTime + dimDuration).toFixed(3)}% {
-                        filter: brightness(0) saturate(100%) invert(1)
-                        drop-shadow(0 0 ${2 * intensity}px rgba(${rgbColor}, 1))
-                        drop-shadow(0 0 ${8 * intensity}px rgba(${rgbColor}, 0.8))
-                        drop-shadow(0 0 ${16 * intensity}px rgba(${rgbColor}, 0.6))
-                        drop-shadow(0 0 ${32 * intensity}px rgba(${rgbColor}, 0.4))
-                        drop-shadow(0 0 ${64 * intensity}px rgba(${rgbColor}, 0.2));
+                        filter: ${generateKeyframeFilter(1)};
                     }`;
 
         currentTime += dimDuration;
@@ -265,12 +289,7 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
           @keyframes neon-flicker-${stableValues.uniqueId} {
             0%,
             100% {
-              filter: brightness(0) saturate(100%) invert(1)
-                drop-shadow(0 0 ${2 * intensity}px rgba(${rgbColor}, 1))
-                drop-shadow(0 0 ${8 * intensity}px rgba(${rgbColor}, 0.8))
-                drop-shadow(0 0 ${16 * intensity}px rgba(${rgbColor}, 0.6))
-                drop-shadow(0 0 ${32 * intensity}px rgba(${rgbColor}, 0.4))
-                drop-shadow(0 0 ${64 * intensity}px rgba(${rgbColor}, 0.2));
+              filter: ${generateKeyframeFilter(1)};
             }
             ${generateFlickerKeyframes()}
           }

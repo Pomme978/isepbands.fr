@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import NeonLogo from '@/components/common/NeonLogo'; // Adjust path as needed
-import isepbands_logo from '@/assets/images/isepbands-logo.svg';
+import isepbands_logo from '@/assets/images/logo_bands.png';
+//import isepbands_logo from '@/assets/svg/logo_isepbands_new.svg';
 import { ChevronDown } from 'lucide-react';
 import StageLights from '@/components/home/StageLights';
 import Crowd from '@/components/home/Crowd';
