@@ -20,36 +20,18 @@ import SidebarLink from './SidebarLink';
 import SidebarSection from './SidebarSection';
 import AdminUserInfo from './AdminUserInfo';
 import {
-  // Main sections
   Home,
   Activity,
-  Newspaper,
-
-  // Content Management
   Users,
-  UserPlus,
   Megaphone,
   Calendar,
   Building2,
-  FileText,
   Image as ImageIcon,
   Package,
-
-  // Newsletter & Communication
-  Send,
-  MessageSquare,
-  Bell,
   Mail,
   ShoppingCart,
-
-  // Analytics & Reports
-  BarChart3,
-  TrendingUp,
-
-  // Administration
   Settings,
   Shield,
-  UserCog,
   Database,
   Crown,
   Archive,
@@ -71,29 +53,19 @@ interface SidebarSectionData {
 
 const SIDEBAR_SECTIONS: SidebarSectionData[] = [
   {
-    title: 'Overview',
+    title: 'Dashboard',
     items: [
       {
-        name: 'Dashboard',
+        name: 'Overview',
         href: '/admin',
         icon: Home,
         isExact: true,
       },
-      {
-        name: 'Club Feed',
-        href: '/admin/clubfeed',
-        icon: Newspaper,
-      },
     ],
   },
   {
-    title: 'Content Management',
+    title: 'Content',
     items: [
-      {
-        name: 'Users',
-        href: '/admin/users',
-        icon: Users,
-      },
       {
         name: 'Bands',
         href: '/admin/bands',
@@ -114,6 +86,31 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         href: '/admin/media',
         icon: ImageIcon,
       },
+    ],
+  },
+  {
+    title: 'Community',
+    items: [
+      {
+        name: 'Users',
+        href: '/admin/users',
+        icon: Users,
+      },
+      {
+        name: 'Club Feed',
+        href: '/admin/clubfeed',
+        icon: Activity,
+      },
+      {
+        name: 'Newsletter & Emails',
+        href: '/admin/newsletter',
+        icon: Mail,
+      },
+    ],
+  },
+  {
+    title: 'Operations',
+    items: [
       {
         name: 'Inventory',
         href: '/admin/inventory',
@@ -127,7 +124,7 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
     ],
   },
   {
-    title: 'Management',
+    title: 'Administration',
     items: [
       {
         name: 'Board Team',
@@ -158,11 +155,6 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         name: 'Database',
         href: '/admin/database',
         icon: Database,
-      },
-      {
-        name: 'Newsletter & Emails',
-        href: '/admin/newsletter',
-        icon: Mail,
       },
       {
         name: 'Archives',
