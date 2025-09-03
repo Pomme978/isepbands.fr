@@ -10,6 +10,20 @@ const updateProfileSchema = z.object({
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
   biography: z.string().optional(),
+  bureauQuote: z
+    .string()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const words = val
+          .trim()
+          .split(/\s+/)
+          .filter((word) => word.length > 0);
+        return words.length <= 40;
+      },
+      { message: 'La citation bureau ne peut pas dépasser 40 mots' },
+    )
+    .optional(),
   photoUrl: z.string().nullable().optional(),
   isLookingForGroup: z.boolean().optional(),
   pronouns: z.string().nullable().optional(),
@@ -155,6 +169,7 @@ export async function GET(req: NextRequest) {
       promotion: user.promotion || '',
       birthDate: user.birthDate || null,
       biography: user.biography || '',
+      bureauQuote: user.bureauQuote || '',
       phone: user.phone || '',
       email: user.email || '',
       photoUrl: user.photoUrl || null,
@@ -210,7 +225,7 @@ export async function GET(req: NextRequest) {
         })
         .filter(Boolean),
       instruments: user.instruments || [],
-      roles: (user.roles || []).map((r) => r.role?.name).filter(Boolean),
+      roles: user.roles || [],
       totalGroups,
       instrumentCount,
       activeGroups,
@@ -237,12 +252,14 @@ export async function GET(req: NextRequest) {
               location: e.event.location,
             })),
         })),
-      registrationRequest: user.registrationRequest ? {
-        motivation: user.registrationRequest.motivation,
-        experience: user.registrationRequest.experience,
-        status: user.registrationRequest.status,
-        rejectionReason: user.registrationRequest.rejectionReason,
-      } : null,
+      registrationRequest: user.registrationRequest
+        ? {
+            motivation: user.registrationRequest.motivation,
+            experience: user.registrationRequest.experience,
+            status: user.registrationRequest.status,
+            rejectionReason: user.registrationRequest.rejectionReason,
+          }
+        : null,
     };
     return NextResponse.json({
       success: true,
@@ -337,6 +354,7 @@ export async function PUT(req: NextRequest) {
         firstName: true,
         lastName: true,
         biography: true,
+        bureauQuote: true,
         photoUrl: true,
         isLookingForGroup: true,
         pronouns: true,

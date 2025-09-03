@@ -17,12 +17,14 @@ interface UserProfile {
   lastName?: string;
   email: string;
   biography?: string;
+  bureauQuote?: string;
   photoUrl?: string | null;
   isLookingForGroup?: boolean;
   pronouns?: string | null;
   promotion?: string | null;
   status?: string;
   birthDate?: string;
+  roles?: Array<{ role: { weight: number; name: string } }>;
 }
 
 interface ProfileSettingsProps {
@@ -73,6 +75,9 @@ export function ProfileSettings({
   );
   const [lastName, setLastName] = useState(formData?.lastName || initialProfile?.lastName || '');
   const [bio, setBio] = useState(formData?.biography || initialProfile?.biography || '');
+  const [bureauQuote, setBureauQuote] = useState(
+    formData?.bureauQuote || initialProfile?.bureauQuote || '',
+  );
   const [photoUrl, setPhotoUrl] = useState(formData?.photoUrl || initialProfile?.photoUrl || null);
   const [birthDate, setBirthDate] = useState(
     formData?.birthDate ||
@@ -86,6 +91,7 @@ export function ProfileSettings({
     if (field === 'firstName') setFirstName(value);
     if (field === 'lastName') setLastName(value);
     if (field === 'biography') setBio(value);
+    if (field === 'bureauQuote') setBureauQuote(value);
     if (field === 'photoUrl') setPhotoUrl(value);
     if (field === 'birthDate') setBirthDate(value);
 
@@ -93,6 +99,7 @@ export function ProfileSettings({
       firstName: field === 'firstName' ? value : firstName,
       lastName: field === 'lastName' ? value : lastName,
       biography: field === 'biography' ? value : bio,
+      bureauQuote: field === 'bureauQuote' ? value : bureauQuote,
       photoUrl: field === 'photoUrl' ? value : photoUrl,
       birthDate: field === 'birthDate' ? value : birthDate,
     };
@@ -107,6 +114,11 @@ export function ProfileSettings({
 
     onFormDataChange?.(updatedData);
   };
+
+  // Check if user is bureau member (weight >= 70)
+  const isBureauMember = useMemo(() => {
+    return initialProfile?.roles?.some((ur) => ur.role?.weight >= 70) || false;
+  }, [initialProfile?.roles]);
 
   // Read-only fields from profile data
   const readOnlyEmail = initialProfile?.email || 'prenom.nom@eleve.isep.fr';
@@ -335,15 +347,60 @@ export function ProfileSettings({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">Biographie</Label>
                 <Textarea
                   id="bio"
-                  placeholder="Décrivez-vous en quelques mots..."
-                  className="min-h-[100px]"
+                  placeholder="Décrivez-vous, vos passions, votre parcours musical..."
+                  className="min-h-[120px]"
                   value={bio}
                   onChange={(e) => handleFieldChange('biography', e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Cette biographie apparaîtra sur votre page de profil. Pas de limite de longueur.
+                </p>
               </div>
+
+              {isBureauMember && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="bureauQuote">Citation bureau</Label>
+                  <Textarea
+                    id="bureauQuote"
+                    placeholder="Une citation courte et percutante pour la page bureau..."
+                    className="min-h-[80px]"
+                    value={bureauQuote}
+                    onChange={(e) => {
+                      const words = e.target.value
+                        .trim()
+                        .split(/\s+/)
+                        .filter((word) => word.length > 0);
+                      if (words.length <= 40) {
+                        handleFieldChange('bureauQuote', e.target.value);
+                      }
+                    }}
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Cette citation apparaîtra sur votre carte de la page bureau.</span>
+                    <span
+                      className={`${
+                        bureauQuote
+                          .trim()
+                          .split(/\s+/)
+                          .filter((word) => word.length > 0).length > 40
+                          ? 'text-red-500'
+                          : ''
+                      }`}
+                    >
+                      {
+                        bureauQuote
+                          .trim()
+                          .split(/\s+/)
+                          .filter((word) => word.length > 0).length
+                      }
+                      /40 mots
+                    </span>
+                  </div>
+                </div>
+              )}
               {/* Note: Save button moved to sticky header */}
               <div className="text-sm text-muted-foreground">
                 Les modifications seront sauvegardées avec le bouton en haut de la page.

@@ -29,12 +29,14 @@ interface UserProfile {
   lastName?: string;
   email: string;
   biography?: string;
+  bureauQuote?: string;
   photoUrl?: string | null;
   isLookingForGroup?: boolean;
   pronouns?: string | null;
   promotion?: string | null;
   status?: string;
   birthDate?: string;
+  roles?: Array<{ role: { weight: number; name: string } }>;
 }
 
 interface SettingsItem {
@@ -130,6 +132,7 @@ export default function ProfileSettingsPage() {
             firstName: profileData.data.firstName || '',
             lastName: profileData.data.lastName || '',
             biography: profileData.data.biography || '',
+            bureauQuote: profileData.data.bureauQuote || '',
             photoUrl: profileData.data.photoUrl || null,
             birthDate: profileData.data.birthDate
               ? new Date(profileData.data.birthDate).toISOString().split('T')[0]
@@ -232,6 +235,7 @@ export default function ProfileSettingsPage() {
         firstName: formData.profile?.firstName,
         lastName: formData.profile?.lastName,
         biography: formData.profile?.biography,
+        bureauQuote: formData.profile?.bureauQuote,
         photoUrl: finalPhotoUrl,
         pronouns: formData.privacy?.pronouns,
         birthDate: formData.profile?.birthDate,
@@ -448,7 +452,7 @@ export default function ProfileSettingsPage() {
                       'flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors',
                       activeSection === item.id
                         ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                     )}
                     onClick={() => setActiveSection(item.id)}
                   >
@@ -458,13 +462,11 @@ export default function ProfileSettingsPage() {
                 ))}
               </nav>
             </div>
-            
+
             {/* Status message */}
             {hasUnsavedChanges && !isSaving && (
               <div className="mt-4 text-center">
-                <p className="text-sm text-orange-600">
-                  Des modifications non sauvegardées
-                </p>
+                <p className="text-sm text-orange-600">Des modifications non sauvegardées</p>
               </div>
             )}
           </div>

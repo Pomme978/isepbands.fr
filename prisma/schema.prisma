@@ -72,6 +72,7 @@ model User {
   phone                         String?
   preferredGenres               String?
   pronouns                      String?
+  bureauQuote                   String?              @db.Text
   updatedAt                     DateTime?            @default(now()) @updatedAt
   requirePasswordChange         Boolean              @default(false)
   adminActivities               AdminActivity[]      @relation("AdminActivityUser")

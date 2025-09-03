@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        motto: user.biography || undefined,
+        motto: user.bureauQuote || undefined,
         profilePhoto: user.photoUrl || undefined,
         role: highestRole?.role.name || 'member',
         roleDisplayName: highestRole
