@@ -1,120 +1,266 @@
 export const baseEmailTemplates = [
   {
-    name: 'Bienvenue',
-    description: "Template d'accueil pour nouveaux membres",
-    subject: 'Bienvenue sur ISEP Bands 🎸',
+    name: 'Creation compte en attente approbation',
+    description: "Template d'accueil pour nouveaux comptes en attente d'approbation",
+    subject: 'Bienvenue sur ISEP Bands - Compte en attente',
     templateType: 'SYSTEM' as const,
     isDefault: true,
     htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-purple-100">Association musicale de l'ISEP</p>
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenue sur ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #e0e7ff; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 24px; font-weight: 600; color: #1e293b; margin: 0 0 20px 0; line-height: 1.3; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .status-card { background: #fefce8; border-left: 4px solid #eab308; border-radius: 8px; padding: 20px; margin: 24px 0; }
+          .status-title { color: #a16207; font-weight: 600; margin: 0 0 12px 0; font-size: 16px; }
+          .status-list { color: #a16207; margin: 0; padding: 0; list-style: none; }
+          .status-list li { margin: 8px 0; padding-left: 20px; position: relative; }
+          .status-list li::before { content: '•'; position: absolute; left: 0; color: #eab308; font-weight: bold; }
+          .features-card { background: #f8fafc; border-radius: 12px; padding: 24px; margin: 32px 0; }
+          .features-title { color: #1e293b; font-weight: 600; margin: 0 0 16px 0; font-size: 18px; }
+          .features-list { color: #64748b; margin: 0; padding: 0; list-style: none; }
+          .features-list li { margin: 12px 0; padding-left: 24px; position: relative; }
+          .features-list li::before { content: '♪'; position: absolute; left: 0; color: #8b5cf6; }
+          .contact-card { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 16px; text-align: center; }
+          .contact-text { color: #1e40af; font-size: 14px; margin: 0; }
+          .footer { background: #f1f5f9; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
+          .footer a { color: #8b5cf6; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Association musicale de l'ISEP</p>
+          </div>
+          
+          <div class="content">
+            <h2 class="title">Bienvenue {{ name }} !</h2>
+            
+            <p class="text">
+              Merci d'avoir rejoint ISEP Bands ! Ton compte a été créé avec succès et est actuellement en attente d'approbation par notre équipe.
+            </p>
+            
+            <div class="status-card">
+              <h3 class="status-title">Prochaines étapes</h3>
+              <ul class="status-list">
+                <li>Notre équipe examine ton inscription</li>
+                <li>Tu recevras un email de confirmation sous peu</li>
+                <li>Une fois approuvé, tu pourras accéder à toutes les fonctionnalités</li>
+              </ul>
+            </div>
+            
+            <div class="features-card">
+              <h3 class="features-title">Ce qui t'attend</h3>
+              <ul class="features-list">
+                <li>Rejoindre des groupes musicaux</li>
+                <li>Participer aux concerts</li>
+                <li>Réserver les salles de répétition</li>
+                <li>Rencontrer d'autres musiciens</li>
+              </ul>
+            </div>
+            
+            <div class="contact-card">
+              <p class="contact-text">
+                Des questions ? Contacte-nous à contact@isepbands.fr
+              </p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>&copy; 2024 ISEP Bands</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
+            </p>
+          </div>
         </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Bienvenue {{ name }} ! 🎵</h2>
-          
-          <p class="text-gray-600 mb-6">
-            Ton compte a été créé avec succès. Tu peux maintenant accéder à la plateforme et rejoindre la communauté musicale de l'ISEP.
-          </p>
-          
-          <div class="bg-gray-50 border-l-4 border-purple-500 p-4 mb-6">
-            <h3 class="font-semibold text-gray-800 mb-2">Tes identifiants :</h3>
-            <p class="text-sm text-gray-600 mb-1">Email : {{ email }}</p>
-            <p class="text-sm text-gray-600">Mot de passe temporaire : {{ temporaryPassword }}</p>
-            <p class="text-xs text-amber-600 mt-2">⚠️ Change ton mot de passe lors de ta première connexion</p>
-          </div>
-          
-          <div class="text-center mb-6">
-            <a href="https://isepbands.fr/login" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg">
-              Se connecter
-            </a>
-          </div>
-          
-          <div class="border-t pt-6">
-            <h3 class="font-semibold text-gray-800 mb-3">Ce qui t'attend :</h3>
-            <ul class="text-gray-600 space-y-2">
-              <li>🎸 Rejoindre des groupes musicaux</li>
-              <li>🎤 Participer aux concerts</li>
-              <li>📅 Accès aux salles de répétition</li>
-              <li>👥 Rencontrer d'autres musiciens</li>
-            </ul>
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-purple-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-purple-600">Contact</a>
-          </div>
-        </div>
-      </div>
+      </body>
+      </html>
     `,
     variables: {
       name: { type: 'string', description: "Nom de l'utilisateur", required: true },
-      email: { type: 'string', description: "Email de l'utilisateur", required: true },
-      temporaryPassword: {
-        type: 'string',
-        description: 'Mot de passe temporaire',
-        required: false,
-      },
     },
   },
   {
-    name: 'Réinitialisation mot de passe',
+    name: 'Compte approuve',
+    description: "Template de confirmation d'approbation",
+    subject: 'Ton compte ISEP Bands est approuvé',
+    templateType: 'SYSTEM' as const,
+    isDefault: true,
+    htmlContent: `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Compte approuvé - ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #a7f3d0; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 24px; font-weight: 600; color: #1e293b; margin: 0 0 20px 0; line-height: 1.3; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .success-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; }
+          .success-icon { font-size: 48px; margin-bottom: 16px; }
+          .success-title { color: #166534; font-weight: 600; margin: 0 0 8px 0; font-size: 18px; }
+          .success-text { color: #15803d; margin: 0; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; font-weight: 600; padding: 16px 32px; border-radius: 8px; margin: 24px 0; transition: transform 0.2s; }
+          .cta-button:hover { transform: translateY(-2px); }
+          .features-card { background: #f8fafc; border-radius: 12px; padding: 24px; margin: 32px 0; }
+          .features-title { color: #1e293b; font-weight: 600; margin: 0 0 16px 0; font-size: 18px; }
+          .features-list { color: #64748b; margin: 0; padding: 0; list-style: none; }
+          .features-list li { margin: 12px 0; padding-left: 24px; position: relative; }
+          .features-list li::before { content: '✓'; position: absolute; left: 0; color: #10b981; font-weight: bold; }
+          .footer { background: #f1f5f9; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
+          .footer a { color: #10b981; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Compte approuvé</p>
+          </div>
+          
+          <div class="content">
+            <h2 class="title">Félicitations {{ name }} !</h2>
+            
+            <div class="success-card">
+              <div class="success-icon">🎉</div>
+              <h3 class="success-title">Compte approuvé</h3>
+              <p class="success-text">Ton compte a été approuvé par notre équipe</p>
+            </div>
+            
+            <p class="text">
+              Tu peux maintenant accéder à toutes les fonctionnalités de la plateforme ISEP Bands et rejoindre notre communauté musicale.
+            </p>
+            
+            <div style="text-align: center;">
+              <a href="https://isepbands.fr/login" class="cta-button">
+                Accéder à ma plateforme
+              </a>
+            </div>
+            
+            <div class="features-card">
+              <h3 class="features-title">Prêt à commencer</h3>
+              <ul class="features-list">
+                <li>Explore les groupes disponibles</li>
+                <li>Inscris-toi aux événements</li>
+                <li>Connecte-toi avec d'autres musiciens</li>
+                <li>Réserve les salles de répétition</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>&copy; 2024 ISEP Bands</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    variables: {
+      name: { type: 'string', description: "Nom de l'utilisateur", required: true },
+    },
+  },
+  {
+    name: 'Reinitialisation mot de passe',
     description: 'Template pour réinitialiser le mot de passe',
     subject: 'Réinitialisation de ton mot de passe',
     templateType: 'SYSTEM' as const,
     isDefault: true,
     htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-blue-100">Réinitialisation de mot de passe</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Réinitialise ton mot de passe</h2>
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Réinitialisation mot de passe - ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #bfdbfe; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 24px; font-weight: 600; color: #1e293b; margin: 0 0 20px 0; line-height: 1.3; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .security-card { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 16px; margin: 24px 0; }
+          .security-icon { color: #3b82f6; font-size: 20px; margin-bottom: 8px; }
+          .security-text { color: #1e40af; font-size: 14px; margin: 0; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; text-decoration: none; font-weight: 600; padding: 16px 32px; border-radius: 8px; margin: 24px 0; transition: transform 0.2s; }
+          .cta-button:hover { transform: translateY(-2px); }
+          .warning-card { background: #fefce8; border-left: 4px solid #eab308; padding: 16px; margin: 24px 0; border-radius: 8px; }
+          .warning-text { color: #a16207; font-size: 14px; margin: 0; }
+          .footer { background: #f1f5f9; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
+          .footer a { color: #3b82f6; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Réinitialisation de mot de passe</p>
+          </div>
           
-          <p class="text-gray-600 mb-6">
-            Bonjour {{ name }}, tu as demandé la réinitialisation de ton mot de passe.
-          </p>
+          <div class="content">
+            <h2 class="title">Réinitialise ton mot de passe</h2>
+            
+            <p class="text">
+              Bonjour {{ name }}, tu as demandé la réinitialisation de ton mot de passe pour ton compte ISEP Bands.
+            </p>
+            
+            <div class="security-card">
+              <div class="security-icon">🔒</div>
+              <p class="security-text">
+                Ce lien est valide pendant 1 heure pour des raisons de sécurité.
+              </p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="{{ resetUrl }}" class="cta-button">
+                Réinitialiser mon mot de passe
+              </a>
+            </div>
+            
+            <div class="warning-card">
+              <p class="warning-text">
+                Si tu n'as pas fait cette demande, tu peux ignorer cet email. Ton mot de passe actuel reste inchangé.
+              </p>
+            </div>
+          </div>
           
-          <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
-            <p class="text-blue-800 text-sm">
-              🔒 Ce lien est valide pendant 1 heure pour des raisons de sécurité.
+          <div class="footer">
+            <p>&copy; 2024 ISEP Bands</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
             </p>
           </div>
-          
-          <div class="text-center mb-6">
-            <a href="{{ resetUrl }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">
-              Réinitialiser mon mot de passe
-            </a>
-          </div>
-          
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-gray-600 text-sm">
-              Si tu n'as pas fait cette demande, tu peux ignorer cet email. Ton mot de passe actuel reste inchangé.
-            </p>
-          </div>
         </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-blue-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-blue-600">Contact</a>
-          </div>
-        </div>
-      </div>
+      </body>
+      </html>
     `,
     variables: {
       name: { type: 'string', description: "Nom de l'utilisateur", required: true },
@@ -122,175 +268,175 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Compte approuvé',
-    description: "Template de confirmation d'approbation",
-    subject: 'Ton compte ISEP Bands est approuvé ! 🎉',
+    name: 'Compte non valide',
+    description: 'Template de rappel pour valider son compte',
+    subject: 'Valide ton compte ISEP Bands',
     templateType: 'SYSTEM' as const,
-    isDefault: true,
+    isDefault: false,
     htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-green-500 to-green-700 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-green-100">Compte approuvé ✅</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Félicitations {{ name }} ! 🎉</h2>
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Validation requise - ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #fed7aa; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 24px; font-weight: 600; color: #1e293b; margin: 0 0 20px 0; line-height: 1.3; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .alert-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 24px; margin: 24px 0; }
+          .alert-icon { color: #dc2626; font-size: 24px; margin-bottom: 12px; }
+          .alert-title { color: #dc2626; font-weight: 600; margin: 0 0 8px 0; font-size: 16px; }
+          .alert-text { color: #991b1b; font-size: 14px; margin: 0; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: white; text-decoration: none; font-weight: 600; padding: 16px 32px; border-radius: 8px; margin: 24px 0; transition: transform 0.2s; }
+          .cta-button:hover { transform: translateY(-2px); }
+          .help-card { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin: 24px 0; }
+          .help-text { color: #0369a1; font-size: 14px; margin: 0; }
+          .footer { background: #f1f5f9; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
+          .footer a { color: #f59e0b; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Validation de compte</p>
+          </div>
           
-          <div class="bg-green-50 border border-green-200 p-4 rounded-lg mb-6">
-            <p class="text-green-800 font-semibold">
-              ✅ Ton compte a été approuvé par notre équipe !
+          <div class="content">
+            <h2 class="title">Bonjour {{ name }},</h2>
+            
+            <p class="text">
+              Ton compte ISEP Bands n'est pas encore validé. Pour accéder à toutes les fonctionnalités de la plateforme, tu dois valider ton compte.
+            </p>
+            
+            <div class="alert-card">
+              <div class="alert-icon">⚠️</div>
+              <h3 class="alert-title">Action requise</h3>
+              <p class="alert-text">
+                Sans validation, tu ne pourras pas accéder à ton compte et aux services ISEP Bands.
+              </p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="{{ validationUrl }}" class="cta-button">
+                Valider mon compte
+              </a>
+            </div>
+            
+            <div class="help-card">
+              <p class="help-text">
+                Des difficultés ? Contacte-nous à contact@isepbands.fr
+              </p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>&copy; 2024 ISEP Bands</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
             </p>
           </div>
-          
-          <p class="text-gray-600 mb-6">
-            Tu peux maintenant accéder à toutes les fonctionnalités de la plateforme ISEP Bands.
-          </p>
-          
-          <div class="text-center mb-6">
-            <a href="https://isepbands.fr/login" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg">
-              Accéder à ma plateforme
-            </a>
-          </div>
-          
-          <div class="bg-gray-50 p-6 rounded-lg">
-            <h3 class="font-semibold text-gray-800 mb-3">Prêt à commencer :</h3>
-            <ul class="text-gray-600 space-y-2">
-              <li>🎸 Explore les groupes disponibles</li>
-              <li>🎤 Inscris-toi aux événements</li>
-              <li>👥 Connecte-toi avec d'autres musiciens</li>
-              <li>📅 Réserve les salles de répétition</li>
-            </ul>
-          </div>
         </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-green-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-green-600">Contact</a>
-          </div>
-        </div>
-      </div>
+      </body>
+      </html>
     `,
     variables: {
       name: { type: 'string', description: "Nom de l'utilisateur", required: true },
-    },
-  },
-  {
-    name: 'Compte rejeté',
-    description: 'Template de notification de rejet',
-    subject: "Concernant ta demande d'inscription ISEP Bands",
-    templateType: 'SYSTEM' as const,
-    isDefault: true,
-    htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-gray-100">Réponse à ta candidature</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Bonjour {{ name }}</h2>
-          
-          <p class="text-gray-600 mb-6">
-            Merci d'avoir pris le temps de postuler pour rejoindre ISEP Bands.
-          </p>
-          
-          <div class="bg-red-50 border border-red-200 p-4 rounded-lg mb-6">
-            <p class="text-red-800 font-semibold mb-2">
-              Malheureusement, nous ne pouvons pas approuver ton compte pour le moment.
-            </p>
-            {{#if reason}}
-            <p class="text-red-700 text-sm">Raison : {{ reason }}</p>
-            {{/if}}
-          </div>
-          
-          <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
-            <h3 class="font-semibold text-blue-800 mb-2">Questions ?</h3>
-            <p class="text-blue-700 text-sm">
-              N'hésite pas à nous contacter si tu souhaites plus d'informations.
-            </p>
-          </div>
-          
-          <div class="text-center mb-6">
-            <a href="mailto:contact@isepbands.fr" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">
-              Nous contacter
-            </a>
-          </div>
-          
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-gray-600 text-sm">
-              Tu peux toujours suivre nos actualités sur nos réseaux sociaux et participer à nos événements ouverts.
-            </p>
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-gray-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-gray-600">Contact</a>
-          </div>
-        </div>
-      </div>
-    `,
-    variables: {
-      name: { type: 'string', description: "Nom de l'utilisateur", required: true },
-      reason: { type: 'string', description: 'Raison du rejet', required: false },
+      validationUrl: { type: 'url', description: 'URL de validation', required: true },
     },
   },
   {
     name: 'Newsletter standard',
     description: 'Template pour newsletters régulières',
-    subject: '🎵 {{ title }} - ISEP Bands',
+    subject: '{{ title }} - ISEP Bands',
     templateType: 'NEWSLETTER' as const,
     isDefault: true,
     htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-purple-100">Newsletter {{ date }}</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ title }}</h2>
-          
-          <div class="prose prose-gray max-w-none">
-            {{ content }}
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title }} - ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .newsletter-date { color: #e0e7ff; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 28px; font-weight: 700; color: #1e293b; margin: 0 0 24px 0; line-height: 1.2; }
+          .article-content { color: #374151; line-height: 1.7; font-size: 16px; }
+          .article-content h3 { color: #1e293b; font-weight: 600; margin: 24px 0 12px 0; }
+          .article-content p { margin: 16px 0; }
+          .article-content ul { margin: 16px 0; padding-left: 20px; }
+          .article-content li { margin: 8px 0; }
+          .cta-section { text-align: center; margin: 32px 0; padding: 24px; background: #f8fafc; border-radius: 12px; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; text-decoration: none; font-weight: 600; padding: 16px 32px; border-radius: 8px; transition: transform 0.2s; }
+          .cta-button:hover { transform: translateY(-2px); }
+          .divider { height: 1px; background: #e2e8f0; margin: 32px 0; }
+          .footer { background: #f1f5f9; padding: 32px 24px; text-align: center; }
+          .footer-links { margin-bottom: 16px; }
+          .footer-links a { color: #8b5cf6; text-decoration: none; margin: 0 8px; }
+          .footer-links a:hover { text-decoration: underline; }
+          .footer-text { color: #64748b; font-size: 14px; margin: 8px 0; }
+          .unsubscribe { margin-top: 16px; }
+          .unsubscribe a { color: #9ca3af; font-size: 12px; text-decoration: none; }
+          .unsubscribe a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            {{#if date}}
+            <p class="newsletter-date">Newsletter {{ date }}</p>
+            {{/if}}
           </div>
           
-          {{#if ctaUrl}}
-          <div class="text-center mt-8">
-            <a href="{{ ctaUrl }}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg">
-              {{ ctaText }}
-            </a>
+          <div class="content">
+            <h2 class="title">{{ title }}</h2>
+            
+            <div class="article-content">
+              {{{ content }}}
+            </div>
+            
+            {{#if ctaUrl}}
+            <div class="cta-section">
+              <a href="{{ ctaUrl }}" class="cta-button">
+                {{ ctaText }}
+              </a>
+            </div>
+            {{/if}}
+            
+            <div class="divider"></div>
+            
+            <div style="text-align: center; color: #64748b; font-style: italic;">
+              Merci de faire partie de la communauté ISEP Bands !
+            </div>
           </div>
-          {{/if}}
+          
+          <div class="footer">
+            <div class="footer-links">
+              <a href="https://isepbands.fr">Site web</a>
+              <a href="mailto:contact@isepbands.fr">Contact</a>
+            </div>
+            <p class="footer-text">&copy; 2024 ISEP Bands - Association musicale de l'ISEP</p>
+            <div class="unsubscribe">
+              <a href="{{ unsubscribeUrl }}">Se désabonner</a>
+            </div>
+          </div>
         </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-purple-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-purple-600">Contact</a>
-          </div>
-          <div class="mt-4">
-            <a href="{{ unsubscribeUrl }}" class="text-xs text-gray-400 underline">
-              Se désabonner
-            </a>
-          </div>
-        </div>
-      </div>
+      </body>
+      </html>
     `,
     variables: {
       title: { type: 'string', description: 'Titre de la newsletter', required: true },
@@ -299,270 +445,6 @@ export const baseEmailTemplates = [
       ctaText: { type: 'string', description: 'Texte du bouton', required: false },
       ctaUrl: { type: 'url', description: 'URL du bouton', required: false },
       unsubscribeUrl: { type: 'url', description: 'URL de désabonnement', required: true },
-    },
-  },
-  {
-    name: 'Nouvel événement',
-    description: 'Template pour annoncer un nouvel événement',
-    subject: '🎤 Nouvel événement : {{ eventTitle }}',
-    templateType: 'NEWSLETTER' as const,
-    isDefault: false,
-    htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-red-500 to-pink-600 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-red-100">Nouvel événement 🎤</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ eventTitle }}</h2>
-          
-          <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 p-6 rounded-lg mb-6">
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span class="font-semibold text-red-800">📅 Date :</span>
-                <p class="text-red-700">{{ eventDate }}</p>
-              </div>
-              <div>
-                <span class="font-semibold text-red-800">⏰ Heure :</span>
-                <p class="text-red-700">{{ eventTime }}</p>
-              </div>
-              <div class="col-span-2">
-                <span class="font-semibold text-red-800">📍 Lieu :</span>
-                <p class="text-red-700">{{ eventLocation }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="prose prose-gray max-w-none mb-6">
-            {{ eventDescription }}
-          </div>
-          
-          <div class="text-center">
-            <a href="{{ registrationUrl }}" class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg">
-              S'inscrire à l'événement
-            </a>
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-red-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-red-600">Contact</a>
-          </div>
-          <div class="mt-4">
-            <a href="{{ unsubscribeUrl }}" class="text-xs text-gray-400 underline">
-              Se désabonner
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
-    variables: {
-      eventTitle: { type: 'string', description: "Titre de l'événement", required: true },
-      eventDate: { type: 'string', description: "Date de l'événement", required: true },
-      eventTime: { type: 'string', description: "Heure de l'événement", required: true },
-      eventLocation: { type: 'string', description: "Lieu de l'événement", required: true },
-      eventDescription: { type: 'html', description: "Description de l'événement", required: true },
-      registrationUrl: { type: 'url', description: "URL d'inscription", required: true },
-      unsubscribeUrl: { type: 'url', description: 'URL de désabonnement', required: true },
-    },
-  },
-  {
-    name: 'Rappel événement',
-    description: 'Template de rappel avant un événement',
-    subject: '⏰ Rappel : {{ eventTitle }} demain',
-    templateType: 'NEWSLETTER' as const,
-    isDefault: false,
-    htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-amber-100">Rappel événement ⏰</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">N'oublie pas : {{ eventTitle }}</h2>
-          
-          <div class="bg-amber-50 border border-amber-200 p-6 rounded-lg mb-6">
-            <p class="text-amber-800 font-semibold mb-3">
-              ⚡ C'est demain !
-            </p>
-            <div class="text-sm text-amber-700">
-              <p><strong>📅 Date :</strong> {{ eventDate }}</p>
-              <p><strong>⏰ Heure :</strong> {{ eventTime }}</p>
-              <p><strong>📍 Lieu :</strong> {{ eventLocation }}</p>
-            </div>
-          </div>
-          
-          {{#if instructions}}
-          <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
-            <h3 class="font-semibold text-blue-800 mb-2">📝 Instructions :</h3>
-            <div class="text-blue-700 text-sm">
-              {{ instructions }}
-            </div>
-          </div>
-          {{/if}}
-          
-          <div class="text-center">
-            <a href="{{ eventUrl }}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-lg">
-              Voir les détails
-            </a>
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-amber-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-amber-600">Contact</a>
-          </div>
-          <div class="mt-4">
-            <a href="{{ unsubscribeUrl }}" class="text-xs text-gray-400 underline">
-              Se désabonner
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
-    variables: {
-      eventTitle: { type: 'string', description: "Titre de l'événement", required: true },
-      eventDate: { type: 'string', description: "Date de l'événement", required: true },
-      eventTime: { type: 'string', description: "Heure de l'événement", required: true },
-      eventLocation: { type: 'string', description: "Lieu de l'événement", required: true },
-      instructions: { type: 'html', description: 'Instructions spéciales', required: false },
-      eventUrl: { type: 'url', description: "URL de l'événement", required: true },
-      unsubscribeUrl: { type: 'url', description: 'URL de désabonnement', required: true },
-    },
-  },
-  {
-    name: 'Nouveau groupe formé',
-    description: "Template pour annoncer la formation d'un nouveau groupe",
-    subject: '🎸 Nouveau groupe formé : {{ groupName }}',
-    templateType: 'NEWSLETTER' as const,
-    isDefault: false,
-    htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-indigo-100">Nouveau groupe 🎸</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ groupName }}</h2>
-          
-          <div class="bg-indigo-50 border border-indigo-200 p-6 rounded-lg mb-6">
-            <p class="text-indigo-800 font-semibold mb-2">
-              🎉 Un nouveau groupe vient de se former !
-            </p>
-            <p class="text-indigo-700 text-sm">{{ groupDescription }}</p>
-          </div>
-          
-          {{#if members}}
-          <div class="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 class="font-semibold text-gray-800 mb-3">👥 Membres :</h3>
-            <div class="text-gray-600 text-sm">
-              {{ members }}
-            </div>
-          </div>
-          {{/if}}
-          
-          <div class="prose prose-gray max-w-none mb-6">
-            {{ content }}
-          </div>
-          
-          <div class="text-center">
-            <a href="{{ groupUrl }}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg">
-              Découvrir le groupe
-            </a>
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-indigo-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-indigo-600">Contact</a>
-          </div>
-          <div class="mt-4">
-            <a href="{{ unsubscribeUrl }}" class="text-xs text-gray-400 underline">
-              Se désabonner
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
-    variables: {
-      groupName: { type: 'string', description: 'Nom du groupe', required: true },
-      groupDescription: {
-        type: 'string',
-        description: 'Description courte du groupe',
-        required: true,
-      },
-      members: { type: 'string', description: 'Liste des membres', required: false },
-      content: { type: 'html', description: 'Contenu détaillé', required: true },
-      groupUrl: { type: 'url', description: 'URL du groupe', required: true },
-      unsubscribeUrl: { type: 'url', description: 'URL de désabonnement', required: true },
-    },
-  },
-  {
-    name: 'Notification système',
-    description: 'Template pour les notifications système importantes',
-    subject: '🔔 {{ title }} - ISEP Bands',
-    templateType: 'SYSTEM' as const,
-    isDefault: false,
-    htmlContent: `
-      <div class="max-w-2xl mx-auto bg-white font-sans">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-slate-600 to-slate-800 text-white p-8 text-center">
-          <h1 class="text-3xl font-bold mb-2">ISEP BANDS</h1>
-          <p class="text-slate-100">Notification système</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ title }}</h2>
-          
-          <div class="bg-slate-50 border border-slate-200 p-6 rounded-lg mb-6">
-            <div class="prose prose-slate max-w-none">
-              {{ content }}
-            </div>
-          </div>
-          
-          {{#if actionUrl}}
-          <div class="text-center">
-            <a href="{{ actionUrl }}" class="inline-block bg-slate-600 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg">
-              {{ actionText }}
-            </a>
-          </div>
-          {{/if}}
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 ISEP Bands</p>
-          <div class="mt-2">
-            <a href="https://isepbands.fr" class="text-slate-600">Site web</a> • 
-            <a href="mailto:contact@isepbands.fr" class="text-slate-600">Contact</a>
-          </div>
-        </div>
-      </div>
-    `,
-    variables: {
-      title: { type: 'string', description: 'Titre de la notification', required: true },
-      content: { type: 'html', description: 'Contenu de la notification', required: true },
-      actionText: { type: 'string', description: "Texte du bouton d'action", required: false },
-      actionUrl: { type: 'url', description: "URL du bouton d'action", required: false },
     },
   },
 ];

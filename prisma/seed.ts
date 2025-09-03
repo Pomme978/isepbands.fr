@@ -369,11 +369,11 @@ async function seedEmailTemplates() {
       roles: {
         some: {
           role: {
-            name: 'admin'
-          }
-        }
-      }
-    }
+            name: 'admin',
+          },
+        },
+      },
+    },
   });
 
   if (!adminUser) {
@@ -381,10 +381,30 @@ async function seedEmailTemplates() {
     return;
   }
 
+  // Nettoyer les anciens templates système qui ne sont plus nécessaires
+  const currentTemplateNames = baseEmailTemplates.map((t) => t.name);
+  const systemTemplatesToDelete = await prisma.emailTemplate.findMany({
+    where: {
+      templateType: 'SYSTEM',
+      isDefault: true,
+      name: { notIn: currentTemplateNames },
+    },
+  });
+
+  if (systemTemplatesToDelete.length > 0) {
+    console.log(`🗑️  Removing ${systemTemplatesToDelete.length} obsolete system templates...`);
+    for (const template of systemTemplatesToDelete) {
+      await prisma.emailTemplate.delete({
+        where: { id: template.id },
+      });
+      console.log(`   ✗ Removed obsolete template: ${template.name}`);
+    }
+  }
+
   for (const template of baseEmailTemplates) {
     // Vérifier si le template existe déjà
     const existingTemplate = await prisma.emailTemplate.findUnique({
-      where: { name: template.name }
+      where: { name: template.name },
     });
 
     if (!existingTemplate) {
@@ -399,11 +419,23 @@ async function seedEmailTemplates() {
           isActive: true,
           isDefault: template.isDefault,
           createdById: adminUser.id,
-        }
+        },
       });
       console.log(`   ✓ Created template: ${template.name}`);
     } else {
-      console.log(`   - Template already exists: ${template.name}`);
+      // Mettre à jour le template existant avec les nouvelles données
+      await prisma.emailTemplate.update({
+        where: { id: existingTemplate.id },
+        data: {
+          description: template.description,
+          subject: template.subject,
+          htmlContent: template.htmlContent,
+          variables: template.variables,
+          templateType: template.templateType,
+          isDefault: template.isDefault,
+        },
+      });
+      console.log(`   ↻ Updated existing template: ${template.name}`);
     }
   }
 
