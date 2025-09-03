@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // Debug: Log all received fields
     console.log('Register attempt with fields:', {
       firstName: firstName ? '✓' : '✗',
-      lastName: lastName ? '✓' : '✗', 
+      lastName: lastName ? '✓' : '✗',
       email: email ? '✓' : '✗',
       password: password ? '✓' : '✗',
       cycle: cycle ? '✓' : '✗',
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       phone: phone ? '✓' : '-',
       instruments: instruments ? '✓' : '-',
       preferredGenres: preferredGenres ? '✓' : '-',
-      profilePhoto: profilePhoto ? '✓' : '-'
+      profilePhoto: profilePhoto ? '✓' : '-',
     });
 
     // Validation détaillée des champs requis
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     if (missingFields.length > 0) {
       console.log('Missing required fields:', missingFields);
       return NextResponse.json(
-        { 
+        {
           error: `Champs manquants: ${missingFields.join(', ')}`,
-          missingFields 
+          missingFields,
         },
         { status: 400 },
       );
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         console.error('❌ Error uploading photo:', uploadError);
         return NextResponse.json(
           { error: 'Erreur lors du téléchargement de la photo de profil.' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     } else {
@@ -171,6 +171,17 @@ export async function POST(req: NextRequest) {
       console.log('🎸 No instruments to process');
     }
 
+    // Envoyer l'email de bienvenue
+    try {
+      console.log('📧 Sending welcome email to:', user.email);
+      const { EmailService } = await import('@/services/emailService');
+      await EmailService.sendWelcomeEmail(user.email, `${user.firstName} ${user.lastName}`);
+      console.log('✅ Welcome email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Error sending welcome email:', emailError);
+      // Ne pas bloquer l'inscription si l'email échoue
+    }
+
     // Set session to automatically log in the user
     // Logger l'inscription
     try {
@@ -184,7 +195,7 @@ export async function POST(req: NextRequest) {
           userEmail: user.email,
           promotion: cycle,
           hasPhoto: !!photoUrl,
-          instrumentsCount: instruments ? JSON.parse(instruments).length : 0
+          instrumentsCount: instruments ? JSON.parse(instruments).length : 0,
         },
         createdBy: null, // System generated
       });
@@ -201,9 +212,9 @@ export async function POST(req: NextRequest) {
     console.error('🔴 REGISTRATION ERROR:', error);
     console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { 
+      {
         error: "Erreur lors de l'inscription. Veuillez réessayer.",
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

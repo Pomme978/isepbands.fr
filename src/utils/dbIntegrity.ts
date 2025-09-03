@@ -3,6 +3,7 @@ import { defaultInstruments } from '@/data/instruments';
 import { defaultPermissions } from '@/data/permissions';
 import { defaultRoles } from '@/data/roles';
 import { MUSIC_GENRES } from '@/data/musicGenres';
+import { baseEmailTemplates } from '@/data/emailTemplates';
 
 /**
  * Check and ensure database integrity by creating missing permissions, roles, and instruments
@@ -14,7 +15,7 @@ export async function ensureDBIntegrity() {
   const stats = {
     created: 0,
     deleted: 0,
-    checked: 0
+    checked: 0,
   };
 
   try {
@@ -116,7 +117,7 @@ export async function ensureDBIntegrity() {
       const existing = await prisma.instrument.findFirst({
         where: { name: instrument.name },
       });
-      
+
       stats.checked++;
 
       if (!existing) {
@@ -140,7 +141,7 @@ export async function ensureDBIntegrity() {
       const existing = await prisma.permission.findFirst({
         where: { name: permission.name },
       });
-      
+
       stats.checked++;
 
       if (!existing) {
@@ -164,7 +165,7 @@ export async function ensureDBIntegrity() {
       let role = await prisma.role.findFirst({
         where: { name: roleData.name },
       });
-      
+
       stats.checked++;
 
       if (!role) {
@@ -213,7 +214,7 @@ export async function ensureDBIntegrity() {
       const existing = await prisma.musicGenre.findFirst({
         where: { id: genre.id },
       });
-      
+
       stats.checked++;
 
       if (!existing) {
@@ -230,9 +231,64 @@ export async function ensureDBIntegrity() {
       }
     }
 
+    // Ensure email templates exist
+    console.log('📧 Ensuring email templates exist...');
+
+    for (const template of baseEmailTemplates) {
+      const existing = await prisma.emailTemplate.findFirst({
+        where: { name: template.name },
+      });
+
+      stats.checked++;
+
+      if (!existing) {
+        await prisma.emailTemplate.create({
+          data: {
+            name: template.name,
+            description: template.description,
+            subject: template.subject,
+            htmlContent: template.htmlContent,
+            templateType: template.templateType,
+            isDefault: template.isDefault,
+            variables: template.variables,
+            // createdById est maintenant optionnel, pas besoin de le spécifier
+          },
+        });
+        console.log(`✅ Created missing email template: ${template.name}`);
+        actions.push(`Créé le template d'email manquant: ${template.name}`);
+        stats.created++;
+      } else {
+        // Vérifier si le template a changé et le mettre à jour
+        const hasChanged =
+          existing.description !== template.description ||
+          existing.subject !== template.subject ||
+          existing.htmlContent !== template.htmlContent ||
+          existing.templateType !== template.templateType ||
+          existing.isDefault !== template.isDefault ||
+          JSON.stringify(existing.variables) !== JSON.stringify(template.variables);
+
+        if (hasChanged) {
+          await prisma.emailTemplate.update({
+            where: { id: existing.id },
+            data: {
+              description: template.description,
+              subject: template.subject,
+              htmlContent: template.htmlContent,
+              templateType: template.templateType,
+              isDefault: template.isDefault,
+              variables: template.variables,
+            },
+          });
+          console.log(`🔄 Updated email template: ${template.name}`);
+          actions.push(`Mis à jour le template d'email: ${template.name}`);
+          stats.created++; // On peut utiliser created pour les updates aussi
+        }
+      }
+    }
+
     // Calculer la durée d'exécution
     const duration = Date.now() - startTime;
-    
+
     console.log('✅ Database integrity check completed successfully!');
     return { success: true, actions, stats: { ...stats, duration } };
   } catch (error) {

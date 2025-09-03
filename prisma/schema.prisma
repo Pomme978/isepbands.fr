@@ -511,11 +511,11 @@ model EmailTemplate {
   templateType  EmailTemplateType
   isActive      Boolean            @default(true)
   isDefault     Boolean            @default(false) // For system emails like password reset
-  createdById   String
+  createdById   String?            // Optional for system templates
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @default(now()) @updatedAt
   
-  createdBy     User               @relation(fields: [createdById], references: [id])
+  createdBy     User?              @relation(fields: [createdById], references: [id])
   newsletters   Newsletter[]
   emailLogs     EmailLog[]
   
