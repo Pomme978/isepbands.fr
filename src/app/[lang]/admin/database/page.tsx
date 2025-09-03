@@ -438,7 +438,7 @@ export default function DatabaseAdminPage() {
               )}
 
               {templateDifferences.length > 0 && !isCheckingTemplates && (
-                <Badge variant="secondary">
+                <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">
                   {templateDifferences.length} différence(s) trouvée(s)
                 </Badge>
               )}

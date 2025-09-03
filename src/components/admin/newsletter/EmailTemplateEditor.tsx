@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import Loading from '@/components/ui/Loading';
 import dynamic from 'next/dynamic';
 
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
+const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((mod) => mod.default), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-64">
