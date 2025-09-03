@@ -56,11 +56,10 @@ export function Home({ lang }: HomeProps) {
             </p>
 
             <Button asChild className="mb-12">
-              <LangLink href={`/${lang}/asso`}>En savoir plus</LangLink>
+              <LangLink href={`/${lang}/club`}>En savoir plus</LangLink>
             </Button>
           </div>
           <OurFamousEvents />
-
           {/* Call to Action (reste dans page.tsx) */}
           {!user && (
             <div className="text-center mb-16 py-12 w-full bg-white rounded-xl">

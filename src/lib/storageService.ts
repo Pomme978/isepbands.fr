@@ -35,7 +35,6 @@ export async function uploadToStorage(file: File, userId?: string) {
       throw new Error('Only image files are allowed');
     }
 
-
     let processedBuffer = originalBuffer;
 
     // Process image if it's an image file
@@ -48,7 +47,9 @@ export async function uploadToStorage(file: File, userId?: string) {
         const maxDimension = 800; // Max width or height
         const quality = 85; // JPEG quality
 
-        let sharpInstance = sharp(originalBuffer);
+        let sharpInstance = sharp(originalBuffer)
+          // Corriger automatiquement l'orientation EXIF
+          .rotate();
 
         // Resize if image is larger than maxDimension
         if (
@@ -85,9 +86,8 @@ export async function uploadToStorage(file: File, userId?: string) {
     await fs.mkdir(UPLOADS_DIR, { recursive: true });
     await fs.writeFile(filePath, processedBuffer);
 
-
     const baseData = { key, url, size: finalSize, contentType };
-    
+
     // Vérifier si l'utilisateur existe avant de l'associer
     let validUserId = null;
     if (userId) {
@@ -99,11 +99,10 @@ export async function uploadToStorage(file: File, userId?: string) {
         validUserId = userId;
       }
     }
-    
+
     const dbRecord = await prisma.storageObject.create({
       data: validUserId ? { ...baseData, userId: validUserId } : baseData,
     });
-
 
     return dbRecord;
   } catch (error) {
