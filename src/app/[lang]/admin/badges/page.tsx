@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Save, X, Award } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Award, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import BadgeDisplay from '@/components/profile/BadgeDisplay';
@@ -17,6 +17,13 @@ interface BadgeDefinition {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+interface UserWithBadge {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 interface BadgeFormData {
@@ -37,6 +44,8 @@ function BadgesContent() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [usersWithBadge, setUsersWithBadge] = useState<UserWithBadge[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [formData, setFormData] = useState<BadgeFormData>({
     key: '',
     labelFr: '',
@@ -114,22 +123,48 @@ function BadgesContent() {
     });
     setEditingId(null);
     setIsCreating(false);
+    setUsersWithBadge([]);
   };
 
-  const startEdit = (badge: BadgeDefinition) => {
+  const startEdit = async (badge: BadgeDefinition) => {
     setFormData({
       key: badge.key,
       labelFr: badge.labelFr,
       labelEn: badge.labelEn,
       description: badge.description || '',
       color: badge.color,
-      colorEnd: (badge as any).colorEnd || '#FF6B35',
-      gradientDirection: (badge as any).gradientDirection || 'to right',
-      textColor: (badge as any).textColor || getOptimalTextColor(badge.color),
-      useGradient: !!(badge as any).colorEnd,
+      colorEnd: '#FF6B35',
+      gradientDirection: 'to right',
+      textColor: getOptimalTextColor(badge.color),
+      useGradient: false,
     });
     setEditingId(badge.id);
     setIsCreating(false);
+
+    // Fetch users who have this badge
+    await fetchUsersWithBadge(badge.id);
+  };
+
+  const fetchUsersWithBadge = async (badgeId: number) => {
+    try {
+      setLoadingUsers(true);
+      const response = await fetch(`/api/admin/badges/${badgeId}/users`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsersWithBadge(data.users || []);
+      } else {
+        console.error('Failed to fetch users with badge');
+        setUsersWithBadge([]);
+      }
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setUsersWithBadge([]);
+    } finally {
+      setLoadingUsers(false);
+    }
   };
 
   const startCreate = () => {
@@ -484,6 +519,43 @@ function BadgesContent() {
                 placeholder="Description interne du badge pour les administrateurs (à quoi sert ce badge, quand l'attribuer, etc.)"
               />
             </div>
+
+            {/* Users with this badge */}
+            {editingId && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Users className="inline w-4 h-4 mr-1" />
+                  Utilisateurs ayant ce badge ({usersWithBadge.length})
+                </label>
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-48 overflow-y-auto">
+                  {loadingUsers ? (
+                    <p className="text-sm text-gray-500">Chargement...</p>
+                  ) : usersWithBadge.length === 0 ? (
+                    <p className="text-sm text-gray-500">Aucun utilisateur n&apos;a ce badge</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {usersWithBadge.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200"
+                        >
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-semibold text-gray-600">
+                            {user.firstName.charAt(0)}
+                            {user.lastName.charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {user.firstName} {user.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 mt-6">
@@ -530,7 +602,9 @@ function BadgesContent() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-gray-900">{badge.labelFr}</h3>
-                          <span className="text-sm text-gray-500">({badge.labelEn})</span>
+                          {badge.labelEn && badge.labelEn !== badge.labelFr && (
+                            <span className="text-sm text-gray-500">({badge.labelEn})</span>
+                          )}
                           <span className="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-1 rounded">
                             {badge.key}
                           </span>

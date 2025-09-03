@@ -18,7 +18,7 @@ export function FooterColumn({ title, links }: FooterColumnProps) {
           <li key={link.href}>
             <LangLink
               href={link.href}
-              className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
+              className="text-gray-600 hover:text-gray-900 transition-colors text-sm cursor-pointer"
             >
               {link.label}
             </LangLink>

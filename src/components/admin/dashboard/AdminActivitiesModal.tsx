@@ -3,10 +3,24 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import ActivityItem from './ActivityItem';
-import { Search, X, Filter } from 'lucide-react';
-import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { Search, X, Filter, User } from 'lucide-react';
+import {
+  format,
+  isAfter,
+  isBefore,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -17,7 +31,7 @@ interface ActivityData {
   description: string;
   timestamp: string;
   type: 'success' | 'info' | 'warning' | 'error' | 'default';
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   metadata?: Record<string, unknown>;
   adminAction?: {
     adminName: string;
@@ -41,13 +55,27 @@ export default function AdminActivitiesModal({
   title = 'Toutes les activités administratives',
 }: AdminActivitiesModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'success' | 'info' | 'warning' | 'error'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'success' | 'info' | 'warning' | 'error'>(
+    'all',
+  );
   const [periodFilter, setPeriodFilter] = useState<FilterPeriod>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [userFilter, setUserFilter] = useState<string>('all');
+
+  // Extract unique users from activities
+  const uniqueUsers = useMemo(() => {
+    const users = new Set<string>();
+    activities.forEach((activity) => {
+      if (activity.adminAction?.adminName) {
+        users.add(activity.adminAction.adminName);
+      }
+    });
+    return Array.from(users).sort();
+  }, [activities]);
 
   const filteredActivities = useMemo(() => {
     let filtered = [...activities];
@@ -59,33 +87,56 @@ export default function AdminActivitiesModal({
         // Parse la date depuis le timestamp formaté français
         const dateMatch = activity.timestamp.match(/(\d{1,2})\s+(\w+)\s+(\d{1,2}):(\d{2})/);
         if (!dateMatch) return true;
-        
+
         const [, day, monthName, hour, minute] = dateMatch;
         const monthNames = [
-          'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-          'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+          'janvier',
+          'février',
+          'mars',
+          'avril',
+          'mai',
+          'juin',
+          'juillet',
+          'août',
+          'septembre',
+          'octobre',
+          'novembre',
+          'décembre',
         ];
-        const monthIndex = monthNames.findIndex(m => monthName.toLowerCase().includes(m));
+        const monthIndex = monthNames.findIndex((m) => monthName.toLowerCase().includes(m));
         if (monthIndex === -1) return true;
-        
+
         const activityDate = new Date(now.getFullYear(), monthIndex, parseInt(day));
-        
+
         switch (periodFilter) {
           case 'thisMonth':
-            return isAfter(activityDate, startOfMonth(now)) && isBefore(activityDate, endOfMonth(now));
+            return (
+              isAfter(activityDate, startOfMonth(now)) && isBefore(activityDate, endOfMonth(now))
+            );
           case 'lastMonth':
             const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            return isAfter(activityDate, startOfMonth(lastMonth)) && isBefore(activityDate, endOfMonth(lastMonth));
+            return (
+              isAfter(activityDate, startOfMonth(lastMonth)) &&
+              isBefore(activityDate, endOfMonth(lastMonth))
+            );
           case 'thisYear':
-            return isAfter(activityDate, startOfYear(now)) && isBefore(activityDate, endOfYear(now));
+            return (
+              isAfter(activityDate, startOfYear(now)) && isBefore(activityDate, endOfYear(now))
+            );
           case 'lastYear':
             const lastYear = new Date(now.getFullYear() - 1, 0, 1);
-            return isAfter(activityDate, startOfYear(lastYear)) && isBefore(activityDate, endOfYear(lastYear));
+            return (
+              isAfter(activityDate, startOfYear(lastYear)) &&
+              isBefore(activityDate, endOfYear(lastYear))
+            );
           case 'custom':
             if (dateRange?.from && dateRange?.to) {
               return isAfter(activityDate, dateRange.from) && isBefore(activityDate, dateRange.to);
             } else if (customStartDate && customEndDate) {
-              return isAfter(activityDate, new Date(customStartDate)) && isBefore(activityDate, new Date(customEndDate));
+              return (
+                isAfter(activityDate, new Date(customStartDate)) &&
+                isBefore(activityDate, new Date(customEndDate))
+              );
             }
             return true;
           default:
@@ -99,6 +150,11 @@ export default function AdminActivitiesModal({
       filtered = filtered.filter((activity) => activity.type === typeFilter);
     }
 
+    // Filtrage par utilisateur
+    if (userFilter !== 'all') {
+      filtered = filtered.filter((activity) => activity.adminAction?.adminName === userFilter);
+    }
+
     // Filtrage par recherche
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -106,12 +162,21 @@ export default function AdminActivitiesModal({
         (activity) =>
           activity.title.toLowerCase().includes(query) ||
           activity.description.toLowerCase().includes(query) ||
-          activity.adminAction?.adminName.toLowerCase().includes(query)
+          activity.adminAction?.adminName.toLowerCase().includes(query),
       );
     }
 
     return filtered;
-  }, [activities, searchQuery, typeFilter, periodFilter, customStartDate, customEndDate, dateRange]);
+  }, [
+    activities,
+    searchQuery,
+    typeFilter,
+    periodFilter,
+    customStartDate,
+    customEndDate,
+    dateRange,
+    userFilter,
+  ]);
 
   const resetFilters = () => {
     setSearchQuery('');
@@ -121,6 +186,7 @@ export default function AdminActivitiesModal({
     setCustomEndDate('');
     setDateRange(undefined);
     setExpandedId(null);
+    setUserFilter('all');
   };
 
   const activitiesByMonth = useMemo(() => {
@@ -131,16 +197,26 @@ export default function AdminActivitiesModal({
       const dateMatch = activity.timestamp.match(/(\d{1,2})\s+(\w+)\s+(\d{1,2}):(\d{2})/);
       if (dateMatch) {
         const [, day, monthName, hour, minute] = dateMatch;
-        
+
         // Create a date object (using current year as fallback)
         const currentYear = new Date().getFullYear();
         const monthNames = [
-          'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-          'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+          'janvier',
+          'février',
+          'mars',
+          'avril',
+          'mai',
+          'juin',
+          'juillet',
+          'août',
+          'septembre',
+          'octobre',
+          'novembre',
+          'décembre',
         ];
-        const monthIndex = monthNames.findIndex(m => monthName.toLowerCase().includes(m));
+        const monthIndex = monthNames.findIndex((m) => monthName.toLowerCase().includes(m));
         const date = new Date(currentYear, monthIndex >= 0 ? monthIndex : 0, parseInt(day));
-        
+
         const monthKey = format(date, 'MMMM yyyy', { locale: fr });
         if (!groups[monthKey]) {
           groups[monthKey] = [];
@@ -203,7 +279,6 @@ export default function AdminActivitiesModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
-        
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
@@ -268,6 +343,25 @@ export default function AdminActivitiesModal({
               </Select>
             </div>
 
+            <div className="flex-1">
+              <Select value={userFilter} onValueChange={setUserFilter}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <SelectValue placeholder="Filtrer par utilisateur" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les utilisateurs</SelectItem>
+                  {uniqueUsers.map((user) => (
+                    <SelectItem key={user} value={user}>
+                      {user}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {periodFilter === 'custom' && (
               <div className="flex-1">
                 <DateRangePicker
@@ -296,7 +390,7 @@ export default function AdminActivitiesModal({
           {showAdvancedFilters && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
               <h4 className="font-medium text-sm mb-3">Filtres avancés</h4>
-              
+
               <div className="text-sm text-gray-600">
                 Utilisez le sélecteur de période ci-dessus pour filtrer par dates personnalisées.
               </div>
@@ -319,7 +413,9 @@ export default function AdminActivitiesModal({
                 <div key={month}>
                   <div className="flex items-center mb-6">
                     <div className="flex-1 border-t border-gray-200"></div>
-                    <span className="px-4 text-sm font-medium text-gray-500 bg-gray-50">{month}</span>
+                    <span className="px-4 text-sm font-medium text-gray-500 bg-gray-50">
+                      {month}
+                    </span>
                     <div className="flex-1 border-t border-gray-200"></div>
                   </div>
                   <div className="bg-white rounded-lg border divide-y divide-gray-200">
@@ -341,7 +437,9 @@ export default function AdminActivitiesModal({
                             createdBy={createdBy}
                             metadata={activity.metadata}
                             isExpanded={expandedId === activity.id}
-                            onToggleExpand={() => setExpandedId(expandedId === activity.id ? null : activity.id)}
+                            onToggleExpand={() =>
+                              setExpandedId(expandedId === activity.id ? null : activity.id)
+                            }
                           />
                         </div>
                       );
