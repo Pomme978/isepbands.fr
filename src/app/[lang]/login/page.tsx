@@ -159,13 +159,13 @@ export default function LoginPage() {
           <LoginFormLinks lang={lang} />
         </LoginFormCard>
         <p className="text-xs text-gray-500 mt-4 w-80 text-center">
-          By clicking continue, you agree to our{' '}
-          <a href={`/${lang}/terms`} className="hover:text-gray-700 underline">
-            Terms of Service
+          En continuant, vous acceptez nos{' '}
+          <a href={`/${lang}/conditions-utilisation`} className="hover:text-gray-700 underline">
+            Conditions d&apos;utilisation
           </a>{' '}
-          and{' '}
-          <a href={`/${lang}/privacy`} className="hover:text-gray-700 underline">
-            Privacy Policy
+          et notre{' '}
+          <a href={`/${lang}/politique-confidentialite`} className="hover:text-gray-700 underline">
+            Politique de confidentialité
           </a>
           .
         </p>

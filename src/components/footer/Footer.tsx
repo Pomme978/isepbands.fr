@@ -30,8 +30,8 @@ const footerColumns = [
   {
     title: 'Légal',
     links: [
-      { label: "Conditions d'utilisation", href: '/conditions' },
-      { label: 'Politique de confidentialité', href: '/confidentialite' },
+      { label: "Conditions d'utilisation", href: '/conditions-utilisation' },
+      { label: 'Politique de confidentialité', href: '/politique-confidentialite' },
       { label: 'Mentions légales', href: '/mentions-legales' },
     ],
   },
