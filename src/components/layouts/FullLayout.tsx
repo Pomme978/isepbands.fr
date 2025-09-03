@@ -39,7 +39,7 @@ export default function FullLayout({
             {showNavbar && <Navbar mode={navbarMode} style={navbarStyle} />}
           </div>
           <div className={getContentClasses()}>{children}</div>
-          <div className="max-w-7xl mx-auto">{showFooter && <Footer />}</div>
+          <div className="max-w-7xl mx-auto pb-3">{showFooter && <Footer />}</div>
         </div>
       </div>
     </Providers>

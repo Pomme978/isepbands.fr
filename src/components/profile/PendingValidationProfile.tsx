@@ -2,7 +2,20 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Shield, AlertCircle, User, Mail, Phone, Calendar, GraduationCap, Music, Heart, MessageSquare, Award } from 'lucide-react';
+import {
+  Clock,
+  Shield,
+  AlertCircle,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  GraduationCap,
+  Music,
+  Heart,
+  MessageSquare,
+  Award,
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -56,14 +69,14 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
 
   const skillLevelLabels: Record<string, string> = {
     BEGINNER: 'Débutant',
-    INTERMEDIATE: 'Intermédiaire', 
+    INTERMEDIATE: 'Intermédiaire',
     ADVANCED: 'Avancé',
     EXPERT: 'Expert',
   };
 
   const skillLevelColors: Record<string, string> = {
     BEGINNER: 'bg-green-100 text-green-800',
-    INTERMEDIATE: 'bg-blue-100 text-blue-800', 
+    INTERMEDIATE: 'bg-blue-100 text-blue-800',
     ADVANCED: 'bg-orange-100 text-orange-800',
     EXPERT: 'bg-red-100 text-red-800',
   };
@@ -76,7 +89,10 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
         const parsed = JSON.parse(genres);
         return Array.isArray(parsed) ? parsed : [];
       } catch {
-        return genres.split(',').map(g => g.trim()).filter(Boolean);
+        return genres
+          .split(',')
+          .map((g) => g.trim())
+          .filter(Boolean);
       }
     }
     return [];
@@ -84,7 +100,7 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
 
   return (
     <div className="py-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6 mx-2 md:mx-0">
         {/* Header avec titre et icône */}
         <div className="text-center space-y-3 mb-5">
           <div className="flex justify-center">
@@ -93,19 +109,14 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-900">Inscription en cours de validation</h2>
-          <p className="text-gray-600">Récapitulatif de votre demande d'inscription</p>
+          <p className="text-gray-600">Récapitulatif de votre demande d&apos;inscription</p>
         </div>
 
         {/* Photo de profil */}
         <div className="flex justify-center items-center mb-0">
           <div className="relative mb-10">
             <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-lg">
-              {user.photoUrl ? (
-                <AvatarImage
-                  src={user.photoUrl}
-                  className="object-cover"
-                />
-              ) : null}
+              {user.photoUrl ? <AvatarImage src={user.photoUrl} className="object-cover" /> : null}
               <AvatarFallback className="text-xl bg-primary/10 text-primary font-bold">
                 {user.firstName.charAt(0)}
                 {user.lastName.charAt(0)}
@@ -126,8 +137,8 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
                 <Clock className="h-10 w-10 text-primary" />
               </div>
               <p className="text-gray-700 mb-2 leading-relaxed">
-                Bienvenue dans la communauté ISEP Bands ! Votre demande d'inscription a bien été
-                reçue et notre équipe examine actuellement votre profil.
+                Bienvenue dans la communauté ISEP Bands ! Votre demande d&apos;inscription a bien
+                été reçue et notre équipe examine actuellement votre profil.
               </p>
               <p className="font-medium text-primary">
                 Une notification par email vous sera envoyée dès validation sous 2-3 jours ouvrés.
@@ -152,7 +163,9 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-gray-500">Nom complet</p>
-                  <p className="font-medium">{user.firstName} {user.lastName}</p>
+                  <p className="font-medium">
+                    {user.firstName} {user.lastName}
+                  </p>
                 </div>
               </div>
 
@@ -226,7 +239,10 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
             <CardContent>
               <div className="space-y-3">
                 {user.instruments.map((inst, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <Music className="w-4 h-4 text-gray-600" />
                       <div>
@@ -235,13 +251,15 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
                         </p>
                         {inst.yearsPlaying && (
                           <p className="text-sm text-gray-500">
-                            {inst.yearsPlaying} années d'expérience
+                            {inst.yearsPlaying} années d&apos;expérience
                           </p>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={`text-xs ${skillLevelColors[inst.skillLevel] || 'bg-gray-100 text-gray-800'}`}>
+                      <Badge
+                        className={`text-xs ${skillLevelColors[inst.skillLevel] || 'bg-gray-100 text-gray-800'}`}
+                      >
                         {skillLevelLabels[inst.skillLevel] || inst.skillLevel}
                       </Badge>
                       {inst.isPrimary && (
@@ -318,7 +336,7 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
         {/* Action */}
         <div className="text-center pt-4">
           <Button variant="outline" onClick={() => router.push(`/${lang}`)}>
-            Retour à l'accueil
+            Retour à l&apos;accueil
           </Button>
         </div>
       </div>

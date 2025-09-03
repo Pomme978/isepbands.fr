@@ -35,7 +35,7 @@ export default function BasicLayout({
         <div className="max-w-7xl mx-auto">
           {showNavbar && <Navbar mode={navbarMode} />}
           <div className={getContentClasses()}>{children}</div>
-          {showFooter && <Footer />}
+          <div className="pb-3">{showFooter && <Footer />}</div>
         </div>
       </div>
     </Providers>
