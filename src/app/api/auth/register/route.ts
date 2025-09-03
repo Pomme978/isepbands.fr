@@ -171,14 +171,14 @@ export async function POST(req: NextRequest) {
       console.log('🎸 No instruments to process');
     }
 
-    // Envoyer l'email de bienvenue
+    // Envoyer l'email de compte en attente d'approbation
     try {
-      console.log('📧 Sending welcome email to:', user.email);
+      console.log('📧 Sending pending approval email to:', user.email);
       const { EmailService } = await import('@/services/emailService');
-      await EmailService.sendWelcomeEmail(user.email, `${user.firstName} ${user.lastName}`);
-      console.log('✅ Welcome email sent successfully');
+      await EmailService.sendPendingApprovalEmail(user.email, user.firstName);
+      console.log('✅ Pending approval email sent successfully');
     } catch (emailError) {
-      console.error('❌ Error sending welcome email:', emailError);
+      console.error('❌ Error sending pending approval email:', emailError);
       // Ne pas bloquer l'inscription si l'email échoue
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
+import { logAdminAction } from '@/services/activityLogService';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireAdminAuth(req);
@@ -36,6 +37,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         archivedBy: null,
       },
     });
+
+    // Log the restore action
+    try {
+      await logAdminAction(
+        authResult.user.id,
+        'user_restored',
+        'Utilisateur restauré',
+        `**${user.firstName} ${user.lastName}** (${user.email}) a été restauré depuis l'archive`,
+        userId,
+        {
+          userEmail: user.email,
+          previousStatus: 'DELETED',
+          newStatus: 'CURRENT',
+          restoredAt: new Date().toISOString(),
+        },
+      );
+    } catch (logError) {
+      console.error('Failed to log user restore action:', logError);
+      // Don't fail the restore if logging fails
+    }
 
     return NextResponse.json({
       success: true,

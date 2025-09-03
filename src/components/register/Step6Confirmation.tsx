@@ -28,12 +28,12 @@ interface Step6ConfirmationProps {
   isSubmitting?: boolean;
 }
 export default function Step6Confirmation({
-                                            data,
-                                            onBack,
-                                            onSubmit,
-                                            availableInstruments,
-                                            isSubmitting = false,
-                                          }: Step6ConfirmationProps) {
+  data,
+  onBack,
+  onSubmit,
+  availableInstruments,
+  isSubmitting = false,
+}: Step6ConfirmationProps) {
   const t = useI18n();
 
   const skillLevelLabels: Record<string, string> = {
@@ -274,7 +274,7 @@ export default function Step6Confirmation({
       </div>
 
       {/* Boutons d'action */}
-      <div className="flex justify-center md:gap-0 gap-4 md:flew-row flex-col md:justify-end pt-4">
+      <div className="flex md:flex-row flex-col gap-4 justify-center md:justify-end pt-4">
         <Button
           type="button"
           variant="outline"
@@ -284,9 +284,9 @@ export default function Step6Confirmation({
         >
           Retour
         </Button>
-        <Button 
-          type="button" 
-          onClick={onSubmit} 
+        <Button
+          type="button"
+          onClick={onSubmit}
           className="px-6 md:py-2 py-6 md:w-auto w-full"
           disabled={isSubmitting}
         >

@@ -4,6 +4,7 @@ import WelcomeEmail from '@/emails/WelcomeEmail';
 import PasswordResetEmail from '@/emails/PasswordResetEmail';
 import ApprovalEmail from '@/emails/ApprovalEmail';
 import RejectionEmail from '@/emails/RejectionEmail';
+import { prisma } from '@/lib/prisma';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -44,7 +45,7 @@ export class EmailService {
 
   static async sendWelcomeEmail(email: string, name: string, temporaryPassword?: string) {
     const emailHtml = render(WelcomeEmail({ name, email, temporaryPassword }));
-    
+
     return this.send({
       to: email,
       subject: 'Bienvenue sur ISEP Bands !',
@@ -55,7 +56,7 @@ export class EmailService {
   static async sendPasswordResetEmail(email: string, name: string, resetToken: string) {
     const resetUrl = `https://isepbands.fr/reset-password?token=${resetToken}`;
     const emailHtml = render(PasswordResetEmail({ name, resetUrl }));
-    
+
     return this.send({
       to: email,
       subject: 'Réinitialisation de votre mot de passe',
@@ -65,7 +66,7 @@ export class EmailService {
 
   static async sendApprovalEmail(email: string, name: string) {
     const emailHtml = render(ApprovalEmail({ name }));
-    
+
     return this.send({
       to: email,
       subject: 'Votre compte ISEP Bands a été approuvé !',
@@ -75,12 +76,51 @@ export class EmailService {
 
   static async sendRejectionEmail(email: string, name: string, reason?: string) {
     const emailHtml = render(RejectionEmail({ name, reason }));
-    
+
     return this.send({
       to: email,
-      subject: 'Votre demande d\'inscription ISEP Bands',
+      subject: "Votre demande d'inscription ISEP Bands",
       html: emailHtml,
     });
+  }
+
+  static async sendTemplateEmail(
+    templateName: string,
+    to: string,
+    variables: Record<string, string | number | boolean>,
+  ) {
+    try {
+      const template = await prisma.emailTemplate.findUnique({
+        where: { name: templateName },
+      });
+
+      if (!template) {
+        throw new Error(`Template "${templateName}" not found`);
+      }
+
+      let htmlContent = template.htmlContent;
+      let subject = template.subject;
+
+      // Remplacer les variables dans le contenu et le sujet
+      Object.entries(variables).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+        htmlContent = htmlContent.replace(regex, value || '');
+        subject = subject.replace(regex, value || '');
+      });
+
+      return this.send({
+        to,
+        subject,
+        html: htmlContent,
+      });
+    } catch (error) {
+      console.error('Error sending template email:', error);
+      throw error;
+    }
+  }
+
+  static async sendPendingApprovalEmail(email: string, name: string) {
+    return this.sendTemplateEmail('Creation compte en attente approbation', email, { name });
   }
 
   static async sendTestEmail(to: string) {

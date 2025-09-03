@@ -82,7 +82,7 @@ export default function UserCard({
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-      <div className="flex items-start space-x-4">
+      <div className="flex items-center space-x-4">
         {/* Avatar */}
         <Avatar
           src={user.avatar}
@@ -110,23 +110,25 @@ export default function UserCard({
               </span>
             </div>
 
-            {/* Status Badge */}
-            <div
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
-            >
-              {user.status === 'current'
-                ? 'Active'
-                : user.status === 'pending'
-                  ? 'Pending'
-                  : user.status === 'graduated'
-                    ? 'Graduated'
-                    : user.status === 'refused'
-                      ? 'Refused'
-                      : user.status === 'suspended'
-                        ? 'Suspended'
-                        : user.status === 'deleted'
-                          ? 'Deleted'
-                          : 'Former'}
+            {/* Status Badge - Hidden on desktop, shown on mobile */}
+            <div className="flex items-center sm:hidden">
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+              >
+                {user.status === 'current'
+                  ? 'Active'
+                  : user.status === 'pending'
+                    ? 'Pending'
+                    : user.status === 'graduated'
+                      ? 'Graduated'
+                      : user.status === 'refused'
+                        ? 'Refused'
+                        : user.status === 'suspended'
+                          ? 'Suspended'
+                          : user.status === 'deleted'
+                            ? 'Deleted'
+                            : 'Former'}
+              </div>
             </div>
           </div>
 
@@ -142,7 +144,7 @@ export default function UserCard({
               <>
                 <button
                   onClick={() => onReviewRequest?.(user.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors cursor-pointer"
                 >
                   <Clock className="w-3 h-3 mr-1" />
                   Review
@@ -166,7 +168,7 @@ export default function UserCard({
                 </LangLink>
                 <button
                   onClick={() => onRestore?.(user.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors cursor-pointer"
                 >
                   Restore
                 </button>
@@ -202,13 +204,33 @@ export default function UserCard({
           </div>
         </div>
 
-        {/* Actions - Desktop: Right side */}
-        <div className="hidden sm:flex items-center space-x-2 flex-shrink-0">
+        {/* Status Badge & Actions - Desktop: Right side */}
+        <div className="hidden sm:flex items-center space-x-3 flex-shrink-0">
+          {/* Status Badge - Desktop */}
+          <div
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+          >
+            {user.status === 'current'
+              ? 'Active'
+              : user.status === 'pending'
+                ? 'Pending'
+                : user.status === 'graduated'
+                  ? 'Graduated'
+                  : user.status === 'refused'
+                    ? 'Refused'
+                    : user.status === 'suspended'
+                      ? 'Suspended'
+                      : user.status === 'deleted'
+                        ? 'Deleted'
+                        : 'Former'}
+          </div>
+
+          {/* Actions */}
           {user.status === 'pending' ? (
             <>
               <button
                 onClick={() => onReviewRequest?.(user.id)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors cursor-pointer"
               >
                 <Clock className="w-3 h-3 mr-1" />
                 Review
@@ -232,7 +254,7 @@ export default function UserCard({
               </LangLink>
               <button
                 onClick={() => onRestore?.(user.id)}
-                className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm bg-green-100 border border-green-300 text-green-800 rounded-lg hover:bg-green-200 transition-colors cursor-pointer"
               >
                 Restore
               </button>

@@ -16,12 +16,12 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
   const t = useI18n();
   const [motivationError, setMotivationError] = useState('');
   const [experienceError, setExperienceError] = useState('');
-  
+
   const validateMotivation = (value: string) => {
     if (!value.trim()) return t('validator.required');
     return '';
   };
-  
+
   const validateExperience = (value: string) => {
     if (!value.trim()) return t('validator.required');
     return '';
@@ -92,7 +92,7 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
         </p>
       </div>
 
-      <div className="flex md:flew-row flex-col md:gap-0 gap-4 justify-center md:justify-end pt-4">
+      <div className="flex md:flex-row flex-col gap-4 justify-center md:justify-end pt-4">
         <Button
           type="button"
           variant="outline"
