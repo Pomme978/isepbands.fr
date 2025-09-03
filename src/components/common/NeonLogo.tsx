@@ -281,7 +281,11 @@ const NeonLogo: React.FC<NeonLogoProps> = ({
         className={logoClassName}
         style={{
           filter: logoFilter,
+          backgroundColor: 'transparent',
+          mixBlendMode: 'normal',
         }}
+        priority={true}
+        quality={100}
       />
 
       {neon && (

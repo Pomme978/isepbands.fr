@@ -4,11 +4,27 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Save, RefreshCw, Monitor, Smartphone, Tablet, Code, X } from 'lucide-react';
 import { toast } from 'sonner';
 import Loading from '@/components/ui/Loading';
+import dynamic from 'next/dynamic';
+
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64">
+      <Loading text="Chargement de l'éditeur..." size="sm" />
+    </div>
+  ),
+});
 
 interface EmailTemplate {
   id?: number;
@@ -17,7 +33,7 @@ interface EmailTemplate {
   subject: string;
   htmlContent: string;
   cssContent?: string;
-  variables?: any;
+  variables?: Record<string, { type: string; description: string; required: boolean }>;
   templateType: 'NEWSLETTER' | 'SYSTEM' | 'TRANSACTIONAL' | 'CUSTOM';
   isActive: boolean;
   isDefault: boolean;
@@ -44,10 +60,11 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
     isDefault: false,
     ...template,
   });
-  
+
   const [viewport, setViewport] = useState<ViewportSize>('desktop');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
 
   // Variables d'exemple pour la prévisualisation
   const [sampleVariables] = useState({
@@ -61,8 +78,12 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
     unsubscribeUrl: 'https://isepbands.fr/unsubscribe',
   });
 
-  const handleInputChange = (field: keyof EmailTemplate, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof EmailTemplate, value: string | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Forcer le refresh de la preview quand le contenu HTML change
+    if (field === 'htmlContent') {
+      setPreviewKey((prev) => prev + 1);
+    }
   };
 
   const handleSave = async () => {
@@ -83,8 +104,18 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
   };
 
   const renderPreview = () => {
-    let htmlContent = formData.htmlContent;
-    
+    let htmlContent = formData.htmlContent || '';
+
+    // Si pas de contenu, afficher un message par défaut
+    if (!htmlContent.trim()) {
+      return `
+        <div style="padding: 40px; text-align: center; color: #666; font-family: Arial, sans-serif;">
+          <h3>Aperçu du template</h3>
+          <p>Commencez à écrire du HTML dans l'éditeur pour voir l'aperçu ici.</p>
+        </div>
+      `;
+    }
+
     // Remplacer les variables par les valeurs d'exemple
     Object.entries(sampleVariables).forEach(([key, value]) => {
       const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
@@ -101,7 +132,7 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
       case 'tablet':
         return { width: '768px', height: '600px' };
       default:
-        return { width: '100%', height: '600px' };
+        return { width: '1024px', height: '600px' };
     }
   };
 
@@ -113,8 +144,8 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-[95vw] h-[95vh] flex flex-col">
         {/* Header */}
         <div className="p-6 border-b flex items-center justify-between">
           <div>
@@ -122,13 +153,19 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
               {template ? 'Modifier le template' : 'Nouveau template'}
             </h2>
             <p className="text-gray-600 mt-1">
-              Créez et modifiez vos templates d'emails avec prévisualisation en temps réel
+              Créez et modifiez vos templates d&apos;emails avec prévisualisation en temps réel
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              onClick={() => setIsPreviewMode(!isPreviewMode)}
+              onClick={() => {
+                setIsPreviewMode(!isPreviewMode);
+                if (!isPreviewMode) {
+                  // Forcer le refresh quand on ouvre la preview
+                  setPreviewKey((prev) => prev + 1);
+                }
+              }}
               className="flex items-center gap-2"
             >
               <Eye className="w-4 h-4" />
@@ -153,7 +190,14 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
         {/* Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Panel - Form & Code */}
-          <div className={`${isPreviewMode ? 'w-1/2' : 'w-full'} border-r flex flex-col`}>
+          <div
+            className="flex-1 border-r flex flex-col"
+            style={{
+              width: isPreviewMode
+                ? `calc(100% - ${viewport === 'mobile' ? '420px' : viewport === 'tablet' ? '820px' : '1080px'})`
+                : '100%',
+            }}
+          >
             {/* Template Info */}
             <div className="p-4 border-b bg-gray-50">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,21 +211,34 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Type</label>
-                  <Select
-                    value={formData.templateType}
-                    onValueChange={(value) => handleInputChange('templateType', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(templateTypeLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {formData.templateType === 'SYSTEM' ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={templateTypeLabels[formData.templateType]}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                      <Badge variant="outline" className="text-xs text-gray-500">
+                        Non modifiable
+                      </Badge>
+                    </div>
+                  ) : (
+                    <Select
+                      value={formData.templateType}
+                      onValueChange={(value) => handleInputChange('templateType', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(templateTypeLabels).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-2">Sujet *</label>
@@ -205,47 +262,117 @@ export const EmailTemplateEditor = ({ template, onSave, onClose }: EmailTemplate
             {/* HTML Editor */}
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Header */}
-              <div className="border-b bg-white">
+              <div className="border-b bg-gray-900">
                 <div className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <Code className="w-4 h-4" />
-                    <span className="font-medium">Contenu HTML</span>
-                    <Badge variant="default" className="text-xs">
+                    <Code className="w-4 h-4 text-white" />
+                    <span className="font-medium text-white">Éditeur HTML</span>
+                    <Badge variant="secondary" className="text-xs bg-blue-600 text-white">
                       Tailwind CSS supporté
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
                       Variables: name, email, resetUrl, temporaryPassword, reason, unsubscribeUrl
                     </Badge>
                   </div>
                 </div>
               </div>
 
-              {/* HTML Content */}
-              <div className="flex-1 overflow-hidden">
-                <textarea
+              {/* Monaco Editor */}
+              <div className="flex-1 overflow-hidden bg-[#1e1e1e]">
+                <MonacoEditor
+                  height="100%"
+                  language="html"
                   value={formData.htmlContent}
-                  onChange={(e) => handleInputChange('htmlContent', e.target.value)}
-                  placeholder={`Contenu HTML de votre email (Tailwind CSS supporté)...
-
-Exemple avec Tailwind:
-<div class="max-w-2xl mx-auto bg-white p-6">
-  <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ name }}</h1>
-  <p class="text-gray-600 leading-relaxed">Votre contenu ici...</p>
-  <a href="{{ resetUrl }}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-    Bouton d'action
-  </a>
-</div>
-
-Variables disponibles: {{ name }}, {{ email }}, {{ resetUrl }}, {{ temporaryPassword }}, etc.`}
-                  className="w-full h-full font-mono text-sm border-0 p-4 resize-none focus:ring-0 focus:outline-none overflow-auto"
-                  style={{ 
-                    lineHeight: '1.6',
-                    tabSize: '2',
-                    fontFamily: 'Monaco, Consolas, "Lucida Console", monospace'
+                  onChange={(value) => handleInputChange('htmlContent', value || '')}
+                  theme="vs-dark"
+                  options={{
+                    fontSize: 14,
+                    lineHeight: 20,
+                    tabSize: 2,
+                    insertSpaces: true,
+                    wordWrap: 'on',
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    renderLineHighlight: 'line',
+                    contextmenu: true,
+                    selectOnLineNumbers: true,
+                    roundedSelection: false,
+                    readOnly: false,
+                    cursorStyle: 'line',
+                    automaticLayout: true,
+                    folding: true,
+                    foldingStrategy: 'indentation',
+                    showFoldingControls: 'always',
+                    unfoldOnClickAfterEndOfLine: false,
+                    bracketPairColorization: {
+                      enabled: true,
+                    },
+                    guides: {
+                      indentation: true,
+                    },
+                    padding: { top: 16, bottom: 16 },
+                    smoothScrolling: true,
+                    cursorBlinking: 'blink',
+                    renderWhitespace: 'selection',
+                    dragAndDrop: true,
                   }}
-                  spellCheck={false}
+                  onMount={(editor, monaco) => {
+                    // Configuration HTML avec suggestions pour les variables
+                    monaco.languages.setLanguageConfiguration('html', {
+                      wordPattern:
+                        /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+                    });
+
+                    // Ajouter les snippets pour les variables
+                    monaco.languages.registerCompletionItemProvider('html', {
+                      provideCompletionItems: () => {
+                        const suggestions = [
+                          {
+                            label: '{{ name }}',
+                            kind: monaco.languages.CompletionItemKind.Variable,
+                            insertText: '{{ name }}',
+                            documentation: "Nom de l'utilisateur",
+                          },
+                          {
+                            label: '{{ email }}',
+                            kind: monaco.languages.CompletionItemKind.Variable,
+                            insertText: '{{ email }}',
+                            documentation: "Email de l'utilisateur",
+                          },
+                          {
+                            label: '{{ resetUrl }}',
+                            kind: monaco.languages.CompletionItemKind.Variable,
+                            insertText: '{{ resetUrl }}',
+                            documentation: 'URL de réinitialisation',
+                          },
+                          {
+                            label: '{{ temporaryPassword }}',
+                            kind: monaco.languages.CompletionItemKind.Variable,
+                            insertText: '{{ temporaryPassword }}',
+                            documentation: 'Mot de passe temporaire',
+                          },
+                          {
+                            label: '{{ reason }}',
+                            kind: monaco.languages.CompletionItemKind.Variable,
+                            insertText: '{{ reason }}',
+                            documentation: 'Raison du rejet',
+                          },
+                          {
+                            label: '{{ unsubscribeUrl }}',
+                            kind: monaco.languages.CompletionItemKind.Variable,
+                            insertText: '{{ unsubscribeUrl }}',
+                            documentation: 'URL de désabonnement',
+                          },
+                        ];
+                        return { suggestions };
+                      },
+                    });
+
+                    // Focus sur l'éditeur
+                    editor.focus();
+                  }}
                 />
               </div>
             </div>
@@ -253,7 +380,13 @@ Variables disponibles: {{ name }}, {{ email }}, {{ resetUrl }}, {{ temporaryPass
 
           {/* Right Panel - Preview */}
           {isPreviewMode && (
-            <div className="w-1/2 flex flex-col bg-gray-100">
+            <div
+              className="flex flex-col bg-gray-100"
+              style={{
+                width: viewport === 'mobile' ? '420px' : viewport === 'tablet' ? '820px' : '1080px',
+                flexShrink: 0,
+              }}
+            >
               {/* Viewport Controls */}
               <div className="p-4 bg-white border-b flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -284,11 +417,8 @@ Variables disponibles: {{ name }}, {{ email }}, {{ resetUrl }}, {{ temporaryPass
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    // Force refresh iframe
-                    const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      iframe.src = iframe.src;
-                    }
+                    // Force refresh preview
+                    setPreviewKey((prev) => prev + 1);
                   }}
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -302,6 +432,7 @@ Variables disponibles: {{ name }}, {{ email }}, {{ resetUrl }}, {{ temporaryPass
                   style={getViewportStyles()}
                 >
                   <iframe
+                    key={previewKey}
                     id="preview-iframe"
                     className="w-full h-full border-0"
                     srcDoc={`
@@ -312,11 +443,26 @@ Variables disponibles: {{ name }}, {{ email }}, {{ resetUrl }}, {{ temporaryPass
                           <meta name="viewport" content="width=device-width, initial-scale=1">
                           <script src="https://cdn.tailwindcss.com"></script>
                           <style>
-                            body { margin: 0; padding: 16px; }
+                            body { 
+                              margin: 0; 
+                              padding: 16px; 
+                              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                              background: #f9fafb;
+                            }
+                            .email-container {
+                              max-width: 650px;
+                              margin: 0 auto;
+                              background: white;
+                              border-radius: 8px;
+                              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                              overflow: hidden;
+                            }
                           </style>
                         </head>
                         <body>
-                          ${renderPreview()}
+                          <div class="email-container">
+                            ${renderPreview()}
+                          </div>
                         </body>
                       </html>
                     `}

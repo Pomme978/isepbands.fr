@@ -60,28 +60,53 @@ export default function PendingApprovalCard({
             {items.slice(0, 5).map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-4 bg-accent/30 rounded-lg hover:bg-accent/50 transition-colors"
+                className="p-4 bg-accent/30 rounded-lg hover:bg-accent/50 transition-colors"
               >
-                <div className="flex items-center space-x-4">
-                  <Avatar src={item.avatar} name={item.name} alt={item.name} size="md" />
-                  <div>
-                    <h4 className="font-medium text-foreground">{item.name}</h4>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      {item.type === 'user' && item.email && <span>{item.email}</span>}
+                <div className="flex items-start space-x-4">
+                  <Avatar
+                    src={item.avatar}
+                    name={item.name}
+                    alt={item.name}
+                    size="md"
+                    className="flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-foreground truncate">{item.name}</h4>
+                      {/* Desktop button */}
+                      <button
+                        onClick={() => onViewDetails(item)}
+                        className="hidden sm:flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium ml-4 flex-shrink-0"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Review
+                      </button>
+                    </div>
+
+                    {/* Mobile button - Above date info */}
+                    <div className="sm:hidden mb-3">
+                      <button
+                        onClick={() => onViewDetails(item)}
+                        className="inline-flex items-center justify-center px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-xs font-medium"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Review
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0 text-sm text-muted-foreground">
+                      {item.type === 'user' && item.email && (
+                        <span className="truncate">{item.email}</span>
+                      )}
                       {item.type === 'band' && item.genre && <span>{item.genre}</span>}
-                      <span>•</span>
+                      {(item.type === 'user' && item.email) ||
+                      (item.type === 'band' && item.genre) ? (
+                        <span className="hidden sm:inline">•</span>
+                      ) : null}
                       <span>{item.submittedAt}</span>
                     </div>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => onViewDetails(item)}
-                  className="flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Review
-                </button>
               </div>
             ))}
 

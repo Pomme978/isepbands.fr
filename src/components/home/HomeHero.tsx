@@ -83,7 +83,7 @@ const HomeHero = () => {
               alt="ISEP Bands Logo"
               width={300}
               height={300}
-              className="w-52 h-52 md:w-80 md:h-80"
+              className="w-52 h-52 md:w-80 md:h-80 logo-transparent"
               neon={true}
               intensity={0.3}
             />
@@ -132,6 +132,18 @@ const HomeHero = () => {
 
       {/* Custom CSS for animations with reduced movement */}
       <style jsx>{`
+        /* Logo transparency fix for mobile */
+        :global(.logo-transparent) {
+          background: transparent !important;
+          background-color: transparent !important;
+          box-shadow: none;
+        }
+        :global(.logo-transparent img) {
+          background: transparent !important;
+          background-color: transparent !important;
+          mix-blend-mode: normal;
+        }
+
         @keyframes bounce-subtle {
           0%,
           100% {

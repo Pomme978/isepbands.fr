@@ -78,6 +78,7 @@ export default function Avatar({ src, name, size = 'xl', className = '' }: Avata
           width={size === 'xl' ? 128 : size === 'lg' ? 64 : size === 'md' ? 40 : 32}
           height={size === 'xl' ? 128 : size === 'lg' ? 64 : size === 'md' ? 40 : 32}
           className="w-full h-full object-cover"
+          style={{ imageOrientation: 'from-image' }}
           onError={() => setImageError(true)}
           onLoad={resetImageError}
         />
