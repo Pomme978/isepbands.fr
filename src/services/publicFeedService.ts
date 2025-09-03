@@ -24,7 +24,7 @@ export async function createPublicFeedItem({
   metadata = {},
 }: CreatePublicFeedOptions) {
   if (!userId) throw new Error('userId is required for public feed');
-  
+
   // Ensure only allowed types in public feed
   const allowedTypes = ['new_member', 'post', 'event', 'announcement'];
   if (!allowedTypes.includes(type)) {
@@ -44,6 +44,9 @@ export async function createPublicFeedItem({
 
 export async function getPublicFeedItems(limit = 20) {
   return prisma.publicFeed.findMany({
+    where: {
+      isArchived: false,
+    },
     orderBy: { createdAt: 'desc' },
     take: limit,
     include: {
@@ -73,7 +76,7 @@ export async function getPublicFeedItems(limit = 20) {
 
 export async function getPublicFeedById(id: string) {
   if (!id) throw new Error('id is required');
-  return prisma.publicFeed.findUnique({ 
+  return prisma.publicFeed.findUnique({
     where: { id },
     include: {
       user: {
@@ -113,7 +116,10 @@ export async function deletePublicFeedItem(id: string) {
 export async function getUserPublicFeedItems(userId: string, limit = 100) {
   if (!userId) throw new Error('userId is required');
   return prisma.publicFeed.findMany({
-    where: { userId },
+    where: {
+      userId,
+      isArchived: false,
+    },
     orderBy: { createdAt: 'desc' },
     take: limit,
   });

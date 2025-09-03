@@ -79,7 +79,8 @@ export async function GET(req: NextRequest) {
         break;
     }
 
-    const archivedPosts = await prisma.adminActivity.findMany({
+    // Get archived posts from AdminActivity
+    const archivedAdminPosts = await prisma.adminActivity.findMany({
       where: whereClause,
       orderBy,
       select: {
@@ -98,6 +99,89 @@ export async function GET(req: NextRequest) {
           },
         },
       },
+    });
+
+    // Build where clause for archived public feed posts
+    const publicFeedWhereClause: Prisma.PublicFeedWhereInput = {
+      isArchived: true,
+    };
+
+    // Apply same search filter to PublicFeed
+    if (search && search.trim()) {
+      publicFeedWhereClause.OR = [
+        { title: { contains: search } },
+        { description: { contains: search } },
+        {
+          user: {
+            OR: [{ firstName: { contains: search } }, { lastName: { contains: search } }],
+          },
+        },
+      ];
+    }
+
+    // Apply same date range filter to PublicFeed
+    if (dateRange && dateRange !== 'all') {
+      const now = new Date();
+      let startDate;
+
+      switch (dateRange) {
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case 'quarter':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case 'year':
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+      }
+
+      if (startDate) {
+        publicFeedWhereClause.archivedAt = {
+          gte: startDate,
+        };
+      }
+    }
+
+    // Get archived posts from PublicFeed
+    const archivedPublicPosts = await prisma.publicFeed.findMany({
+      where: publicFeedWhereClause,
+      orderBy,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        createdAt: true,
+        archivedAt: true,
+        archivedBy: true,
+        archiveReason: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Combine both arrays and sort by archivedAt
+    const archivedPosts = [...archivedAdminPosts, ...archivedPublicPosts];
+
+    // Sort combined results according to sortBy parameter
+    archivedPosts.sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return (a.archivedAt?.getTime() || 0) - (b.archivedAt?.getTime() || 0);
+        case 'alphabetical':
+          return a.title.localeCompare(b.title);
+        case 'newest':
+        default:
+          return (b.archivedAt?.getTime() || 0) - (a.archivedAt?.getTime() || 0);
+      }
     });
 
     // Get unique archivedBy IDs to fetch user names
