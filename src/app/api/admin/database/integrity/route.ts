@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await ensureDBIntegrity();
+    const result = await ensureDBIntegrity(authResult.user.id);
 
     // Log admin action
     try {
@@ -17,15 +17,15 @@ export async function POST(req: NextRequest) {
       await logAdminAction(
         authResult.user.id,
         'database_integrity_check',
-        'Vérification d\'intégrité BDD',
+        "Vérification d'intégrité BDD",
         `Vérification d'intégrité de la base de données exécutée${result.actions.length > 0 ? ` - ${result.actions.length} action(s) effectuée(s)` : ' - aucune action nécessaire'}`,
         null,
         {
           success: result.success,
           actionsCount: result.actions.length,
           actions: result.actions,
-          error: result.error || null
-        }
+          error: result.error || null,
+        },
       );
     } catch (err) {
       // Activity log error

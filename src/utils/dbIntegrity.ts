@@ -8,7 +8,7 @@ import { baseEmailTemplates } from '@/data/emailTemplates';
 /**
  * Check and ensure database integrity by creating missing permissions, roles, and instruments
  */
-export async function ensureDBIntegrity() {
+export async function ensureDBIntegrity(executorUserId?: string) {
   console.log('🔍 Checking database integrity...');
   const startTime = Date.now();
   const actions = [];
@@ -235,54 +235,28 @@ export async function ensureDBIntegrity() {
     console.log('📧 Ensuring email templates exist...');
 
     for (const template of baseEmailTemplates) {
-      const existing = await prisma.emailTemplate.findFirst({
-        where: { name: template.name },
-      });
+      const existingResult = await prisma.$queryRaw<
+        Array<{
+          id: number;
+          name: string;
+        }>
+      >`SELECT id, name FROM EmailTemplate WHERE name = ${template.name} LIMIT 1`;
+
+      const existing = existingResult[0] || null;
 
       stats.checked++;
 
       if (!existing) {
-        await prisma.emailTemplate.create({
-          data: {
-            name: template.name,
-            description: template.description,
-            subject: template.subject,
-            htmlContent: template.htmlContent,
-            templateType: template.templateType,
-            isDefault: template.isDefault,
-            variables: template.variables,
-            // createdById est maintenant optionnel, pas besoin de le spécifier
-          },
-        });
+        // Utiliser l'utilisateur qui exécute ou 'root' par défaut
+        const createdById = executorUserId || 'root';
+
+        await prisma.$executeRaw`
+          INSERT INTO EmailTemplate (name, description, subject, htmlContent, templateType, isDefault, variables, createdById, createdAt, updatedAt)
+          VALUES (${template.name}, ${template.description}, ${template.subject}, ${template.htmlContent}, ${template.templateType}, ${template.isDefault}, ${JSON.stringify(template.variables)}, ${createdById}, NOW(), NOW())
+        `;
         console.log(`✅ Created missing email template: ${template.name}`);
         actions.push(`Créé le template d'email manquant: ${template.name}`);
         stats.created++;
-      } else {
-        // Vérifier si le template a changé et le mettre à jour
-        const hasChanged =
-          existing.description !== template.description ||
-          existing.subject !== template.subject ||
-          existing.htmlContent !== template.htmlContent ||
-          existing.templateType !== template.templateType ||
-          existing.isDefault !== template.isDefault ||
-          JSON.stringify(existing.variables) !== JSON.stringify(template.variables);
-
-        if (hasChanged) {
-          await prisma.emailTemplate.update({
-            where: { id: existing.id },
-            data: {
-              description: template.description,
-              subject: template.subject,
-              htmlContent: template.htmlContent,
-              templateType: template.templateType,
-              isDefault: template.isDefault,
-              variables: template.variables,
-            },
-          });
-          console.log(`🔄 Updated email template: ${template.name}`);
-          actions.push(`Mis à jour le template d'email: ${template.name}`);
-          stats.created++; // On peut utiliser created pour les updates aussi
-        }
       }
     }
 
@@ -299,6 +273,134 @@ export async function ensureDBIntegrity() {
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
+}
+
+/**
+ * Check for differences between email templates in database and source files
+ */
+export async function checkEmailTemplatesDifferences(executorUserId?: string) {
+  const differences = [];
+
+  // D'abord corriger les templates avec createdById null en utilisant raw SQL
+  const defaultUserId = executorUserId || 'root';
+  await prisma.$executeRaw`UPDATE EmailTemplate SET createdById = ${defaultUserId} WHERE createdById IS NULL OR createdById = ''`;
+
+  // Utiliser raw SQL pour éviter les problèmes avec createdById null
+  for (const template of baseEmailTemplates) {
+    const existingResult = await prisma.$queryRaw<
+      Array<{
+        id: number;
+        name: string;
+        description: string | null;
+        subject: string;
+        htmlContent: string;
+        templateType: string;
+        isDefault: boolean;
+        variables: string | null;
+      }>
+    >`SELECT * FROM EmailTemplate WHERE name = ${template.name} LIMIT 1`;
+
+    const existing = existingResult[0] || null;
+
+    if (existing) {
+      const hasChanged =
+        existing.description !== template.description ||
+        existing.subject !== template.subject ||
+        existing.htmlContent !== template.htmlContent ||
+        existing.templateType !== template.templateType ||
+        existing.isDefault !== template.isDefault ||
+        existing.variables !== JSON.stringify(template.variables);
+
+      if (hasChanged) {
+        differences.push({
+          name: template.name,
+          dbVersion: {
+            description: existing.description,
+            subject: existing.subject,
+            htmlContent: existing.htmlContent,
+            templateType: existing.templateType,
+            isDefault: existing.isDefault,
+            variables: existing.variables ? JSON.parse(existing.variables) : null,
+          },
+          sourceVersion: {
+            description: template.description,
+            subject: template.subject,
+            htmlContent: template.htmlContent,
+            templateType: template.templateType,
+            isDefault: template.isDefault,
+            variables: template.variables,
+          },
+        });
+      }
+    }
+  }
+
+  return differences;
+}
+
+/**
+ * Update email templates from source files
+ */
+export async function updateEmailTemplatesFromSource(executorUserId?: string) {
+  const actions = [];
+  let updatedCount = 0;
+
+  for (const template of baseEmailTemplates) {
+    const existingResult = await prisma.$queryRaw<
+      Array<{
+        id: number;
+        name: string;
+        description: string | null;
+        subject: string;
+        htmlContent: string;
+        templateType: string;
+        isDefault: boolean;
+        variables: string | null;
+      }>
+    >`SELECT * FROM EmailTemplate WHERE name = ${template.name} LIMIT 1`;
+
+    const existing = existingResult[0] || null;
+
+    if (existing) {
+      const hasChanged =
+        existing.description !== template.description ||
+        existing.subject !== template.subject ||
+        existing.htmlContent !== template.htmlContent ||
+        existing.templateType !== template.templateType ||
+        existing.isDefault !== template.isDefault ||
+        existing.variables !== JSON.stringify(template.variables);
+
+      if (hasChanged) {
+        await prisma.$executeRaw`
+          UPDATE EmailTemplate 
+          SET description = ${template.description},
+              subject = ${template.subject},
+              htmlContent = ${template.htmlContent},
+              templateType = ${template.templateType},
+              isDefault = ${template.isDefault},
+              variables = ${JSON.stringify(template.variables)},
+              updatedAt = NOW()
+          WHERE id = ${existing.id}
+        `;
+        console.log(`🔄 Updated email template: ${template.name}`);
+        actions.push(`Mis à jour le template d'email: ${template.name}`);
+        updatedCount++;
+      }
+    } else {
+      // Créer un template manquant avec raw SQL
+      const createdById = executorUserId || 'root';
+
+      await prisma.$executeRaw`
+        INSERT INTO EmailTemplate (name, description, subject, htmlContent, templateType, isDefault, variables, createdById, createdAt, updatedAt)
+        VALUES (${template.name}, ${template.description}, ${template.subject}, ${template.htmlContent}, ${template.templateType}, ${template.isDefault}, ${JSON.stringify(template.variables)}, ${createdById}, NOW(), NOW())
+      `;
+      console.log(`✅ Created missing email template: ${template.name}`);
+      actions.push(`Créé le template d'email manquant: ${template.name}`);
+      updatedCount++;
+    }
+  }
+
+  return { success: true, actions, updatedCount };
 }
 
 /**

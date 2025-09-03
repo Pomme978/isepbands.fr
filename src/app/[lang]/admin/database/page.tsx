@@ -20,8 +20,10 @@ import {
   Clock,
   Zap,
   Shield,
+  Mail,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
+import EmailTemplatesUpdateModal from '@/components/admin/database/EmailTemplatesUpdateModal';
 
 interface IntegrityResult {
   success: boolean;
@@ -35,9 +37,32 @@ interface IntegrityResult {
   };
 }
 
+interface TemplateDifference {
+  name: string;
+  dbVersion: {
+    description: string | null;
+    subject: string;
+    htmlContent: string;
+    templateType: string;
+    isDefault: boolean;
+    variables: unknown;
+  };
+  sourceVersion: {
+    description: string;
+    subject: string;
+    htmlContent: string;
+    templateType: string;
+    isDefault: boolean;
+    variables: unknown;
+  };
+}
+
 export default function DatabaseAdminPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<IntegrityResult | null>(null);
+  const [isCheckingTemplates, setIsCheckingTemplates] = useState(false);
+  const [templateDifferences, setTemplateDifferences] = useState<TemplateDifference[]>([]);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   const runDBIntegrity = async () => {
     setIsRunning(true);
@@ -59,8 +84,8 @@ export default function DatabaseAdminPage() {
             created: 0,
             deleted: 0,
             checked: 0,
-            duration: 0
-          }
+            duration: 0,
+          },
         });
       } else {
         setResult({
@@ -68,13 +93,66 @@ export default function DatabaseAdminPage() {
           message: data.error || "Erreur lors de la vérification d'intégrité",
         });
       }
-    } catch (error) {
+    } catch {
       setResult({
         success: false,
         message: "Erreur de connexion lors de la vérification d'intégrité",
       });
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  const checkEmailTemplates = async () => {
+    setIsCheckingTemplates(true);
+    setTemplateDifferences([]);
+
+    try {
+      const response = await fetch('/api/admin/database/templates/check');
+      const data = await response.json();
+
+      if (response.ok) {
+        setTemplateDifferences(data.differences || []);
+        if (data.differences.length > 0) {
+          setShowTemplateModal(true);
+        } else {
+          setResult({
+            success: true,
+            message: 'Tous les templates sont synchronisés avec les fichiers source',
+          });
+        }
+      }
+    } catch {
+      setResult({
+        success: false,
+        message: 'Erreur lors de la vérification des templates',
+      });
+    } finally {
+      setIsCheckingTemplates(false);
+    }
+  };
+
+  const updateEmailTemplates = async () => {
+    try {
+      const response = await fetch('/api/admin/database/templates/update', {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Refresh the page or show success message
+        setResult({
+          success: true,
+          message: data.message,
+          details: data.actions || [],
+        });
+      }
+    } catch {
+      setResult({
+        success: false,
+        message: 'Erreur lors de la mise à jour des templates',
+      });
     }
   };
 
@@ -116,7 +194,12 @@ export default function DatabaseAdminPage() {
                 className="flex items-center space-x-2"
               >
                 {isRunning ? (
-                  <Loading text="Vérification en cours..." size="sm" variant="spinner" theme="white" />
+                  <Loading
+                    text="Vérification en cours..."
+                    size="sm"
+                    variant="spinner"
+                    theme="white"
+                  />
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4" />
@@ -136,13 +219,18 @@ export default function DatabaseAdminPage() {
             {result && (
               <div className="space-y-6">
                 {/* Status Header */}
-                <div className={`rounded-lg border-2 p-6 ${result.success 
-                  ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' 
-                  : 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50'
-                }`}>
+                <div
+                  className={`rounded-lg border-2 p-6 ${
+                    result.success
+                      ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50'
+                      : 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50'
+                  }`}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className={`rounded-full p-3 ${result.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                      <div
+                        className={`rounded-full p-3 ${result.success ? 'bg-green-100' : 'bg-red-100'}`}
+                      >
                         {result.success ? (
                           <CheckCircle className="w-8 h-8 text-green-600" />
                         ) : (
@@ -150,16 +238,22 @@ export default function DatabaseAdminPage() {
                         )}
                       </div>
                       <div>
-                        <h3 className={`text-xl font-semibold ${result.success ? 'text-green-800' : 'text-red-800'}`}>
-                          {result.success ? 'Vérification Terminée avec Succès' : 'Erreur lors de la Vérification'}
+                        <h3
+                          className={`text-xl font-semibold ${result.success ? 'text-green-800' : 'text-red-800'}`}
+                        >
+                          {result.success
+                            ? 'Vérification Terminée avec Succès'
+                            : 'Erreur lors de la Vérification'}
                         </h3>
-                        <p className={`text-sm ${result.success ? 'text-green-700' : 'text-red-700'}`}>
+                        <p
+                          className={`text-sm ${result.success ? 'text-green-700' : 'text-red-700'}`}
+                        >
                           {result.message}
                         </p>
                       </div>
                     </div>
-                    <Badge 
-                      variant={result.success ? 'default' : 'destructive'} 
+                    <Badge
+                      variant={result.success ? 'default' : 'destructive'}
                       className="text-sm px-3 py-1"
                     >
                       {result.success ? 'Succès' : 'Échec'}
@@ -177,7 +271,9 @@ export default function DatabaseAdminPage() {
                             <Plus className="w-5 h-5 text-green-600" />
                           </div>
                           <div>
-                            <p className="text-2xl font-bold text-green-800">{result.stats.created}</p>
+                            <p className="text-2xl font-bold text-green-800">
+                              {result.stats.created}
+                            </p>
                             <p className="text-sm text-green-600">Éléments créés</p>
                           </div>
                         </div>
@@ -191,7 +287,9 @@ export default function DatabaseAdminPage() {
                             <Trash2 className="w-5 h-5 text-red-600" />
                           </div>
                           <div>
-                            <p className="text-2xl font-bold text-red-800">{result.stats.deleted}</p>
+                            <p className="text-2xl font-bold text-red-800">
+                              {result.stats.deleted}
+                            </p>
                             <p className="text-sm text-red-600">Doublons supprimés</p>
                           </div>
                         </div>
@@ -205,7 +303,9 @@ export default function DatabaseAdminPage() {
                             <Shield className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
-                            <p className="text-2xl font-bold text-blue-800">{result.stats.checked}</p>
+                            <p className="text-2xl font-bold text-blue-800">
+                              {result.stats.checked}
+                            </p>
                             <p className="text-sm text-blue-600">Éléments vérifiés</p>
                           </div>
                         </div>
@@ -219,8 +319,10 @@ export default function DatabaseAdminPage() {
                             <Zap className="w-5 h-5 text-purple-600" />
                           </div>
                           <div>
-                            <p className="text-2xl font-bold text-purple-800">{result.stats.duration}ms</p>
-                            <p className="text-sm text-purple-600">Durée d'exécution</p>
+                            <p className="text-2xl font-bold text-purple-800">
+                              {result.stats.duration}ms
+                            </p>
+                            <p className="text-sm text-purple-600">Durée d&apos;exécution</p>
                           </div>
                         </div>
                       </CardContent>
@@ -240,23 +342,44 @@ export default function DatabaseAdminPage() {
                     <CardContent>
                       <div className="space-y-3">
                         {result.details.map((detail, index) => {
-                          const isCreation = detail.toLowerCase().includes('créé') || detail.toLowerCase().includes('ajouté');
-                          const isDeletion = detail.toLowerCase().includes('supprimé') || detail.toLowerCase().includes('doublons');
-                          const isCheck = detail.toLowerCase().includes('vérif') || detail.toLowerCase().includes('contrôl');
-                          
+                          const isCreation =
+                            detail.toLowerCase().includes('créé') ||
+                            detail.toLowerCase().includes('ajouté');
+                          const isDeletion =
+                            detail.toLowerCase().includes('supprimé') ||
+                            detail.toLowerCase().includes('doublons');
+                          const isCheck =
+                            detail.toLowerCase().includes('vérif') ||
+                            detail.toLowerCase().includes('contrôl');
+
                           return (
-                            <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
-                              <div className={`p-2 rounded-full ${
-                                isCreation ? 'bg-green-100' : 
-                                isDeletion ? 'bg-red-100' : 
-                                isCheck ? 'bg-blue-100' : 'bg-gray-100'
-                              }`}>
+                            <div
+                              key={index}
+                              className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50"
+                            >
+                              <div
+                                className={`p-2 rounded-full ${
+                                  isCreation
+                                    ? 'bg-green-100'
+                                    : isDeletion
+                                      ? 'bg-red-100'
+                                      : isCheck
+                                        ? 'bg-blue-100'
+                                        : 'bg-gray-100'
+                                }`}
+                              >
                                 {isCreation ? (
-                                  <Plus className={`w-4 h-4 ${
-                                    isCreation ? 'text-green-600' : 
-                                    isDeletion ? 'text-red-600' : 
-                                    isCheck ? 'text-blue-600' : 'text-gray-600'
-                                  }`} />
+                                  <Plus
+                                    className={`w-4 h-4 ${
+                                      isCreation
+                                        ? 'text-green-600'
+                                        : isDeletion
+                                          ? 'text-red-600'
+                                          : isCheck
+                                            ? 'text-blue-600'
+                                            : 'text-gray-600'
+                                    }`}
+                                  />
                                 ) : isDeletion ? (
                                   <Trash2 className="w-4 h-4 text-red-600" />
                                 ) : (
@@ -271,6 +394,65 @@ export default function DatabaseAdminPage() {
                     </CardContent>
                   </Card>
                 )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Email Templates Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Mail className="w-5 h-5" />
+              <span>Templates d&apos;Email</span>
+            </CardTitle>
+            <CardDescription className="text-base md:text-sm">
+              Vérifiez et synchronisez les templates d&apos;email entre la base de données et les
+              fichiers source.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Action Button */}
+            <div className="flex items-center space-x-3">
+              <Button
+                onClick={checkEmailTemplates}
+                disabled={isCheckingTemplates}
+                size="lg"
+                className="flex items-center space-x-2"
+                variant="outline"
+              >
+                {isCheckingTemplates ? (
+                  <Loading text="Vérification..." size="sm" variant="spinner" />
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4" />
+                    <span>Vérifier les Templates</span>
+                  </>
+                )}
+              </Button>
+
+              {isCheckingTemplates && (
+                <Badge variant="outline" className="animate-pulse">
+                  Vérification en cours
+                </Badge>
+              )}
+
+              {templateDifferences.length > 0 && !isCheckingTemplates && (
+                <Badge variant="secondary">
+                  {templateDifferences.length} différence(s) trouvée(s)
+                </Badge>
+              )}
+            </div>
+
+            {/* Template Status */}
+            {!isCheckingTemplates && templateDifferences.length === 0 && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-green-800 font-medium">
+                    Tous les templates sont synchronisés
+                  </span>
+                </div>
               </div>
             )}
           </CardContent>
@@ -330,6 +512,14 @@ export default function DatabaseAdminPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Email Templates Update Modal */}
+        <EmailTemplatesUpdateModal
+          isOpen={showTemplateModal}
+          onClose={() => setShowTemplateModal(false)}
+          onConfirm={updateEmailTemplates}
+          differences={templateDifferences}
+        />
       </div>
     </AdminLayout>
   );

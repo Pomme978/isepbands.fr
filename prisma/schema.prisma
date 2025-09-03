@@ -8,35 +8,32 @@ datasource db {
 }
 
 model BadgeDefinition {
-  id          Int    @id @default(autoincrement())
-  key         String @unique
-  labelFr     String
-  labelEn     String
-  description String?
-  color       String @default("#4ECDC4")
-  colorEnd    String?  // Couleur de fin pour gradient (optionnel)
-  gradientDirection String @default("to right") // Direction du gradient
-  textColor   String @default("white")
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  userBadges  Badge[]
+  id                Int      @id @default(autoincrement())
+  key               String   @unique
+  labelFr           String
+  labelEn           String
+  description       String?
+  color             String   @default("#4ECDC4")
+  colorEnd          String?
+  gradientDirection String   @default("to right")
+  textColor         String   @default("white")
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  userBadges        Badge[]
 }
 
 model Badge {
-  id               Int             @id @default(autoincrement())
-  name             String          // Kept for backward compatibility  
-  userId           String
-  badgeDefinitionId Int?           // Made optional for migration
-  assignedAt       DateTime        @default(now())
-  
-  // Relations  
-  user             User            @relation(fields: [userId], references: [id])
-  badgeDefinition  BadgeDefinition? @relation(fields: [badgeDefinitionId], references: [id])
+  id                Int              @id @default(autoincrement())
+  name              String
+  userId            String
+  badgeDefinitionId Int?
+  assignedAt        DateTime         @default(now())
+  badgeDefinition   BadgeDefinition? @relation(fields: [badgeDefinitionId], references: [id])
+  user              User             @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "Badge_userId_fkey")
+  @@index([badgeDefinitionId], map: "Badge_badgeDefinitionId_fkey")
 }
 
 model RegistrationRequest {
@@ -44,58 +41,53 @@ model RegistrationRequest {
   userId          String             @unique
   status          RegistrationStatus @default(PENDING)
   createdAt       DateTime           @default(now())
-  motivation      String?
   experience      String?
+  motivation      String?
   rejectionReason String?
   user            User               @relation(fields: [userId], references: [id])
 }
 
 model User {
   id                            String               @id @default(uuid())
-  firstName                     String               @default("Prénom")
-  lastName                      String               @default("Nom")
   promotion                     String
   birthDate                     DateTime
   biography                     String?
-  phone                         String?
   password                      String
-  requirePasswordChange         Boolean         @default(false)
   email                         String               @unique
   emailVerified                 Boolean              @default(false)
-  emailVerificationToken        String?
-  emailVerificationTokenExpires DateTime?
-  emailVerifiedAt               DateTime?
   photoUrl                      String?
   status                        UserStatus           @default(PENDING)
   isLookingForGroup             Boolean              @default(false)
-  pronouns                      String?
-  preferredGenres               String?
-  isFullAccess                  Boolean              @default(false)
-  // hasTemporaryPassword          Boolean              @default(false)
-  // mustChangePasswordOnLogin     Boolean              @default(false)
-  // firstLoginAt                  DateTime?
-  createdAt                     DateTime             @default(now())
-  updatedAt                     DateTime?            @default(now()) @updatedAt
-  
-  // Archive fields
-  isArchived                    Boolean              @default(false)
+  archiveReason                 String?
   archivedAt                    DateTime?
   archivedBy                    String?
-  archiveReason                 String?
+  createdAt                     DateTime             @default(now())
+  emailVerificationToken        String?
+  emailVerificationTokenExpires DateTime?
+  emailVerifiedAt               DateTime?
+  firstName                     String               @default("Prénom")
+  isArchived                    Boolean              @default(false)
+  isFullAccess                  Boolean              @default(false)
+  lastName                      String               @default("Nom")
+  phone                         String?
+  preferredGenres               String?
+  pronouns                      String?
+  updatedAt                     DateTime?            @default(now()) @updatedAt
+  requirePasswordChange         Boolean              @default(false)
+  adminActivities               AdminActivity[]      @relation("AdminActivityUser")
   badges                        Badge[]
+  createdEmailTemplates         EmailTemplate[]
   groupMemberships              GroupMembership[]
+  inventoryItems                Inventory[]
   ownedNews                     News[]
+  createdNewsletters            Newsletter[]
+  publicFeedItems               PublicFeed[]
   registrationRequest           RegistrationRequest?
   storageObjects                StorageObject[]
+  systemLogs                    SystemLog[]          @relation("SystemLogPerformedBy")
   instruments                   UserInstrument[]
   roles                         UserRole[]
   votes                         Vote[]
-  publicFeedItems               PublicFeed[]
-  adminActivities               AdminActivity[] @relation("AdminActivityUser")
-  systemLogs                    SystemLog[] @relation("SystemLogPerformedBy")
-  createdEmailTemplates         EmailTemplate[]
-  createdNewsletters            Newsletter[]
-  inventoryItems                Inventory[]
   wishlistItems                 WishlistItem[]
 }
 
@@ -115,9 +107,9 @@ model StorageObject {
 model Instrument {
   id                Int                     @id @default(autoincrement())
   name              String
-  nameFr            String
-  nameEn            String
   imageUrl          String?
+  nameEn            String
+  nameFr            String
   groupRequirements InstrumentRequirement[]
   users             UserInstrument[]
 }
@@ -126,8 +118,8 @@ model UserInstrument {
   userId       String
   instrumentId Int
   skillLevel   SkillLevel
-  yearsPlaying Int?
   isPrimary    Boolean    @default(false)
+  yearsPlaying Int?
   instrument   Instrument @relation(fields: [instrumentId], references: [id])
   user         User       @relation(fields: [userId], references: [id])
 
@@ -138,12 +130,12 @@ model UserInstrument {
 model Role {
   id           Int              @id @default(autoincrement())
   name         String
-  nameFrMale   String
-  nameFrFemale String
-  nameEnMale   String
-  nameEnFemale String
   weight       Int
   isCore       Boolean          @default(false)
+  nameEnFemale String
+  nameEnMale   String
+  nameFrFemale String
+  nameFrMale   String
   permissions  RolePermission[]
   users        UserRole[]
 }
@@ -151,9 +143,9 @@ model Role {
 model Permission {
   id          Int              @id @default(autoincrement())
   name        String
-  nameFr      String
-  nameEn      String
   description String?
+  nameEn      String
+  nameFr      String
   roles       RolePermission[]
 }
 
@@ -227,7 +219,7 @@ model Event {
   isVisible    Boolean      @default(true)
   isArchived   Boolean      @default(false)
   helloAssoUrl String?
-  venueId      String?      // Relation to Venue
+  venueId      String?
   venue        Venue?       @relation(fields: [venueId], references: [id])
   groups       GroupEvent[]
   setlists     Setlist[]
@@ -236,33 +228,30 @@ model Event {
 }
 
 model Venue {
-  id                  String      @id @default(uuid())
-  name                String
-  description         String?     @db.Text
-  venueType           VenueType
-  address             String
-  city                String
-  postalCode          String?
-  country             String      @default("France")
-  photoUrl            String?
-  metroLine           String?
-  accessInstructions  String?     @db.Text
-  staffNotes          String?     @db.Text
-  status              VenueStatus @default(ACTIVE)
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @default(now()) @updatedAt
-  
-  // Archive fields
-  isArchived          Boolean     @default(false)
-  archivedAt          DateTime?
-  archivedBy          String?
-  archiveReason       String?
-  
-  events              Event[]
+  id                 String      @id @default(uuid())
+  name               String
+  description        String?     @db.Text
+  venueType          VenueType
+  address            String
+  city               String
+  postalCode         String?
+  country            String      @default("France")
+  photoUrl           String?
+  metroLine          String?
+  accessInstructions String?     @db.Text
+  staffNotes         String?     @db.Text
+  status             VenueStatus @default(ACTIVE)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @default(now()) @updatedAt
+  isArchived         Boolean     @default(false)
+  archivedAt         DateTime?
+  archivedBy         String?
+  archiveReason      String?
+  events             Event[]
 
-  @@index([status], map: "Venue_status_idx")
-  @@index([venueType], map: "Venue_venueType_idx")
-  @@index([city], map: "Venue_city_idx")
+  @@index([status])
+  @@index([venueType])
+  @@index([city])
 }
 
 model GroupEvent {
@@ -325,43 +314,233 @@ model News {
   @@index([authorId], map: "News_authorId_fkey")
 }
 
-// Public feed - Only member activities visible to all users
 model PublicFeed {
-  id          String   @id @default(cuid())
-  type        String   // 'new_member', 'post', 'event', 'announcement' (NO system_announcement)
-  title       String
-  description String?  @db.Text
-  metadata    Json?    // Additional data specific to activity type
-  userId      String   // REQUIRED - no system posts in public feed
-  createdAt   DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id])
+  id            String    @id @default(cuid())
+  type          String
+  title         String
+  description   String?   @db.Text
+  metadata      String?   @db.LongText
+  userId        String
+  createdAt     DateTime  @default(now())
+  archiveReason String?
+  archivedAt    DateTime?
+  archivedBy    String?
+  isArchived    Boolean   @default(false)
+  user          User      @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "PublicFeed_userId_fkey")
-  @@index([createdAt], map: "PublicFeed_createdAt_idx")
+  @@index([createdAt])
 }
 
-// Admin activity logs - System logs, admin actions, sensitive data
 model AdminActivity {
-  id          String   @id @default(cuid())
-  type        String   // 'user_joined', 'group_created', 'event_created', 'achievement', 'custom', 'system_announcement'
-  title       String
-  description String?  @db.Text
-  metadata    Json?    // Additional data specific to activity type
-  userId      String?  // User this activity is about (can be null for system logs)
-  createdBy   String?  // Admin who created manual activity
-  createdAt   DateTime @default(now())
-  
-  // Archive fields
-  isArchived  Boolean  @default(false)
-  archivedAt  DateTime?
-  archivedBy  String?
+  id            String    @id @default(cuid())
+  type          String
+  title         String
+  description   String?   @db.Text
+  metadata      String?   @db.LongText
+  userId        String?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  isArchived    Boolean   @default(false)
+  archivedAt    DateTime?
+  archivedBy    String?
   archiveReason String?
-  
-  user        User?    @relation("AdminActivityUser", fields: [userId], references: [id])
+  user          User?     @relation("AdminActivityUser", fields: [userId], references: [id])
 
   @@index([userId], map: "AdminActivity_userId_fkey")
-  @@index([createdAt], map: "AdminActivity_createdAt_idx")
+  @@index([createdAt])
+}
+
+model MusicGenre {
+  id     String @id
+  nameFr String
+  nameEn String
+}
+
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  platform  String   @unique
+  url       String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model SystemSettings {
+  id                      Int      @id @default(1)
+  currentYear             String
+  primaryColor            String   @default("oklch(0.559 0.238 307.331)")
+  associationName         String   @default("ISEP Bands")
+  associationLegalStatus  String   @default("Association loi 1901")
+  associationAddress      String   @default("")
+  associationSiret        String?
+  associationEmail        String   @default("contact@isepbands.fr")
+  publicationDirectorName String   @default("")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @default(now()) @updatedAt
+}
+
+model SystemLog {
+  id            Int      @id @default(autoincrement())
+  action        String
+  details       String   @db.LongText
+  performedById String
+  createdAt     DateTime @default(now())
+  performedBy   User     @relation("SystemLogPerformedBy", fields: [performedById], references: [id])
+
+  @@index([performedById], map: "SystemLog_performedById_fkey")
+  @@index([createdAt])
+}
+
+model Inventory {
+  id        String         @id @default(uuid())
+  category  String
+  name      String
+  brand     String?
+  model     String?
+  state     InventoryState @default(GOOD)
+  quantity  Int            @default(1)
+  comment   String?        @db.Text
+  images    String?        @db.LongText
+  usable    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @default(now()) @updatedAt
+  createdBy String?
+  creator   User?          @relation(fields: [createdBy], references: [id])
+
+  @@index([category])
+  @@index([state])
+  @@index([usable])
+  @@index([createdBy], map: "Inventory_createdBy_fkey")
+}
+
+model NewsletterSubscriber {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  isActive       Boolean   @default(true)
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+  source         String?
+  metadata       String?   @db.LongText
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model EmailTemplate {
+  id           Int               @id @default(autoincrement())
+  name         String            @unique
+  description  String?
+  subject      String
+  htmlContent  String            @db.LongText
+  cssContent   String?           @db.Text
+  variables    String?           @db.LongText
+  templateType EmailTemplateType
+  isActive     Boolean           @default(true)
+  isDefault    Boolean           @default(false)
+  createdById  String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @default(now()) @updatedAt
+  emailLogs    EmailLog[]
+  createdBy    User?             @relation(fields: [createdById], references: [id])
+  newsletters  Newsletter[]
+
+  @@index([createdById], map: "EmailTemplate_createdById_fkey")
+  @@index([templateType])
+}
+
+model Newsletter {
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String?
+  templateId     Int
+  subject        String
+  variables      String?          @db.LongText
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  status         NewsletterStatus @default(DRAFT)
+  recipientCount Int              @default(0)
+  openCount      Int              @default(0)
+  clickCount     Int              @default(0)
+  createdById    String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  emailLogs      EmailLog[]
+  createdBy      User             @relation(fields: [createdById], references: [id])
+  template       EmailTemplate    @relation(fields: [templateId], references: [id])
+
+  @@index([templateId], map: "Newsletter_templateId_fkey")
+  @@index([createdById], map: "Newsletter_createdById_fkey")
+  @@index([status])
+  @@index([sentAt])
+}
+
+model EmailLog {
+  id           String         @id @default(cuid())
+  templateId   Int?
+  newsletterId Int?
+  recipient    String
+  subject      String
+  emailType    EmailLogType
+  status       EmailLogStatus @default(PENDING)
+  errorMessage String?        @db.Text
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  metadata     String?        @db.LongText
+  createdAt    DateTime       @default(now())
+  newsletter   Newsletter?    @relation(fields: [newsletterId], references: [id])
+  template     EmailTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([templateId], map: "EmailLog_templateId_fkey")
+  @@index([newsletterId], map: "EmailLog_newsletterId_fkey")
+  @@index([recipient])
+  @@index([status])
+  @@index([emailType])
+  @@index([createdAt])
+}
+
+model WishlistItem {
+  id             String           @id @default(uuid())
+  name           String
+  category       String
+  brand          String?
+  model          String?
+  estimatedPrice Float?
+  priority       WishlistPriority @default(MEDIUM)
+  status         WishlistStatus   @default(WANTED)
+  productUrl     String?
+  description    String?          @db.Text
+  imageUrl       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  creatorId      String
+  creator        User             @relation(fields: [creatorId], references: [id])
+
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([creatorId], map: "WishlistItem_creatorId_fkey")
+}
+
+model LegalMentions {
+  id              String   @id @default(uuid())
+  presidentName   String
+  contactEmail    String   @default("contact@isepbands.fr")
+  technicalEmail  String   @default("tech@isepbands.fr")
+  hostingProvider String?
+  hostingAddress  String?
+  hostingPhone    String?
+  hostingEmail    String?
+  domainProvider  String?
+  domainAddress   String?
+  domainPhone     String?
+  developmentTeam String?
+  designTeam      String?
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("legal_mentions")
 }
 
 enum UserStatus {
@@ -418,169 +597,11 @@ enum VenueStatus {
   AVOID
 }
 
-model MusicGenre {
-  id     String @id
-  nameFr String
-  nameEn String
-}
-
-model SocialLink {
-  id        Int      @id @default(autoincrement())
-  platform  String   // 'facebook', 'instagram', 'youtube', 'twitter', 'tiktok', 'discord', etc.
-  url       String
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  @@unique([platform])
-}
-
-model SystemSettings {
-  id                        Int      @id @default(1)
-  currentYear              String
-  primaryColor             String   @default("oklch(0.559 0.238 307.331)")
-  associationName          String   @default("ISEP Bands")
-  associationLegalStatus   String   @default("Association loi 1901")
-  associationAddress       String   @default("")
-  associationSiret         String?
-  associationEmail         String   @default("contact@isepbands.fr")
-  publicationDirectorName  String   @default("")
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @default(now()) @updatedAt
-}
-
-model SystemLog {
-  id            Int      @id @default(autoincrement())
-  action        String   // 'YEAR_MIGRATION', 'SETTINGS_UPDATE', etc.
-  details       Json     // Additional data about the action
-  performedById String
-  createdAt     DateTime @default(now())
-  
-  performedBy   User     @relation(fields: [performedById], references: [id], name: "SystemLogPerformedBy")
-
-  @@index([performedById], map: "SystemLog_performedById_fkey")
-  @@index([createdAt], map: "SystemLog_createdAt_idx")
-}
-
-model Inventory {
-  id         String        @id @default(uuid())
-  category   String        // Instruments, Matériel Audio, Accessoires, etc.
-  name       String        // Nom de l'item
-  brand      String?       // Marque
-  model      String?       // Modèle
-  state      InventoryState @default(GOOD)
-  quantity   Int           @default(1)
-  comment    String?       @db.Text
-  images     Json?         // Array of image URLs
-  usable     Boolean       @default(true) // Indique si l'item est actuellement utilisable
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @default(now()) @updatedAt
-  createdBy  String?
-  
-  creator   User?         @relation(fields: [createdBy], references: [id])
-  
-  @@index([category], map: "Inventory_category_idx")
-  @@index([state], map: "Inventory_state_idx")
-  @@index([usable], map: "Inventory_usable_idx")
-  @@index([createdBy], map: "Inventory_createdBy_fkey")
-}
-
-// Newsletter and Email System
-model NewsletterSubscriber {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  isActive      Boolean  @default(true)
-  subscribedAt  DateTime @default(now())
-  unsubscribedAt DateTime?
-  source        String?  // Where they subscribed from: 'footer', 'register', 'manual'
-  metadata      Json?    // Additional subscriber data
-  
-  @@index([email], map: "NewsletterSubscriber_email_idx")
-  @@index([isActive], map: "NewsletterSubscriber_isActive_idx")
-}
-
-model EmailTemplate {
-  id            Int                @id @default(autoincrement())
-  name          String             @unique
-  description   String?
-  subject       String
-  htmlContent   String             @db.LongText
-  cssContent    String?            @db.Text
-  variables     Json?              // Template variables structure
-  templateType  EmailTemplateType
-  isActive      Boolean            @default(true)
-  isDefault     Boolean            @default(false) // For system emails like password reset
-  createdById   String?            // Optional for system templates
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @default(now()) @updatedAt
-  
-  createdBy     User?              @relation(fields: [createdById], references: [id])
-  newsletters   Newsletter[]
-  emailLogs     EmailLog[]
-  
-  @@index([createdById], map: "EmailTemplate_createdById_fkey")
-  @@index([templateType], map: "EmailTemplate_templateType_idx")
-}
-
-model Newsletter {
-  id             Int            @id @default(autoincrement())
-  title          String
-  description    String?
-  templateId     Int
-  subject        String
-  variables      Json?          // Variables to replace in template
-  scheduledAt    DateTime?      // For scheduled sending
-  sentAt         DateTime?
-  status         NewsletterStatus @default(DRAFT)
-  recipientCount Int            @default(0)
-  openCount      Int            @default(0)
-  clickCount     Int            @default(0)
-  createdById    String
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @default(now()) @updatedAt
-  
-  template       EmailTemplate  @relation(fields: [templateId], references: [id])
-  createdBy      User          @relation(fields: [createdById], references: [id])
-  emailLogs      EmailLog[]
-  
-  @@index([templateId], map: "Newsletter_templateId_fkey")
-  @@index([createdById], map: "Newsletter_createdById_fkey")
-  @@index([status], map: "Newsletter_status_idx")
-  @@index([sentAt], map: "Newsletter_sentAt_idx")
-}
-
-model EmailLog {
-  id           String           @id @default(cuid())
-  templateId   Int?
-  newsletterId Int?
-  recipient    String
-  subject      String
-  emailType    EmailLogType
-  status       EmailLogStatus   @default(PENDING)
-  errorMessage String?          @db.Text
-  sentAt       DateTime?
-  openedAt     DateTime?
-  clickedAt    DateTime?
-  metadata     Json?            // Additional tracking data
-  createdAt    DateTime         @default(now())
-  
-  template     EmailTemplate?   @relation(fields: [templateId], references: [id])
-  newsletter   Newsletter?      @relation(fields: [newsletterId], references: [id])
-  
-  @@index([templateId], map: "EmailLog_templateId_fkey")
-  @@index([newsletterId], map: "EmailLog_newsletterId_fkey")
-  @@index([recipient], map: "EmailLog_recipient_idx")
-  @@index([status], map: "EmailLog_status_idx")
-  @@index([emailType], map: "EmailLog_emailType_idx")
-  @@index([createdAt], map: "EmailLog_createdAt_idx")
-}
-
 enum EmailTemplateType {
-  NEWSLETTER      // For marketing newsletters
-  SYSTEM          // For system emails (password reset, welcome, etc.)
-  TRANSACTIONAL   // For transactional emails (confirmations, etc.)
-  CUSTOM          // For custom one-off emails
+  NEWSLETTER
+  SYSTEM
+  TRANSACTIONAL
+  CUSTOM
 }
 
 enum NewsletterStatus {
@@ -622,30 +643,6 @@ enum InventoryState {
   OUT_OF_SERVICE
 }
 
-model WishlistItem {
-  id             String          @id @default(uuid())
-  name           String          // Nom du produit souhaité
-  category       String          // Catégorie (même que Inventory)
-  brand          String?         // Marque
-  model          String?         // Modèle
-  estimatedPrice Float?          // Prix estimé
-  priority       WishlistPriority @default(MEDIUM)
-  status         WishlistStatus   @default(WANTED)
-  productUrl     String?         // Lien vers le produit
-  description    String?         @db.Text // Pourquoi ce produit est souhaité
-  imageUrl       String?         // URL de l'image du produit
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @default(now()) @updatedAt
-  creatorId      String
-  
-  creator        User            @relation(fields: [creatorId], references: [id])
-  
-  @@index([category], map: "WishlistItem_category_idx")
-  @@index([priority], map: "WishlistItem_priority_idx")
-  @@index([status], map: "WishlistItem_status_idx")
-  @@index([creatorId], map: "WishlistItem_creatorId_fkey")
-}
-
 enum WishlistPriority {
   LOW
   MEDIUM
@@ -654,27 +651,8 @@ enum WishlistPriority {
 }
 
 enum WishlistStatus {
-  WANTED      // Souhaité
-  ORDERED     // Commandé
-  PURCHASED   // Acheté
-  CANCELLED   // Annulé
-}
-
-model LegalMentions {
-  id                  String   @id @default(uuid())
-  presidentName       String   // Nom du président
-  contactEmail        String   @default("contact@isepbands.fr")
-  technicalEmail      String   @default("tech@isepbands.fr")
-  hostingProvider     String?  // Nom de l'hébergeur
-  hostingAddress      String?  // Adresse de l'hébergeur
-  hostingPhone        String?  // Téléphone de l'hébergeur
-  hostingEmail        String?  // Email de l'hébergeur
-  domainProvider      String?  // Nom du registrar
-  domainAddress       String?  // Adresse du registrar
-  domainPhone         String?  // Téléphone du registrar
-  developmentTeam     String?  // Équipe de développement
-  designTeam          String?  // Équipe de design
-  updatedAt           DateTime @default(now()) @updatedAt
-  
-  @@map("legal_mentions")
+  WANTED
+  ORDERED
+  PURCHASED
+  CANCELLED
 }
