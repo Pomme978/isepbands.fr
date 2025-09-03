@@ -132,7 +132,7 @@ export default function UserCard({
                               : 'Former'}
                 </div>
                 {user.status === 'current' && !user.emailVerified && (
-                  <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                  <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 flex-shrink-0 text-center">
                     Email non vérifié
                   </div>
                 )}
