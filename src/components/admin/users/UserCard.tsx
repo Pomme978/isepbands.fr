@@ -82,7 +82,7 @@ export default function UserCard({
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-      <div className="flex items-start space-x-4">
+      <div className="flex items-center space-x-4">
         {/* Avatar */}
         <Avatar
           src={user.avatar}
@@ -110,23 +110,25 @@ export default function UserCard({
               </span>
             </div>
 
-            {/* Status Badge */}
-            <div
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
-            >
-              {user.status === 'current'
-                ? 'Active'
-                : user.status === 'pending'
-                  ? 'Pending'
-                  : user.status === 'graduated'
-                    ? 'Graduated'
-                    : user.status === 'refused'
-                      ? 'Refused'
-                      : user.status === 'suspended'
-                        ? 'Suspended'
-                        : user.status === 'deleted'
-                          ? 'Deleted'
-                          : 'Former'}
+            {/* Status Badge - Hidden on desktop, shown on mobile */}
+            <div className="flex items-center sm:hidden">
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+              >
+                {user.status === 'current'
+                  ? 'Active'
+                  : user.status === 'pending'
+                    ? 'Pending'
+                    : user.status === 'graduated'
+                      ? 'Graduated'
+                      : user.status === 'refused'
+                        ? 'Refused'
+                        : user.status === 'suspended'
+                          ? 'Suspended'
+                          : user.status === 'deleted'
+                            ? 'Deleted'
+                            : 'Former'}
+              </div>
             </div>
           </div>
 
@@ -202,8 +204,28 @@ export default function UserCard({
           </div>
         </div>
 
-        {/* Actions - Desktop: Right side */}
-        <div className="hidden sm:flex items-center space-x-2 flex-shrink-0">
+        {/* Status Badge & Actions - Desktop: Right side */}
+        <div className="hidden sm:flex items-center space-x-3 flex-shrink-0">
+          {/* Status Badge - Desktop */}
+          <div
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+          >
+            {user.status === 'current'
+              ? 'Active'
+              : user.status === 'pending'
+                ? 'Pending'
+                : user.status === 'graduated'
+                  ? 'Graduated'
+                  : user.status === 'refused'
+                    ? 'Refused'
+                    : user.status === 'suspended'
+                      ? 'Suspended'
+                      : user.status === 'deleted'
+                        ? 'Deleted'
+                        : 'Former'}
+          </div>
+
+          {/* Actions */}
           {user.status === 'pending' ? (
             <>
               <button

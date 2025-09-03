@@ -143,7 +143,7 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
         </p>
       </div>
 
-      <div className="flex justify-center md:gap-0 gap-4 md:flew-row flex-col md:justify-end pt-4">
+      <div className="flex md:flex-row flex-col gap-4 justify-center md:justify-end pt-4">
         <Button
           type="button"
           variant="outline"

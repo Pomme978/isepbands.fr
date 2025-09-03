@@ -247,8 +247,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         // Only clean up if we're explicitly removing (null/'') OR changing to a different URL
         if (
           existingUser.photoUrl &&
-          ((validatedData.photoUrl === null || validatedData.photoUrl === '') ||
-           (validatedData.photoUrl && validatedData.photoUrl !== existingUser.photoUrl))
+          (validatedData.photoUrl === null ||
+            validatedData.photoUrl === '' ||
+            (validatedData.photoUrl && validatedData.photoUrl !== existingUser.photoUrl))
         ) {
           try {
             // Find the storage object for the old photo
@@ -331,7 +332,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             },
             [],
           );
-
 
           await tx.userInstrument.createMany({
             data: uniqueInstruments.map((inst) => ({
@@ -573,26 +573,41 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         updatedFields: Object.keys(validatedData),
         userEmail: transformedUser.email,
         previousData: {},
-        newData: {}
+        newData: {},
       };
 
       // Track specific changes
-      if (validatedData.firstName !== undefined && validatedData.firstName !== existingUser.firstName) {
+      if (
+        validatedData.firstName !== undefined &&
+        validatedData.firstName !== existingUser.firstName
+      ) {
         changes.push(`Prénom: ${existingUser.firstName} → ${validatedData.firstName}`);
-        metadata.previousData = { ...metadata.previousData as object, firstName: existingUser.firstName };
-        metadata.newData = { ...metadata.newData as object, firstName: validatedData.firstName };
+        metadata.previousData = {
+          ...(metadata.previousData as object),
+          firstName: existingUser.firstName,
+        };
+        metadata.newData = { ...(metadata.newData as object), firstName: validatedData.firstName };
       }
-      if (validatedData.lastName !== undefined && validatedData.lastName !== existingUser.lastName) {
+      if (
+        validatedData.lastName !== undefined &&
+        validatedData.lastName !== existingUser.lastName
+      ) {
         changes.push(`Nom: ${existingUser.lastName} → ${validatedData.lastName}`);
-        metadata.previousData = { ...metadata.previousData as object, lastName: existingUser.lastName };
-        metadata.newData = { ...metadata.newData as object, lastName: validatedData.lastName };
+        metadata.previousData = {
+          ...(metadata.previousData as object),
+          lastName: existingUser.lastName,
+        };
+        metadata.newData = { ...(metadata.newData as object), lastName: validatedData.lastName };
       }
       if (validatedData.email !== undefined && validatedData.email !== existingUser.email) {
         changes.push(`Email: ${existingUser.email} → ${validatedData.email}`);
-        metadata.previousData = { ...metadata.previousData as object, email: existingUser.email };
-        metadata.newData = { ...metadata.newData as object, email: validatedData.email };
+        metadata.previousData = { ...(metadata.previousData as object), email: existingUser.email };
+        metadata.newData = { ...(metadata.newData as object), email: validatedData.email };
       }
-      if (validatedData.photoUrl !== undefined && validatedData.photoUrl !== existingUser.photoUrl) {
+      if (
+        validatedData.photoUrl !== undefined &&
+        validatedData.photoUrl !== existingUser.photoUrl
+      ) {
         const oldPhoto = existingUser.photoUrl ? 'Photo existante' : 'Aucune photo';
         const newPhoto = validatedData.photoUrl ? 'Nouvelle photo' : 'Photo supprimée';
         changes.push(`Photo de profil: ${oldPhoto} → ${newPhoto}`);
@@ -601,13 +616,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
       if (validatedData.status !== undefined && validatedData.status !== existingUser.status) {
         const statusLabels: Record<string, string> = {
-          'PENDING': 'En attente',
-          'CURRENT': 'Actuel',
-          'DELETED': 'Archivé',
-          'REFUSED': 'Refusé',
-          'FORMER': 'Ancien',
-          'GRADUATED': 'Diplômé',
-          'SUSPENDED': 'Suspendu',
+          PENDING: 'En attente',
+          CURRENT: 'Actuel',
+          DELETED: 'Archivé',
+          REFUSED: 'Refusé',
+          FORMER: 'Ancien',
+          GRADUATED: 'Diplômé',
+          SUSPENDED: 'Suspendu',
         };
         const oldStatus = statusLabels[existingUser.status] || existingUser.status;
         const newStatus = statusLabels[validatedData.status] || validatedData.status;
@@ -615,10 +630,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         metadata.previousStatus = existingUser.status;
         metadata.newStatus = validatedData.status;
       }
-      if (validatedData.promotion !== undefined && validatedData.promotion !== existingUser.promotion) {
-        changes.push(`Promotion: ${existingUser.promotion || 'Aucune'} → ${validatedData.promotion || 'Aucune'}`);
-        metadata.previousData = { ...metadata.previousData as object, promotion: existingUser.promotion };
-        metadata.newData = { ...metadata.newData as object, promotion: validatedData.promotion };
+      if (
+        validatedData.promotion !== undefined &&
+        validatedData.promotion !== existingUser.promotion
+      ) {
+        changes.push(
+          `Promotion: ${existingUser.promotion || 'Aucune'} → ${validatedData.promotion || 'Aucune'}`,
+        );
+        metadata.previousData = {
+          ...(metadata.previousData as object),
+          promotion: existingUser.promotion,
+        };
+        metadata.newData = { ...(metadata.newData as object), promotion: validatedData.promotion };
       }
 
       const changeDescription = changes.length > 0 ? `\n\n${changes.join('\n')}` : '';
@@ -629,7 +652,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         'Utilisateur modifié',
         `**${transformedUser.firstName} ${transformedUser.lastName}** (${transformedUser.email}) a été modifié${changeDescription}`,
         String(transformedUser.id),
-        metadata
+        metadata,
       );
     } catch {
       // ignore logger errors
@@ -689,6 +712,31 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       select: { id: true, key: true },
     });
 
+    // Logger la suppression d'utilisateur AVANT de supprimer
+    try {
+      console.log('🔍 Attempting to log user deletion for:', existingUser.email);
+      const { logAdminAction } = await import('@/services/activityLogService');
+      console.log('📝 logAdminAction imported successfully');
+
+      await logAdminAction(
+        authResult.user.id,
+        'user_deleted',
+        'Utilisateur supprimé',
+        `**${existingUser.firstName} ${existingUser.lastName}** (${existingUser.email}) a été supprimé définitivement`,
+        userId,
+        {
+          userEmail: existingUser.email,
+          deletedAt: new Date().toISOString(),
+          deletedByAdmin: authResult.user.id,
+        },
+      );
+      console.log('✅ User deletion logged successfully');
+    } catch (err) {
+      // Log error but don't fail the deletion
+      console.error('❌ Failed to log user deletion:', err);
+      console.error('Stack trace:', err instanceof Error ? err.stack : 'No stack trace');
+    }
+
     // Delete related data in multiple smaller transactions to avoid timeout
     await prisma.userInstrument.deleteMany({ where: { userId } });
     await prisma.userRole.deleteMany({ where: { userId } });
@@ -698,28 +746,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await prisma.vote.deleteMany({ where: { userId } });
     await prisma.news.deleteMany({ where: { authorId: userId } });
     await prisma.storageObject.deleteMany({ where: { userId } });
-    
+
     // Finally delete the user
     await prisma.user.delete({ where: { id: userId } });
-
-    // Logger la suppression d'utilisateur
-    try {
-      const { logAdminAction } = await import('@/services/activityLogService');
-      await logAdminAction(
-        authResult.user.id,
-        'user_deleted',
-        'Utilisateur supprimé',
-        `**${existingUser.firstName} ${existingUser.lastName}** (${existingUser.email}) a été supprimé définitivement`,
-        userId,
-        {
-          userEmail: existingUser.email,
-          deletedAt: new Date().toISOString()
-        }
-      );
-    } catch (err) {
-      // Log error but don't fail the deletion
-      console.warn('Failed to log user deletion:', err);
-    }
 
     // Auto-unsubscribe from newsletter when user is deleted
     await autoUnsubscribeUser(existingUser.email);

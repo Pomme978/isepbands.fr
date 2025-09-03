@@ -150,7 +150,7 @@ export default function Step2AdditionalInfo({
         </p>
       </div>
 
-      <div className="flex md:flew-row flex-col md:gap-0 gap-4 justify-center md:justify-end pt-4">
+      <div className="flex md:flex-row flex-col gap-4 justify-center md:justify-end pt-4">
         <Button
           type="button"
           variant="outline"
