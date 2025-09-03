@@ -76,7 +76,7 @@ const ADMIN_SECTIONS = [
     items: [
       { name: 'Settings', href: '/admin/settings', icon: Settings },
       { name: 'Database', href: '/admin/database', icon: Database },
-      { name: 'Archives', href: '/admin/archives', icon: Archive },
+      { name: 'Archives', href: '/admin/archive', icon: Archive },
     ],
   },
 ];

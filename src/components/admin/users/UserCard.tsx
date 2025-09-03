@@ -81,33 +81,119 @@ export default function UserCard({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-      <div className="flex items-center space-x-4 flex-1">
+    <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+      <div className="flex items-start space-x-4">
         {/* Avatar */}
         <Avatar
           src={user.avatar}
           alt={`${user.firstName} ${user.lastName}`}
           name={`${user.firstName} ${user.lastName}`}
           size="md"
+          className="flex-shrink-0"
         />
 
         {/* User Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-3 mb-1">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">
-              {user.firstName} {user.lastName}
-              {currentUserId === user.id && (
-                <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
-              )}
-            </h3>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                {user.firstName} {user.lastName}
+                {currentUserId === user.id && (
+                  <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
+                )}
+              </h3>
+              <span className="text-sm font-medium text-gray-600 hidden sm:inline">
+                {user.promotion}
+              </span>
+              <span className={`text-sm font-medium ${getRoleColor(user.role)} hidden sm:inline`}>
+                {user.role}
+              </span>
+            </div>
+
+            {/* Status Badge */}
+            <div
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+            >
+              {user.status === 'current'
+                ? 'Active'
+                : user.status === 'pending'
+                  ? 'Pending'
+                  : user.status === 'graduated'
+                    ? 'Graduated'
+                    : user.status === 'refused'
+                      ? 'Refused'
+                      : user.status === 'suspended'
+                        ? 'Suspended'
+                        : user.status === 'deleted'
+                          ? 'Deleted'
+                          : 'Former'}
+            </div>
+          </div>
+
+          {/* Mobile: Show promotion and role */}
+          <div className="flex items-center space-x-3 mb-2 sm:hidden">
             <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
             <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>{user.role}</span>
           </div>
 
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
+          {/* Actions - Mobile: Above email/date */}
+          <div className="flex flex-wrap items-center gap-2 mb-2 sm:hidden">
+            {user.status === 'pending' ? (
+              <>
+                <button
+                  onClick={() => onReviewRequest?.(user.id)}
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                >
+                  <Clock className="w-3 h-3 mr-1" />
+                  Review
+                </button>
+                <LangLink
+                  href={`/admin/users/${user.id}`}
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Edit
+                </LangLink>
+              </>
+            ) : user.status === 'refused' || user.status === 'suspended' ? (
+              <>
+                <LangLink
+                  href={`/admin/users/${user.id}`}
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Edit
+                </LangLink>
+                <button
+                  onClick={() => onRestore?.(user.id)}
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+                >
+                  Restore
+                </button>
+              </>
+            ) : (
+              <>
+                <LangLink
+                  href={`/admin/users/${user.id}`}
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Edit
+                </LangLink>
+                <ViewProfileButton
+                  userId={user.id}
+                  variant="button"
+                  className="px-3 py-1.5 text-xs"
+                />
+              </>
+            )}
+          </div>
+
+          {/* Contact Info */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-gray-500">
             <span className="flex items-center">
               <Mail className="w-3 h-3 mr-1" />
-              {user.email}
+              <span className="truncate">{user.email}</span>
             </span>
             <span className="flex items-center">
               <Calendar className="w-3 h-3 mr-1" />
@@ -116,73 +202,54 @@ export default function UserCard({
           </div>
         </div>
 
-        {/* Status Badge */}
-        <div
-          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}
-        >
-          {user.status === 'current'
-            ? 'Active'
-            : user.status === 'pending'
-              ? 'Pending'
-              : user.status === 'graduated'
-                ? 'Graduated'
-                : user.status === 'refused'
-                  ? 'Refused'
-                  : user.status === 'suspended'
-                    ? 'Suspended'
-                    : user.status === 'deleted'
-                      ? 'Deleted'
-                      : 'Former'}
+        {/* Actions - Desktop: Right side */}
+        <div className="hidden sm:flex items-center space-x-2 flex-shrink-0">
+          {user.status === 'pending' ? (
+            <>
+              <button
+                onClick={() => onReviewRequest?.(user.id)}
+                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
+              >
+                <Clock className="w-3 h-3 mr-1" />
+                Review
+              </button>
+              <LangLink
+                href={`/admin/users/${user.id}`}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Edit className="w-3 h-3 mr-1" />
+                Edit
+              </LangLink>
+            </>
+          ) : user.status === 'refused' || user.status === 'suspended' ? (
+            <>
+              <LangLink
+                href={`/admin/users/${user.id}`}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Edit className="w-3 h-3 mr-1" />
+                Edit
+              </LangLink>
+              <button
+                onClick={() => onRestore?.(user.id)}
+                className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+              >
+                Restore
+              </button>
+            </>
+          ) : (
+            <>
+              <LangLink
+                href={`/admin/users/${user.id}`}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Edit className="w-3 h-3 mr-1" />
+                Edit
+              </LangLink>
+              <ViewProfileButton userId={user.id} variant="button" className="px-3 py-1 text-sm" />
+            </>
+          )}
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center space-x-2 ml-4">
-        {user.status === 'pending' ? (
-          <>
-            <button
-              onClick={() => onReviewRequest?.(user.id)}
-              className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
-            >
-              <Clock className="w-3 h-3 mr-1" />
-              Review
-            </button>
-            <LangLink
-              href={`/admin/users/${user.id}`}
-              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Edit className="w-3 h-3 mr-1" />
-              Edit
-            </LangLink>
-          </>
-        ) : user.status === 'refused' || user.status === 'suspended' ? (
-          <>
-            <LangLink
-              href={`/admin/users/${user.id}`}
-              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Edit className="w-3 h-3 mr-1" />
-              Edit
-            </LangLink>
-            <button
-              onClick={() => onRestore?.(user.id)}
-              className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
-            >
-              Restore
-            </button>
-          </>
-        ) : (
-          <>
-            <LangLink
-              href={`/admin/users/${user.id}`}
-              className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Edit className="w-3 h-3 mr-1" />
-              Edit
-            </LangLink>
-            <ViewProfileButton userId={user.id} variant="button" className="px-3 py-1 text-sm" />
-          </>
-        )}
       </div>
     </div>
   );
