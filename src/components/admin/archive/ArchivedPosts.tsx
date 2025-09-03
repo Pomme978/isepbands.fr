@@ -102,6 +102,7 @@ export default function ArchivedPosts({ filters }: ArchivedPostsProps) {
       case 'achievement':
         return 'Achievement';
       case 'custom':
+      case 'post':
         return 'Publication';
       default:
         return type;

@@ -52,7 +52,9 @@ export default function AdminClubFeedPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingActivity, setEditingActivity] = useState<ActivityItem | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ id: string; isFullAccess?: boolean } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; isFullAccess?: boolean } | null>(
+    null,
+  );
   const [archiveModal, setArchiveModal] = useState<{
     isOpen: boolean;
     activityId: string;
@@ -363,7 +365,9 @@ export default function AdminClubFeedPage() {
         body: JSON.stringify({ reason: reason || 'Archivé par un administrateur' }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         // Remove from current list
         setActivities(activities.filter((a) => a.id !== archiveModal.activityId));
         setDisplayActivities(displayActivities.filter((a) => a.id !== archiveModal.activityId));
@@ -372,14 +376,22 @@ export default function AdminClubFeedPage() {
         // Show success message
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
-        
+
         // Close modal
+        closeArchiveModal();
+      } else {
+        // Handle API error response
+        const errorMessage = data.error || "Erreur lors de l'archivage";
+        console.error('API Error:', errorMessage);
+        setSaveError(errorMessage);
+        setTimeout(() => setSaveError(null), 5000);
         closeArchiveModal();
       }
     } catch (error) {
-      console.error('Error archiving activity:', error);
-      setSaveError("Erreur lors de l'archivage");
+      console.error('Network error archiving activity:', error);
+      setSaveError("Erreur réseau lors de l'archivage");
       setTimeout(() => setSaveError(null), 5000);
+      closeArchiveModal();
     }
   };
 
@@ -587,14 +599,13 @@ export default function AdminClubFeedPage() {
           </CardContent>
         </Card>
 
-
         {/* Archive Confirmation Modal */}
         <ArchiveConfirmModal
           isOpen={archiveModal.isOpen}
           onClose={closeArchiveModal}
           onConfirm={confirmArchiveActivity}
           title="Archiver la publication"
-          description="Cette publication sera déplacée vers les archives et ne sera plus visible sur la page d'accueil ni dans le feed du club."
+          description="Cette publication sera déplacée vers les archives et ne sera plus visible sur la page d'accueil ni dans le feed du club. Elle pourra être restaurée depuis la page Archives."
           itemName={archiveModal.activityTitle}
         />
       </div>

@@ -18,16 +18,44 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { id: postId } = await params;
 
-    // Archive the admin activity
-    await prisma.adminActivity.update({
-      where: { id: postId },
-      data: {
-        isArchived: true,
-        archivedAt: new Date(),
-        archivedBy: authResult.user.id,
-        archiveReason: reason,
-      },
-    });
+    // First try to archive from adminActivity table
+    let updated = false;
+    try {
+      await prisma.adminActivity.update({
+        where: { id: postId },
+        data: {
+          isArchived: true,
+          archivedAt: new Date(),
+          archivedBy: authResult.user.id,
+          archiveReason: reason,
+        },
+      });
+      updated = true;
+    } catch (adminActivityError) {
+      console.log('Not found in adminActivity table, trying publicFeed...');
+    }
+
+    // If not found in adminActivity, try publicFeed table
+    if (!updated) {
+      try {
+        await prisma.publicFeed.update({
+          where: { id: postId },
+          data: {
+            isArchived: true,
+            archivedAt: new Date(),
+            archivedBy: authResult.user.id,
+            archiveReason: reason,
+          },
+        });
+        updated = true;
+      } catch (publicFeedError) {
+        console.log('Not found in publicFeed table either');
+      }
+    }
+
+    if (!updated) {
+      return NextResponse.json({ success: false, error: 'Post non trouvé' }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -49,16 +77,44 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { id: postId } = await params;
 
-    // Unarchive the admin activity
-    await prisma.adminActivity.update({
-      where: { id: postId },
-      data: {
-        isArchived: false,
-        archivedAt: null,
-        archivedBy: null,
-        archiveReason: null,
-      },
-    });
+    // First try to unarchive from adminActivity table
+    let updated = false;
+    try {
+      await prisma.adminActivity.update({
+        where: { id: postId },
+        data: {
+          isArchived: false,
+          archivedAt: null,
+          archivedBy: null,
+          archiveReason: null,
+        },
+      });
+      updated = true;
+    } catch (adminActivityError) {
+      console.log('Not found in adminActivity table, trying publicFeed...');
+    }
+
+    // If not found in adminActivity, try publicFeed table
+    if (!updated) {
+      try {
+        await prisma.publicFeed.update({
+          where: { id: postId },
+          data: {
+            isArchived: false,
+            archivedAt: null,
+            archivedBy: null,
+            archiveReason: null,
+          },
+        });
+        updated = true;
+      } catch (publicFeedError) {
+        console.log('Not found in publicFeed table either');
+      }
+    }
+
+    if (!updated) {
+      return NextResponse.json({ success: false, error: 'Post non trouvé' }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
