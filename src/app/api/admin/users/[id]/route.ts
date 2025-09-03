@@ -5,7 +5,8 @@ import { z, ZodIssue } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
 import { logAdminAction } from '@/services/activityLogService';
-import { autoUnsubscribeUser } from '@/services/newsletterService';
+import { autoUnsubscribeUser, autoSubscribeUser } from '@/services/newsletterService';
+import { EmailService } from '@/services/emailService';
 
 // Schema pour la validation des données utilisateur
 const updateUserSchema = z.object({
@@ -496,6 +497,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         status: true,
         isLookingForGroup: true,
         isFullAccess: true,
+        emailVerified: true,
         updatedAt: true,
         preferredGenres: true,
         registrationRequest: {
@@ -656,6 +658,85 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       );
     } catch {
       // ignore logger errors
+    }
+
+    // Send email notifications based on status changes
+    if (validatedData.status !== undefined && validatedData.status !== existingUser.status) {
+      try {
+        const userFullName = `${transformedUser.firstName} ${transformedUser.lastName}`;
+
+        // Handle different status changes
+        switch (validatedData.status) {
+          case 'CURRENT':
+            // User was approved (from PENDING) or restored (from REFUSED/SUSPENDED/DELETED)
+            if (existingUser.status === 'PENDING') {
+              // Send approval email
+              await EmailService.sendAccountApprovedEmail(
+                transformedUser.email,
+                transformedUser.firstName,
+                transformedUser.lastName,
+              );
+              // Auto-subscribe to newsletter
+              await autoSubscribeUser(transformedUser.email, 'approved');
+            } else if (existingUser.status === 'SUSPENDED') {
+              // Send suspended account restored email
+              await EmailService.sendSuspendedAccountRestoredEmail(
+                transformedUser.email,
+                transformedUser.firstName,
+                transformedUser.lastName,
+              );
+            } else if (existingUser.status === 'REFUSED') {
+              // Send refused member restored email
+              await EmailService.sendRefusedMemberRestoredEmail(
+                transformedUser.email,
+                transformedUser.firstName,
+                transformedUser.lastName,
+              );
+            }
+            // For DELETED users, no email needed as they were archived
+            break;
+
+          case 'REFUSED':
+            // User was rejected
+            if (existingUser.status === 'PENDING') {
+              const reason =
+                validatedData.rejectionReason ||
+                'Votre demande ne correspond pas aux critères actuels.';
+              await EmailService.sendAccountRejectedEmail(
+                transformedUser.email,
+                transformedUser.firstName,
+                transformedUser.lastName,
+                reason,
+              );
+            }
+            break;
+
+          case 'SUSPENDED':
+            // User was suspended
+            if (existingUser.status === 'CURRENT' || existingUser.status === 'FORMER') {
+              const reason =
+                validatedData.rejectionReason || "Violation des conditions d'utilisation.";
+              await EmailService.sendAccountSuspendedEmail(
+                transformedUser.email,
+                transformedUser.firstName,
+                transformedUser.lastName,
+                reason,
+              );
+            }
+            break;
+
+          case 'DELETED':
+            // User was deleted/archived - no email needed
+            break;
+
+          default:
+            // No email for other status changes
+            break;
+        }
+      } catch (emailError) {
+        console.error('Failed to send status change email:', emailError);
+        // Don't fail the update if email fails
+      }
     }
 
     return NextResponse.json({

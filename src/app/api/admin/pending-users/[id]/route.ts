@@ -4,6 +4,7 @@ import { checkAdminPermission } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction } from '@/services/activityLogService';
 import { autoSubscribeUser } from '@/services/newsletterService';
+import { EmailService } from '@/services/emailService';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(req);
@@ -21,20 +22,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json();
     const { action, reason } = body; // action: 'approve' | 'reject', reason: string (for rejection)
 
-
     // First check if user exists
     const user = await prisma.user.findUnique({
       where: { id },
-      select: { id: true, status: true, firstName: true, lastName: true, email: true }
+      select: { id: true, status: true, firstName: true, lastName: true, email: true },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
-
 
     // Find the registration request by userId (since the id passed is the user ID)
     const registrationRequest = await prisma.registrationRequest.findUnique({
@@ -42,14 +38,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       include: { user: true },
     });
 
-
     if (!registrationRequest) {
       // Maybe the registration system has changed, let's check if we can approve without registration request
       if (user.status === 'PENDING') {
         // Continue to approval logic below
       } else {
         return NextResponse.json(
-          { success: false, error: `Registration request not found for user ${user.email}. User status: ${user.status}` },
+          {
+            success: false,
+            error: `Registration request not found for user ${user.email}. User status: ${user.status}`,
+          },
           { status: 404 },
         );
       }
@@ -86,7 +84,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               status: 'ACCEPTED',
               rejectionReason: null,
             },
-          })
+          }),
         );
       }
 
@@ -103,12 +101,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           userEmail: user.email,
           previousStatus: 'PENDING',
           newStatus: 'CURRENT',
-          hadRegistrationRequest: !!registrationRequest
-        }
+          hadRegistrationRequest: !!registrationRequest,
+        },
       );
 
       // Auto-subscribe to newsletter when user is approved
       await autoSubscribeUser(user.email, 'approved');
+
+      // Send approval email
+      try {
+        await EmailService.sendAccountApprovedEmail(user.email, user.firstName, user.lastName);
+      } catch (emailError) {
+        console.error('Failed to send approval email:', emailError);
+        // Don't fail the approval if email fails
+      }
 
       return NextResponse.json({
         success: true,
@@ -146,7 +152,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               status: 'REJECTED',
               rejectionReason: reason.trim(),
             },
-          })
+          }),
         );
       }
 
@@ -164,9 +170,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           previousStatus: 'PENDING',
           newStatus: 'REFUSED',
           rejectionReason: reason,
-          hadRegistrationRequest: !!registrationRequest
-        }
+          hadRegistrationRequest: !!registrationRequest,
+        },
       );
+
+      // Send rejection email
+      try {
+        await EmailService.sendAccountRejectedEmail(
+          user.email,
+          user.firstName,
+          user.lastName,
+          reason,
+        );
+      } catch (emailError) {
+        console.error('Failed to send rejection email:', emailError);
+        // Don't fail the rejection if email fails
+      }
 
       return NextResponse.json({
         success: true,

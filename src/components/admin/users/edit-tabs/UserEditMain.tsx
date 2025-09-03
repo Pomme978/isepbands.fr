@@ -40,6 +40,7 @@ interface User {
   role: string;
   joinDate: string;
   status: string;
+  emailVerified?: boolean;
   bio?: string;
   birthDate?: string;
   phoneNumber?: string;
@@ -409,6 +410,54 @@ export default function UserEditMain({
             </p>
           </div>
         )}
+      </div>
+
+      {/* Email Verification Status */}
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Verification</h3>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {user.emailVerified ? (
+                <>
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                  <span className="text-sm text-green-600 font-medium">Vérifié</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                  <span className="text-sm text-yellow-600 font-medium">Non vérifié</span>
+                </>
+              )}
+            </div>
+
+            {!user.emailVerified && !isReadOnly && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`/api/admin/users/${user.id}/send-verification`, {
+                      method: 'POST',
+                    });
+
+                    if (response.ok) {
+                      alert('Email de vérification envoyé !');
+                    } else {
+                      const data = await response.json();
+                      alert(data.error || "Erreur lors de l'envoi");
+                    }
+                  } catch (error) {
+                    alert("Erreur lors de l'envoi de l'email");
+                  }
+                }}
+                className="px-3 py-1 text-xs font-medium text-primary hover:text-primary-dark border border-primary hover:border-primary-dark rounded-md transition-colors"
+              >
+                Envoyer email de vérification
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

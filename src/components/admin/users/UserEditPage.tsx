@@ -64,6 +64,7 @@ interface User {
   photoUrl?: string;
   avatar?: string;
   status: string;
+  emailVerified?: boolean;
   isLookingForGroup?: boolean;
   instruments?: UserInstrument[];
   roles?: UserRole[];
@@ -257,7 +258,6 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         rejectionReason: user.rejectionReason,
       };
 
-
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
@@ -379,9 +379,25 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
     try {
       setRestoring(true);
-      const response = await fetch(`/api/admin/users/${userId}/restore`, {
-        method: 'POST',
-      });
+
+      let response;
+      if (user.status === 'deleted') {
+        // Use the restore endpoint for deleted users
+        response = await fetch(`/api/admin/users/${userId}/restore`, {
+          method: 'POST',
+        });
+      } else if (user.status === 'refused' || user.status === 'suspended') {
+        // Use the user update endpoint to change status back to CURRENT
+        response = await fetch(`/api/admin/users/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'CURRENT',
+          }),
+        });
+      } else {
+        throw new Error(`User status not supported for restore: ${user.status}`);
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -552,6 +568,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   const allRolesDisplay = getAllRoleNames(user.roles, user.pronouns, 'fr');
 
   const isArchived = user.status === 'deleted' || user.status === 'DELETED';
+  const needsRestore = isArchived || user.status === 'refused' || user.status === 'suspended';
 
   return (
     <div className="space-y-6">
@@ -627,36 +644,37 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             </>
           )}
 
-          {currentUserId !== user.id &&
-            (isArchived ? (
+          {currentUserId !== user.id && (
+            <>
+              {needsRestore && (
+                <button
+                  onClick={() => setShowRestoreConfirm(true)}
+                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Restaurer l&apos;utilisateur
+                </button>
+              )}
+
               <button
-                onClick={() => setShowRestoreConfirm(true)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+                onClick={() => setShowArchiveConfirm(true)}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Restaurer l&apos;utilisateur
+                <Archive className="w-4 h-4 mr-2" />
+                Archive User
               </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => setShowArchiveConfirm(true)}
-                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
-                >
-                  <Archive className="w-4 h-4 mr-2" />
-                  Archive User
-                </button>
 
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete User
-                </button>
-              </>
-            ))}
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete User
+              </button>
+            </>
+          )}
 
-          {!isArchived && (
+          {!needsRestore && (
             <button
               onClick={handleSave}
               disabled={!hasUnsavedChanges || saving}
@@ -678,7 +696,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       </div>
 
       {/* Pending User Warning */}
-      {user.status === 'PENDING' && (
+      {user.status === 'pending' && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
@@ -691,7 +709,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-800">⚠️ User Not Approved Yet</h3>
+              <h3 className="text-sm font-medium text-yellow-800">User Not Approved Yet</h3>
               <p className="text-sm text-yellow-700 mt-1">
                 This user has not been approved yet. You can edit their information, but they cannot
                 log in until their registration is reviewed and approved.
@@ -712,7 +730,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       )}
 
       {/* Refused User Warning */}
-      {user.status === 'REFUSED' && (
+      {user.status === 'refused' && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
@@ -725,30 +743,56 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800">❌ Registration Refused</h3>
+              <h3 className="text-sm font-medium text-red-800">Registration Refused</h3>
               <p className="text-sm text-red-700 mt-1">
                 This user&apos;s registration was refused. They cannot log in to the platform.
               </p>
-              {user.refusalReason && (
-                <div className="mt-2 p-2 bg-red-100 rounded text-xs text-red-700">
-                  <strong>Reason:</strong> {user.refusalReason}
+              {user.rejectionReason && (
+                <div className="mt-2 text-xs text-red-700">
+                  <strong>Reason:</strong> {user.rejectionReason}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suspended User Warning */}
+      {user.status === 'suspended' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <svg className="w-5 h-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-orange-800">Account Suspended</h3>
+              <p className="text-sm text-orange-700 mt-1">
+                This user&apos;s account is currently suspended. They cannot log in to the platform.
+              </p>
+              {user.rejectionReason && (
+                <div className="mt-2 text-xs text-orange-700">
+                  <strong>Reason:</strong> {user.rejectionReason}
                 </div>
               )}
               <div className="mt-3 flex space-x-2">
                 <button
-                  onClick={() => {
-                    /* TODO: Restore user function */
-                  }}
+                  onClick={() => setShowRestoreConfirm(true)}
                   className="flex items-center px-4 py-2 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
+                  <RotateCcw className="w-3 h-3 mr-1" />
                   Restore Account
                 </button>
                 <button
-                  onClick={() => {
-                    /* TODO: Archive user function */
-                  }}
+                  onClick={() => setShowArchiveConfirm(true)}
                   className="flex items-center px-4 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
+                  <Archive className="w-3 h-3 mr-1" />
                   Archive User
                 </button>
               </div>

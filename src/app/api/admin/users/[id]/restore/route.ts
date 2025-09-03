@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction } from '@/services/activityLogService';
+import { EmailService } from '@/services/emailService';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireAdminAuth(req);
@@ -24,9 +25,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    if (user.status !== 'DELETED') {
-      return NextResponse.json({ error: "L'utilisateur n'est pas archivé" }, { status: 400 });
+    // Check if user can be restored
+    if (!['DELETED', 'SUSPENDED', 'REFUSED'].includes(user.status)) {
+      return NextResponse.json(
+        { error: "L'utilisateur ne peut pas être restauré depuis ce statut" },
+        { status: 400 },
+      );
     }
+
+    // Store the original status for email logic
+    const wasRefused = user.status === 'REFUSED';
+    const wasSuspended = user.status === 'SUSPENDED';
+    const wasDeleted = user.status === 'DELETED';
 
     // Update user status to CURRENT (restored) and clear archive metadata
     await prisma.user.update({
@@ -44,11 +54,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         authResult.user.id,
         'user_restored',
         'Utilisateur restauré',
-        `**${user.firstName} ${user.lastName}** (${user.email}) a été restauré depuis l'archive`,
+        `**${user.firstName} ${user.lastName}** (${user.email}) a été restauré depuis le statut ${user.status}`,
         userId,
         {
           userEmail: user.email,
-          previousStatus: 'DELETED',
+          previousStatus: user.status,
           newStatus: 'CURRENT',
           restoredAt: new Date().toISOString(),
         },
@@ -56,6 +66,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     } catch (logError) {
       console.error('Failed to log user restore action:', logError);
       // Don't fail the restore if logging fails
+    }
+
+    // Send appropriate restoration email
+    try {
+      if (wasSuspended) {
+        await EmailService.sendSuspendedAccountRestoredEmail(
+          user.email,
+          user.firstName,
+          user.lastName,
+        );
+      } else if (wasRefused) {
+        await EmailService.sendRefusedMemberRestoredEmail(
+          user.email,
+          user.firstName,
+          user.lastName,
+        );
+      }
+      // For DELETED users, no email is sent as they were archived
+    } catch (emailError) {
+      console.error('Failed to send restoration email:', emailError);
+      // Don't fail the restore if email fails
     }
 
     return NextResponse.json({

@@ -119,16 +119,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <AdminNavbar />
       </div>
 
-      <div className="flex lg:h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-100">
         {/* Desktop Sidebar - Only visible on desktop */}
         <div className="hidden lg:block">
           <AdminSidebar user={user} />
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 w-full lg:overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 w-full overflow-hidden">
           {/* Content */}
-          <main className="flex-1 overflow-x-hidden lg:overflow-y-auto p-4 lg:p-6">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 lg:p-6">
             <div className="w-full min-w-0">{children}</div>
           </main>
 

@@ -23,6 +23,7 @@ interface User {
     | 'suspended'
     | 'deleted'
     | 'archived';
+  emailVerified?: boolean;
   age?: number;
   instruments?: string[];
   groups?: string[];
@@ -112,22 +113,29 @@ export default function UserCard({
 
             {/* Status Badge - Hidden on desktop, shown on mobile */}
             <div className="flex items-center sm:hidden">
-              <div
-                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
-              >
-                {user.status === 'current'
-                  ? 'Active'
-                  : user.status === 'pending'
-                    ? 'Pending'
-                    : user.status === 'graduated'
-                      ? 'Graduated'
-                      : user.status === 'refused'
-                        ? 'Refused'
-                        : user.status === 'suspended'
-                          ? 'Suspended'
-                          : user.status === 'deleted'
-                            ? 'Deleted'
-                            : 'Former'}
+              <div className="flex items-center space-x-1">
+                <div
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+                >
+                  {user.status === 'current'
+                    ? 'Active'
+                    : user.status === 'pending'
+                      ? 'Pending'
+                      : user.status === 'graduated'
+                        ? 'Graduated'
+                        : user.status === 'refused'
+                          ? 'Refused'
+                          : user.status === 'suspended'
+                            ? 'Suspended'
+                            : user.status === 'deleted'
+                              ? 'Deleted'
+                              : 'Former'}
+                </div>
+                {user.status === 'current' && !user.emailVerified && (
+                  <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                    Email non vérifié
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -207,22 +215,29 @@ export default function UserCard({
         {/* Status Badge & Actions - Desktop: Right side */}
         <div className="hidden sm:flex items-center space-x-3 flex-shrink-0">
           {/* Status Badge - Desktop */}
-          <div
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
-          >
-            {user.status === 'current'
-              ? 'Active'
-              : user.status === 'pending'
-                ? 'Pending'
-                : user.status === 'graduated'
-                  ? 'Graduated'
-                  : user.status === 'refused'
-                    ? 'Refused'
-                    : user.status === 'suspended'
-                      ? 'Suspended'
-                      : user.status === 'deleted'
-                        ? 'Deleted'
-                        : 'Former'}
+          <div className="flex items-center space-x-1">
+            <div
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+            >
+              {user.status === 'current'
+                ? 'Active'
+                : user.status === 'pending'
+                  ? 'Pending'
+                  : user.status === 'graduated'
+                    ? 'Graduated'
+                    : user.status === 'refused'
+                      ? 'Refused'
+                      : user.status === 'suspended'
+                        ? 'Suspended'
+                        : user.status === 'deleted'
+                          ? 'Deleted'
+                          : 'Former'}
+            </div>
+            {user.status === 'current' && !user.emailVerified && (
+              <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                Email non vérifié
+              </div>
+            )}
           </div>
 
           {/* Actions */}

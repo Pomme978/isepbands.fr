@@ -123,6 +123,87 @@ export class EmailService {
     return this.sendTemplateEmail('Creation compte en attente approbation', email, { name });
   }
 
+  static async sendAccountApprovedEmail(email: string, firstName: string, lastName: string) {
+    return this.sendTemplateEmail('Compte approuve', email, {
+      firstName,
+      lastName,
+      loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+    });
+  }
+
+  static async sendAccountRejectedEmail(
+    email: string,
+    firstName: string,
+    lastName: string,
+    reason: string,
+  ) {
+    return this.sendTemplateEmail('Compte non valide', email, {
+      firstName,
+      lastName,
+      reason,
+      supportEmail: 'support@isepbands.fr',
+    });
+  }
+
+  static async sendAccountSuspendedEmail(
+    email: string,
+    firstName: string,
+    lastName: string,
+    reason: string,
+  ) {
+    return this.sendTemplateEmail('Compte suspendu', email, {
+      firstName,
+      lastName,
+      reason,
+      supportEmail: 'support@isepbands.fr',
+    });
+  }
+
+  static async sendSuspendedAccountRestoredEmail(
+    email: string,
+    firstName: string,
+    lastName: string,
+  ) {
+    return this.sendTemplateEmail('Compte suspendu restauré', email, {
+      firstName,
+      lastName,
+      loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+    });
+  }
+
+  static async sendRefusedMemberRestoredEmail(email: string, firstName: string, lastName: string) {
+    return this.sendTemplateEmail('Membre refusé restauré', email, {
+      firstName,
+      lastName,
+      loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+    });
+  }
+
+  static async sendEmailVerificationEmail(
+    email: string,
+    firstName: string,
+    verificationToken: string,
+  ) {
+    const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email?token=${verificationToken}`;
+    return this.sendTemplateEmail('Verification email', email, {
+      firstName,
+      verificationUrl,
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+    });
+  }
+
+  static async sendEmailVerifiedEmail(email: string, firstName: string) {
+    return this.sendTemplateEmail('Email verifie', email, {
+      firstName,
+      email,
+      loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+    });
+  }
+
   static async sendTestEmail(to: string) {
     return this.send({
       to,

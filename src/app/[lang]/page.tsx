@@ -7,6 +7,7 @@ import HeroBanner from '@/components/home/HomeHero';
 import { Home } from '@/components/home/Home';
 import HomeLoggedIn from '@/components/home/HomeLoggedIn';
 import { PendingValidationBanner } from '@/components/home/PendingValidationBanner';
+import EmailVerificationAlert from '@/components/common/EmailVerificationAlert';
 
 export default function HomePage() {
   const router = useRouter();
@@ -33,7 +34,16 @@ export default function HomePage() {
     <FullLayout navbarMode={navbarMode}>
       {/* Hero Banner - Full width */}
       <HeroBanner />
-      
+
+      {/* Email verification alert - Full width, right after hero */}
+      {user && !user.emailVerified && (
+        <div className="w-full">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <EmailVerificationAlert userEmail={user.email} />
+          </div>
+        </div>
+      )}
+
       {/* Page content with max-w-7xl constraint */}
       <div className="max-w-7xl mx-auto">
         <main className="flex flex-col items-center justify-center">
@@ -44,7 +54,9 @@ export default function HomePage() {
                 <Home lang={lang} />
               </div>
             ) : (
-              <HomeLoggedIn user={user} lang={lang} onLogout={handleLogout} loading={loading} />
+              <div className="w-full">
+                <HomeLoggedIn user={user} lang={lang} onLogout={handleLogout} loading={loading} />
+              </div>
             )
           ) : (
             <Home lang={lang} />

@@ -93,6 +93,7 @@ export async function getSessionUser(req: NextRequest) {
         lastName: ROOT_USER.lastName,
         band: null,
         status: 'CURRENT',
+        emailVerified: true,
         isFullAccess: true,
         isRoot: true,
       };
@@ -109,6 +110,7 @@ export async function getSessionUser(req: NextRequest) {
         photoUrl: true,
         pronouns: true,
         status: true,
+        emailVerified: true,
         isFullAccess: true,
         updatedAt: true, // Add updatedAt for session validation
         roles: {
@@ -176,6 +178,7 @@ export async function getSessionUser(req: NextRequest) {
       roles: user.roles,
       band,
       status: user.status,
+      emailVerified: user.emailVerified,
       isFullAccess: user.isFullAccess || hasAdminRole,
       isRoot: false,
     };

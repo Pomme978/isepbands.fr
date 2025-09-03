@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadToStorage } from '@/lib/storageService';
 import { prisma } from '@/lib/prisma';
 import { setSession } from '@/lib/auth';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -93,6 +94,10 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await hashPassword(password);
     console.log('✅ Password hashed successfully');
 
+    // Generate email verification token
+    const emailVerificationToken = crypto.randomUUID();
+    const emailVerificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     console.log('👤 Creating user...');
     const user = await prisma.user.create({
       data: {
@@ -104,7 +109,9 @@ export async function POST(req: NextRequest) {
         biography: '',
         password: hashedPassword,
         email,
-        emailVerified: true, // TODO: temporaire, bypass vérification email
+        emailVerified: false, // Email not verified initially
+        emailVerificationToken,
+        emailVerificationTokenExpires,
         photoUrl: photoUrl || null,
         isLookingForGroup: false,
         preferredGenres: preferredGenres ? JSON.stringify(JSON.parse(preferredGenres)) : null,
@@ -179,6 +186,21 @@ export async function POST(req: NextRequest) {
       console.log('✅ Pending approval email sent successfully');
     } catch (emailError) {
       console.error('❌ Error sending pending approval email:', emailError);
+      // Ne pas bloquer l'inscription si l'email échoue
+    }
+
+    // Envoyer l'email de vérification d'email
+    try {
+      console.log('📧 Sending email verification email to:', user.email);
+      const { EmailService } = await import('@/services/emailService');
+      await EmailService.sendEmailVerificationEmail(
+        user.email,
+        user.firstName,
+        emailVerificationToken,
+      );
+      console.log('✅ Email verification email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Error sending email verification email:', emailError);
       // Ne pas bloquer l'inscription si l'email échoue
     }
 
