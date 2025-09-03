@@ -144,7 +144,7 @@ export default function UserCard({
               <>
                 <button
                   onClick={() => onReviewRequest?.(user.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors cursor-pointer"
                 >
                   <Clock className="w-3 h-3 mr-1" />
                   Review
@@ -168,7 +168,7 @@ export default function UserCard({
                 </LangLink>
                 <button
                   onClick={() => onRestore?.(user.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors cursor-pointer"
                 >
                   Restore
                 </button>
@@ -230,7 +230,7 @@ export default function UserCard({
             <>
               <button
                 onClick={() => onReviewRequest?.(user.id)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors cursor-pointer"
               >
                 <Clock className="w-3 h-3 mr-1" />
                 Review
@@ -254,7 +254,7 @@ export default function UserCard({
               </LangLink>
               <button
                 onClick={() => onRestore?.(user.id)}
-                className="inline-flex items-center px-3 py-1 text-sm bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm bg-green-100 border border-green-300 text-green-800 rounded-lg hover:bg-green-200 transition-colors cursor-pointer"
               >
                 Restore
               </button>

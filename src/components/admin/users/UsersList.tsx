@@ -149,14 +149,39 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     }
   };
 
-  // Handle restore (approve a refused user)
+  // Handle restore (restore a refused/suspended/deleted user)
   const handleRestore = async (userId: string) => {
     try {
-      const response = await fetch(`/api/admin/pending-users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'approve' }),
-      });
+      // Find the user in the raw users list to get the DB status
+      const rawUser = users.find((u) => u.id === userId);
+      if (!rawUser) {
+        console.error('User not found in current list');
+        return;
+      }
+
+      console.log('Attempting to restore user:', userId, 'with DB status:', rawUser.status);
+
+      let response;
+
+      if (rawUser.status === 'DELETED') {
+        // Use the restore endpoint for deleted users
+        response = await fetch(`/api/admin/users/${userId}/restore`, {
+          method: 'POST',
+        });
+      } else if (rawUser.status === 'REFUSED' || rawUser.status === 'SUSPENDED') {
+        // Use the user update endpoint to change status back to CURRENT
+        response = await fetch(`/api/admin/users/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'CURRENT',
+          }),
+        });
+      } else {
+        console.error('User status not supported for restore:', rawUser.status);
+        console.log('Available user data:', rawUser);
+        return;
+      }
 
       if (response.ok) {
         await fetchUsers(); // Refresh the list
@@ -380,8 +405,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
     filters.memberStatus === 'all' || filters.memberStatus === 'refused';
   const shouldShowSuspendedMembers =
     filters.memberStatus === 'all' || filters.memberStatus === 'suspended';
-  const shouldShowDeletedMembers =
-    filters.memberStatus === 'deleted'; // Only show deleted users when explicitly filtering for them
+  const shouldShowDeletedMembers = filters.memberStatus === 'deleted'; // Only show deleted users when explicitly filtering for them
   const shouldShowBoardMembers = filters.memberStatus === 'board';
 
   // For board filter, only show board members in a special section
