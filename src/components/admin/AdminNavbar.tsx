@@ -50,7 +50,7 @@ const ADMIN_SECTIONS = [
       { name: 'Events', href: '/admin/events', icon: Calendar },
       { name: 'Venues', href: '/admin/venues', icon: Building2 },
       { name: 'Pages Content', href: '/admin/pages', icon: FileText },
-      { name: 'Media Library', href: '/admin/media', icon: ImageIcon },
+      { name: 'Media Library', href: '/admin/media', icon: Image },
     ],
   },
   {
