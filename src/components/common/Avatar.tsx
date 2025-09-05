@@ -71,7 +71,7 @@ export default function Avatar({ src, name, size = 'xl', className = '' }: Avata
         className,
       )}
     >
-      {shouldShowImage && !imageError ? (
+      {shouldShowImage && !imageError && src ? (
         <Image
           src={src}
           alt={`Photo de ${name}`}

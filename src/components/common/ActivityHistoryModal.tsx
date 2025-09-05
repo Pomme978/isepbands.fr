@@ -140,22 +140,25 @@ export const ActivityHistoryModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[95vh] h-[95vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[98vh] sm:max-h-[95vh] h-[98vh] sm:h-[95vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <History className="w-6 h-6 text-primary" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-              <p className="text-sm text-gray-500 mt-1">
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <History className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{title}</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
                 {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
                 trouvée{filteredActivities.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            className="p-1 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+          >
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 

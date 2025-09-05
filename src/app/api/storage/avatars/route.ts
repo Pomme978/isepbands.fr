@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { detectLangFromRequest, getErrorMessage } from '@/lib/i18n-api';
 import { requireAuth } from '@/middlewares/auth';
 
 import {
@@ -50,32 +49,31 @@ export async function GET(req: NextRequest) {
   const id = searchParams.get('id');
 
   if (!id) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('missingId', lang) }, { status: 400 });
+    return NextResponse.json({ error: 'Missing file ID' }, { status: 400 });
   }
 
   const file = await getFromStorageById(id);
   if (!file || file.category !== STORAGE_CATEGORY) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
+    return NextResponse.json({ error: 'Avatar not found' }, { status: 404 });
   }
 
   try {
     const buffer = await getFileBuffer(file.key, file.category);
+    if (!buffer || buffer.byteLength === 0) {
+      return NextResponse.json({ error: 'Avatar file is empty or corrupted' }, { status: 404 });
+    }
+
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': file.contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache for avatars
+        'Cache-Control': 'public, max-age=31536000, immutable',
         'Content-Disposition': `inline; filename="${file.key}"`,
       },
     });
-  } catch {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json(
-      { error: await getErrorMessage('fileNotFound', lang) },
-      { status: 404 },
-    );
+  } catch (error) {
+    console.error('Error serving avatar:', error);
+    return NextResponse.json({ error: 'Avatar file not found' }, { status: 404 });
   }
 }
 
@@ -83,8 +81,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   const sessionUser = auth.user;
   if (!sessionUser) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('forbidden', lang) }, { status: 403 });
+    return NextResponse.json({ error: 'Authentication required' }, { status: 403 });
   }
 
   const contentType = req.headers.get('content-type') || '';
@@ -115,18 +112,17 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Avatar upload error:', error);
-    const lang = detectLangFromRequest(req);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     let userMessage;
     if (errorMessage.includes('ENOENT') || errorMessage.includes('EACCES')) {
-      userMessage = 'Erreur de permissions fichier';
+      userMessage = 'File permissions error';
     } else if (errorMessage.includes('ENOSPC')) {
-      userMessage = 'Espace disque insuffisant';
+      userMessage = 'Insufficient disk space';
     } else if (errorMessage.includes('EMFILE') || errorMessage.includes('ENFILE')) {
-      userMessage = 'Trop de fichiers ouverts';
+      userMessage = 'Too many open files';
     } else {
-      userMessage = await getErrorMessage('unableToWrite', lang);
+      userMessage = 'Unable to save file';
     }
 
     return NextResponse.json({ error: userMessage, details: errorMessage }, { status: 500 });
@@ -141,14 +137,12 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('missingId', lang) }, { status: 400 });
+    return NextResponse.json({ error: 'Missing file ID' }, { status: 400 });
   }
 
   const file = await getFromStorageById(id);
   if (!file || file.category !== STORAGE_CATEGORY) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
+    return NextResponse.json({ error: 'Avatar not found' }, { status: 404 });
   }
 
   // Check ownership - user IDs are strings, not numbers
@@ -172,10 +166,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting avatar:', error);
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json(
-      { error: await getErrorMessage('fileNotFound', lang) },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: 'Avatar file not found' }, { status: 404 });
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Menu,
   X,
@@ -12,7 +13,7 @@ import {
   Megaphone,
   Building2,
   FileText,
-  Image,
+  Image as ImageIcon,
   Send,
   Bell,
   BarChart3,
@@ -152,10 +153,12 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
             {/* Logo */}
             <div className="flex-shrink-0">
               <LangLink href="/" className="flex items-center space-x-3">
-                <img
+                <Image
                   src={logoBands}
                   alt="ISEPBANDS Logo"
-                  className="w-8 h-8 rounded-lg object-cover"
+                  width={32}
+                  height={32}
+                  className="rounded-lg object-cover"
                 />
                 <div>
                   <h1 className="text-lg font-bold text-primary">Admin Panel</h1>
@@ -212,10 +215,12 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
             {/* Logo with Association Name */}
             <div className="flex-shrink-0">
               <LangLink href="/" className="flex items-center space-x-3">
-                <img
+                <Image
                   src={logoBands}
                   alt="ISEPBANDS Logo"
-                  className="w-8 h-8 rounded-lg object-cover"
+                  width={32}
+                  height={32}
+                  className="rounded-lg object-cover"
                 />
                 <div className="flex flex-col">
                   <span className="text-lg font-bold text-primary leading-tight">ISEPBANDS</span>

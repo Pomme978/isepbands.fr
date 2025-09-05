@@ -93,7 +93,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
       }
     };
     fetchInstruments();
-  }, []);
+  }, [locale]);
 
   // Use MUSIC_GENRES from data file instead of hardcoded list
 
