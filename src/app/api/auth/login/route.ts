@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   // Check user status and handle suspended/refused accounts
   if (user.status === 'REFUSED') {
     const registrationRequest = await prisma.registrationRequest.findUnique({
-      where: { userId: user.id },
+      where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
       select: { rejectionReason: true },
     });
     const rejectionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   if (user.status === 'SUSPENDED') {
     const registrationRequest = await prisma.registrationRequest.findUnique({
-      where: { userId: user.id },
+      where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
       select: { rejectionReason: true },
     });
     const suspensionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
@@ -76,11 +76,11 @@ export async function POST(req: NextRequest) {
       // Log user login - l'utilisateur se connecte à son propre compte
       console.log('Logging user login for:', user.id, user.email);
       await logAdminAction(
-        user.id, // createdBy - qui fait l'action (l'utilisateur lui-même)
+        typeof user.id === 'string' ? user.id : user.id.toString(), // createdBy - qui fait l'action (l'utilisateur lui-même)
         'user_login',
         'Connexion utilisateur',
         `Connexion de **${user.firstName || ''} ${user.lastName || ''}** (${user.email})`,
-        user.id, // userId - sur quel utilisateur porte l'action
+        typeof user.id === 'string' ? user.id : user.id.toString(), // userId - sur quel utilisateur porte l'action
         {
           userAgent: req.headers.get('user-agent'),
           ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   }
   // Check if user needs to change password
   const userWithPasswordChangeFlag = await prisma.user.findUnique({
-    where: { id: user.id },
+    where: { id: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
     select: {
       requirePasswordChange: true,
       firstName: true,
@@ -113,6 +113,9 @@ export async function POST(req: NextRequest) {
       requirePasswordChange: userWithPasswordChangeFlag?.requirePasswordChange || false,
     },
   });
-  await setSession(res, { id: user.id, email: user.email });
+  await setSession(res, {
+    id: typeof user.id === 'string' ? user.id : user.id.toString(),
+    email: user.email,
+  });
   return res;
 }

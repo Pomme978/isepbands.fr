@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
       { success: true, user: { id: user.id, email: user.email } },
       { status: 201 },
     );
-    await setSession(res, { id: user.id, email: user.email });
+    await setSession(res, { id: user.id.toString(), email: user.email });
 
     // Libérer le cache à la fin du processus réussi
     registrationCache.delete(email);

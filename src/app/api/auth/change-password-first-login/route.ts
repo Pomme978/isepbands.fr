@@ -53,21 +53,18 @@ export async function POST(req: NextRequest) {
     // Verify current password
     const isCurrentPasswordValid = await verifyPassword(
       validatedData.currentPassword,
-      user.password
+      user.password,
     );
 
     if (!isCurrentPasswordValid) {
-      return NextResponse.json(
-        { error: 'Current password is incorrect' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
     }
 
     // Check if user actually needs to change password
     if (!user.mustChangePasswordOnLogin) {
       return NextResponse.json(
         { error: 'Password change is not required for this user' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -92,14 +89,14 @@ export async function POST(req: NextRequest) {
         'password_changed',
         'Changement de mot de passe',
         `**${user.firstName} ${user.lastName}** (${user.email}) a changé son mot de passe${user.hasTemporaryPassword ? ' temporaire' : ''} lors de la première connexion`,
-        user.id,
+        user.id.toString(),
         {
           userEmail: user.email,
           wasTemporaryPassword: user.hasTemporaryPassword,
           changedAt: new Date().toISOString(),
           userAgent: req.headers.get('user-agent'),
           ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
-        }
+        },
       );
     } catch (logError) {
       console.error('Failed to log password change:', logError);
@@ -113,7 +110,7 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, email: user.email },
     });
 
-    await setSession(res, { id: user.id, email: user.email });
+    await setSession(res, { id: user.id.toString(), email: user.email });
     return res;
   } catch (error) {
     console.error('Password change error:', error);
@@ -121,13 +118,10 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -101,7 +101,7 @@ export async function getSessionUser(req: NextRequest) {
 
     // Regular database user
     const user = await prisma.user.findUnique({
-      where: { id: payload.id as string },
+      where: { id: parseInt(payload.id as string, 10) },
       select: {
         id: true,
         email: true,
