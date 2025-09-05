@@ -99,7 +99,7 @@ export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsP
 
           <Button variant="destructive" className="w-full justify-start">
             <Trash2 className="mr-2 h-4 w-4" />
-            Supprimer définitivement mon compte
+            Je quitte définitivement l&apos;asso
           </Button>
         </CardContent>
       </Card>

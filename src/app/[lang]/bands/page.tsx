@@ -5,32 +5,23 @@ import AmpContent from '@/components/bands/AmpContent';
 import AmpTweeter from '@/components/bands/AmpTweeter';
 import AmpBottom from '@/components/bands/AmpBottom';
 import GuitarWithCable from '@/components/bands/GuitarWithCable';
+import { useI18n } from '@/locales/client';
 
 export default function BandsPage() {
+  const t = useI18n();
+
   return (
     <main className="min-h-screen">
       <AmpTop />
       <AmpContent>
         <div className="max-w-xl text-center text-gray-800">
-          <h2 className="text-2xl font-black">WHAT IS A BAND ?</h2>
-          <p className="mt-4 text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam id lobortis purus. Vivamus
-            sed varius risus. Sed a purus sit amet nisl feugiat mollis. Nullam dignissim, dolor sit
-            amet hendrerit blandit, erat est efficitur mi, quis egestas odio dui sit amet orci. Sed
-            pulvinar, lorem vitae convallis blandit, turpis massa sagittis ex, vitae interdum metus
-            elit et sapien.{' '}
-          </p>
+          <h2 className="text-2xl font-black">{t('page.bands.whatIsABand.title')}</h2>
+          <p className="mt-4 text-base">{t('page.bands.whatIsABand.description')}</p>
         </div>
         <AmpTweeter />
         <div className="max-w-xl text-center text-gray-800">
-          <h2 className="text-2xl font-black">WHY CARING TO JOIN A BAND ?</h2>
-          <p className="mt-4 text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam id lobortis purus. Vivamus
-            sed varius risus. Sed a purus sit amet nisl feugiat mollis. Nullam dignissim, dolor sit
-            amet hendrerit blandit, erat est efficitur mi, quis egestas odio dui sit amet orci. Sed
-            pulvinar, lorem vitae convallis blandit, turpis massa sagittis ex, vitae interdum metus
-            elit et sapien.{' '}
-          </p>
+          <h2 className="text-2xl font-black">{t('page.bands.whyJoinABand.title')}</h2>
+          <p className="mt-4 text-base">{t('page.bands.whyJoinABand.description')}</p>
         </div>
       </AmpContent>
       <AmpBottom />

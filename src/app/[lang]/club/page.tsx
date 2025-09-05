@@ -10,14 +10,20 @@ import { Button } from '@/components/ui/button';
 import LangLink from '@/components/common/LangLink';
 import Cabinet from '@/components/club/Cabinet';
 import { Mail } from 'lucide-react';
+import { useI18n } from '@/locales/client';
 
 export default function Asso() {
-  const items = [
-    { title: 'Une asso du turfu' },
-    { title: 'Des concerts de fou zinzin' },
-    { title: 'Réunir les musicos' },
-    { title: 'Retaper records' },
+  const t = useI18n();
+
+  // Récupérer les items de vision manuellement
+  const roadmapItems = [
+    { title: t('page.club.vision.items.0') },
+    { title: t('page.club.vision.items.1') },
+    { title: t('page.club.vision.items.2') },
+    { title: t('page.club.vision.items.3') },
   ];
+
+  console.log('Vision items loaded:', roadmapItems);
 
   const cabinetCards = [
     {
@@ -53,18 +59,17 @@ export default function Asso() {
             className="mt-20 md:mt-0 w-full h-auto md:w-auto md:h-100 object-contain"
           />
           <div className="bg-white w-auto max-w-sm md:max-w-120 px-6 md:px-8 py-6 md:py-9 rounded-xl flex flex-col justify-end items-start text-center md:text-right">
-            <h2 className="text-2xl font-bold">
-              ISEPBANDS, ASSOCIATION DE MUSIQUE DE L’ISEP DEPUIS 2013
-            </h2>
-            <p className="text-base mt-4 text-justify md:text-right">
-              C’est en 2013 que l’association fut fondée. Elle fut la première association de
-              musique de l’Isep, qui est donc maintenant la plus ancienne de l’école.
-            </p>
+            <h2 className="text-2xl font-bold text-left">{t('page.club.history.title')}</h2>
+            <p className="text-base mt-4 text-justify">{t('page.club.history.description')}</p>
           </div>
         </div>
 
         <div className="mb-20 md:mb-24">
-          <Roadmap items={items} colorClass="text-slate-800" />
+          <Roadmap
+            items={roadmapItems}
+            title={t('page.club.vision.title').toUpperCase()}
+            colorClass="text-slate-800"
+          />
         </div>
 
         <div className="relative mx-4 md:mx-0">
@@ -78,16 +83,18 @@ export default function Asso() {
             mobileAngle={75}
           />
           <div className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-8 md:py-13 mt-10 md:mt-20 mb-10 md:mb-24 px-4">
-            <h1 className="font-bold text-xl md:text-2xl tracking-wider">ISEPBANDS, POUR QUI?</h1>
+            <h1 className="font-bold text-xl md:text-2xl tracking-wider">
+              {t('page.club.forWho.title')}
+            </h1>
             <p className="text-base max-w-[80%] md:max-w-full md:text-lg font-light mt-3 tracking-wider">
-              Pour tout les musiciens, peu importe leur niveau.
+              {t('page.club.forWho.description')}
             </p>
           </div>
-          <div className="absolute -right-15 md:-right-20 top-5 md:-top-10 overflow-hidden">
+          <div className="absolute -right-2 md:-right bottom-[-150px] md:bottom-[-200px] overflow-hidden">
             <Image
               src={purpleGuitar}
               alt="Purple Guitar"
-              className={'w-42 md:w-70 h-auto relative rotate-15 md:rotate-20 z-30'}
+              className={'w-42 md:w-70 h-auto relative rotate-90 z-30'}
               priority={false}
             />
           </div>
