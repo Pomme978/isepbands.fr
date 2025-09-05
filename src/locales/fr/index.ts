@@ -349,41 +349,6 @@ const fr = {
       showHistory: "Voir l'historique complet",
       moreActivities: '{count} activités supplémentaires',
     },
-    bands: {
-      title: 'Bands',
-      whatIsABand: {
-        title: "QU'EST-CE QU'UN BAND ?",
-        description:
-          "Un band, c'est un groupe d'étudiants musiciens de l'ISEP comme vous, réunis pour jouer de la musique en live lors de divers événements proposés par l'association. Chaque groupe peut choisir un style de musique différent, allant de la pop au jazz en passant par le rock, le métal, l'électro et bien d'autres encore, montrant ainsi la diversité des talents des Isépiens.",
-      },
-      whyJoinABand: {
-        title: 'POURQUOI REJOINDRE UN BAND ?',
-        description:
-          "Si tu aimes la musique, que tu veux progresser, partager, jouer avec tes potes ou rencontrer d'autres passionnés comme toi et vivre l'énergie du live, alors notre association est faite pour toi ! Tu peux soit rejoindre un band existant, soit créer le tien et rassembler tes propres musiciens.",
-      },
-    },
-    club: {
-      title: "L'Association",
-      history: {
-        title: "ISEPBANDS, ASSOCIATION DE MUSIQUE DE L'ISEP DEPUIS 2010",
-        description:
-          "C'est en 2010 que notre belle association fut fondée. Elle fut la première association de musique de l'ISEP, et est à ce jour la plus ancienne de l'école. Notre association organise chaque année plusieurs concerts et autres activités musicales, telles que des jams, des répétitions en studio et des afterworks à thèmes. ISEPBANDS était à l'origine de la création de notre événement phare : le Battle of the Bands (BOTB), qui a été longtemps animé avec d'autres écoles d'ingénieurs : l'EPITA et l'EFREI. Après ces quelques très jolies années, nous avons comme projet de revisiter cette Battle en un nouvel événement : notre nouveau concert mi-annuel, que l'on souhaite aussi partager avec d'autres écoles très motivées ! Pendant de nombreuses années, l'association organisait aussi des studios recording qui permettaient aux musiciens d'enregistrer leurs reprises de groupes, et cette année nous avons décidé de les réaliser à nouveau !",
-      },
-      vision: {
-        title: "La vision de l'asso",
-        items: {
-          '0': 'Une asso ouverte et accueillante pour tous',
-          '1': 'Des concerts de qualité',
-          '2': 'Réunir les passionnés amateurs et professionnels',
-          '3': 'Prendre le plus de plaisir possible !',
-        },
-      },
-      forWho: {
-        title: 'ISEPBANDS, POUR QUI ?',
-        description:
-          "ISEP Bands accueille tous les musiciens, de tous les niveaux et qui pratiquent différents genres de musique ! Tout le monde est le bienvenu pour jouer ses musiques préférées avec le groupe qu'il a choisi (et si t'es timide on est là pour t'aider ne t'en fait pas !)",
-      },
-    },
   },
   welcome: 'Bienvenue, {name}!',
   register: {

@@ -338,41 +338,6 @@ const en = {
       showHistory: 'Show full history',
       moreActivities: '{count} more activities',
     },
-    bands: {
-      title: 'Bands',
-      whatIsABand: {
-        title: 'WHAT IS A BAND?',
-        description:
-          'A band is a group of ISEP student musicians like you, brought together to perform live music at various events organized by the association. Each group can choose a different musical style, ranging from pop to jazz, rock, metal, electronic and many others, showcasing the diversity of talent among ISEP students.',
-      },
-      whyJoinABand: {
-        title: 'WHY JOIN A BAND?',
-        description:
-          'If you love music, want to improve, share your passion, play with your friends or meet other enthusiasts like you and experience the energy of live performances, then our association is perfect for you! You can either join an existing band or create your own and gather your own musicians.',
-      },
-    },
-    club: {
-      title: 'The Association',
-      history: {
-        title: 'ISEPBANDS, ISEP MUSIC ASSOCIATION SINCE 2010',
-        description:
-          'Our beautiful association was founded in 2010. It was the first music association at ISEP, and remains the oldest in the school to this day. Our association organizes several concerts and other musical activities each year, such as jams, studio rehearsals and themed afterwork events. ISEPBANDS was behind the creation of our flagship event: the Battle of the Bands (BOTB), which was long organized with other engineering schools: EPITA and EFREI. After these wonderful years, we are planning to revisit this Battle as a new event: our new bi-annual concert, which we also want to share with other highly motivated schools! For many years, the association organized recording studios that allowed musicians to record their band covers, and this year we have decided to bring them back!',
-      },
-      vision: {
-        title: "Our association's vision",
-        items: {
-          '0': 'An open and welcoming association for everyone',
-          '1': 'Quality concerts',
-          '2': 'Bringing together passionate amateurs and professionals',
-          '3': 'Having as much fun as possible!',
-        },
-      },
-      forWho: {
-        title: 'ISEPBANDS, FOR WHOM?',
-        description:
-          "ISEP Bands welcomes all musicians, of all levels and who practice different genres of music! Everyone is welcome to play their favorite music with the group they have chosen (and if you're shy, we're here to help you, don't worry!)",
-      },
-    },
   },
   welcome: 'Welcome, {name}!',
   register: {
