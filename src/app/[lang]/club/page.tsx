@@ -98,7 +98,7 @@ export default function Asso() {
           <Cabinet cards={cabinetCards} />
         </div>
 
-        <div className="relative mx-4 md:mx-0 mb-20">
+        <div id="rejoindre-asso" className="relative mx-4 md:mx-0 mb-20 overflow-visible">
           <BgElements
             variant="circle"
             sizeClassName="w-48 h-48 md:w-75 md:h-75 absolute -left-5 md:-left-20 -bottom-10 md:-bottom-20 z-[0]"
@@ -112,10 +112,7 @@ export default function Asso() {
             lineThickness="15px md:25px"
             circleGap="18%"
           />
-          <div
-            id="adhesion"
-            className="relative bg-white z-20 rounded-xl w-full flex flex-col justify-center items-center text-center py-8 md:py-13 mt-10 md:mt-20 mb-10 md:mb-20 px-4"
-          >
+          <div className="relative bg-white z-30 rounded-xl w-full flex flex-col justify-center items-center text-center py-8 md:py-13 mt-10 md:mt-20 mb-10 md:mb-20 px-4">
             <h1 className="font-bold text-xl md:text-2xl tracking-wider">
               COMMENT NOUS REJOINDRE ?
             </h1>

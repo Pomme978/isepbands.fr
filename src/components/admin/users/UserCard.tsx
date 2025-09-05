@@ -104,7 +104,7 @@ export default function UserCard({
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-start space-x-4 mb-3">
         {/* Avatar */}
         <Avatar
           src={user.avatar}
@@ -114,175 +114,72 @@ export default function UserCard({
           className="flex-shrink-0"
         />
 
-        {/* User Info */}
+        {/* User Basic Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-3 flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-gray-900 truncate">
-                {user.firstName} {user.lastName}
-                {currentUserId === user.id && (
-                  <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
-                )}
-              </h3>
-              <span className="text-sm font-medium text-gray-600 hidden sm:inline">
-                {user.promotion}
-              </span>
-              <span className={`text-sm font-medium ${getRoleColor(user.role)} hidden sm:inline`}>
-                {user.role}
-              </span>
-            </div>
-
-            {/* Status Badge - Hidden on desktop, shown on mobile */}
-            <div className="flex items-center sm:hidden">
-              <div className="flex items-center space-x-1">
-                <div
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
-                >
-                  {user.status === 'current'
-                    ? 'Active'
-                    : user.status === 'pending'
-                      ? 'Pending'
-                      : user.status === 'graduated'
-                        ? 'Graduated'
-                        : user.status === 'refused'
-                          ? 'Refused'
-                          : user.status === 'suspended'
-                            ? 'Suspended'
-                            : user.status === 'deleted'
-                              ? 'Deleted'
-                              : 'Former'}
-                </div>
-                {user.status === 'current' && (
-                  <div
-                    className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 text-center ${
-                      user.emailVerified
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {user.emailVerified ? 'Email vérifié' : 'Email non vérifié'}
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Name (never truncated) */}
+          <div className="mb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {user.firstName} {user.lastName}
+              {currentUserId === user.id && (
+                <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
+              )}
+            </h3>
           </div>
 
-          {/* Mobile: Show promotion and role */}
-          <div className="flex items-center space-x-3 mb-2 sm:hidden">
+          {/* Promotion and Role */}
+          <div className="flex items-center space-x-3">
             <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
             <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>{user.role}</span>
           </div>
+        </div>
+      </div>
 
-          {/* Actions - Mobile: Above email/date */}
-          <div className="flex flex-wrap items-center gap-2 mb-2 sm:hidden">
-            {user.status === 'pending' ? (
-              <>
-                <AdminButton
-                  onClick={() => onReviewRequest?.(user.id)}
-                  variant="warning"
-                  size="xs"
-                  icon={Clock}
-                >
-                  Review
-                </AdminButton>
-                <AdminButton
-                  onClick={() => router.push(`/admin/users/${user.id}`)}
-                  variant="secondary"
-                  size="xs"
-                  icon={Edit}
-                >
-                  Edit
-                </AdminButton>
-              </>
-            ) : user.status === 'refused' || user.status === 'suspended' ? (
-              <>
-                <AdminButton
-                  onClick={() => router.push(`/admin/users/${user.id}`)}
-                  variant="secondary"
-                  size="xs"
-                  icon={Edit}
-                >
-                  Edit
-                </AdminButton>
-                <AdminButton
-                  onClick={() => onRestore?.(user.id)}
-                  variant="success"
-                  size="xs"
-                  icon={RotateCcw}
-                >
-                  Restore
-                </AdminButton>
-              </>
-            ) : (
-              <>
-                <AdminButton
-                  onClick={() => router.push(`/admin/users/${user.id}`)}
-                  variant="secondary"
-                  size="xs"
-                  icon={Edit}
-                >
-                  Edit
-                </AdminButton>
-                <AdminButton
-                  onClick={() => window.open(`/profile/${user.id}`, '_blank')}
-                  variant="secondary"
-                  size="xs"
-                  icon={Eye}
-                >
-                  View Profile
-                </AdminButton>
-              </>
-            )}
+      {/* Full width content below avatar */}
+      <div className="space-y-3">
+        {/* Status and Email Verification */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
+          >
+            {user.status === 'current'
+              ? 'Active'
+              : user.status === 'pending'
+                ? 'Pending'
+                : user.status === 'graduated'
+                  ? 'Graduated'
+                  : user.status === 'refused'
+                    ? 'Refused'
+                    : user.status === 'suspended'
+                      ? 'Suspended'
+                      : user.status === 'deleted'
+                        ? 'Deleted'
+                        : 'Former'}
           </div>
-
-          {/* Contact Info */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-gray-500">
-            <span className="flex items-center">
-              <Mail className="w-3 h-3 mr-1" />
-              <span className="truncate">{user.email}</span>
-            </span>
-            <span className="flex items-center">
-              <Calendar className="w-3 h-3 mr-1" />
-              Joined: {formatDate(user.joinDate)} ({getTimeAgo(user.joinDate)})
-            </span>
-          </div>
+          {user.status === 'current' && (
+            <div
+              className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                user.emailVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-800'
+              }`}
+            >
+              {user.emailVerified ? 'Email vérifié' : 'Email non vérifié'}
+            </div>
+          )}
         </div>
 
-        {/* Status Badge & Actions - Desktop: Right side */}
-        <div className="hidden sm:flex items-center space-x-3 flex-shrink-0">
-          {/* Status Badge - Desktop */}
-          <div className="flex items-center space-x-1">
-            <div
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
-            >
-              {user.status === 'current'
-                ? 'Active'
-                : user.status === 'pending'
-                  ? 'Pending'
-                  : user.status === 'graduated'
-                    ? 'Graduated'
-                    : user.status === 'refused'
-                      ? 'Refused'
-                      : user.status === 'suspended'
-                        ? 'Suspended'
-                        : user.status === 'deleted'
-                          ? 'Deleted'
-                          : 'Former'}
-            </div>
-            {user.status === 'current' && (
-              <div
-                className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
-                  user.emailVerified
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                {user.emailVerified ? 'Email vérifié' : 'Email non vérifié'}
-              </div>
-            )}
-          </div>
+        {/* Contact Info */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-gray-500">
+          <span className="flex items-center">
+            <Mail className="w-3 h-3 mr-1" />
+            <span className="truncate">{user.email}</span>
+          </span>
+          <span className="flex items-center">
+            <Calendar className="w-3 h-3 mr-1" />
+            Joined: {formatDate(user.joinDate)} ({getTimeAgo(user.joinDate)})
+          </span>
+        </div>
 
-          {/* Actions */}
+        {/* Actions */}
+        <div className="grid grid-cols-2 gap-2">
           {user.status === 'pending' ? (
             <>
               <AdminButton
@@ -290,6 +187,7 @@ export default function UserCard({
                 variant="warning"
                 size="sm"
                 icon={Clock}
+                className="w-full"
               >
                 Review
               </AdminButton>
@@ -298,6 +196,7 @@ export default function UserCard({
                 variant="secondary"
                 size="sm"
                 icon={Edit}
+                className="w-full"
               >
                 Edit
               </AdminButton>
@@ -309,6 +208,7 @@ export default function UserCard({
                 variant="secondary"
                 size="sm"
                 icon={Edit}
+                className="w-full"
               >
                 Edit
               </AdminButton>
@@ -317,6 +217,7 @@ export default function UserCard({
                 variant="success"
                 size="sm"
                 icon={RotateCcw}
+                className="w-full"
               >
                 Restore
               </AdminButton>
@@ -328,6 +229,7 @@ export default function UserCard({
                 variant="secondary"
                 size="sm"
                 icon={Edit}
+                className="w-full"
               >
                 Edit
               </AdminButton>
@@ -336,6 +238,7 @@ export default function UserCard({
                 variant="secondary"
                 size="sm"
                 icon={Eye}
+                className="w-full"
               >
                 View Profile
               </AdminButton>

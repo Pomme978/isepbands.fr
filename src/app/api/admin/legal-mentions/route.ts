@@ -109,9 +109,12 @@ export async function PUT(req: NextRequest) {
         data: validatedData,
       });
     } else {
-      // Créer un nouvel enregistrement
+      // Créer un nouvel enregistrement avec presidentName inclus
       legalMentions = await prisma.legalMentions.create({
-        data: validatedData,
+        data: {
+          ...validatedData,
+          presidentName, // Ajouter le nom du président récupéré
+        },
       });
     }
 

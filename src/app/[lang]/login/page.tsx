@@ -104,10 +104,10 @@ export default function LoginPage() {
         await signIn(email, password);
         router.push('/' + lang);
       } else {
-        setLoginError(data.message || data.error || 'Erreur de connexion');
+        setLoginError(data.message || data.error || t('auth.login.connectionError'));
       }
     } catch (error) {
-      setLoginError(error instanceof Error ? error.message : 'Erreur de connexion');
+      setLoginError(error instanceof Error ? error.message : t('auth.login.connectionError'));
     } finally {
       setIsLoggingIn(false);
     }
@@ -117,7 +117,7 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loading text="Vérification de l'authentification..." size="lg" />
+        <Loading text={t('auth.login.checkingAuth')} size="lg" />
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function LoginPage() {
   if (user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loading text="Redirection..." size="lg" />
+        <Loading text={t('auth.login.redirecting')} size="lg" />
       </div>
     );
   }
@@ -159,13 +159,13 @@ export default function LoginPage() {
           <LoginFormLinks lang={lang} />
         </LoginFormCard>
         <p className="text-xs text-gray-500 mt-4 w-80 text-center">
-          En continuant, vous acceptez nos{' '}
+          {t('auth.login.termsAccept')}{' '}
           <a href={`/${lang}/conditions-utilisation`} className="hover:text-gray-700 underline">
-            Conditions d&apos;utilisation
+            {t('auth.login.termsOfUse')}
           </a>{' '}
-          et notre{' '}
+          {t('auth.login.and')}{' '}
           <a href={`/${lang}/politique-confidentialite`} className="hover:text-gray-700 underline">
-            Politique de confidentialité
+            {t('auth.login.privacyPolicy')}
           </a>
           .
         </p>

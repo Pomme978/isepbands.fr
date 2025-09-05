@@ -311,30 +311,30 @@ export default function UserEditInstruments({
 
   const InstrumentCard = ({ instrument }: { instrument: Instrument }) => (
     <div
-      className={`p-4 border-2 rounded-lg transition-all ${
+      className={`p-3 sm:p-4 border-2 rounded-lg transition-all ${
         instrument.primary ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'
       }`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-gray-900 flex items-center">
-          {instrument.name}
+      <div className="flex items-start sm:items-center justify-between mb-2 gap-2">
+        <h4 className="font-semibold text-gray-900 flex flex-col sm:flex-row sm:items-center text-sm sm:text-base">
+          <span className="truncate">{instrument.name}</span>
           {instrument.primary && (
-            <span className="ml-2 px-2 py-1 text-xs bg-primary text-white rounded-full">
+            <span className="mt-1 sm:mt-0 sm:ml-2 px-2 py-1 text-xs bg-primary text-white rounded-full w-fit">
               Primary
             </span>
           )}
         </h4>
         {!isReadOnly && (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 flex-shrink-0">
             <button
               onClick={() => setEditingInstrument(instrument.id)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
             >
               <Edit2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => removeInstrument(instrument.id)}
-              className="text-red-400 hover:text-red-600 transition-colors"
+              className="text-red-400 hover:text-red-600 transition-colors p-1"
             >
               <X className="w-4 h-4" />
             </button>
@@ -344,11 +344,11 @@ export default function UserEditInstruments({
 
       {editingInstrument === instrument.id && !isReadOnly ? (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <select
               value={instrument.level}
               onChange={(e) => updateInstrument(instrument.id, { level: e.target.value })}
-              className="px-2 py-1 text-sm border border-gray-200 rounded"
+              className="px-2 py-1 text-xs sm:text-sm border border-gray-200 rounded w-full"
             >
               {SKILL_LEVELS.map((level) => (
                 <option key={level} value={level}>
@@ -365,13 +365,13 @@ export default function UserEditInstruments({
                 updateInstrument(instrument.id, { yearsPlaying: numValue });
               }}
               disabled={isReadOnly}
-              className="px-2 py-1 text-sm border border-gray-200 rounded disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="px-2 py-1 text-xs sm:text-sm border border-gray-200 rounded disabled:bg-gray-50 disabled:cursor-not-allowed w-full"
               placeholder="Years"
               min="0"
             />
           </div>
-          <div className="flex justify-between items-center">
-            <label className="flex items-center space-x-2 text-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <label className="flex items-center space-x-2 text-xs sm:text-sm">
               <input
                 type="radio"
                 checked={instrument.primary}
@@ -382,14 +382,14 @@ export default function UserEditInstruments({
             </label>
             <button
               onClick={() => setEditingInstrument(null)}
-              className="text-sm text-primary hover:text-primary/80"
+              className="text-xs sm:text-sm text-primary hover:text-primary/80"
             >
               Done
             </button>
           </div>
         </div>
       ) : (
-        <div className="text-sm text-gray-600">
+        <div className="text-xs sm:text-sm text-gray-600">
           <p>
             {instrument.level}
             {instrument.yearsPlaying > 0 ? ` • ${instrument.yearsPlaying} years` : ''}
@@ -435,11 +435,11 @@ export default function UserEditInstruments({
                 <p className="text-sm text-red-800">{errorMessage}</p>
               </div>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <select
                 value={newInstrument.name}
                 onChange={(e) => setNewInstrument({ ...newInstrument, name: e.target.value })}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
               >
                 {availableInstruments.map((instrument) => (
                   <option key={instrument.id} value={instrument.nameFr}>
@@ -451,7 +451,7 @@ export default function UserEditInstruments({
               <select
                 value={newInstrument.level}
                 onChange={(e) => setNewInstrument({ ...newInstrument, level: e.target.value })}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
               >
                 {SKILL_LEVELS.map((level) => (
                   <option key={level} value={level}>
@@ -470,7 +470,7 @@ export default function UserEditInstruments({
                 }}
                 placeholder="Years playing"
                 min="0"
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
               />
 
               <div className="flex items-center space-x-2">
@@ -489,7 +489,7 @@ export default function UserEditInstruments({
               </div>
             </div>
 
-            <div className="flex justify-end space-x-2 mt-3">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-3">
               <button
                 onClick={() => {
                   setIsAddingInstrument(false);
@@ -501,13 +501,13 @@ export default function UserEditInstruments({
                     primary: false,
                   });
                 }}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={addInstrument}
-                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
               >
                 Add Instrument
               </button>
@@ -516,7 +516,7 @@ export default function UserEditInstruments({
         )}
 
         {/* Instruments List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {instruments.map((instrument) => (
             <InstrumentCard key={instrument.id} instrument={instrument} />
           ))}
@@ -539,7 +539,7 @@ export default function UserEditInstruments({
               key={genre.id}
               onClick={() => !isReadOnly && toggleGenre(genre.id)}
               disabled={isReadOnly}
-              className={`px-3 py-2 text-sm rounded-full border transition-colors ${
+              className={`px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm rounded-full border transition-colors ${
                 preferredGenres.includes(genre.id)
                   ? 'bg-primary text-white border-primary'
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'

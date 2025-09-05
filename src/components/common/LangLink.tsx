@@ -20,7 +20,10 @@ export default function LangLink({ href, className, children, ...props }: LangLi
   let finalHref = href;
   if (typeof href === 'string') {
     if (!href.startsWith(`/${lang}`)) {
-      finalHref = `/${lang}${href.startsWith('/') ? href : '/' + href}`;
+      // Gérer les ancres (hash fragments)
+      const [pathname, hash] = href.split('#');
+      const basePath = `/${lang}${pathname.startsWith('/') ? pathname : '/' + pathname}`;
+      finalHref = hash ? `${basePath}#${hash}` : basePath;
     }
   } else if (typeof href === 'object' && typeof href.pathname === 'string') {
     if (!href.pathname.startsWith(`/${lang}`)) {

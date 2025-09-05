@@ -12,12 +12,12 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get('type'); // Filter by template type
     const active = searchParams.get('active'); // Filter by active status
 
-    const where: any = {};
-    
+    const where: Record<string, unknown> = {};
+
     if (type) {
       where.templateType = type;
     }
-    
+
     if (active !== null) {
       where.isActive = active === 'true';
     }
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching email templates:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch templates' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     if (!name || !subject || !htmlContent || !templateType) {
       return NextResponse.json(
         { success: false, error: 'Nom, sujet, contenu HTML et type sont requis' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     if (existing) {
       return NextResponse.json(
         { success: false, error: 'Un template avec ce nom existe déjà' },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -135,12 +135,12 @@ export async function POST(req: NextRequest) {
       'Template email créé',
       `Le template **${name}** (${templateType}) a été créé`,
       undefined,
-      { 
+      {
         templateId: template.id,
         templateName: name,
         templateType,
-        isDefault 
-      }
+        isDefault,
+      },
     );
 
     return NextResponse.json({
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     console.error('Error creating email template:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

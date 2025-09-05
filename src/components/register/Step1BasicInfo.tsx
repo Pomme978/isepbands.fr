@@ -65,7 +65,7 @@ export default function Step1BasicInfo({
       const data = await res.json();
 
       if (data.exists) {
-        setEmailError('Un utilisateur avec cet email existe déjà.');
+        setEmailError(t('auth.register.step1.emailExists'));
       } else {
         // Si l'email n'existe pas, effacer l'erreur précédente si c'était une erreur serveur
         if (emailError && emailError.includes('existe déjà')) {
@@ -136,15 +136,19 @@ export default function Step1BasicInfo({
       }}
     >
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {t('auth.register.step1.personalInfo')}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('auth.register.step1.firstNameLabel')}
+            </label>
             <input
               id="firstName"
               type="text"
               autoComplete="given-name"
-              placeholder="Entrez votre prénom"
+              placeholder={t('auth.register.step1.firstNamePlaceholder')}
               value={data.firstName}
               onChange={(e) => {
                 onChange({ firstName: e.target.value });
@@ -157,12 +161,14 @@ export default function Step1BasicInfo({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('auth.register.step1.lastNameLabel')}
+            </label>
             <input
               id="lastName"
               type="text"
               autoComplete="family-name"
-              placeholder="Entrez votre nom"
+              placeholder={t('auth.register.step1.lastNamePlaceholder')}
               value={data.lastName}
               onChange={(e) => {
                 const upperCaseValue = e.target.value.toUpperCase();
@@ -176,12 +182,14 @@ export default function Step1BasicInfo({
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('auth.register.step1.emailLabel')}
+            </label>
             <input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="prenom.nom@eleve.isep.fr"
+              placeholder={t('auth.register.step1.emailPlaceholder')}
               value={data.email}
               onChange={(e) => {
                 onChange({ email: e.target.value });
@@ -214,16 +222,20 @@ export default function Step1BasicInfo({
       </div>
 
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Sécurité</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {t('auth.register.step1.security')}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('auth.register.step1.passwordLabel')}
+            </label>
             <div className="relative">
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                placeholder="Créez un mot de passe sécurisé"
+                placeholder={t('auth.register.step1.passwordPlaceholder')}
                 value={data.password}
                 onChange={(e) => {
                   onChange({ password: e.target.value });
@@ -239,7 +251,11 @@ export default function Step1BasicInfo({
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                aria-label={
+                  showPassword
+                    ? t('auth.register.step1.hidePassword')
+                    : t('auth.register.step1.showPassword')
+                }
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -252,25 +268,25 @@ export default function Step1BasicInfo({
                     className={`flex items-center ${data.password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}
                   >
                     <span className="mr-1">{data.password.length >= 8 ? '✓' : '○'}</span>
-                    8+ caractères
+                    {t('auth.register.step1.passwordRequirements.minLength')}
                   </span>
                   <span
                     className={`flex items-center ${/[a-z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
                   >
                     <span className="mr-1">{/[a-z]/.test(data.password) ? '✓' : '○'}</span>
-                    Minuscule
+                    {t('auth.register.step1.passwordRequirements.lowercase')}
                   </span>
                   <span
                     className={`flex items-center ${/[A-Z]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
                   >
                     <span className="mr-1">{/[A-Z]/.test(data.password) ? '✓' : '○'}</span>
-                    Majuscule
+                    {t('auth.register.step1.passwordRequirements.uppercase')}
                   </span>
                   <span
                     className={`flex items-center ${/\d/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
                   >
                     <span className="mr-1">{/\d/.test(data.password) ? '✓' : '○'}</span>
-                    Chiffre
+                    {t('auth.register.step1.passwordRequirements.number')}
                   </span>
                   <span
                     className={`flex items-center ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? 'text-green-600' : 'text-gray-500'}`}
@@ -278,7 +294,7 @@ export default function Step1BasicInfo({
                     <span className="mr-1">
                       {/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password) ? '✓' : '○'}
                     </span>
-                    Spécial
+                    {t('auth.register.step1.passwordRequirements.special')}
                   </span>
                 </div>
               </div>
@@ -287,14 +303,14 @@ export default function Step1BasicInfo({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirmer le mot de passe *
+              {t('auth.register.step1.confirmPasswordLabel')}
             </label>
             <div className="relative">
               <input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                placeholder="Confirmez votre mot de passe"
+                placeholder={t('auth.register.step1.confirmPasswordPlaceholder')}
                 value={data.confirmPassword}
                 onChange={(e) => {
                   onChange({ confirmPassword: e.target.value });
@@ -308,7 +324,9 @@ export default function Step1BasicInfo({
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 focus:outline-none"
                 aria-label={
-                  showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+                  showConfirmPassword
+                    ? t('auth.register.step1.hidePassword')
+                    : t('auth.register.step1.showPassword')
                 }
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -322,10 +340,14 @@ export default function Step1BasicInfo({
       </div>
 
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Informations ISEP</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {t('auth.register.step1.isepInfo')}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Promotion *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('auth.register.step1.promotionLabel')}
+            </label>
             <select
               id="cycle"
               value={data.cycle}
@@ -336,19 +358,19 @@ export default function Step1BasicInfo({
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
             >
-              <option value="">Sélectionnez votre promotion</option>
-              <option value="P1">P1 - Prépa intégrée 1ère année</option>
-              <option value="P2">P2 - Prépa intégrée 2ème année</option>
-              <option value="I1">I1 - Cycle intégré 1ère année</option>
-              <option value="I2">I2 - Cycle intégré 2ème année</option>
-              <option value="A1">A1 - Cycle ingénieur 1ère année</option>
-              <option value="A2">A2 - Cycle ingénieur 2ème année</option>
-              <option value="A3">A3 - Cycle ingénieur 3ème année</option>
-              <option value="B1">B1 - Bachelor 1ère année</option>
-              <option value="B2">B2 - Bachelor 2ème année</option>
-              <option value="B3">B3 - Bachelor 3ème année</option>
-              <option value="Graduate">Graduate - Diplômé</option>
-              <option value="Former">Former - Ancien étudiant (non diplômé)</option>
+              <option value="">{t('auth.register.step1.promotionPlaceholder')}</option>
+              <option value="P1">{t('auth.register.step1.promotionOptions.P1')}</option>
+              <option value="P2">{t('auth.register.step1.promotionOptions.P2')}</option>
+              <option value="I1">{t('auth.register.step1.promotionOptions.I1')}</option>
+              <option value="I2">{t('auth.register.step1.promotionOptions.I2')}</option>
+              <option value="A1">{t('auth.register.step1.promotionOptions.A1')}</option>
+              <option value="A2">{t('auth.register.step1.promotionOptions.A2')}</option>
+              <option value="A3">{t('auth.register.step1.promotionOptions.A3')}</option>
+              <option value="B1">{t('auth.register.step1.promotionOptions.B1')}</option>
+              <option value="B2">{t('auth.register.step1.promotionOptions.B2')}</option>
+              <option value="B3">{t('auth.register.step1.promotionOptions.B3')}</option>
+              <option value="Graduate">{t('auth.register.step1.promotionOptions.Graduate')}</option>
+              <option value="Former">{t('auth.register.step1.promotionOptions.Former')}</option>
             </select>
             {cycleError && <div className="text-red-500 text-xs mt-1">{cycleError}</div>}
           </div>
@@ -356,17 +378,17 @@ export default function Step1BasicInfo({
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">Champs requis</h4>
+        <h4 className="font-medium text-blue-900 mb-2">
+          {t('auth.register.step1.requiredFieldsTitle')}
+        </h4>
         <p className="text-sm text-blue-700">
-          Les champs marqués d&lsquo;un * sont obligatoires. Assurez-vous de remplir au moins le
-          prénom, le nom, l&lsquo;email, le mot de passe et la promotion avant de passer à
-          l&apos;étape suivante.
+          {t('auth.register.step1.requiredFieldsDescription')}
         </p>
       </div>
 
       <div className="flex justify-center md:justify-end pt-4">
         <Button type="submit" className="px-6 md:py-2 py-6 md:w-auto w-full">
-          Suivant
+          {t('auth.register.step1.nextButton')}
         </Button>
       </div>
     </form>

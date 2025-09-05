@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
 
     if (!email.trim()) {
-      setError('Veuillez saisir votre adresse email');
+      setError(t('auth.forgotPassword.emailRequired'));
       return;
     }
 
@@ -43,10 +43,10 @@ export default function ForgotPasswordPage() {
       if (data.success) {
         setIsSubmitted(true);
       } else {
-        setError(data.message || 'Une erreur est survenue');
+        setError(data.message || t('auth.forgotPassword.genericError'));
       }
     } catch (error) {
-      setError('Erreur de connexion. Veuillez réessayer.');
+      setError(t('auth.forgotPassword.connectionError'));
     } finally {
       setIsLoading(false);
     }
@@ -65,10 +65,11 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">Email envoyé</h1>
+              <h1 className="text-2xl font-bold text-foreground mb-2">
+                {t('auth.forgotPassword.success.title')}
+              </h1>
               <p className="text-muted-foreground">
-                Si cette adresse email existe dans notre système, vous recevrez un lien de
-                réinitialisation dans quelques minutes.
+                {t('auth.forgotPassword.success.description')}
               </p>
             </div>
 
@@ -76,15 +77,15 @@ export default function ForgotPasswordPage() {
               <div className="flex items-start">
                 <Mail className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
                 <div className="text-sm text-blue-800">
-                  <p className="font-medium mb-1">Vérifiez votre boîte email</p>
-                  <p>Le lien de réinitialisation sera valide pendant 1 heure.</p>
+                  <p className="font-medium mb-1">{t('auth.forgotPassword.success.checkEmail')}</p>
+                  <p>{t('auth.forgotPassword.success.linkValid')}</p>
                 </div>
               </div>
             </div>
 
             <div className="text-center">
               <a href={`/${lang}/login`} className="text-primary hover:underline font-medium">
-                Retourner à la connexion
+                {t('auth.forgotPassword.backToLogin')}
               </a>
             </div>
           </div>
@@ -102,16 +103,16 @@ export default function ForgotPasswordPage() {
       <div className="max-w-md w-full mx-auto p-6">
         <div className="bg-card rounded-lg shadow-lg p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-foreground mb-2">Mot de passe oublié</h1>
-            <p className="text-muted-foreground">
-              Saisissez votre adresse email pour recevoir un lien de réinitialisation
-            </p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">
+              {t('auth.forgotPassword.title')}
+            </h1>
+            <p className="text-muted-foreground">{t('auth.forgotPassword.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                Adresse email
+                {t('auth.forgotPassword.emailLabel')}
               </label>
               <input
                 id="email"
@@ -119,7 +120,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="votre@email.fr"
+                placeholder={t('auth.forgotPassword.emailPlaceholder')}
                 required
               />
             </div>
@@ -136,7 +137,9 @@ export default function ForgotPasswordPage() {
               disabled={isLoading}
               className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Envoi en cours...' : 'Envoyer le lien de réinitialisation'}
+              {isLoading
+                ? t('auth.forgotPassword.submitLoading')
+                : t('auth.forgotPassword.submitButton')}
             </button>
           </form>
 
@@ -145,7 +148,7 @@ export default function ForgotPasswordPage() {
               href={`/${lang}/login`}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Retourner à la connexion
+              {t('auth.forgotPassword.backToLogin')}
             </a>
           </div>
         </div>

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     if (!to || !to.includes('@')) {
       return NextResponse.json(
         { success: false, error: 'Email destinataire requis et valide' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         result = await EmailService.sendWelcomeEmail(
           to,
           testData.name || 'Utilisateur Test',
-          testData.temporaryPassword
+          testData.temporaryPassword,
         );
         break;
 
@@ -32,22 +32,19 @@ export async function POST(req: NextRequest) {
         result = await EmailService.sendPasswordResetEmail(
           to,
           testData.name || 'Utilisateur Test',
-          testData.resetToken || 'test-token-123'
+          testData.resetToken || 'test-token-123',
         );
         break;
 
       case 'approval':
-        result = await EmailService.sendApprovalEmail(
-          to,
-          testData.name || 'Utilisateur Test'
-        );
+        result = await EmailService.sendApprovalEmail(to, testData.name || 'Utilisateur Test');
         break;
 
       case 'rejection':
         result = await EmailService.sendRejectionEmail(
           to,
           testData.name || 'Utilisateur Test',
-          testData.reason
+          testData.reason,
         );
         break;
 
@@ -62,15 +59,15 @@ export async function POST(req: NextRequest) {
       message: `Email de test (${type}) envoyé avec succès à ${to}`,
       data: result,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error sending test email:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erreur lors de l\'envoi de l\'email de test',
-        details: error.message 
+      {
+        success: false,
+        error: "Erreur lors de l'envoi de l'email de test",
+        details: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

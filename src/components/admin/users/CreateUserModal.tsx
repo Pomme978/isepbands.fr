@@ -320,39 +320,50 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Create New User - Step {currentStep}: {STEP_TITLES[currentStep - 1]}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-6 border-b border-gray-200 gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base sm:text-xl font-semibold text-gray-900 truncate">
+              <span className="hidden sm:inline">Create New User - Step {currentStep}: </span>
+              <span className="sm:hidden">Step {currentStep}: </span>
+              {STEP_TITLES[currentStep - 1]}
             </h2>
-            <div className="flex mt-2">
+            <div className="flex mt-2 overflow-x-auto">
               {Array.from({ length: 6 }, (_unused, i) => (
                 <div
                   key={i}
-                  className={`h-1 w-16 mr-1 rounded ${
+                  className={`h-1 w-12 sm:w-16 mr-1 rounded flex-shrink-0 ${
                     i < currentStep ? 'bg-primary' : 'bg-gray-200'
                   }`}
                 />
               ))}
             </div>
           </div>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 p-1 flex-shrink-0"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto">{renderStep()}</div>
+        <div className="p-3 sm:p-6 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto">
+          {renderStep()}
+        </div>
 
         {/* Error Message */}
         {createError && (
-          <div className="mx-6 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center">
+          <div className="mx-3 sm:mx-6 mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
               <div className="flex-shrink-0">
-                <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 mt-0.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -360,31 +371,31 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
                   />
                 </svg>
               </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-800">{createError}</p>
+              <div className="ml-2 sm:ml-3">
+                <p className="text-xs sm:text-sm text-red-800">{createError}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-6 border-t border-gray-200 bg-gray-50">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-3 sm:p-6 border-t border-gray-200 bg-gray-50 gap-3">
           <button
             onClick={handleBack}
             disabled={currentStep === 1 || isCreating}
-            className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto order-2 sm:order-1 inline-flex items-center justify-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-3 h-3 mr-1" />
             Back
           </button>
 
-          <span className="text-sm text-gray-500">Step {currentStep} of 6</span>
+          <span className="text-sm text-gray-500 order-1 sm:order-2">Step {currentStep} of 6</span>
 
           {currentStep < 6 ? (
             <button
               onClick={handleNext}
               disabled={isCreating}
-              className="inline-flex items-center px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto order-3 inline-flex items-center justify-center px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next Step
               <ChevronRight className="w-4 h-4 ml-2" />
@@ -393,7 +404,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
             <button
               onClick={handleSubmit}
               disabled={isCreating}
-              className="inline-flex items-center px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto order-3 inline-flex items-center justify-center px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isCreating ? (
                 <Loading text="Creating..." size="sm" variant="spinner" theme="white" />

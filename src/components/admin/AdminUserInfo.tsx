@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-client';
 import { getPrimaryRoleName } from '@/utils/roleUtils';
 import { useRouter, useParams } from 'next/navigation';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 
 interface AdminUserInfoProps {
   user?: {
@@ -83,6 +84,11 @@ export default function AdminUserInfo({ user }: AdminUserInfoProps) {
       {/* Expanded Menu */}
       {isExpanded && (
         <div className="mt-3 space-y-1">
+          {/* Language Switcher */}
+          <div className="px-3 py-2">
+            <LanguageSwitcher variant="compact" className="w-full rounded-sm" />
+          </div>
+
           <LangLink
             href="/profile"
             className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

@@ -162,14 +162,14 @@ export default function RecentActivity({
       } else {
         setLoading(true);
       }
-      const response = await fetch('/api/admin/clubfeed');
+      const response = await fetch('/api/admin/activity?excludeLoginLogs=true');
       if (response.ok) {
         const data = await response.json();
         const transformedActivities = data.activities.map(transformApiActivity);
         setActivities(transformedActivities);
       } else {
         // API failed
-        console.error('API /admin/clubfeed failed with status:', response.status);
+        console.error('API /admin/activity failed with status:', response.status);
         setActivities([]);
       }
     } catch (error) {

@@ -27,7 +27,7 @@ export default function Footer() {
       title: t('footer.columns.association.title'),
       links: [
         { label: t('footer.columns.association.links.rules'), href: '/rules' },
-        { label: t('footer.columns.association.links.membership'), href: '/club#adhesion' },
+        { label: t('footer.columns.association.links.membership'), href: '/club#rejoindre-asso' },
         { label: t('footer.columns.association.links.contact'), href: '/team' },
       ],
     },

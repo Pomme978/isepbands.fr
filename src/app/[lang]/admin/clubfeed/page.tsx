@@ -437,7 +437,7 @@ export default function AdminClubFeedPage() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto py-4 sm:py-6 lg:py-8">
         {/* Toast notifications */}
         {saveSuccess && (
           <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
@@ -461,16 +461,20 @@ export default function AdminClubFeedPage() {
         )}
 
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start lg:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl lg:text-3xl font-bold">Club Feed</h1>
-            <p className="text-base md:text-sm text-muted-foreground mt-2">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Club Feed</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               Publiez des actualités qui apparaîtront sur la page d&apos;accueil des membres
             </p>
           </div>
-          <Button onClick={() => setShowCreateForm(!showCreateForm)} className="flex-shrink-0">
+          <Button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="flex-shrink-0 w-full sm:w-auto"
+          >
             <Plus className="mr-2 h-4 w-4" />
-            Publier une actualité
+            <span className="hidden sm:inline">Publier une actualité</span>
+            <span className="sm:hidden">Publier</span>
           </Button>
         </div>
 
@@ -503,10 +507,11 @@ export default function AdminClubFeedPage() {
                   rows={3}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={handleCreateActivity}
                   disabled={isSaving || !newActivity.title.trim()}
+                  className="w-full sm:w-auto"
                 >
                   {isSaving ? <Loading text="" size="sm" /> : 'Publier'}
                 </Button>
@@ -516,6 +521,7 @@ export default function AdminClubFeedPage() {
                     setShowCreateForm(false);
                     setNewActivity({ type: 'custom', title: '', description: '' });
                   }}
+                  className="w-full sm:w-auto"
                 >
                   Annuler
                 </Button>
@@ -557,14 +563,19 @@ export default function AdminClubFeedPage() {
                   rows={3}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={handleEditActivity}
                   disabled={isSaving || !editingActivity.title.trim()}
+                  className="w-full sm:w-auto"
                 >
                   {isSaving ? <Loading text="" size="sm" /> : 'Sauvegarder'}
                 </Button>
-                <Button variant="outline" onClick={() => setEditingActivity(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingActivity(null)}
+                  className="w-full sm:w-auto"
+                >
                   Annuler
                 </Button>
               </div>

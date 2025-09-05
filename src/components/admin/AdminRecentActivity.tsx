@@ -40,10 +40,10 @@ interface AdminRecentActivityProps {
   activities: PublicFeedType[];
   maxItems?: number;
   currentUser?: { id: string; isFullAccess?: boolean } | null;
-  onEdit?: (activity: any) => void;
+  onEdit?: (activity: ActivityType) => void;
   onArchive?: (activityId: string) => void;
   onDelete?: (activityId: string) => void;
-  rawActivities?: any[]; // For access to createdBy info
+  rawActivities?: ActivityType[];
 }
 
 const getActivityIcon = (type: PublicFeedType['type']) => {
@@ -90,10 +90,10 @@ function ActivityItem({
 }: {
   activity: PublicFeedType;
   currentUser?: { id: string; isFullAccess?: boolean } | null;
-  onEdit?: (activity: any) => void;
+  onEdit?: (activity: ActivityType) => void;
   onArchive?: (activityId: string) => void;
   onDelete?: (activityId: string) => void;
-  rawActivity?: any;
+  rawActivity?: ActivityType;
 }) {
   const timeAgo = formatDistanceToNow(activity.timestamp, {
     addSuffix: true,
@@ -105,7 +105,7 @@ function ActivityItem({
   // Check permissions for different actions
   const isOwner = currentUser && rawActivity && rawActivity.createdBy === currentUser.id;
   const isFullAccess = currentUser && currentUser.isFullAccess;
-  
+
   const canEdit = isOwner && activity.type === 'post';
   const canArchive = (isOwner || isFullAccess) && activity.type === 'post';
   const canDelete = (isOwner || isFullAccess) && activity.type === 'post';

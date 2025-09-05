@@ -175,7 +175,7 @@ export default function UserEditPermissions({
         <p className="text-sm text-gray-600 mb-4">
           Un seul rôle peut être assigné par utilisateur.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {availableRoles.map((role) => {
             const isSelected = selectedRoleIds.includes(role.id);
             const adjustedAvailability = getAdjustedRoleAvailability(role);
@@ -185,7 +185,7 @@ export default function UserEditPermissions({
             return (
               <div
                 key={role.id}
-                className={`p-4 border-2 rounded-lg transition-all ${
+                className={`p-3 sm:p-4 border-2 rounded-lg transition-all ${
                   isDisabled
                     ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
                     : isSelected
@@ -194,20 +194,20 @@ export default function UserEditPermissions({
                 }`}
                 onClick={() => !isDisabled && updateRoles(role.id)}
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-start space-x-2 sm:space-x-3">
                   <input
                     type="radio"
                     name="userRole"
                     checked={isSelected}
                     onChange={() => !isDisabled && updateRoles(role.id)}
                     disabled={isDisabled}
-                    className="text-primary border-gray-300 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-0.5 text-primary border-gray-300 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="min-w-0">
                         <h4
-                          className={`font-medium ${
+                          className={`font-medium text-sm sm:text-base truncate ${
                             isDisabled
                               ? 'text-gray-400'
                               : getRoleTextColor(getRoleDisplayName(role, user.pronouns, 'fr'))
@@ -219,7 +219,7 @@ export default function UserEditPermissions({
                       {/* Always show counter for non-unlimited roles */}
                       {role.maxUsers !== undefined && role.maxUsers < 999 && (
                         <span
-                          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
                             isNotAvailable && !isSelected
                               ? 'bg-red-100 text-red-700'
                               : isSelected || adjustedAvailability.spotsLeft > 0
@@ -235,7 +235,9 @@ export default function UserEditPermissions({
                         </span>
                       )}
                     </div>
-                    <p className={`text-sm ${isDisabled ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-xs sm:text-sm ${isDisabled ? 'text-gray-400' : 'text-gray-600'}`}
+                    >
                       Weight: {role.weight} • {role.isCore ? 'Core Role' : 'Custom Role'}
                     </p>
                   </div>
@@ -250,7 +252,7 @@ export default function UserEditPermissions({
       <div className="border-t border-gray-200 pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Access Override</h3>
         <div className="space-y-4">
-          <div className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border border-gray-200 rounded-lg">
             <input
               type="checkbox"
               id="fullAccess"
@@ -274,10 +276,14 @@ export default function UserEditPermissions({
           </div>
 
           {isFullAccess && (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div className="flex items-start space-x-3">
+            <div className="p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start space-x-2 sm:space-x-3">
                 <div className="flex-shrink-0">
-                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mt-0.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -287,7 +293,7 @@ export default function UserEditPermissions({
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-yellow-800">Full Access Enabled</h4>
-                  <p className="text-sm text-yellow-700 mt-1">
+                  <p className="text-xs sm:text-sm text-yellow-700 mt-1">
                     This user has complete access to all administrative functions, regardless of
                     their role assignments.
                   </p>

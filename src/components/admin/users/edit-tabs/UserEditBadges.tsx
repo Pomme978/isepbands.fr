@@ -166,19 +166,18 @@ export default function UserEditBadges({
       badge.badgeDefinition ||
       badgeDefinitions.find((b) => b.id === badge.badgeDefinitionId || b.key === badge.name);
 
-
     return (
-      <div className="p-4 border-2 border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-3">
+      <div className="p-3 sm:p-4 border-2 border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors">
+        <div className="flex items-start sm:items-center justify-between mb-2 gap-2">
+          <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
             <div
-              className="w-6 h-6 rounded-full border-2 border-gray-300"
+              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-gray-300 flex-shrink-0"
               style={{
                 backgroundColor: (isSystemBadge && badgeDef?.color) || badge.color || '#FF6B35',
               }}
             />
-            <div>
-              <h4 className="font-semibold text-gray-900">
+            <div className="min-w-0">
+              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                 {isSystemBadge ? badgeDef?.labelFr || badge.name : badge.name}
               </h4>
               <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
@@ -186,11 +185,11 @@ export default function UserEditBadges({
               </span>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 flex-shrink-0">
             {!isSystemBadge && !isReadOnly && (
               <button
                 onClick={() => setEditingBadge(badge.id)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
@@ -198,7 +197,7 @@ export default function UserEditBadges({
             {!isReadOnly && (
               <button
                 onClick={() => removeBadge(badge.id)}
-                className="text-red-400 hover:text-red-600 transition-colors"
+                className="text-red-400 hover:text-red-600 transition-colors p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -212,18 +211,18 @@ export default function UserEditBadges({
               type="text"
               value={badge.name}
               onChange={(e) => updateBadge(badge.id, { name: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               placeholder="Nom du badge"
             />
             <textarea
               value={badge.description || ''}
               onChange={(e) => updateBadge(badge.id, { description: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               rows={2}
               placeholder="Description du badge"
             />
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Couleur:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span className="text-xs sm:text-sm text-gray-600">Couleur:</span>
               <input
                 type="color"
                 value={badge.color || '#FF6B35'}
@@ -234,7 +233,7 @@ export default function UserEditBadges({
             <div className="flex justify-end">
               <button
                 onClick={() => setEditingBadge(null)}
-                className="text-sm text-primary hover:text-primary/80"
+                className="text-xs sm:text-sm text-primary hover:text-primary/80"
               >
                 Terminer la modification
               </button>
@@ -242,13 +241,13 @@ export default function UserEditBadges({
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-xs sm:text-sm text-gray-600">
               {isSystemBadge
                 ? badgeDef?.description || badge.description || 'Aucune description'
                 : badge.description || 'Aucune description'}
             </p>
             {badge.dateAwarded && (
-              <div className="flex justify-between items-center text-xs text-gray-500">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs text-gray-500 gap-1">
                 <span>Décerné le: {new Date(badge.dateAwarded).toLocaleDateString()}</span>
                 <span>Par: {badge.awardedBy || 'Système'}</span>
               </div>
@@ -306,7 +305,7 @@ export default function UserEditBadges({
                 </div>
               </div>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {userBadges.map((badge) => (
                 <BadgeCard key={badge.id} badge={badge} />
               ))}
@@ -411,20 +410,20 @@ export default function UserEditBadges({
                     )}
                   </div>
 
-                  <div className="flex justify-end space-x-2">
+                  <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                     <button
                       onClick={() => {
                         setIsAddingBadge(false);
                         setSelectedBadgeId(null);
                       }}
-                      className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                      className="inline-flex items-center justify-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       onClick={addBadge}
                       disabled={!selectedBadgeId}
-                      className="inline-flex items-center px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Ajouter Badge
                     </button>

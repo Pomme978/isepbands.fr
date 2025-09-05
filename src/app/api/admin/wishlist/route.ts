@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const priority = searchParams.get('priority');
     const status = searchParams.get('status');
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (category && category !== 'all') {
       where.category = category;
@@ -44,19 +44,13 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     });
 
     return NextResponse.json({ items });
   } catch (error) {
     console.error('Error fetching wishlist:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -87,10 +81,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!name || !category) {
-      return NextResponse.json(
-        { error: 'Name and category are required' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Name and category are required' }, { status: 400 });
     }
 
     const item = await prisma.wishlistItem.create({
@@ -121,9 +112,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ item });
   } catch (error) {
     console.error('Error creating wishlist item:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

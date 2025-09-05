@@ -17,12 +17,12 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
-    
+    const where: Record<string, unknown> = {};
+
     if (search) {
       where.email = { contains: search, mode: 'insensitive' };
     }
-    
+
     if (status === 'active') {
       where.isActive = true;
     } else if (status === 'inactive') {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Check which subscribers have associated user accounts
-    const subscriberEmails = subscribersData.map(s => s.email);
+    const subscriberEmails = subscribersData.map((s) => s.email);
     const users = await prisma.user.findMany({
       where: {
         email: { in: subscriberEmails },
@@ -53,10 +53,10 @@ export async function GET(req: NextRequest) {
     });
 
     // Create a case-insensitive email set for comparison
-    const userEmailsSet = new Set(users.map(u => u.email.toLowerCase()));
+    const userEmailsSet = new Set(users.map((u) => u.email.toLowerCase()));
 
     // Add hasAccount flag to each subscriber
-    const subscribers = subscribersData.map(subscriber => ({
+    const subscribers = subscribersData.map((subscriber) => ({
       ...subscriber,
       hasAccount: userEmailsSet.has(subscriber.email.toLowerCase()),
     }));
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching newsletter subscribers:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch subscribers' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -89,10 +89,7 @@ export async function DELETE(req: NextRequest) {
     const subscriberId = searchParams.get('id');
 
     if (!subscriberId) {
-      return NextResponse.json(
-        { success: false, error: 'ID de l\'abonné requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "ID de l'abonné requis" }, { status: 400 });
     }
 
     // Get subscriber
@@ -101,10 +98,7 @@ export async function DELETE(req: NextRequest) {
     });
 
     if (!subscriber) {
-      return NextResponse.json(
-        { success: false, error: 'Abonné non trouvé' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Abonné non trouvé' }, { status: 404 });
     }
 
     // Check if subscriber has an associated user account
@@ -115,7 +109,7 @@ export async function DELETE(req: NextRequest) {
     if (userAccount) {
       return NextResponse.json(
         { success: false, error: 'Impossible de supprimer un abonné ayant un compte utilisateur' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -131,7 +125,7 @@ export async function DELETE(req: NextRequest) {
       'Abonné newsletter supprimé',
       `L'email **${subscriber.email}** a été supprimé de la newsletter`,
       undefined,
-      { email: subscriber.email }
+      { email: subscriber.email },
     );
 
     return NextResponse.json({
@@ -142,7 +136,7 @@ export async function DELETE(req: NextRequest) {
     console.error('Error deleting newsletter subscriber:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete subscriber' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,10 +150,7 @@ export async function POST(req: NextRequest) {
     const { email, source = 'admin' } = body;
 
     if (!email || !email.includes('@')) {
-      return NextResponse.json(
-        { success: false, error: 'Email valide requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Email valide requis' }, { status: 400 });
     }
 
     // Check if subscriber already exists
@@ -171,7 +162,7 @@ export async function POST(req: NextRequest) {
       if (existing.isActive) {
         return NextResponse.json(
           { success: false, error: 'Cet email est déjà abonné' },
-          { status: 409 }
+          { status: 409 },
         );
       } else {
         // Reactivate subscriber
@@ -191,7 +182,7 @@ export async function POST(req: NextRequest) {
           'Abonné newsletter réactivé',
           `L'email **${email}** a été réactivé dans la newsletter`,
           undefined,
-          { email, source }
+          { email, source },
         );
 
         return NextResponse.json({
@@ -218,7 +209,7 @@ export async function POST(req: NextRequest) {
       'Nouvel abonné newsletter',
       `L'email **${email}** a été ajouté à la newsletter`,
       undefined,
-      { email, source }
+      { email, source },
     );
 
     return NextResponse.json({
@@ -230,7 +221,7 @@ export async function POST(req: NextRequest) {
     console.error('Error adding newsletter subscriber:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to add subscriber' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

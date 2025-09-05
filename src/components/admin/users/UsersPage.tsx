@@ -84,10 +84,11 @@ export default function UsersPage() {
         actions={
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            New User
+            <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">New User</span>
+            <span className="xs:hidden">Add</span>
           </button>
         }
       />

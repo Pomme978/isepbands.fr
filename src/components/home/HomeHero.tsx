@@ -106,7 +106,7 @@ const HomeHero = () => {
                   size="lg"
                   className="relative shadow-md overflow-hidden bg-primary text-sm sm:text-md py-3 sm:py-6 px-6 sm:px-12 text-primary-foreground w-full sm:w-auto"
                 >
-                  <LangLink href={`/club#adhesion`}>{t('page.home.hero.joinUs')}</LangLink>
+                  <LangLink href={`/club#rejoindre-asso`}>{t('page.home.hero.joinUs')}</LangLink>
                 </Button>
               )}
               <SocialsLink

@@ -21,8 +21,10 @@ import {
   Shield,
   Archive,
 } from 'lucide-react';
+import logoBands from '@/assets/images/logo_bands.png';
 import LangLink from '@/components/common/LangLink';
 import Avatar from '@/components/common/Avatar';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { useAuth, useSession } from '@/lib/auth-client';
 import { useRouter, useParams, usePathname } from 'next/navigation';
@@ -150,9 +152,11 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
             {/* Logo */}
             <div className="flex-shrink-0">
               <LangLink href="/" className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">IB</span>
-                </div>
+                <img
+                  src={logoBands}
+                  alt="ISEPBANDS Logo"
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
                 <div>
                   <h1 className="text-lg font-bold text-primary">Admin Panel</h1>
                 </div>
@@ -205,13 +209,18 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
 
           {/* Mobile Navigation */}
           <div className="lg:hidden flex items-center justify-between w-full">
-            {/* Logo */}
+            {/* Logo with Association Name */}
             <div className="flex-shrink-0">
-              <LangLink href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">IB</span>
+              <LangLink href="/" className="flex items-center space-x-3">
+                <img
+                  src={logoBands}
+                  alt="ISEPBANDS Logo"
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-primary leading-tight">ISEPBANDS</span>
+                  <span className="text-xs text-gray-600 leading-tight">Administration</span>
                 </div>
-                <span className="text-lg font-bold text-primary">Admin</span>
               </LangLink>
             </div>
 
@@ -232,7 +241,7 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
 
       {/* Mobile Menu - Fixed overlay */}
       <div
-        className={`lg:hidden fixed left-0 right-0 top-[65px] bottom-0 z-40 bg-white transition-all duration-300 ease-in-out ${
+        className={`lg:hidden fixed left-0 right-0 top-[60px] bottom-0 z-40 bg-white transition-all duration-300 ease-in-out ${
           isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
         }`}
       >
@@ -267,7 +276,7 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
           </div>
 
           {/* User Menu + Footer - Fixed at bottom */}
-          <div className="border-t pt-4 space-y-4 flex-shrink-0">
+          <div className="border-t space-y-4 flex-shrink-0">
             {showContent && user ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-3 px-3 py-3 border-b pb-3">
@@ -297,6 +306,13 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
                 >
                   Retour au Site
                 </button>
+
+                {/* Language Switcher */}
+                <div className="px-3 py-2">
+                  <div className="text-sm text-gray-600 mb-2">Langue</div>
+                  <LanguageSwitcher variant="compact" className="w-full" />
+                </div>
+
                 <div className="border-t pt-2">
                   <button
                     onClick={handleMobileSignOut}
@@ -314,6 +330,11 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
                 >
                   Se connecter
                 </Button>
+
+                {/* Language Switcher for non-logged users */}
+                <div className="px-3 py-2">
+                  <LanguageSwitcher variant="compact" className="w-full rounded-md" />
+                </div>
               </div>
             )}
 

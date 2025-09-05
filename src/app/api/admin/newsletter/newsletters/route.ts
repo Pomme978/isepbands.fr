@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
-    
+    const where: Record<string, unknown> = {};
+
     if (status) {
       where.status = status;
     }
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching newsletters:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch newsletters' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -77,20 +77,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const {
-      title,
-      description,
-      templateId,
-      subject,
-      variables,
-      scheduledAt,
-    } = body;
+    const { title, description, templateId, subject, variables, scheduledAt } = body;
 
     // Validation
     if (!title || !templateId || !subject) {
       return NextResponse.json(
         { success: false, error: 'Titre, template et sujet sont requis' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -100,16 +93,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (!template) {
-      return NextResponse.json(
-        { success: false, error: 'Template non trouvé' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Template non trouvé' }, { status: 404 });
     }
 
     if (!template.isActive) {
       return NextResponse.json(
-        { success: false, error: 'Le template sélectionné n\'est pas actif' },
-        { status: 400 }
+        { success: false, error: "Le template sélectionné n'est pas actif" },
+        { status: 400 },
       );
     }
 
@@ -153,13 +143,13 @@ export async function POST(req: NextRequest) {
       'Newsletter créée',
       `La newsletter **${title}** a été créée${scheduledAt ? ' et programmée' : ''}`,
       undefined,
-      { 
+      {
         newsletterId: newsletter.id,
         title,
         templateId,
         recipientCount,
-        status: newsletter.status
-      }
+        status: newsletter.status,
+      },
     );
 
     return NextResponse.json({
@@ -171,7 +161,7 @@ export async function POST(req: NextRequest) {
     console.error('Error creating newsletter:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create newsletter' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -698,14 +698,15 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
           <LangLink
             href="/admin/users"
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Users
+            <span className="hidden sm:inline">Back to Users</span>
+            <span className="sm:hidden">Back</span>
           </LangLink>
 
           <div className="flex items-center space-x-3">
@@ -713,50 +714,76 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               src={user.avatar || user.photoUrl}
               name={`${user.firstName} ${user.lastName}`}
               size="md"
+              className="flex-shrink-0"
             />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
                 {user.firstName} {user.lastName}
                 {currentUserId === user.id && (
-                  <span className="text-lg font-normal text-blue-600 ml-2">(moi)</span>
+                  <span className="text-sm sm:text-lg font-normal text-blue-600 ml-2">(moi)</span>
                 )}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600 truncate">
                 {user.promotion} • {allRolesDisplay}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          {!isArchived && (
-            <AdminButton onClick={handleViewProfile} variant="secondary" size="sm" icon={Eye}>
-              View Profile
-            </AdminButton>
-          )}
-
-          {!isArchived && (
-            <>
-              <AdminButton onClick={handleSendEmail} variant="ghost" size="sm" icon={Mail}>
-                Send Email
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2">
+          <div className="flex flex-wrap items-center justify-stretch sm:justify-start gap-2">
+            {!isArchived && (
+              <AdminButton
+                onClick={handleViewProfile}
+                variant="secondary"
+                size="sm"
+                icon={Eye}
+                className="flex-1 sm:flex-none"
+              >
+                <span className="hidden sm:inline">View Profile</span>
+                <span className="sm:hidden">View</span>
               </AdminButton>
+            )}
 
-              <AdminButton onClick={handleResetPassword} variant="ghost" size="sm" icon={Lock}>
-                Reset Password
-              </AdminButton>
-            </>
-          )}
+            {!isArchived && (
+              <>
+                <AdminButton
+                  onClick={handleSendEmail}
+                  variant="ghost"
+                  size="sm"
+                  icon={Mail}
+                  className="flex-1 sm:flex-none"
+                >
+                  <span className="hidden lg:inline">Send Email</span>
+                  <span className="lg:hidden">Email</span>
+                </AdminButton>
+
+                <AdminButton
+                  onClick={handleResetPassword}
+                  variant="ghost"
+                  size="sm"
+                  icon={Lock}
+                  className="flex-1 sm:flex-none"
+                >
+                  <span className="hidden lg:inline">Reset Password</span>
+                  <span className="lg:hidden">Reset</span>
+                </AdminButton>
+              </>
+            )}
+          </div>
 
           {currentUserId !== user.id && (
-            <>
+            <div className="flex flex-wrap items-center justify-stretch sm:justify-start gap-2">
               {needsRestore && (
                 <AdminButton
                   onClick={() => setShowRestoreConfirm(true)}
                   variant="success"
                   size="sm"
                   icon={RotateCcw}
+                  className="flex-1 sm:flex-none"
                 >
-                  Restaurer l&apos;utilisateur
+                  <span className="hidden sm:inline">Restaurer l&apos;utilisateur</span>
+                  <span className="sm:hidden">Restaurer</span>
                 </AdminButton>
               )}
 
@@ -766,8 +793,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                   variant="warning"
                   size="sm"
                   icon={Archive}
+                  className="flex-1 sm:flex-none"
                 >
-                  Archive User
+                  <span className="hidden sm:inline">Archive User</span>
+                  <span className="sm:hidden">Archive</span>
                 </AdminButton>
               )}
 
@@ -776,10 +805,12 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                 variant="danger"
                 size="sm"
                 icon={Trash2}
+                className="flex-1 sm:flex-none"
               >
-                Delete User
+                <span className="hidden sm:inline">Delete User</span>
+                <span className="sm:hidden">Delete</span>
               </AdminButton>
-            </>
+            </div>
           )}
 
           {!needsRestore && (
@@ -791,8 +822,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
               icon={Save}
               loading={saving}
               loadingText="Saving..."
+              className="w-full sm:w-auto"
             >
-              Save Changes
+              <span className="hidden sm:inline">Save Changes</span>
+              <span className="sm:hidden">Save</span>
             </AdminButton>
           )}
         </div>
@@ -905,33 +938,44 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
       {/* Tabs Navigation */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="flex border-b border-gray-200 overflow-x-auto">
+        <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center space-x-1 sm:space-x-2 px-4 sm:px-6 py-4 sm:py-4 text-sm sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 min-h-[52px] ${
                 activeTab === tab.id
                   ? 'text-primary border-b-2 border-primary bg-primary/5'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
-              <span>{tab.label}</span>
+              <tab.icon className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">
+                {tab.id === 'main' && 'Info'}
+                {tab.id === 'permissions' && 'Perms'}
+                {tab.id === 'instruments' && 'Instru'}
+                {tab.id === 'badges' && 'Badges'}
+                {tab.id === 'groups' && 'Groups'}
+                {tab.id === 'events' && 'Events'}
+                {tab.id === 'activity' && 'Log'}
+              </span>
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">{renderTabContent()}</div>
+        <div className="p-4 sm:p-6">{renderTabContent()}</div>
       </div>
 
       {/* Unsaved Changes Warning */}
       {hasUnsavedChanges && (
-        <div className="fixed bottom-6 right-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 shadow-lg">
+        <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 shadow-lg z-40">
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-            <span className="text-sm text-yellow-800 font-medium">You have unsaved changes</span>
+            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse flex-shrink-0" />
+            <span className="text-xs sm:text-sm text-yellow-800 font-medium">
+              You have unsaved changes
+            </span>
           </div>
         </div>
       )}

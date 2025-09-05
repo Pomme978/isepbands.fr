@@ -430,10 +430,10 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <div className="text-red-600 mb-2">Error loading users</div>
-        <div className="text-gray-500 mb-4">{error}</div>
-        <AdminButton onClick={fetchUsers} variant="primary" size="md" icon={RefreshCcw}>
+      <div className="text-center py-8 px-4">
+        <div className="text-red-600 mb-2 text-sm sm:text-base">Error loading users</div>
+        <div className="text-gray-500 mb-4 text-sm">{error}</div>
+        <AdminButton onClick={fetchUsers} variant="primary" size="sm" icon={RefreshCcw}>
           Retry
         </AdminButton>
       </div>
@@ -452,10 +452,10 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
   // Show "no users found" message if no results
   if (!hasAnyResults && users.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+      <div className="text-center py-12 px-4">
+        <div className="mx-auto w-16 h-16 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
           <svg
-            className="w-12 h-12 text-gray-400"
+            className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -468,12 +468,14 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun utilisateur trouvé</h3>
-        <p className="text-gray-500 max-w-sm mx-auto mb-6">
+        <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+          Aucun utilisateur trouvé
+        </h3>
+        <p className="text-sm sm:text-base text-gray-500 max-w-sm mx-auto mb-6">
           Aucun utilisateur ne correspond aux critères de recherche actuels. Essayez de modifier vos
           filtres ou ajoutez de nouveaux membres.
         </p>
-        <AdminButton onClick={fetchUsers} variant="primary" size="md" icon={RefreshCcw}>
+        <AdminButton onClick={fetchUsers} variant="primary" size="sm" icon={RefreshCcw}>
           Actualiser
         </AdminButton>
       </div>
@@ -595,7 +597,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
 
       {/* Pagination Info */}
       {pagination.total > 0 && (
-        <div className="text-sm text-gray-500 text-center">
+        <div className="text-xs sm:text-sm text-gray-500 text-center px-4">
           Showing {users.length} of {pagination.total} users
         </div>
       )}

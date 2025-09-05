@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Clock,
   CheckCircle,
-  AlertCircle,
   UserCheck,
   UserX,
   Settings,
@@ -20,9 +19,12 @@ import {
   ChevronRight,
   Info,
   LogIn,
+  History,
 } from 'lucide-react';
 import { formatActivityDescription } from '@/services/activityLogService';
 import { useAuth } from '@/lib/auth-client';
+import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
+import { Button } from '@/components/ui/button';
 interface ActivityLog {
   id: string;
   type: string;
@@ -52,7 +54,10 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [loadingLog, setLoadingLog] = useState(true);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const { user } = useAuth();
+
+  const MAX_DISPLAYED_LOGS = 10;
 
   const toggleExpanded = (logId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -74,7 +79,13 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
       if (typeof value === 'string') return value;
       if (Array.isArray(value)) return value.join(', ');
       if (typeof value === 'object' && value !== null) {
-        return JSON.stringify(value, null, 2);
+        try {
+          return Object.entries(value as Record<string, unknown>)
+            .map(([k, v]) => `${k}: ${String(v)}`)
+            .join(', ');
+        } catch {
+          return String(value);
+        }
       }
       return String(value);
     };
@@ -94,18 +105,53 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
         adminAction: 'Action administrateur',
         deletedByOwner: 'Supprimé par le propriétaire',
         deletedByAdmin: 'Supprimé par un admin',
+        oldValue: 'Ancienne valeur',
+        newValue: 'Nouvelle valeur',
+        changes: 'Modifications',
       };
       return keyMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
     };
 
     return Object.entries(metadata)
-      .filter(([key]) => !['adminAction', 'originalAction'].includes(key)) // Masquer les champs techniques
+      .filter(([key]) => !['adminAction', 'originalAction'].includes(key))
       .map(([key, value]) => (
-        <div key={key} className="flex justify-between py-1">
-          <span className="text-sm font-medium text-gray-600">{formatKey(key)}:</span>
-          <span className="text-sm text-gray-800 ml-2">{formatValue(value)}</span>
+        <div key={key} className="flex flex-col sm:flex-row sm:justify-between py-1">
+          <span className="text-sm font-medium text-gray-600 sm:mr-2">{formatKey(key)}:</span>
+          <span className="text-sm text-gray-800 break-words">{formatValue(value)}</span>
         </div>
       ));
+  };
+
+  // Transform ActivityLog to ActivityType format for the modal
+  const transformLogsForModal = (logs: ActivityLog[]) => {
+    return logs.map((log) => ({
+      id: log.id,
+      type: log.type as
+        | 'user_approved'
+        | 'user_rejected'
+        | 'user_created'
+        | 'user_archived'
+        | 'user_restored'
+        | 'profile_updated'
+        | 'user_edited'
+        | 'role_assigned'
+        | 'role_created'
+        | 'permissions_updated'
+        | 'permission_created'
+        | 'event_created'
+        | 'event_updated'
+        | 'archived'
+        | 'unarchived'
+        | 'system_settings_updated'
+        | 'year_migration'
+        | 'system_announcement'
+        | 'user_login'
+        | 'root_login'
+        | string,
+      timestamp: new Date(log.createdAt),
+      description: log.title,
+      user: log.createdByName ? { name: log.createdByName } : undefined,
+    }));
   };
 
   // Helper function pour obtenir l'icône et la couleur selon le type d'activité
@@ -195,14 +241,24 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
       {loadingRegistration ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm animate-pulse">
           <div className="flex items-center space-x-2 mb-4">
-            <div className="w-5 h-5 bg-blue-200 rounded-full" />
+            <div className="w-5 h-5 bg-gray-200 rounded" />
             <div className="h-5 w-48 bg-gray-200 rounded" />
           </div>
-          <div className="grid grid-cols-1 gap-6">
-            <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-            <div className="h-4 w-64 bg-gray-100 rounded mb-2" />
-            <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-            <div className="h-4 w-64 bg-gray-100 rounded mb-2" />
+          <div className="space-y-6">
+            {/* Skeleton pour 2 blocs (motivation + expérience) */}
+            {[1, 2].map((index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <div className="w-5 h-5 bg-gray-200 rounded flex-shrink-0 mt-0.5"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : registrationDetails &&
@@ -249,7 +305,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
 
       {/* Section : Timeline d'activité */}
       {loadingLog ? (
-        <div className="animate-pulse">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm animate-pulse">
           <div className="flex items-center space-x-2 mb-4">
             <div className="w-5 h-5 bg-gray-200 rounded" />
             <div className="h-5 w-48 bg-gray-200 rounded" />
@@ -271,9 +327,22 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
-            <FileText className="w-5 h-5 text-primary" />
-            <h4 className="text-lg font-medium text-gray-900">Historique des actions</h4>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <FileText className="w-5 h-5 text-primary" />
+              <h4 className="text-lg font-medium text-gray-900">Historique des actions</h4>
+            </div>
+            {activityLog.length > MAX_DISPLAYED_LOGS && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowHistoryModal(true)}
+                className="flex items-center gap-2"
+              >
+                <History className="w-4 h-4" />
+                Voir tout ({activityLog.length})
+              </Button>
+            )}
           </div>
           {activityLog.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -282,7 +351,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
             </div>
           ) : (
             <ol className="relative border-l-2 border-primary/30 ml-4">
-              {activityLog.map((log) => {
+              {activityLog.slice(0, MAX_DISPLAYED_LOGS).map((log) => {
                 const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
                 const isExpanded = expandedItems.has(log.id);
                 const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
@@ -351,6 +420,14 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
           )}
         </div>
       )}
+
+      {/* Modal historique complet */}
+      <ActivityHistoryModal
+        activities={transformLogsForModal(activityLog)}
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        title="Historique complet des activités utilisateur"
+      />
     </div>
   );
 }

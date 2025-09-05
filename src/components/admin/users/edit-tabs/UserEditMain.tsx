@@ -222,7 +222,7 @@ export default function UserEditMain({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
             <input
@@ -230,7 +230,7 @@ export default function UserEditMain({
               value={user.firstName}
               onChange={(e) => updateField('firstName', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
@@ -241,7 +241,7 @@ export default function UserEditMain({
               value={user.lastName}
               onChange={(e) => updateField('lastName', e.target.value.toUpperCase())}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
@@ -252,7 +252,7 @@ export default function UserEditMain({
               value={user.email}
               onChange={(e) => updateField('email', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
@@ -266,7 +266,7 @@ export default function UserEditMain({
                 updateField('phoneNumber', formatted);
               }}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
               placeholder="+33 6 12 34 56 78"
             />
           </div>
@@ -277,7 +277,7 @@ export default function UserEditMain({
               value={user.pronouns || ''}
               onChange={(e) => updateField('pronouns', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <option value="">Select pronouns</option>
               <option value="he/him">he/him (il/lui)</option>
@@ -306,7 +306,7 @@ export default function UserEditMain({
               value={user.birthDate || ''}
               onChange={(e) => updateField('birthDate', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
@@ -316,7 +316,7 @@ export default function UserEditMain({
               value={user.promotion}
               onChange={(e) => updateField('promotion', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <option value="P1">P1</option>
               <option value="P2">P2</option>
@@ -338,7 +338,7 @@ export default function UserEditMain({
             value={user.bio || ''}
             onChange={(e) => updateField('bio', e.target.value)}
             disabled={isReadOnly}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             rows={4}
             placeholder="Brief biography..."
           />
@@ -349,14 +349,14 @@ export default function UserEditMain({
       <div className="border-t border-gray-200 pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Status</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
             <label className="block text-sm font-medium text-gray-700 mb-1">Member Status</label>
             <select
               value={user.status}
               onChange={(e) => updateField('status', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <option value="current">Current Member</option>
               <option value="former">Former Member</option>
@@ -370,14 +370,14 @@ export default function UserEditMain({
             </select>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
             <label className="block text-sm font-medium text-gray-700 mb-1">Join Date</label>
             <input
               type="date"
               value={user.joinDate}
               onChange={(e) => updateField('joinDate', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
         </div>
@@ -394,7 +394,7 @@ export default function UserEditMain({
               disabled={isReadOnly}
               rows={3}
               placeholder={`Enter the reason for ${user.status}...`}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
             <p className="text-xs text-gray-500 mt-1">
               This reason will be shown to the user when they try to log in.
@@ -407,8 +407,8 @@ export default function UserEditMain({
       <div className="border-t border-gray-200 pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Verification</h3>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="flex items-center justify-between">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center">
               {user.emailVerified ? (
                 <>
@@ -423,7 +423,7 @@ export default function UserEditMain({
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {!isReadOnly && (
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -462,8 +462,10 @@ export default function UserEditMain({
                   variant="secondary"
                   size="xs"
                   icon={Mail}
+                  className="w-full sm:w-auto"
                 >
-                  Envoyer email de vérification
+                  <span className="hidden sm:inline">Envoyer email de vérification</span>
+                  <span className="sm:hidden">Envoyer email</span>
                 </AdminButton>
               )}
             </div>

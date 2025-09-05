@@ -28,6 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const details = {
       motivation: user.registrationRequest?.motivation || null,
+      experience: user.registrationRequest?.experience || null,
       createdAt: user.createdAt.toISOString(),
       instruments: user.instruments.map((ui) => ({
         instrumentName: ui.instrument.name,
