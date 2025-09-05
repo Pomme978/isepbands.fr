@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import StatCard from './StatCard';
-import { Users, Megaphone, Calendar, LucideIcon } from 'lucide-react';
+import { Users, UsersRound, Calendar, LucideIcon } from 'lucide-react';
 import { getCurrentAcademicYear } from '@/utils/schoolUtils';
 
 interface StatData {
@@ -39,8 +39,8 @@ const fetchStats = async (): Promise<StatData[]> => {
       {
         title: 'Groupes actifs',
         value: 0, // Will be implemented later
-        icon: Megaphone,
-        iconBgColor: 'bg-green-500',
+        icon: UsersRound,
+        iconBgColor: 'bg-orange-500',
       },
       {
         title: 'Événements cette année',
@@ -62,8 +62,8 @@ const fetchStats = async (): Promise<StatData[]> => {
       {
         title: 'Groupes actifs',
         value: 0,
-        icon: Megaphone,
-        iconBgColor: 'bg-green-500',
+        icon: UsersRound,
+        iconBgColor: 'bg-orange-500',
       },
       {
         title: 'Événements cette année',
@@ -110,11 +110,13 @@ export default function DashboardStats({ currentAcademicYear }: DashboardStatsPr
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-3 sm:flex sm:gap-6">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-lg p-6 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+          <div key={i} className="bg-white rounded-lg p-4 animate-pulse sm:w-auto">
+            <div className="flex items-center justify-center space-x-3">
+              <div className="h-8 w-8 bg-gray-200 rounded"></div>
+              <div className="h-6 bg-gray-200 rounded w-8"></div>
+            </div>
           </div>
         ))}
       </div>
@@ -122,7 +124,7 @@ export default function DashboardStats({ currentAcademicYear }: DashboardStatsPr
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-3 gap-3 sm:flex sm:gap-6">
       {stats.map((stat, index) => (
         <StatCard
           key={`${stat.title}-${index}`}
