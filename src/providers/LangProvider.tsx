@@ -13,13 +13,34 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
     return 'fr';
   }, [params]);
 
-  // Local state for immediate UI updates
-  const [currentLang, setCurrentLang] = useState(urlLang);
+  // Initialize with stored language or URL language
+  const [currentLang, setCurrentLang] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const storedLang = localStorage.getItem('preferred-language');
+      return storedLang && ['fr', 'en'].includes(storedLang) ? storedLang : urlLang;
+    }
+    return urlLang;
+  });
 
-  // Sync local state with URL changes
+  // Sync local state with URL changes, but prioritize stored preference
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedLang = localStorage.getItem('preferred-language');
+      if (storedLang && ['fr', 'en'].includes(storedLang) && storedLang !== urlLang) {
+        // If there's a stored preference different from URL, redirect to stored preference
+        const segments = pathname.split('/');
+        if (segments[1] === 'fr' || segments[1] === 'en') {
+          segments[1] = storedLang;
+        } else {
+          segments.splice(1, 0, storedLang);
+        }
+        const newPath = segments.join('/') || '/';
+        router.replace(newPath);
+        return;
+      }
+    }
     setCurrentLang(urlLang);
-  }, [urlLang]);
+  }, [urlLang, pathname, router]);
 
   useEffect(() => {
     const segments = pathname.split('/');
@@ -34,6 +55,11 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
     // Update local state immediately for instant UI feedback
     setCurrentLang(newLang);
 
+    // Store language preference in localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('preferred-language', newLang);
+    }
+
     // Update URL without page reload
     const segments = pathname.split('/');
     if (segments[1] === 'fr' || segments[1] === 'en') {
@@ -44,12 +70,8 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
     const newPath = segments.join('/') || '/';
 
-    // Use window.history.replaceState to avoid page reload
-    if (typeof window !== 'undefined') {
-      window.history.replaceState({}, '', newPath);
-      // Trigger a popstate event to update Next.js router
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
+    // Use Next.js router for proper navigation
+    router.replace(newPath);
   };
 
   return (
