@@ -25,12 +25,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Always return success to avoid email enumeration
-    if (!user || user.status !== 'CURRENT') {
-      return NextResponse.json({
-        success: true,
-        message: 'Si cette adresse email existe, un lien de réinitialisation vous sera envoyé.',
-      });
+    // Return different messages for different cases
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Aucun compte associé à cette adresse email.',
+        },
+        { status: 404 },
+      );
+    }
+
+    if (user.status !== 'CURRENT') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Ce compte est inactif. Contactez un administrateur.',
+        },
+        { status: 403 },
+      );
     }
 
     // Generate reset token (valid for 1 hour)
@@ -46,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Si cette adresse email existe, un lien de réinitialisation vous sera envoyé.',
+      message: 'Un lien de réinitialisation a été envoyé à votre adresse email.',
     });
   } catch (error) {
     console.error('Forgot password error:', error);

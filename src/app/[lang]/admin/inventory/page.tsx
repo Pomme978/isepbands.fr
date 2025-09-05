@@ -185,8 +185,8 @@ export default function InventoryPage() {
   // Regroupement des items par nom
   const groupedItems = useMemo<GroupedItems[]>(() => {
     const groups = new Map<string, InventoryItem[]>();
-    
-    filteredItems.forEach(item => {
+
+    filteredItems.forEach((item) => {
       const key = item.name.toLowerCase().trim();
       if (!groups.has(key)) {
         groups.set(key, []);
@@ -194,19 +194,21 @@ export default function InventoryPage() {
       groups.get(key)!.push(item);
     });
 
-    return Array.from(groups.entries()).map(([key, items]) => ({
-      key,
-      name: items[0].name,
-      items,
-      totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(groups.entries())
+      .map(([key, items]) => ({
+        key,
+        name: items[0].name,
+        items,
+        totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [filteredItems]);
 
   // Stacking des items identiques pour la grille
   const stackedItems = useMemo(() => {
     const stacks = new Map<string, InventoryItem[]>();
-    
-    filteredItems.forEach(item => {
+
+    filteredItems.forEach((item) => {
       const stackKey = `${item.category.toLowerCase()}-${item.name.toLowerCase()}`;
       if (!stacks.has(stackKey)) {
         stacks.set(stackKey, []);
@@ -226,11 +228,11 @@ export default function InventoryPage() {
   // Items organisés par catégorie pour le mode board
   const boardItems = useMemo(() => {
     const board = new Map<string, InventoryItem[]>();
-    
+
     // Initialiser avec toutes les catégories
-    CATEGORIES.forEach(cat => board.set(cat, []));
-    
-    filteredItems.forEach(item => {
+    CATEGORIES.forEach((cat) => board.set(cat, []));
+
+    filteredItems.forEach((item) => {
       if (!board.has(item.category)) {
         board.set(item.category, []);
       }
@@ -278,14 +280,16 @@ export default function InventoryPage() {
       }
 
       const result = await response.json();
-      
+
       // Log d'activité
       await fetch('/api/admin/activity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: editingItem ? 'inventory_updated' : 'inventory_created',
-          title: editingItem ? `Équipement modifié: ${formData.name}` : `Nouvel équipement ajouté: ${formData.name}`,
+          title: editingItem
+            ? `Équipement modifié: ${formData.name}`
+            : `Nouvel équipement ajouté: ${formData.name}`,
           description: `${formData.category} - ${[formData.brand, formData.model].filter(Boolean).join(' ')} (Qté: ${formData.quantity})`,
           metadata: {
             itemId: result.item?.id || editingItem?.id,
@@ -293,7 +297,7 @@ export default function InventoryPage() {
             name: formData.name,
             quantity: formData.quantity,
             state: formData.state,
-          }
+          },
         }),
       }).catch(console.error);
 
@@ -343,7 +347,7 @@ export default function InventoryPage() {
 
       if (response.ok) {
         await fetchItems();
-        
+
         // Activity log
         await fetch('/api/admin/activity', {
           method: 'POST',
@@ -367,7 +371,7 @@ export default function InventoryPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const item = items.find(i => i.id === id);
+    const item = items.find((i) => i.id === id);
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
 
     try {
@@ -392,7 +396,7 @@ export default function InventoryPage() {
               name: item.name,
               quantity: item.quantity,
               state: item.state,
-            }
+            },
           }),
         }).catch(console.error);
       }
@@ -438,7 +442,7 @@ export default function InventoryPage() {
   };
 
   const toggleGroup = (key: string) => {
-    setExpandedGroups(prev => {
+    setExpandedGroups((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
         newSet.delete(key);
@@ -450,7 +454,7 @@ export default function InventoryPage() {
   };
 
   const toggleStack = (key: string) => {
-    setExpandedStacks(prev => {
+    setExpandedStacks((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
         newSet.delete(key);
@@ -462,20 +466,26 @@ export default function InventoryPage() {
   };
 
   const nextImage = (itemId: string, imagesLength: number) => {
-    setCurrentImageIndex(prev => ({
+    setCurrentImageIndex((prev) => ({
       ...prev,
-      [itemId]: ((prev[itemId] || 0) + 1) % imagesLength
+      [itemId]: ((prev[itemId] || 0) + 1) % imagesLength,
     }));
   };
 
   const prevImage = (itemId: string, imagesLength: number) => {
-    setCurrentImageIndex(prev => ({
+    setCurrentImageIndex((prev) => ({
       ...prev,
-      [itemId]: ((prev[itemId] || 0) - 1 + imagesLength) % imagesLength
+      [itemId]: ((prev[itemId] || 0) - 1 + imagesLength) % imagesLength,
     }));
   };
 
-  const renderStackCard = (stack: { key: string; items: InventoryItem[]; representative: InventoryItem; totalQuantity: number; isStacked: boolean }) => {
+  const renderStackCard = (stack: {
+    key: string;
+    items: InventoryItem[];
+    representative: InventoryItem;
+    totalQuantity: number;
+    isStacked: boolean;
+  }) => {
     const { key, items, representative, totalQuantity, isStacked } = stack;
     const isExpanded = expandedStacks.has(key);
 
@@ -488,8 +498,8 @@ export default function InventoryPage() {
       return (
         <>
           {/* Header replié en première position */}
-          <div 
-            key={`${key}-header`} 
+          <div
+            key={`${key}-header`}
             onClick={(e) => {
               e.stopPropagation();
               toggleStack(key);
@@ -511,12 +521,10 @@ export default function InventoryPage() {
             >
               {/* Fond d'enveloppe */}
               <div className="absolute inset-0 bg-primary/10 rounded-lg -z-10 scale-105"></div>
-              <div onClick={(e) => e.stopPropagation()}>
-                {renderItemCard(item)}
-              </div>
+              <div onClick={(e) => e.stopPropagation()}>{renderItemCard(item)}</div>
             </div>
           ))}
-          
+
           <style jsx>{`
             @keyframes expandFromStack {
               0% {
@@ -535,9 +543,9 @@ export default function InventoryPage() {
 
     // Mode empilé
     return (
-      <div 
-        key={key} 
-        className="relative group cursor-pointer" 
+      <div
+        key={key}
+        className="relative group cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           toggleStack(key);
@@ -545,9 +553,9 @@ export default function InventoryPage() {
       >
         {/* Composant d'effet de stack */}
         <StackEffect count={items.length} isVisible={true} />
-        
+
         {/* Card principale avec événements bloqués */}
-        <div 
+        <div
           className="relative z-10 transition-all duration-300 group-hover:transform group-hover:-translate-y-2 group-hover:shadow-xl group-hover:scale-105"
           onClick={(e) => e.stopPropagation()}
         >
@@ -555,10 +563,10 @@ export default function InventoryPage() {
             {renderItemCard({ ...representative, quantity: totalQuantity })}
           </div>
         </div>
-        
+
         {/* Overlay cliquable invisible pour capturer les clics */}
         <div className="absolute inset-0 z-30 cursor-pointer" />
-        
+
         {/* Badge avec nombre d'items */}
         <div className="absolute -top-2 -left-2 z-40 pointer-events-none">
           <div className="relative">
@@ -568,17 +576,17 @@ export default function InventoryPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Icône de déroulement au centre */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
           <div className="bg-primary/90 text-white rounded-full p-3 shadow-lg animate-bounce">
             <Layers className="w-5 h-5" />
           </div>
         </div>
-        
+
         {/* Effet de brillance au hover */}
         <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] pointer-events-none z-20"></div>
-        
+
         {/* Tooltip */}
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
           <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap">
@@ -635,9 +643,7 @@ export default function InventoryPage() {
                     <div
                       key={idx}
                       className={`w-1.5 h-1.5 rounded-full ${
-                        idx === (currentImageIndex[item.id] || 0)
-                          ? 'bg-white'
-                          : 'bg-white/60'
+                        idx === (currentImageIndex[item.id] || 0) ? 'bg-white' : 'bg-white/60'
                       }`}
                     />
                   ))}
@@ -671,7 +677,9 @@ export default function InventoryPage() {
               Qté: <span className="font-medium text-gray-700">{item.quantity}</span>
             </span>
           </div>
-          <h3 className="font-bold text-base font-outfit text-gray-900 leading-tight mb-1">{item.name}</h3>
+          <h3 className="font-bold text-base font-outfit text-gray-900 leading-tight mb-1">
+            {item.name}
+          </h3>
           {(item.brand || item.model) && (
             <p className="text-xs text-gray-600 font-ubuntu">
               {[item.brand, item.model].filter(Boolean).join(' • ')}
@@ -682,7 +690,7 @@ export default function InventoryPage() {
         {/* Commentaire si présent */}
         {item.comment && (
           <p className="text-xs text-gray-600 font-ubuntu mb-2 line-clamp-2 italic">
-            "{item.comment}"
+            &ldquo;{item.comment}&ldquo;
           </p>
         )}
 
@@ -724,7 +732,10 @@ export default function InventoryPage() {
 
   // Drag & Drop handlers
   const handleDragStart = (e: React.DragEvent, item: InventoryItem) => {
-    e.dataTransfer.setData('text/plain', JSON.stringify({ itemId: item.id, currentCategory: item.category }));
+    e.dataTransfer.setData(
+      'text/plain',
+      JSON.stringify({ itemId: item.id, currentCategory: item.category }),
+    );
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -749,7 +760,7 @@ export default function InventoryPage() {
 
       if (response.ok) {
         await fetchItems();
-        
+
         // Activity log
         await fetch('/api/admin/activity', {
           method: 'POST',
@@ -841,7 +852,9 @@ export default function InventoryPage() {
                 </td>
                 <td className="px-4 py-3 text-center">{item.quantity}</td>
                 <td className="px-4 py-3 text-center">
-                  <Badge className={`text-xs ${item.usable ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>
+                  <Badge
+                    className={`text-xs ${item.usable ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}
+                  >
                     {item.usable ? 'Oui' : 'Non'}
                   </Badge>
                 </td>
@@ -885,8 +898,8 @@ export default function InventoryPage() {
   const renderBoardView = () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {boardItems.map(([category, categoryItems]) => (
-        <div 
-          key={category} 
+        <div
+          key={category}
           className="bg-gray-50 rounded-lg p-4"
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, category)}
@@ -983,7 +996,7 @@ export default function InventoryPage() {
               </span>
             </div>
             <div className="flex gap-2">
-              {group.items.slice(0, 3).map((item, idx) => (
+              {group.items.slice(0, 3).map((item, idx) =>
                 item.images && item.images[0] ? (
                   <Image
                     key={idx}
@@ -994,11 +1007,14 @@ export default function InventoryPage() {
                     className="w-10 h-10 rounded object-cover"
                   />
                 ) : (
-                  <div key={idx} className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
+                  <div
+                    key={idx}
+                    className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center"
+                  >
                     <Camera className="w-4 h-4 text-gray-400" />
                   </div>
-                )
-              ))}
+                ),
+              )}
               {group.items.length > 3 && (
                 <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
                   <span className="text-xs text-gray-600">+{group.items.length - 3}</span>
@@ -1006,7 +1022,7 @@ export default function InventoryPage() {
               )}
             </div>
           </button>
-          
+
           {expandedGroups.has(group.key) && (
             <div className="border-t border-gray-200 p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1121,7 +1137,7 @@ export default function InventoryPage() {
                         <SelectValue placeholder="Sélectionnez un état">
                           {formData.state && (
                             <div className="flex items-center gap-2">
-                              <div 
+                              <div
                                 className={`w-3 h-3 rounded-full border ${STATE_COLORS[formData.state as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
                               />
                               {STATE_LABELS[formData.state as keyof typeof STATE_LABELS]}
@@ -1133,7 +1149,7 @@ export default function InventoryPage() {
                         {Object.entries(STATE_LABELS).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
                             <div className="flex items-center gap-3">
-                              <div 
+                              <div
                                 className={`w-3 h-3 rounded-full border ${STATE_COLORS[value as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
                               />
                               {label}
@@ -1174,7 +1190,9 @@ export default function InventoryPage() {
                       />
                       Utilisable
                     </label>
-                    <p className="text-xs text-gray-500 mt-1">L'article est-il actuellement utilisable ?</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      L&apos;article est-il actuellement utilisable ?
+                    </p>
                   </div>
 
                   <div>
@@ -1199,7 +1217,7 @@ export default function InventoryPage() {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif"
                     multiple
                     onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
                     className="hidden"
@@ -1314,19 +1332,26 @@ export default function InventoryPage() {
         <div className="bg-white rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold font-outfit text-gray-900">Inventaire Musical ISEP Bands</h2>
-              <p className="text-xs text-gray-600 font-ubuntu">État du matériel de l'association</p>
+              <h2 className="text-lg font-bold font-outfit text-gray-900">
+                Inventaire Musical ISEP Bands
+              </h2>
+              <p className="text-xs text-gray-600 font-ubuntu">
+                État du matériel de l&apos;association
+              </p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold font-outfit text-primary">{items.length}</p>
               <p className="text-xs text-gray-600 font-ubuntu">objets</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="bg-white p-2 text-center">
               <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {items.filter((i) => i.usable && ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length}
+                {
+                  items.filter((i) => i.usable && ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state))
+                    .length
+                }
               </p>
               <p className="text-xs text-gray-600 font-ubuntu">Utilisables</p>
             </div>
@@ -1337,7 +1362,7 @@ export default function InventoryPage() {
               </p>
               <p className="text-xs text-gray-600 font-ubuntu">Non utilisables</p>
             </div>
-            
+
             <div className="bg-white p-2 text-center">
               <p className="text-lg font-bold font-outfit text-primary mb-1">
                 {items.filter((i) => ['DEFECTIVE', 'OUT_OF_SERVICE'].includes(i.state)).length}
@@ -1345,7 +1370,7 @@ export default function InventoryPage() {
               <p className="text-xs text-gray-600 font-ubuntu">Hors service</p>
             </div>
           </div>
-          
+
           {/* Catégories les plus représentées */}
           <div className="flex flex-wrap gap-1">
             <span className="text-xs text-gray-500 font-ubuntu mr-1">Principales:</span>
@@ -1396,13 +1421,13 @@ export default function InventoryPage() {
                 >
                   <X className="w-4 h-4" />
                 </button>
-                
+
                 {/* Trouver l'item correspondant à l'image */}
                 {(() => {
-                  const currentItem = filteredItems.find(item => 
-                    item.images?.includes(viewingImage)
+                  const currentItem = filteredItems.find((item) =>
+                    item.images?.includes(viewingImage),
                   );
-                  
+
                   if (!currentItem || !currentItem.images || currentItem.images.length <= 1) {
                     return (
                       <Image
@@ -1414,9 +1439,9 @@ export default function InventoryPage() {
                       />
                     );
                   }
-                  
+
                   const currentIndex = currentItem.images.indexOf(viewingImage);
-                  
+
                   return (
                     <div className="relative group">
                       <Image
@@ -1426,18 +1451,20 @@ export default function InventoryPage() {
                         height={600}
                         className="w-full h-auto max-h-[85vh] object-contain"
                       />
-                      
+
                       {/* Flèches de navigation */}
                       <button
                         onClick={() => {
-                          const prevIndex = (currentIndex - 1 + currentItem.images!.length) % currentItem.images!.length;
+                          const prevIndex =
+                            (currentIndex - 1 + currentItem.images!.length) %
+                            currentItem.images!.length;
                           setViewingImage(currentItem.images![prevIndex]);
                         }}
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-3 hover:bg-black/80 transition-colors z-10"
                       >
                         <ChevronLeft className="w-6 h-6" />
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           const nextIndex = (currentIndex + 1) % currentItem.images!.length;
@@ -1447,7 +1474,7 @@ export default function InventoryPage() {
                       >
                         <ChevronRight className="w-6 h-6" />
                       </button>
-                      
+
                       {/* Indicateurs */}
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/30 px-3 py-2 rounded-full">
                         {currentItem.images.map((img, idx) => (
@@ -1460,7 +1487,7 @@ export default function InventoryPage() {
                           />
                         ))}
                       </div>
-                      
+
                       {/* Compteur */}
                       <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                         {currentIndex + 1} / {currentItem.images.length}

@@ -46,7 +46,7 @@ export class EmailService {
   }
 
   static async sendWelcomeEmail(email: string, name: string, temporaryPassword?: string) {
-    const emailHtml = render(WelcomeEmail({ name, email, temporaryPassword }));
+    const emailHtml = await render(WelcomeEmail({ name, email, temporaryPassword }));
 
     return this.send({
       to: email,
@@ -56,8 +56,8 @@ export class EmailService {
   }
 
   static async sendPasswordResetEmail(email: string, name: string, resetToken: string) {
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-    const emailHtml = render(PasswordResetEmail({ name, resetUrl }));
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const emailHtml = await render(PasswordResetEmail({ name, resetUrl }));
 
     return this.send({
       to: email,
@@ -67,7 +67,7 @@ export class EmailService {
   }
 
   static async sendApprovalEmail(email: string, name: string) {
-    const emailHtml = render(ApprovalEmail({ name }));
+    const emailHtml = await render(ApprovalEmail({ name }));
 
     return this.send({
       to: email,
@@ -77,7 +77,7 @@ export class EmailService {
   }
 
   static async sendRejectionEmail(email: string, name: string, reason?: string) {
-    const emailHtml = render(RejectionEmail({ name, reason }));
+    const emailHtml = await render(RejectionEmail({ name, reason }));
 
     return this.send({
       to: email,
@@ -130,7 +130,7 @@ export class EmailService {
       firstName,
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
-      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com',
     });
   }
 
@@ -171,7 +171,7 @@ export class EmailService {
       firstName,
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
-      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com',
     });
   }
 
@@ -180,7 +180,7 @@ export class EmailService {
       firstName,
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
-      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com',
     });
   }
 
@@ -190,8 +190,8 @@ export class EmailService {
     resetToken: string,
     adminName?: string,
   ) {
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-    const emailHtml = render(AdminPasswordResetEmail({ name, resetUrl, adminName }));
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const emailHtml = await render(AdminPasswordResetEmail({ name, resetUrl, adminName }));
 
     return this.send({
       to: email,
@@ -206,8 +206,8 @@ export class EmailService {
     resetToken: string,
     adminName?: string,
   ) {
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-    const emailHtml = render(SetPasswordEmail({ name, resetUrl, adminName }));
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const emailHtml = await render(SetPasswordEmail({ name, resetUrl, adminName }));
 
     return this.send({
       to: email,
@@ -225,7 +225,7 @@ export class EmailService {
     return this.sendTemplateEmail('Verification email', email, {
       firstName,
       verificationUrl,
-      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com',
     });
   }
 
@@ -234,7 +234,7 @@ export class EmailService {
       firstName,
       email,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
-      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+      platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com',
     });
   }
 
