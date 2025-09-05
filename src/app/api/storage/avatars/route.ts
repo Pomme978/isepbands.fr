@@ -4,41 +4,78 @@ import { requireAuth } from '@/middlewares/auth';
 
 import {
   getFromStorageById,
-  getAllStorage,
   getFileBuffer,
   uploadToStorage,
   deleteFromStorage,
-  updateStorageFile,
 } from '@/lib/storageService';
+
+const STORAGE_CATEGORY = 'avatars';
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+];
+
+function validateImageFile(file: File): { valid: boolean; error?: string } {
+  // Check file type (including HEIC for iPhone)
+  const isValidType =
+    ALLOWED_TYPES.includes(file.type.toLowerCase()) ||
+    file.name.toLowerCase().endsWith('.heic') ||
+    file.name.toLowerCase().endsWith('.heif');
+
+  if (!isValidType) {
+    return {
+      valid: false,
+      error: 'Please select a valid image file (JPEG, PNG, GIF, WebP, HEIC)',
+    };
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      error: 'File size must not exceed 5MB',
+    };
+  }
+
+  return { valid: true };
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
-  if (id) {
-    const file = await getFromStorageById(id);
-    if (!file) {
-      const lang = detectLangFromRequest(req);
-      return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
-    }
-    try {
-      const buffer = await getFileBuffer(file.key, file.category);
-      return new NextResponse(new Uint8Array(buffer), {
-        status: 200,
-        headers: {
-          'Content-Type': file.contentType,
-          'Content-Disposition': `attachment; filename="${file.key}"`,
-        },
-      });
-    } catch {
-      const lang = detectLangFromRequest(req);
-      return NextResponse.json(
-        { error: await getErrorMessage('fileNotFound', lang) },
-        { status: 404 },
-      );
-    }
-  } else {
-    const files = await getAllStorage();
-    return NextResponse.json({ files });
+
+  if (!id) {
+    const lang = detectLangFromRequest(req);
+    return NextResponse.json({ error: await getErrorMessage('missingId', lang) }, { status: 400 });
+  }
+
+  const file = await getFromStorageById(id);
+  if (!file || file.category !== STORAGE_CATEGORY) {
+    const lang = detectLangFromRequest(req);
+    return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
+  }
+
+  try {
+    const buffer = await getFileBuffer(file.key, file.category);
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        'Content-Type': file.contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache for avatars
+        'Content-Disposition': `inline; filename="${file.key}"`,
+      },
+    });
+  } catch {
+    const lang = detectLangFromRequest(req);
+    return NextResponse.json(
+      { error: await getErrorMessage('fileNotFound', lang) },
+      { status: 404 },
+    );
   }
 }
 
@@ -49,24 +86,38 @@ export async function POST(req: NextRequest) {
     const lang = detectLangFromRequest(req);
     return NextResponse.json({ error: await getErrorMessage('forbidden', lang) }, { status: 403 });
   }
+
   const contentType = req.headers.get('content-type') || '';
   if (!contentType.startsWith('multipart/form-data')) {
     return NextResponse.json({ error: 'Invalid content-type' }, { status: 400 });
   }
+
   const formData = await req.formData();
   const file = formData.get('file');
   if (!file || typeof file === 'string') {
     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
   }
+
+  // Validate file
+  const validation = validateImageFile(file);
+  if (!validation.valid) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
+  }
+
   try {
-    const dbFile = await uploadToStorage(file, Number(sessionUser.id));
-    return NextResponse.json({ success: true, file: dbFile });
+    const dbFile = await uploadToStorage(file, Number(sessionUser.id), STORAGE_CATEGORY);
+    const imageUrl = `/api/storage/avatars?id=${dbFile.id}`;
+
+    return NextResponse.json({
+      success: true,
+      file: dbFile,
+      url: imageUrl,
+    });
   } catch (error) {
-    console.error('Storage upload error:', error);
+    console.error('Avatar upload error:', error);
     const lang = detectLangFromRequest(req);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Provide more specific error messages based on the error type
     let userMessage;
     if (errorMessage.includes('ENOENT') || errorMessage.includes('EACCES')) {
       userMessage = 'Erreur de permissions fichier';
@@ -81,27 +132,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: userMessage, details: errorMessage }, { status: 500 });
   }
 }
-//
 
 export async function DELETE(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.res;
   const sessionUser = auth.user!;
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) {
     const lang = detectLangFromRequest(req);
     return NextResponse.json({ error: await getErrorMessage('missingId', lang) }, { status: 400 });
   }
+
   const file = await getFromStorageById(id);
-  if (!file) {
+  if (!file || file.category !== STORAGE_CATEGORY) {
     const lang = detectLangFromRequest(req);
     return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
   }
+
   // Check ownership - user IDs are strings, not numbers
   const isOwner = sessionUser.id && file.userId && sessionUser.id === file.userId;
 
-  // Check admin status - multiple ways to be admin
+  // Check admin status
   const hasAdminRole = sessionUser.roles?.some((r: { role?: { name: string } }) =>
     ['president', 'vice_president', 'secretary', 'treasurer'].includes(r.role?.name),
   );
@@ -109,7 +162,7 @@ export async function DELETE(req: NextRequest) {
 
   if (!isOwner && !isAdmin) {
     return NextResponse.json(
-      { error: 'Forbidden - You do not have permission to delete this file' },
+      { error: 'Forbidden - You do not have permission to delete this avatar' },
       { status: 403 },
     );
   }
@@ -118,7 +171,7 @@ export async function DELETE(req: NextRequest) {
     await deleteFromStorage(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting file:', error);
+    console.error('Error deleting avatar:', error);
     const lang = detectLangFromRequest(req);
     return NextResponse.json(
       { error: await getErrorMessage('fileNotFound', lang) },
@@ -126,40 +179,3 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
-
-export async function PUT(req: NextRequest) {
-  const auth = await requireAuth(req);
-  if (!auth.ok) return auth.res;
-  const sessionUser = auth.user!;
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get('id');
-  if (!id) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('missingId', lang) }, { status: 400 });
-  }
-  const file = await getFromStorageById(id);
-  if (!file) {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json({ error: await getErrorMessage('notFound', lang) }, { status: 404 });
-  }
-  // Check ownership - user IDs are strings, not numbers
-  const isOwner = sessionUser.id && file.userId && sessionUser.id === file.userId;
-  // Also allow admins to delete any file
-  const isAdmin = sessionUser.isFullAccess || sessionUser.isRoot;
-
-  if (!isOwner && !isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-  try {
-    const data = await req.arrayBuffer();
-    await updateStorageFile(id, data);
-    return NextResponse.json({ success: true });
-  } catch {
-    const lang = detectLangFromRequest(req);
-    return NextResponse.json(
-      { error: await getErrorMessage('unableToWrite', lang) },
-      { status: 500 },
-    );
-  }
-}
-//

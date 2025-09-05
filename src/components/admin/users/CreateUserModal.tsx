@@ -57,6 +57,7 @@ export interface UserFormData {
   sendWelcomeEmail: boolean;
   temporaryPassword: string;
   requirePasswordChange: boolean;
+  forceEmailVerified: boolean;
 }
 
 const STEP_TITLES = [
@@ -89,6 +90,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
     sendWelcomeEmail: true,
     temporaryPassword: generatePassword(),
     requirePasswordChange: true,
+    forceEmailVerified: false,
   });
 
   if (!isOpen) return null;
@@ -180,6 +182,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
       sendWelcomeEmail: true,
       temporaryPassword: generatePassword(),
       requirePasswordChange: true,
+      forceEmailVerified: false,
     });
     onClose();
   };
@@ -210,7 +213,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
       let photoUrl = null;
       if (formData.profilePhoto) {
         try {
-          const uploadResult = await uploadImageToStorage(formData.profilePhoto);
+          const uploadResult = await uploadImageToStorage(formData.profilePhoto, 'avatars');
           if (uploadResult.success && uploadResult.url) {
             photoUrl = uploadResult.url;
           } else {
@@ -248,6 +251,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
         temporaryPassword: formData.temporaryPassword,
         sendWelcomeEmail: formData.sendWelcomeEmail,
         requirePasswordChange: formData.requirePasswordChange,
+        forceEmailVerified: formData.forceEmailVerified,
       };
 
       // Remove undefined values

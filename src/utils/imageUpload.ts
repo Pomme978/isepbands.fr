@@ -6,20 +6,50 @@ export interface ImageUploadResult {
   success: boolean;
   url?: string;
   error?: string;
+  fileId?: string;
 }
+
+export type StorageCategory =
+  | 'avatars'
+  | 'events'
+  | 'inventory'
+  | 'venues'
+  | 'groups'
+  | 'badges'
+  | 'documents';
 
 /**
  * Upload an image file to storage
  * @param file - The image file to upload
+ * @param category - The storage category (avatars, events, etc.)
  * @returns Promise with upload result
  */
-export async function uploadImageToStorage(file: File): Promise<ImageUploadResult> {
+export async function uploadImageToStorage(
+  file: File,
+  category: StorageCategory = 'avatars',
+): Promise<ImageUploadResult> {
   try {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    // Validate file type (including HEIC for iPhone)
+    const validImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/heic',
+      'image/heif',
+    ];
+
+    const isValidType =
+      file.type.startsWith('image/') ||
+      validImageTypes.includes(file.type.toLowerCase()) ||
+      file.name.toLowerCase().endsWith('.heic') ||
+      file.name.toLowerCase().endsWith('.heif');
+
+    if (!isValidType) {
       return {
         success: false,
-        error: 'Please select a valid image file',
+        error: 'Please select a valid image file (JPEG, PNG, GIF, WebP, HEIC)',
       };
     }
 
@@ -31,11 +61,11 @@ export async function uploadImageToStorage(file: File): Promise<ImageUploadResul
       };
     }
 
-    // Upload to storage API
+    // Upload to categorized storage API
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/storage', {
+    const response = await fetch(`/api/storage/${category}`, {
       method: 'POST',
       body: formData,
     });
@@ -64,11 +94,13 @@ export async function uploadImageToStorage(file: File): Promise<ImageUploadResul
       };
     }
 
-    const imageUrl = `/api/storage?id=${uploadData.file.id}`;
+    // Use the categorized URL if available, fallback to provided URL or legacy format
+    const imageUrl = uploadData.url || `/api/storage/${category}?id=${uploadData.file.id}`;
 
     return {
       success: true,
       url: imageUrl,
+      fileId: uploadData.file.id,
     };
   } catch (error) {
     console.error('Error uploading image:', error);
@@ -121,10 +153,27 @@ export function createImagePreview(file: File): string {
  * @returns Validation result with error message if invalid
  */
 export function validateImageFile(file: File): { valid: boolean; error?: string } {
-  if (!file.type.startsWith('image/')) {
+  // Validate file type (including HEIC for iPhone)
+  const validImageTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+  ];
+
+  const isValidType =
+    file.type.startsWith('image/') ||
+    validImageTypes.includes(file.type.toLowerCase()) ||
+    file.name.toLowerCase().endsWith('.heic') ||
+    file.name.toLowerCase().endsWith('.heif');
+
+  if (!isValidType) {
     return {
       valid: false,
-      error: 'Please select a valid image file',
+      error: 'Please select a valid image file (JPEG, PNG, GIF, WebP, HEIC)',
     };
   }
 

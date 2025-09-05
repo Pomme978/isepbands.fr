@@ -23,8 +23,6 @@ interface User {
     isPrimary: boolean;
   }>;
   isAvailableForBands?: boolean;
-  showInstrumentSkills?: boolean;
-  lookingForJamPartners?: boolean;
   preferredGenres?: string[];
 }
 
@@ -78,8 +76,6 @@ export default function UserEditInstruments({
   // Band Matching Settings state (controlled by user object)
   const bandMatchingSettings = {
     isAvailableForBands: user.isAvailableForBands ?? true,
-    showInstrumentSkills: user.showInstrumentSkills ?? true,
-    lookingForJamPartners: user.lookingForJamPartners ?? false,
   };
 
   // Load available instruments from database
@@ -587,44 +583,6 @@ export default function UserEditInstruments({
               <span className="text-sm font-medium text-gray-700">Available for new bands</span>
               <p className="text-xs text-gray-500">
                 Allow band leaders to see this user when looking for members
-              </p>
-            </div>
-          </label>
-
-          <label className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              checked={bandMatchingSettings.showInstrumentSkills}
-              onChange={(e) =>
-                !isReadOnly && handleBandMatchingChange('showInstrumentSkills', e.target.checked)
-              }
-              disabled={isReadOnly}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-700">
-                Show instrument skills publicly
-              </span>
-              <p className="text-xs text-gray-500">Display instrument levels on public profile</p>
-            </div>
-          </label>
-
-          <label className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              checked={bandMatchingSettings.lookingForJamPartners}
-              onChange={(e) =>
-                !isReadOnly && handleBandMatchingChange('lookingForJamPartners', e.target.checked)
-              }
-              disabled={isReadOnly}
-              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-700">
-                Looking for jam session partners
-              </span>
-              <p className="text-xs text-gray-500">
-                Receive notifications about jam sessions matching your genres
               </p>
             </div>
           </label>

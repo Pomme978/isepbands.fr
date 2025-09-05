@@ -168,7 +168,6 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
             <InfoRow label="Bio" value={formData.bio ? 'Added' : 'None'} />
           </div>
         </InfoSection>
-
       </div>
 
       {/* Account Setup */}
@@ -268,6 +267,24 @@ export default function Step6Review({ formData, setFormData }: Step6ReviewProps)
               </label>
               <p className="text-xs text-blue-700">
                 User must change password when logging in for the first time
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="forceEmailVerified"
+              checked={formData.forceEmailVerified}
+              onChange={(e) => updateAccountSetting('forceEmailVerified', e.target.checked)}
+              className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+            />
+            <div>
+              <label htmlFor="forceEmailVerified" className="text-sm font-medium text-blue-900">
+                Marquer l&apos;email comme vérifié
+              </label>
+              <p className="text-xs text-blue-700">
+                L&apos;email sera marqué comme vérifié dès la création du compte
               </p>
             </div>
           </div>

@@ -5,25 +5,34 @@ import sharp from 'sharp';
 import { randomUUID } from 'crypto';
 import { prisma } from '../../lib/prisma';
 
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'storage', 'uploads');
+const STORAGE_BASE_DIR = path.join(process.cwd(), 'public', 'storage');
+const UPLOADS_DIR = path.join(STORAGE_BASE_DIR, 'uploads'); // Legacy folder
+
+function getCategoryDir(category?: string): string {
+  if (!category) return UPLOADS_DIR; // Fallback to legacy
+  return path.join(STORAGE_BASE_DIR, category);
+}
+
 export async function getFromStorageById(id: string) {
   return prisma.storageObject.findUnique({ where: { id } });
 }
 export async function getAllStorage() {
   return prisma.storageObject.findMany();
 }
-export async function getFileBuffer(key: string) {
-  const filePath = path.join(UPLOADS_DIR, key);
+export async function getFileBuffer(key: string, category?: string) {
+  const categoryDir = getCategoryDir(category);
+  const filePath = path.join(categoryDir, key);
   return fs.readFile(filePath);
 }
-export async function uploadToStorage(file: File, userId?: string) {
+export async function uploadToStorage(file: File, userId?: string, category?: string) {
   try {
     const originalBuffer = Buffer.from(await file.arrayBuffer());
     const originalSize = originalBuffer.length;
     let contentType = file.type;
     const key = randomUUID();
-    const filePath = path.join(UPLOADS_DIR, key);
-    const url = `/storage/uploads/${key}`;
+    const categoryDir = getCategoryDir(category);
+    const filePath = path.join(categoryDir, key);
+    const url = category ? `/storage/${category}/${key}` : `/storage/uploads/${key}`;
 
     // Validate original file size (max 10MB)
     if (originalSize > 10 * 1024 * 1024) {
@@ -83,10 +92,10 @@ export async function uploadToStorage(file: File, userId?: string) {
 
     const finalSize = processedBuffer.length;
 
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
+    await fs.mkdir(categoryDir, { recursive: true });
     await fs.writeFile(filePath, processedBuffer);
 
-    const baseData = { key, url, size: finalSize, contentType };
+    const baseData = { key, url, size: finalSize, contentType, category };
 
     // Vérifier si l'utilisateur existe avant de l'associer
     let validUserId = null;
@@ -114,7 +123,8 @@ export async function uploadToStorage(file: File, userId?: string) {
 export async function deleteFromStorage(id: string) {
   const file = await prisma.storageObject.findUnique({ where: { id } });
   if (!file) return false;
-  const filePath = path.join(UPLOADS_DIR, file.key);
+  const categoryDir = getCategoryDir(file.category);
+  const filePath = path.join(categoryDir, file.key);
   await fs.unlink(filePath);
   await prisma.storageObject.delete({ where: { id } });
   return true;
@@ -123,7 +133,8 @@ export async function deleteFromStorage(id: string) {
 export async function updateStorageFile(id: string, data: ArrayBuffer) {
   const file = await prisma.storageObject.findUnique({ where: { id } });
   if (!file) return false;
-  const filePath = path.join(UPLOADS_DIR, file.key);
+  const categoryDir = getCategoryDir(file.category);
+  const filePath = path.join(categoryDir, file.key);
   await fs.writeFile(filePath, Buffer.from(data));
   return true;
 }

@@ -14,7 +14,13 @@ interface Step1BasicInfoProps {
   onClearError?: (errors: { [key: string]: string }) => void;
 }
 
-export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {}, onClearError }: Step1BasicInfoProps) {
+export default function Step1BasicInfo({
+  data,
+  onChange,
+  onNext,
+  fieldErrors = {},
+  onClearError,
+}: Step1BasicInfoProps) {
   const t = useI18n();
   // States d'erreur par champ
   const [firstNameError, setFirstNameError] = useState('');
@@ -27,7 +33,7 @@ export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {
   // States pour la visibilité des mots de passe
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Ref pour le timeout de la vérification email
   const emailCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -57,7 +63,7 @@ export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      
+
       if (data.exists) {
         setEmailError('Un utilisateur avec cet email existe déjà.');
       } else {
@@ -96,13 +102,13 @@ export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {
     let valid = true;
     setFirstNameError(validateFirstName(data.firstName));
     setLastNameError(validateLastName(data.lastName));
-    
+
     // Pour l'email, ne pas écraser l'erreur existante si elle vient du serveur
     const clientEmailError = validateEmail(data.email);
     if (!emailError || emailError.includes('requis') || emailError.includes('Invalid')) {
       setEmailError(clientEmailError);
     }
-    
+
     setPasswordError(validatePassword(data.password));
     setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, data.password));
     setCycleError(validateCycle(data.cycle));
@@ -159,8 +165,9 @@ export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {
               placeholder="Entrez votre nom"
               value={data.lastName}
               onChange={(e) => {
-                onChange({ lastName: e.target.value });
-                setLastNameError(validateLastName(e.target.value));
+                const upperCaseValue = e.target.value.toUpperCase();
+                onChange({ lastName: upperCaseValue });
+                setLastNameError(validateLastName(upperCaseValue));
               }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
@@ -199,7 +206,9 @@ export default function Step1BasicInfo({ data, onChange, onNext, fieldErrors = {
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
             />
-            {(emailError || fieldErrors.email) && <div className="text-red-500 text-xs mt-1">{emailError || fieldErrors.email}</div>}
+            {(emailError || fieldErrors.email) && (
+              <div className="text-red-500 text-xs mt-1">{emailError || fieldErrors.email}</div>
+            )}
           </div>
         </div>
       </div>
