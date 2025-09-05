@@ -70,34 +70,6 @@ export function PrivacySettings({ formData, onFormDataChange }: PrivacySettingsP
         <p className="text-muted-foreground mt-2">Gérez vos paramètres de confidentialité</p>
       </div>
 
-      {/* Paramètres de profil */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
-          <CardDescription>Gérez vos informations personnelles visibles</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="pronouns">Pronoms</Label>
-            <Select
-              value={pronouns || ''}
-              onValueChange={(value) => handleChange('pronouns', value || null)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sélectionnez vos pronoms" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Ne pas préciser</SelectItem>
-                <SelectItem value="he/him">il/lui</SelectItem>
-                <SelectItem value="she/her">elle/elle</SelectItem>
-                <SelectItem value="they/them">iel/ellui</SelectItem>
-                <SelectItem value="other">autre</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Zone de danger */}
       <Card className="border-destructive">
         <CardHeader>
