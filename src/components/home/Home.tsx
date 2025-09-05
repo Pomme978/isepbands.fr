@@ -43,20 +43,18 @@ export function Home({ lang }: HomeProps) {
                 priority={false}
               />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-8 z-20">QUI SOMMES-NOUS?</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-8 z-20">
+              {t('page.home.about.title')}
+            </h1>
             <p className="text-gray-700 text-md mt-4 text-center max-w-2xl z-20">
-              Chez ISEPBands, la musique ne s’arrête jamais. Notre association réunit les étudiants
-              passionnés, débutants comme confirmés, autour de jams, de concerts et de projets de
-              groupe. Ici, chacun trouve sa place : que tu veuilles simplement jouer pour le
-              plaisir, progresser avec d’autres musiciens, ou monter sur scène, on t’accompagne.
+              {t('page.home.about.description1')}
             </p>
             <p className="text-gray-700 text-md text-center mb-6 mt-5 max-w-2xl z-20">
-              Notre mission : créer un espace convivial où la créativité et l’énergie de la musique
-              live se partagent sans limite.
+              {t('page.home.about.description2')}
             </p>
 
             <Button asChild className="mb-12">
-              <LangLink href={`/${lang}/club`}>En savoir plus</LangLink>
+              <LangLink href={`/${lang}/club`}>{t('page.home.about.learnMore')}</LangLink>
             </Button>
           </div>
           <OurFamousEvents />
@@ -65,10 +63,10 @@ export function Home({ lang }: HomeProps) {
             <div className="text-center mb-16 py-12 w-full bg-white rounded-xl">
               <div className="flex flex-col md:flex-row items-center justify-between mx-10">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
-                  SO IF YOU&#39;RE READY, WHAT ARE YOU WAITING FOR ?
+                  {t('page.home.cta.title')}
                 </h2>
                 <Button asChild className="bg-primary text-white px-8 py-3">
-                  <LangLink href="/#comment-nous-rejoindre">Join Us</LangLink>
+                  <LangLink href="/#comment-nous-rejoindre">{t('page.home.cta.button')}</LangLink>
                 </Button>
               </div>
             </div>
@@ -79,8 +77,12 @@ export function Home({ lang }: HomeProps) {
 
           {/* Upcoming Events Section - Commented out */}
           <div className="w-full text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">UPCOMING EVENTS</h2>
-            <p className="text-xs text-gray-500 py-12">Fonctionnalité à venir</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">
+              {t('page.home.events.upcoming.title')}
+            </h2>
+            <p className="text-xs text-gray-500 py-12">
+              {t('page.home.events.upcoming.comingSoon')}
+            </p>
           </div>
           {/* <UpcomingEvents /> */}
         </div>

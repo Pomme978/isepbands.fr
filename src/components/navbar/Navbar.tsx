@@ -11,6 +11,7 @@ import { useAuth, useSession } from '../../lib/auth-client';
 import Avatar from '../common/Avatar';
 import { useRouter, useParams } from 'next/navigation';
 import LangLink from '@/components/common/LangLink';
+import { useI18n } from '@/locales/client';
 
 interface NavbarProps {
   mode?: 'scroll' | 'static' | 'fixed';
@@ -29,6 +30,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
   const { signOut } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const t = useI18n();
 
   // Get the current language from params
   const currentLang = params?.lang || params?.locale || 'fr';
@@ -294,7 +296,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                               : 'text-gray-900 hover:bg-gray-100'
                           }`}
                         >
-                          Mon profil
+                          {t('navigation.mobile.profile')}
                         </button>
                         <button
                           onClick={handleMobileGroupSpaceClick}
@@ -304,7 +306,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                               : 'text-gray-900 hover:bg-gray-100'
                           }`}
                         >
-                          Mon espace groupe
+                          {t('navigation.mobile.groupSpace')}
                         </button>
                         {isAdmin && (
                           <button
@@ -315,7 +317,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                                 : 'text-gray-900 hover:bg-gray-100'
                             }`}
                           >
-                            Tableau de bord admin
+                            {t('navigation.mobile.adminDashboard')}
                           </button>
                         )}
                         <button
@@ -326,7 +328,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                               : 'text-gray-900 hover:bg-gray-100'
                           }`}
                         >
-                          Paramètres
+                          {t('navigation.mobile.settings')}
                         </button>
                       </div>
 
@@ -342,7 +344,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                               : 'text-red-600 hover:bg-gray-100'
                           }`}
                         >
-                          Se déconnecter
+                          {t('navigation.mobile.signOut')}
                         </button>
                       </div>
                     </div>
@@ -355,7 +357,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                           : 'bg-primary text-white hover:bg-primary/90'
                       }`}
                     >
-                      Se connecter
+                      {t('navigation.mobile.signIn')}
                     </button>
                   )
                 ) : (

@@ -3,14 +3,7 @@
 import { usePathname } from 'next/navigation';
 import LangLink from '../common/LangLink';
 import { Button } from '../ui/button';
-
-const links = [
-  { label: 'Accueil', href: '/' },
-  { label: "L'Association", href: '/club' },
-  { label: 'Bands', href: '/bands' },
-  { label: 'Les Événements', href: '/events' },
-  { label: 'Le Bureau', href: '/team' },
-];
+import { useI18n } from '@/locales/client';
 
 interface NavLinksProps {
   variant?: 'default' | 'white';
@@ -18,9 +11,18 @@ interface NavLinksProps {
 
 export default function NavLinks({ variant = 'default' }: NavLinksProps) {
   const pathname = usePathname();
+  const t = useI18n();
 
   // Remove language prefix from pathname (/fr/bands -> /bands)
   const cleanPathname = pathname.replace(/^\/[a-z]{2}/, '') || '/';
+
+  const links = [
+    { label: t('navigation.links.home'), href: '/' },
+    { label: t('navigation.links.club'), href: '/club' },
+    { label: t('navigation.links.bands'), href: '/bands' },
+    { label: t('navigation.links.events'), href: '/events' },
+    { label: t('navigation.links.team'), href: '/team' },
+  ];
 
   return (
     <div className="flex gap-2 md:flex-row flex-col w-full md:w-auto">

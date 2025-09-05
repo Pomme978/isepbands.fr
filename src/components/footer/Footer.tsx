@@ -8,38 +8,38 @@ import { useI18n } from '@/locales/client';
 import Image from 'next/image';
 import isepbands_logo from '@/assets/images/logo_bands.png';
 
-const footerColumns = [
-  {
-    title: 'Pages',
-    links: [
-      { label: 'Accueil', href: '/' },
-      { label: "L'association", href: '/club' },
-      { label: 'Bands', href: '/bands' },
-      { label: 'Les Événements', href: '/events' },
-      { label: 'Le Bureau', href: '/team' },
-    ],
-  },
-  {
-    title: 'Association',
-    links: [
-      { label: "Règlement de l'asso", href: '/rules' },
-      { label: 'Adhésion', href: '/club#adhesion' },
-      { label: 'Contact', href: '/team' },
-    ],
-  },
-  {
-    title: 'Légal',
-    links: [
-      { label: "Conditions d'utilisation", href: '/conditions-utilisation' },
-      { label: 'Politique de confidentialité', href: '/politique-confidentialite' },
-      { label: 'Mentions légales', href: '/mentions-legales' },
-    ],
-  },
-];
-
 export default function Footer() {
   const t = useI18n();
   const currentYear = new Date().getFullYear();
+
+  const footerColumns = [
+    {
+      title: t('footer.columns.pages.title'),
+      links: [
+        { label: t('footer.columns.pages.links.home'), href: '/' },
+        { label: t('footer.columns.pages.links.club'), href: '/club' },
+        { label: t('footer.columns.pages.links.bands'), href: '/bands' },
+        { label: t('footer.columns.pages.links.events'), href: '/events' },
+        { label: t('footer.columns.pages.links.team'), href: '/team' },
+      ],
+    },
+    {
+      title: t('footer.columns.association.title'),
+      links: [
+        { label: t('footer.columns.association.links.rules'), href: '/rules' },
+        { label: t('footer.columns.association.links.membership'), href: '/club#adhesion' },
+        { label: t('footer.columns.association.links.contact'), href: '/team' },
+      ],
+    },
+    {
+      title: t('footer.columns.legal.title'),
+      links: [
+        { label: t('footer.columns.legal.links.terms'), href: '/conditions-utilisation' },
+        { label: t('footer.columns.legal.links.privacy'), href: '/politique-confidentialite' },
+        { label: t('footer.columns.legal.links.legal'), href: '/mentions-legales' },
+      ],
+    },
+  ];
 
   const handleNewsletterSubmit = (email: string) => {
     console.log('Newsletter subscription:', email);
@@ -67,10 +67,10 @@ export default function Footer() {
         </div>
 
         <Newsletter
-          title="Subscribe to our newsletter"
-          description="The latest news, articles, and resources, sent to your inbox weekly."
-          placeholder="Enter your email"
-          buttonText="Subscribe"
+          title={t('footer.newsletter.title')}
+          description={t('footer.newsletter.description')}
+          placeholder={t('footer.newsletter.placeholder')}
+          buttonText={t('footer.newsletter.buttonText')}
           onSubmit={handleNewsletterSubmit}
         />
 

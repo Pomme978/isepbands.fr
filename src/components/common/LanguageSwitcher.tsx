@@ -1,6 +1,5 @@
 'use client';
 
-import { Switch } from '@/components/ui/switch';
 import { useLang } from '@/hooks/useLang';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -14,30 +13,50 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
   const pathname = usePathname();
   const isFr = lang === 'fr';
 
-  const handleLangChange = (checked: boolean) => {
-    const newLang = checked ? 'en' : 'fr';
+  const handleLangChange = () => {
+    const newLang = isFr ? 'en' : 'fr';
     // Navigate without page reload
     const newPath = pathname.replace(`/${lang}`, `/${newLang}`);
     router.push(newPath);
   };
 
-  const getTextClasses = (isActive: boolean) => {
+  const getContainerClasses = () => {
     if (variant === 'transparent') {
-      return isActive ? 'text-sm font-bold text-white' : 'text-sm text-white/60';
+      return 'relative inline-flex items-center bg-white/10 backdrop-blur rounded-full p-1 cursor-pointer transition-all duration-300 hover:bg-white/20';
     }
-    return isActive ? 'text-sm font-bold' : 'text-sm text-muted-foreground';
+    return 'relative inline-flex items-center bg-gray-100 rounded-full p-1 cursor-pointer transition-all duration-300 hover:bg-gray-200';
+  };
+
+  const getSliderClasses = () => {
+    const baseClasses =
+      'absolute top-1/2 -translate-y-1/2 w-11 h-7 rounded-full transition-all duration-300 ease-in-out transform shadow-md';
+    if (variant === 'transparent') {
+      return `${baseClasses} bg-white ${isFr ? 'left-0.5' : 'left-[calc(50%-1px)]'}`;
+    }
+    return `${baseClasses} bg-white ${isFr ? 'left-0.5' : 'left-[calc(50%-1px)]'}`;
+  };
+
+  const getTextClasses = (isActive: boolean) => {
+    const baseClasses =
+      'relative z-10 px-3 py-1.5 text-xs font-semibold transition-all duration-300 rounded-full';
+    if (variant === 'transparent') {
+      return `${baseClasses} ${isActive ? 'text-gray-900' : 'text-white'}`;
+    }
+    return `${baseClasses} ${isActive ? 'text-gray-900' : 'text-gray-500'}`;
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <button
+      onClick={handleLangChange}
+      className={getContainerClasses()}
+      aria-label={`Switch to ${isFr ? 'English' : 'French'}`}
+    >
+      {/* Background slider */}
+      <div className={getSliderClasses()} />
+
+      {/* Language options */}
       <span className={getTextClasses(isFr)}>FR</span>
-      <Switch
-        checked={!isFr}
-        onCheckedChange={handleLangChange}
-        aria-label="Switch language"
-        variant={variant === 'transparent' ? 'transparent' : 'default'}
-      />
       <span className={getTextClasses(!isFr)}>EN</span>
-    </div>
+    </button>
   );
 }

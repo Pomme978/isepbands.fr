@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import Loading from '@/components/ui/Loading';
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth-client';
+import { useI18n } from '@/locales/client';
 
 interface NewsletterProps {
   title: string;
@@ -26,6 +27,7 @@ export function Newsletter({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAlreadySubscribed, setIsAlreadySubscribed] = useState(false);
   const { user } = useSession();
+  const t = useI18n();
 
   useEffect(() => {
     // Check if user recently subscribed (stored in localStorage)
@@ -46,7 +48,7 @@ export function Newsletter({
     e.preventDefault();
 
     if (!email.trim()) {
-      toast.error('Veuillez entrer votre email');
+      toast.error(t('footer.newsletter.errors.emailRequired'));
       return;
     }
 
@@ -67,7 +69,7 @@ export function Newsletter({
       const data = await response.json();
 
       if (data.success) {
-        toast.success(data.message || 'Inscription réussie !');
+        toast.success(data.message || t('footer.newsletter.success'));
         setEmail('');
         // Store subscription in localStorage
         localStorage.setItem('newsletter_subscribed', Date.now().toString());
@@ -77,11 +79,11 @@ export function Newsletter({
           onSubmit(email);
         }
       } else {
-        toast.error(data.error || 'Une erreur est survenue');
+        toast.error(data.error || t('footer.newsletter.errors.generalError'));
       }
     } catch (error) {
       console.error('Newsletter subscription error:', error);
-      toast.error("Une erreur est survenue lors de l'inscription");
+      toast.error(t('footer.newsletter.errors.subscriptionError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -96,8 +98,7 @@ export function Newsletter({
           <div className="p-2 md:p-4 w-full">
             <div className="mx-auto text-center max-w-md">
               <p className="text-gray-600 text-sm leading-relaxed">
-                Vous serez automatiquement inscrit à notre newsletter après validation de votre
-                compte
+                {t('footer.newsletter.pendingMessage')}
               </p>
             </div>
           </div>
@@ -114,9 +115,7 @@ export function Newsletter({
       <div className="border-t border-gray-200 py-8">
         <div className="p-2 md:p-6 w-full">
           <div className="mx-auto text-center">
-            <p className="text-green-600 font-medium">
-              ✓ Vous êtes déjà inscrit à notre newsletter
-            </p>
+            <p className="text-green-600 font-medium">{t('footer.newsletter.alreadySubscribed')}</p>
           </div>
         </div>
       </div>

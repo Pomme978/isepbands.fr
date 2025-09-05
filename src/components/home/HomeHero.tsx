@@ -12,11 +12,13 @@ import LangLink from '@/components/common/LangLink';
 import SocialsLink from '@/components/common/SocialsLink';
 import { useSession } from '@/lib/auth-client';
 import { useParams } from 'next/navigation';
+import { useI18n } from '@/locales/client';
 
 const HomeHero = () => {
   const { user, loading } = useSession();
   const params = useParams();
   const lang = typeof params?.lang === 'string' ? params.lang : 'fr';
+  const t = useI18n();
 
   // When user is logged in, navbar is fixed and adds pt-16, so we need to compensate
   // When loading, navbar is static and adds spacer, so we need to compensate too
@@ -93,7 +95,7 @@ const HomeHero = () => {
           <div className="text-center lg:text-left max-w-xl md:max-w-5/12 px-2 md:px-0">
             {/* Motto - Responsive text sizing */}
             <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl text-center md:text-left font-bold mb-6 md:mb-8 leading-tight">
-              FOR THOSE WHO CAN&apos;T STOP PLAYING
+              {t('page.home.hero.motto')}
             </h1>
 
             {/* Button - Compact mobile layout */}
@@ -104,7 +106,7 @@ const HomeHero = () => {
                   size="lg"
                   className="relative shadow-md overflow-hidden bg-primary text-sm sm:text-md py-3 sm:py-6 px-6 sm:px-12 text-primary-foreground w-full sm:w-auto"
                 >
-                  <LangLink href={`/club#adhesion`}>Join Us</LangLink>
+                  <LangLink href={`/club#adhesion`}>{t('page.home.hero.joinUs')}</LangLink>
                 </Button>
               )}
               <SocialsLink
@@ -123,7 +125,7 @@ const HomeHero = () => {
         >
           {user && !loading && (
             <span className="text-xs text-white/70 animate-bounce-subtle font-light">
-              Scroll pour voir plus
+              {t('page.home.hero.scrollHint')}
             </span>
           )}
           <ChevronDown className="inline-block h-6 w-6 sm:h-8 sm:w-8 text-white animate-bounce-subtle drop-shadow-[0_0_10px_rgba(208,97,252,0.35)]" />

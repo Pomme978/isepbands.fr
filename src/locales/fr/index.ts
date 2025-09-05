@@ -15,7 +15,23 @@ const fr = {
   title: 'ISEPBANDS',
   navigation: {
     title: 'ISEPBANDS 2025',
+    year: 'Année 2025-2026',
     home: 'Accueil',
+    links: {
+      home: 'Accueil',
+      club: "L'Association",
+      bands: 'Bands',
+      events: 'Les Événements',
+      team: 'Le Bureau',
+    },
+    mobile: {
+      profile: 'Mon profil',
+      groupSpace: 'Mon espace groupe',
+      adminDashboard: 'Tableau de bord admin',
+      settings: 'Paramètres',
+      signOut: 'Se déconnecter',
+      signIn: 'Se connecter',
+    },
   },
   auth: {
     signIn: "S'inscrire",
@@ -115,6 +131,50 @@ const fr = {
   },
   footer: {
     all_rights_reserved: 'Tout droits réservés.',
+    columns: {
+      pages: {
+        title: 'Pages',
+        links: {
+          home: 'Accueil',
+          club: "L'association",
+          bands: 'Bands',
+          events: 'Les Événements',
+          team: 'Le Bureau',
+        },
+      },
+      association: {
+        title: 'Association',
+        links: {
+          rules: "Règlement de l'asso",
+          membership: 'Adhésion',
+          contact: 'Contact',
+        },
+      },
+      legal: {
+        title: 'Légal',
+        links: {
+          terms: "Conditions d'utilisation",
+          privacy: 'Politique de confidentialité',
+          legal: 'Mentions légales',
+        },
+      },
+    },
+    newsletter: {
+      title: 'Inscrivez-vous à notre newsletter',
+      description:
+        'Les dernières actualités, articles et ressources, envoyés dans votre boîte mail chaque semaine.',
+      placeholder: 'Entrez votre email',
+      buttonText: "S'inscrire",
+      alreadySubscribed: '✓ Vous êtes déjà inscrit à notre newsletter',
+      pendingMessage:
+        'Vous serez automatiquement inscrit à notre newsletter après validation de votre compte',
+      errors: {
+        emailRequired: 'Veuillez entrer votre email',
+        subscriptionError: "Une erreur est survenue lors de l'inscription",
+        generalError: 'Une erreur est survenue',
+      },
+      success: 'Inscription réussie !',
+    },
   },
   common: {
     goback: 'Retour',
@@ -127,6 +187,44 @@ const fr = {
   page: {
     home: {
       title: 'Accueil ISEPBANDS',
+      hero: {
+        motto: "POUR CEUX QUI JOUENT SANS JAMAIS S'ARRÊTER",
+        joinUs: 'Nous rejoindre',
+        scrollHint: 'Scroll pour voir plus',
+      },
+      about: {
+        title: 'QUI SOMMES-NOUS?',
+        description1:
+          "Chez ISEPBands, la musique ne s'arrête jamais. Notre association réunit les étudiants passionnés, débutants comme confirmés, autour de jams, de concerts et de projets de groupe. Ici, chacun trouve sa place : que tu veuilles simplement jouer pour le plaisir, progresser avec d'autres musiciens, ou monter sur scène, on t'accompagne.",
+        description2:
+          "Notre mission : créer un espace convivial où la créativité et l\\'\u00e9nergie de la musique live se partagent sans limite.",
+        learnMore: 'En savoir plus',
+      },
+      cta: {
+        title: "ALORS SI TU ES PRÊT, QU'ATTENDS-TU ?",
+        button: 'Nous rejoindre',
+      },
+      events: {
+        upcoming: {
+          title: 'ÉVÉNEMENTS À VENIR',
+          comingSoon: 'Fonctionnalité à venir',
+        },
+        famous: {
+          title: 'NOS ÉVÉNEMENTS PHARES',
+          jams: {
+            title: 'JAMS',
+            description: 'Sessions de jam créatives et conviviales',
+          },
+          shows: {
+            title: 'SHOWS',
+            description: 'Concerts et performances sur scène',
+          },
+          recordings: {
+            title: 'ENREGISTREMENTS STUDIO',
+            description: "Sessions d'enregistrement professionnel",
+          },
+        },
+      },
     },
   },
   welcome: 'Bienvenue, {name}!',
