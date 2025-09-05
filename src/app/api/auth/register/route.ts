@@ -4,16 +4,39 @@ import { prisma } from '@/lib/prisma';
 import { setSession } from '@/lib/auth';
 import crypto from 'crypto';
 
+// Cache pour éviter les doubles inscriptions
+const registrationCache = new Map<string, number>();
+
+// Nettoyer le cache toutes les 5 minutes
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [email, timestamp] of registrationCache.entries()) {
+      if (now - timestamp > 5 * 60 * 1000) {
+        // 5 minutes
+        registrationCache.delete(email);
+      }
+    }
+  },
+  5 * 60 * 1000,
+);
+
 export async function POST(req: NextRequest) {
+  const registrationId = crypto.randomUUID().slice(0, 8);
+  console.log(`🚀 [${registrationId}] Starting registration process`);
+
+  let email = '';
+
   try {
     const formData = await req.formData();
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
-    const email = formData.get('email') as string;
+    email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const cycle = formData.get('cycle') as string;
     const birthDate = formData.get('birthDate') as string;
     const phone = formData.get('phone') as string | null;
+    const pronouns = formData.get('pronouns') as string | null;
     const motivation = formData.get('motivation') as string | null;
     const experience = formData.get('experience') as string | null;
     const instruments = formData.get('instruments') as string | null;
@@ -21,7 +44,7 @@ export async function POST(req: NextRequest) {
     const profilePhoto = formData.get('profilePhoto') as File | null;
 
     // Debug: Log all received fields
-    console.log('Register attempt with fields:', {
+    console.log(`📋 [${registrationId}] Register attempt with fields:`, {
       firstName: firstName ? '✓' : '✗',
       lastName: lastName ? '✓' : '✗',
       email: email ? '✓' : '✗',
@@ -31,6 +54,7 @@ export async function POST(req: NextRequest) {
       motivation: motivation ? '✓' : '✗',
       experience: experience ? '✓' : '✗',
       phone: phone ? '✓' : '-',
+      pronouns: pronouns ? '✓' : '-',
       instruments: instruments ? '✓' : '-',
       preferredGenres: preferredGenres ? '✓' : '-',
       profilePhoto: profilePhoto ? '✓' : '-',
@@ -48,7 +72,7 @@ export async function POST(req: NextRequest) {
     if (!experience) missingFields.push('experience');
 
     if (missingFields.length > 0) {
-      console.log('Missing required fields:', missingFields);
+      console.log(`❌ [${registrationId}] Missing required fields:`, missingFields);
       return NextResponse.json(
         {
           error: `Champs manquants: ${missingFields.join(', ')}`,
@@ -58,17 +82,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Vérifier si l'email existe déjà
-    console.log('🔍 Checking if email exists:', email);
+    // Vérifier les doubles inscriptions rapides
+    console.log(`🔍 [${registrationId}] Checking for duplicate registration:`, email);
+    const now = Date.now();
+    const lastRegistration = registrationCache.get(email);
+    if (lastRegistration && now - lastRegistration < 30000) {
+      // 30 secondes
+      console.log(`❌ [${registrationId}] Duplicate registration attempt blocked for:`, email);
+      return NextResponse.json(
+        { error: 'Une inscription avec cet email est déjà en cours. Veuillez patienter.' },
+        { status: 429 },
+      );
+    }
+
+    // Marquer cette inscription comme en cours
+    registrationCache.set(email, now);
+    console.log(`🔒 [${registrationId}] Registration locked for:`, email);
+
+    // Vérifier si l'email existe déjà en base
+    console.log(`🔍 [${registrationId}] Checking if email exists in database:`, email);
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      console.log('❌ User already exists with email:', email);
+      registrationCache.delete(email); // Libérer le cache en cas d'erreur
+      console.log(`❌ [${registrationId}] User already exists with email:`, email);
       return NextResponse.json(
         { error: 'Un utilisateur avec cet email existe déjà.' },
         { status: 400 },
       );
     }
-    console.log('✅ Email is available');
+    console.log(`✅ [${registrationId}] Email is available`);
 
     let photoUrl: string | undefined = undefined;
     if (profilePhoto && profilePhoto.size > 0) {
@@ -106,6 +148,7 @@ export async function POST(req: NextRequest) {
         promotion: cycle,
         birthDate: new Date(birthDate),
         phone: phone || null,
+        pronouns: pronouns || null,
         biography: '',
         password: hashedPassword,
         email,
@@ -142,65 +185,70 @@ export async function POST(req: NextRequest) {
 
         console.log('🎼 Parsed instruments:', parsedInstruments);
 
-        for (const inst of parsedInstruments) {
-          console.log(`🔍 Checking instrument ID ${inst.instrumentId}...`);
-          // Vérifier que l'instrument existe
-          const exists = await prisma.instrument.findUnique({ where: { id: inst.instrumentId } });
-          if (!exists) {
-            console.log(`❌ Instrument ID ${inst.instrumentId} does not exist`);
-            return NextResponse.json(
-              { error: `Instrument ID ${inst.instrumentId} n'existe pas.` },
-              { status: 400 },
-            );
+        // Vérifier que la liste n'est pas vide après parsing
+        if (parsedInstruments.length > 0) {
+          for (const inst of parsedInstruments) {
+            console.log(`🔍 Checking instrument ID ${inst.instrumentId}...`);
+            // Vérifier que l'instrument existe
+            const exists = await prisma.instrument.findUnique({ where: { id: inst.instrumentId } });
+            if (!exists) {
+              console.log(`❌ Instrument ID ${inst.instrumentId} does not exist`);
+              return NextResponse.json(
+                { error: `Instrument ID ${inst.instrumentId} n'existe pas.` },
+                { status: 400 },
+              );
+            }
+            console.log(`✅ Instrument ID ${inst.instrumentId} exists`);
+            await prisma.userInstrument.create({
+              data: {
+                userId: user.id,
+                instrumentId: inst.instrumentId,
+                skillLevel: inst.skillLevel.toUpperCase() as
+                  | 'BEGINNER'
+                  | 'INTERMEDIATE'
+                  | 'ADVANCED'
+                  | 'EXPERT',
+                yearsPlaying: inst.yearsPlaying || null,
+                isPrimary: inst.isPrimary || false,
+              },
+            });
+            console.log(`✅ Created userInstrument for ${inst.instrumentId}`);
           }
-          console.log(`✅ Instrument ID ${inst.instrumentId} exists`);
-          await prisma.userInstrument.create({
-            data: {
-              userId: user.id,
-              instrumentId: inst.instrumentId,
-              skillLevel: inst.skillLevel.toUpperCase() as
-                | 'BEGINNER'
-                | 'INTERMEDIATE'
-                | 'ADVANCED'
-                | 'EXPERT',
-              yearsPlaying: inst.yearsPlaying || null,
-              isPrimary: inst.isPrimary || false,
-            },
-          });
-          console.log(`✅ Created userInstrument for ${inst.instrumentId}`);
+          console.log('✅ All instruments processed successfully');
+        } else {
+          console.log('🎸 Empty instruments array - user chose not to add instruments');
         }
-        console.log('✅ All instruments processed successfully');
       } catch (error) {
         console.error('❌ Error parsing instruments:', error);
         return NextResponse.json({ error: 'Format des instruments invalide.' }, { status: 400 });
       }
     } else {
-      console.log('🎸 No instruments to process');
+      console.log('🎸 No instruments to process - user chose not to add instruments');
     }
 
     // Envoyer l'email de compte en attente d'approbation
     try {
-      console.log('📧 Sending pending approval email to:', user.email);
+      console.log(`📧 [${registrationId}] Sending pending approval email to:`, user.email);
       const { EmailService } = await import('@/services/emailService');
       await EmailService.sendPendingApprovalEmail(user.email, user.firstName);
-      console.log('✅ Pending approval email sent successfully');
+      console.log(`✅ [${registrationId}] Pending approval email sent successfully`);
     } catch (emailError) {
-      console.error('❌ Error sending pending approval email:', emailError);
+      console.error(`❌ [${registrationId}] Error sending pending approval email:`, emailError);
       // Ne pas bloquer l'inscription si l'email échoue
     }
 
     // Envoyer l'email de vérification d'email
     try {
-      console.log('📧 Sending email verification email to:', user.email);
+      console.log(`📧 [${registrationId}] Sending email verification email to:`, user.email);
       const { EmailService } = await import('@/services/emailService');
       await EmailService.sendEmailVerificationEmail(
         user.email,
         user.firstName,
         emailVerificationToken,
       );
-      console.log('✅ Email verification email sent successfully');
+      console.log(`✅ [${registrationId}] Email verification email sent successfully`);
     } catch (emailError) {
-      console.error('❌ Error sending email verification email:', emailError);
+      console.error(`❌ [${registrationId}] Error sending email verification email:`, emailError);
       // Ne pas bloquer l'inscription si l'email échoue
     }
 
@@ -217,7 +265,7 @@ export async function POST(req: NextRequest) {
           userEmail: user.email,
           promotion: cycle,
           hasPhoto: !!photoUrl,
-          instrumentsCount: instruments ? JSON.parse(instruments).length : 0,
+          instrumentsCount: instruments ? (JSON.parse(instruments) || []).length : 0,
         },
         createdBy: null, // System generated
       });
@@ -229,10 +277,22 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
     await setSession(res, { id: user.id, email: user.email });
+
+    // Libérer le cache à la fin du processus réussi
+    registrationCache.delete(email);
+    console.log(`🔓 [${registrationId}] Registration completed and cache cleared for:`, email);
+
     return res;
   } catch (error) {
-    console.error('🔴 REGISTRATION ERROR:', error);
+    console.error(`🔴 [${registrationId}] REGISTRATION ERROR:`, error);
     console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+
+    // Libérer le cache en cas d'erreur
+    if (email) {
+      registrationCache.delete(email);
+      console.log(`🔓 [${registrationId}] Registration cache cleared after error for:`, email);
+    }
+
     return NextResponse.json(
       {
         error: "Erreur lors de l'inscription. Veuillez réessayer.",

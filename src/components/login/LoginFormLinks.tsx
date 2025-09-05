@@ -1,4 +1,5 @@
 import { useI18n } from '@/locales/client';
+import LangLink from '@/components/common/LangLink';
 
 interface LoginFormLinksProps {
   lang: string;
@@ -7,11 +8,19 @@ interface LoginFormLinksProps {
 export default function LoginFormLinks({ lang }: LoginFormLinksProps) {
   const t = useI18n();
   return (
-    <div className=" text-center text-sm">
+    <div className="text-center text-sm space-y-3">
       <div>
-        <a href={`/${lang}/register`} className="text-primary hover:underline">
+        <LangLink href="/register" className="text-primary hover:underline">
           {t('auth.login.noAccount')} {t('auth.login.register')}
-        </a>
+        </LangLink>
+      </div>
+      <div>
+        <LangLink
+          href="/forgot-password"
+          className="text-muted-foreground hover:text-foreground hover:underline"
+        >
+          Mot de passe oublié ?
+        </LangLink>
       </div>
     </div>
   );

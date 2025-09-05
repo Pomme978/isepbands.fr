@@ -16,9 +16,10 @@ export interface RegistrationData {
   cycle: string;
   birthDate: string;
   phone: string;
+  pronouns: string;
   motivation: string;
   experience: string;
-  instruments: RegistrationInstrument[];
+  instruments?: RegistrationInstrument[];
   preferredGenres: string[];
   profilePhoto: File | null;
 }

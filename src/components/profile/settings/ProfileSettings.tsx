@@ -85,6 +85,7 @@ export function ProfileSettings({
         ? new Date(initialProfile.birthDate).toISOString().split('T')[0]
         : ''),
   );
+  const [pronouns, setPronouns] = useState(formData?.pronouns || initialProfile?.pronouns || '');
 
   // Report changes to parent
   const handleFieldChange = (field: string, value: string | null | boolean) => {
@@ -94,6 +95,7 @@ export function ProfileSettings({
     if (field === 'bureauQuote') setBureauQuote(value);
     if (field === 'photoUrl') setPhotoUrl(value);
     if (field === 'birthDate') setBirthDate(value);
+    if (field === 'pronouns') setPronouns(value);
 
     const updatedData: Record<string, unknown> = {
       firstName: field === 'firstName' ? value : firstName,
@@ -102,6 +104,7 @@ export function ProfileSettings({
       bureauQuote: field === 'bureauQuote' ? value : bureauQuote,
       photoUrl: field === 'photoUrl' ? value : photoUrl,
       birthDate: field === 'birthDate' ? value : birthDate,
+      pronouns: field === 'pronouns' ? value : pronouns,
     };
 
     // Add special flags for photo operations
@@ -204,6 +207,7 @@ export function ProfileSettings({
       firstName,
       lastName,
       biography: bio,
+      pronouns,
       photoUrl: null,
       photoDeleted: true,
     };
@@ -345,6 +349,24 @@ export function ProfileSettings({
                   value={birthDate}
                   onChange={(e) => handleFieldChange('birthDate', e.target.value)}
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pronouns">Pronoms</Label>
+                <select
+                  id="pronouns"
+                  value={pronouns}
+                  onChange={(e) => handleFieldChange('pronouns', e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Sélectionner vos pronoms</option>
+                  <option value="he/him">he/him (il/lui)</option>
+                  <option value="she/her">she/her (elle/elle)</option>
+                  <option value="they/them">they/them (iel/ellui)</option>
+                  <option value="other">Other (autre)</option>
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  Cette information apparaîtra sur votre profil (optionnel)
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="bio">Biographie</Label>

@@ -5,6 +5,7 @@ import { cn } from '@/utils/utils';
 import Image from 'next/image';
 
 // Import des SVG de notes de musique
+import sol from '@/assets/svg/sol.svg';
 import note1 from '@/assets/svg/music_notes/note1.svg';
 import note2 from '@/assets/svg/music_notes/note2.svg';
 import note3 from '@/assets/svg/music_notes/note3.svg';
@@ -13,6 +14,7 @@ import note5 from '@/assets/svg/music_notes/note5.svg';
 import note6 from '@/assets/svg/music_notes/note6.svg';
 import note7 from '@/assets/svg/music_notes/note7.svg';
 import note8 from '@/assets/svg/music_notes/note8.svg';
+import StageLights from '@/components/home/StageLights';
 
 interface WaveDividerProps {
   numberOfWaves?: number;
@@ -89,7 +91,14 @@ export default function WaveDivider({
     return () => window.removeEventListener('resize', updateScreenWidth);
   }, []);
 
-  const { pathData, containerHeight, viewBoxWidth, viewBoxHeight, totalHeight, musicNotePositions } = useMemo(() => {
+  const {
+    pathData,
+    containerHeight,
+    viewBoxWidth,
+    viewBoxHeight,
+    totalHeight,
+    musicNotePositions,
+  } = useMemo(() => {
     const hash = simpleHash(backgroundColor + amplitude.toString());
     const rng = new SeededRandom(hash);
 
@@ -161,7 +170,7 @@ export default function WaveDivider({
     const lastY = lastPoint.y;
     bezierPath += ` C ${lastPoint.x + 50} ${lastY}, ${containerWidth - 50} ${lastY}, ${containerWidth + 10} ${lastY}`;
 
-    const totalHeight = containerHeight + ((numberOfWaves - 1) * spacing);
+    const totalHeight = containerHeight + (numberOfWaves - 1) * spacing;
 
     // Fonction pour calculer la position Y de la dernière courbe à un X donné
     const getLastWaveYAtX = (x: number): number => {
@@ -172,29 +181,29 @@ export default function WaveDivider({
 
         if (x >= start.x && x <= end.x) {
           const t = (x - start.x) / (end.x - start.x);
-          
+
           // Points de contrôle identiques à ceux utilisés pour dessiner la courbe
           const distance = end.x - start.x;
           const cp1x = start.x + distance * 0.4;
           const cp1y = start.y;
           const cp2x = start.x + distance * 0.6;
           const cp2y = end.y;
-          
+
           // Formule de Bézier cubique pour Y
           const mt = 1 - t;
           const mt2 = mt * mt;
           const mt3 = mt2 * mt;
           const t2 = t * t;
           const t3 = t2 * t;
-          
+
           // Position Y de la dernière courbe (avec le décalage)
           const curveY = mt3 * start.y + 3 * mt2 * t * cp1y + 3 * mt * t2 * cp2y + t3 * end.y;
-          return curveY + ((numberOfWaves - 1) * spacing); // Ajout du décalage de la dernière courbe
+          return curveY + (numberOfWaves - 1) * spacing; // Ajout du décalage de la dernière courbe
         }
       }
-      
+
       // Si pas trouvé, retourner le centre avec décalage
-      return (containerHeight * 0.5) + ((numberOfWaves - 1) * spacing);
+      return containerHeight * 0.5 + (numberOfWaves - 1) * spacing;
     };
 
     // Génération des positions des notes de musique le long de la courbe
@@ -205,23 +214,23 @@ export default function WaveDivider({
     // Distribution alternée des couleurs pour éviter les clusters
     for (let i = 0; i < noteCount; i++) {
       // Position X régulière le long de la largeur
-      const x = (noteSpacing / 2) + (i * noteSpacing);
-      
+      const x = noteSpacing / 2 + i * noteSpacing;
+
       // S'assurer que la note reste dans les limites
       if (x >= 60 && x <= containerWidth - 60) {
         // Calculer la position Y de la dernière courbe à cette position X
         const lastCurveY = getLastWaveYAtX(x);
-        
+
         // Position Y qui suit la courbe + offset en dessous
         const y = lastCurveY + 60; // 60px en dessous de la courbe
-        
+
         // Variation légère en X pour un aspect naturel
         const xVariation = rng.range(-3, 3);
-        
+
         // Alternance simple entre blanc et différentes nuances de violet
         let color: 'white' | 'purple1' | 'purple2' | 'purple3' | 'purple4';
         let opacity: number;
-        
+
         if (i % 2 === 0) {
           // Notes blanches (une sur deux)
           color = 'white';
@@ -230,7 +239,7 @@ export default function WaveDivider({
           // Notes violettes avec 4 nuances différentes
           const purpleVariant = Math.floor(rng.next() * 4) + 1;
           color = `purple${purpleVariant}` as 'purple1' | 'purple2' | 'purple3' | 'purple4';
-          
+
           switch (purpleVariant) {
             case 1: // Violet très clair
               opacity = rng.range(0.7, 0.9);
@@ -253,10 +262,10 @@ export default function WaveDivider({
           x: x + xVariation,
           y,
           noteType: Math.floor(rng.next() * musicNotes.length),
-          color,
-          opacity,
-          size: rng.range(0.6, 0.9),
-          rotation: rng.range(0, 360)
+          color: i === 0 ? 'white' : color,
+          opacity: i === 0 ? 1 : opacity,
+          size: i === 0 ? rng.range(2.4, 3.0) : rng.range(0.6, 0.9),
+          rotation: i === 0 ? rng.range(-30, 30) : rng.range(0, 360),
         });
       }
     }
@@ -267,18 +276,28 @@ export default function WaveDivider({
       viewBoxWidth: containerWidth,
       viewBoxHeight: containerHeight,
       totalHeight,
-      musicNotePositions: notes
+      musicNotePositions: notes,
     };
   }, [backgroundColor, amplitude, height, spacing, numberOfWaves, notesHeight, screenWidth]);
 
   return (
-    <div className={cn("relative w-full overflow-hidden", className)}>
-      {/* Background du fond précédent qui épouse la forme de la première courbe */}
+    <div className={cn('relative w-full overflow-x-hidden overflow-y-visible', className)}>
+      {/* Background coloré pour le reste - NIVEAU 0 */}
+      <div
+        className="absolute inset-x-0 top-0"
+        style={{
+          height: `${totalHeight}px`,
+          backgroundColor: backgroundColor,
+          zIndex: 0,
+        }}
+      />
+
+      {/* Background du fond précédent qui épouse la forme de la première courbe - NIVEAU 2 */}
       <div
         className="absolute inset-x-0 top-0"
         style={{
           height: `${containerHeight}px`,
-          zIndex: 1
+          zIndex: 2,
         }}
       >
         <svg
@@ -300,29 +319,19 @@ export default function WaveDivider({
         </svg>
       </div>
 
-      {/* Background coloré pour le reste */}
-      <div
-        className="absolute inset-x-0 top-0"
-        style={{
-          height: `${totalHeight}px`,
-          backgroundColor: backgroundColor,
-          zIndex: 0
-        }}
-      />
-
-      {/* Vagues blanches avec glow - structure identique à ChristmasGarland */}
+      {/* Vagues blanches avec glow - NIVEAU 3+ */}
       {Array.from({ length: numberOfWaves }).map((_, index) => {
-        const opacity = index === 0 ? 1 : 0.7 - (index * 0.15);
+        const opacity = index === 0 ? 1 : 0.7 - index * 0.15;
         const yOffset = index * spacing;
 
         return (
-          <div 
+          <div
             key={index}
-            className={`w-full absolute`} 
-            style={{ 
+            className="w-full absolute"
+            style={{
               height: `${containerHeight}px`,
               top: `${yOffset}px`,
-              zIndex: numberOfWaves - index + 10
+              zIndex: numberOfWaves - index + 3,
             }}
           >
             <svg
@@ -336,10 +345,10 @@ export default function WaveDivider({
               <defs>
                 {/* Effet de glow blanc */}
                 <filter id={`whiteGlow-${index}`} x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge> 
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
               </defs>
@@ -360,23 +369,23 @@ export default function WaveDivider({
         );
       })}
 
-      {/* Zone des notes de musique avec fond coloré */}
+      {/* Zone des notes de musique avec fond coloré - NIVEAU 9 */}
       <div
         className="absolute inset-x-0"
         style={{
           top: `${totalHeight}px`,
           height: `${notesHeight}px`,
           backgroundColor: backgroundColor,
-          zIndex: 5
+          zIndex: 9,
         }}
       />
 
-      {/* Notes de musique positionnées dans toute la zone */}
+      {/* Notes de musique positionnées dans toute la zone - NIVEAU 10 */}
       <div
         className="absolute inset-x-0 top-0"
         style={{
           height: `${totalHeight + notesHeight}px`,
-          zIndex: 10
+          zIndex: 10,
         }}
       >
         {musicNotePositions.map((note, index) => (
@@ -386,37 +395,45 @@ export default function WaveDivider({
             style={{
               left: `${(note.x / viewBoxWidth) * 100}%`,
               top: `${note.y}px`,
-              transform: `translate(-50%, -50%) rotate(${note.rotation}deg) scale(${note.size})`,
-              opacity: note.opacity,
-              filter: note.color === 'white' 
-                ? 'brightness(0) saturate(100%) invert(94%) sepia(6%) saturate(1577%) hue-rotate(238deg) brightness(102%) contrast(96%) drop-shadow(0 0 6px rgba(245, 230, 255, 0.7)) drop-shadow(0 0 12px rgba(245, 230, 255, 0.5))'
-                : note.color === 'purple1'
-                ? `brightness(0) saturate(100%) invert(85%) sepia(20%) saturate(300%) hue-rotate(260deg) brightness(95%) contrast(85%) drop-shadow(0 0 6px rgba(200, 180, 220, ${note.opacity * 0.7})) drop-shadow(0 0 12px rgba(200, 180, 220, ${note.opacity * 0.5}))`
-                : note.color === 'purple2'
-                ? `brightness(0) saturate(100%) invert(70%) sepia(35%) saturate(400%) hue-rotate(260deg) brightness(85%) contrast(88%) drop-shadow(0 0 6px rgba(160, 130, 190, ${note.opacity * 0.6})) drop-shadow(0 0 12px rgba(160, 130, 190, ${note.opacity * 0.4}))`
-                : note.color === 'purple3'
-                ? `brightness(0) saturate(100%) invert(50%) sepia(45%) saturate(500%) hue-rotate(260deg) brightness(75%) contrast(90%) drop-shadow(0 0 6px rgba(130, 90, 170, ${note.opacity * 0.6})) drop-shadow(0 0 12px rgba(130, 90, 170, ${note.opacity * 0.4}))`
-                : `brightness(0) saturate(100%) invert(30%) sepia(55%) saturate(600%) hue-rotate(260deg) brightness(65%) contrast(92%) drop-shadow(0 0 6px rgba(100, 60, 140, ${note.opacity * 0.6})) drop-shadow(0 0 12px rgba(100, 60, 140, ${note.opacity * 0.4}))`,
+              transform:
+                index === 0
+                  ? `translate(-50%, -50%) rotate(-20deg) scale(${note.size})`
+                  : `translate(-50%, -50%) rotate(${note.rotation}deg) scale(${note.size})`,
+              opacity: index === 0 ? 1 : note.opacity,
+              filter:
+                note.color === 'white'
+                  ? 'brightness(0) saturate(100%) invert(94%) sepia(6%) saturate(1577%) hue-rotate(238deg) brightness(102%) contrast(96%) drop-shadow(0 0 6px rgba(245, 230, 255, 0.7)) drop-shadow(0 0 12px rgba(245, 230, 255, 0.5))'
+                  : note.color === 'purple1'
+                    ? `brightness(0) saturate(100%) invert(85%) sepia(20%) saturate(300%) hue-rotate(260deg) brightness(95%) contrast(85%) drop-shadow(0 0 6px rgba(200, 180, 220, ${note.opacity * 0.7})) drop-shadow(0 0 12px rgba(200, 180, 220, ${note.opacity * 0.5}))`
+                    : note.color === 'purple2'
+                      ? `brightness(0) saturate(100%) invert(70%) sepia(35%) saturate(400%) hue-rotate(260deg) brightness(85%) contrast(88%) drop-shadow(0 0 6px rgba(160, 130, 190, ${note.opacity * 0.6})) drop-shadow(0 0 12px rgba(160, 130, 190, ${note.opacity * 0.4}))`
+                      : note.color === 'purple3'
+                        ? `brightness(0) saturate(100%) invert(50%) sepia(45%) saturate(500%) hue-rotate(260deg) brightness(75%) contrast(90%) drop-shadow(0 0 6px rgba(130, 90, 170, ${note.opacity * 0.6})) drop-shadow(0 0 12px rgba(130, 90, 170, ${note.opacity * 0.4}))`
+                        : `brightness(0) saturate(100%) invert(30%) sepia(55%) saturate(600%) hue-rotate(260deg) brightness(65%) contrast(92%) drop-shadow(0 0 6px rgba(100, 60, 140, ${note.opacity * 0.6})) drop-shadow(0 0 12px rgba(100, 60, 140, ${note.opacity * 0.4}))`,
               pointerEvents: 'none',
             }}
           >
             <Image
-              src={musicNotes[note.noteType]}
-              alt={`Note de musique ${note.noteType + 1}`}
-              width={40}
-              height={40}
-              className="w-auto h-auto max-w-[50px] max-h-[50px]"
+              src={index === 0 ? sol : musicNotes[note.noteType]}
+              alt={index === 0 ? 'Note sol' : `Note de musique ${note.noteType + 1}`}
+              width={100}
+              height={100}
+              className={
+                index === 0
+                  ? 'w-auto h-auto max-w-[150px] max-h-[150px]'
+                  : 'w-auto h-auto max-w-[50px] max-h-[50px]'
+              }
             />
           </div>
         ))}
       </div>
 
       {/* Spacer pour la hauteur totale incluant les notes */}
-      <div 
-        style={{ 
-          height: `${totalHeight + notesHeight}px` 
-        }} 
-        className="relative z-0"
+      <div
+        style={{
+          height: `${totalHeight + notesHeight}px`,
+        }}
+        className="relative z-[-1]"
       />
     </div>
   );

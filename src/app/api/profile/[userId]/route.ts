@@ -323,7 +323,10 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
+    console.log('📝 Profile update request body:', body);
+
     const validatedData = updateProfileSchema.parse(body);
+    console.log('✅ Validated data:', validatedData);
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -343,6 +346,11 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update the user profile
+    console.log('🔄 Updating user profile with data:', {
+      ...validatedData,
+      updatedAt: new Date(),
+    });
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -362,6 +370,8 @@ export async function PUT(req: NextRequest) {
         updatedAt: true,
       },
     });
+
+    console.log('✅ Profile updated successfully:', updatedUser);
 
     return NextResponse.json({
       success: true,

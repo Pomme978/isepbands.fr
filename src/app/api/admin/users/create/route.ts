@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { requireAuth } from '@/middlewares/auth';
 import { checkAdminPermission } from '@/middlewares/admin';
 import { logAdminAction } from '@/services/activityLogService';
@@ -63,6 +64,7 @@ const createUserSchema = z.object({
     ),
   sendWelcomeEmail: z.boolean().optional(),
   requirePasswordChange: z.boolean().optional(),
+  forceEmailVerified: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -157,7 +159,7 @@ export async function POST(req: NextRequest) {
           biography: validatedData.bio || '',
           pronouns: validatedData.pronouns,
           status: 'CURRENT',
-          emailVerified: false,
+          emailVerified: validatedData.forceEmailVerified || false,
           isFullAccess: validatedData.isFullAccess || false,
           photoUrl: validatedData.photoUrl || null,
           requirePasswordChange: validatedData.requirePasswordChange || false,
@@ -240,16 +242,41 @@ export async function POST(req: NextRequest) {
         instrumentsCount: validatedData.instruments?.length || 0,
         badgesCount: validatedData.achievementBadges?.length || 0,
         hasTemporaryPassword: true,
-        sendWelcomeEmail: validatedData.sendWelcomeEmail || false
-      }
+        sendWelcomeEmail: validatedData.sendWelcomeEmail || false,
+      },
     );
 
     // Auto-subscribe to newsletter when user is created by admin
     await autoSubscribeUser(user.email, 'admin_created');
 
-    // TODO: Send welcome email if requested
+    // Send welcome email if requested
     if (validatedData.sendWelcomeEmail) {
-      console.log('TODO: Send welcome email to', validatedData.email);
+      try {
+        console.log('Sending welcome email to', user.email);
+        const { EmailService } = await import('@/services/emailService');
+
+        if (validatedData.requirePasswordChange) {
+          // Send password setup email if they need to change password
+          const resetToken = `${user.id}.${Date.now()}.${crypto.randomUUID()}`;
+          await EmailService.sendSetPasswordEmail(
+            user.email,
+            `${user.firstName} ${user.lastName}`,
+            resetToken,
+            `${auth.user.firstName} ${auth.user.lastName}`,
+          );
+        } else {
+          // Send regular welcome email with temporary password
+          await EmailService.sendWelcomeEmail(
+            user.email,
+            `${user.firstName} ${user.lastName}`,
+            validatedData.temporaryPassword,
+          );
+        }
+        console.log('Welcome email sent successfully to', user.email);
+      } catch (emailError) {
+        console.error('Error sending welcome email:', emailError);
+        // Don't block user creation if email fails
+      }
     }
 
     return NextResponse.json(

@@ -1,9 +1,10 @@
 'use client';
 
 import LangLink from '@/components/common/LangLink';
-import { Edit, Mail, User, Calendar, Clock } from 'lucide-react';
-import ViewProfileButton from '../common/ViewProfileButton';
+import { Edit, Mail, User, Calendar, Clock, RotateCcw, Eye } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
+import AdminButton from '../common/AdminButton';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -43,6 +44,7 @@ export default function UserCard({
   onReviewRequest,
   onRestore,
 }: UserCardProps) {
+  const router = useRouter();
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'current':
@@ -79,6 +81,25 @@ export default function UserCard({
       month: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInDays / 365);
+
+    if (diffInYears > 0) {
+      return `il y a ${diffInYears} an${diffInYears > 1 ? 's' : ''}`;
+    } else if (diffInMonths > 0) {
+      return `il y a ${diffInMonths} mois`;
+    } else if (diffInDays > 0) {
+      return `il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+    } else {
+      return "aujourd'hui";
+    }
   };
 
   return (
@@ -131,9 +152,15 @@ export default function UserCard({
                               ? 'Deleted'
                               : 'Former'}
                 </div>
-                {user.status === 'current' && !user.emailVerified && (
-                  <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 flex-shrink-0 text-center">
-                    Email non vérifié
+                {user.status === 'current' && (
+                  <div
+                    className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 text-center ${
+                      user.emailVerified
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {user.emailVerified ? 'Email vérifié' : 'Email non vérifié'}
                   </div>
                 )}
               </div>
@@ -150,51 +177,60 @@ export default function UserCard({
           <div className="flex flex-wrap items-center gap-2 mb-2 sm:hidden">
             {user.status === 'pending' ? (
               <>
-                <button
+                <AdminButton
                   onClick={() => onReviewRequest?.(user.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors cursor-pointer"
+                  variant="warning"
+                  size="xs"
+                  icon={Clock}
                 >
-                  <Clock className="w-3 h-3 mr-1" />
                   Review
-                </button>
-                <LangLink
-                  href={`/admin/users/${user.id}`}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                </AdminButton>
+                <AdminButton
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  variant="secondary"
+                  size="xs"
+                  icon={Edit}
                 >
-                  <Edit className="w-3 h-3 mr-1" />
                   Edit
-                </LangLink>
+                </AdminButton>
               </>
             ) : user.status === 'refused' || user.status === 'suspended' ? (
               <>
-                <LangLink
-                  href={`/admin/users/${user.id}`}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                <AdminButton
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  variant="secondary"
+                  size="xs"
+                  icon={Edit}
                 >
-                  <Edit className="w-3 h-3 mr-1" />
                   Edit
-                </LangLink>
-                <button
+                </AdminButton>
+                <AdminButton
                   onClick={() => onRestore?.(user.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-green-100 border border-green-300 text-green-800 rounded-md hover:bg-green-200 transition-colors cursor-pointer"
+                  variant="success"
+                  size="xs"
+                  icon={RotateCcw}
                 >
                   Restore
-                </button>
+                </AdminButton>
               </>
             ) : (
               <>
-                <LangLink
-                  href={`/admin/users/${user.id}`}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                <AdminButton
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  variant="secondary"
+                  size="xs"
+                  icon={Edit}
                 >
-                  <Edit className="w-3 h-3 mr-1" />
                   Edit
-                </LangLink>
-                <ViewProfileButton
-                  userId={user.id}
-                  variant="button"
-                  className="px-3 py-1.5 text-xs"
-                />
+                </AdminButton>
+                <AdminButton
+                  onClick={() => window.open(`/profile/${user.id}`, '_blank')}
+                  variant="secondary"
+                  size="xs"
+                  icon={Eye}
+                >
+                  View Profile
+                </AdminButton>
               </>
             )}
           </div>
@@ -207,7 +243,7 @@ export default function UserCard({
             </span>
             <span className="flex items-center">
               <Calendar className="w-3 h-3 mr-1" />
-              Joined: {formatDate(user.joinDate)}
+              Joined: {formatDate(user.joinDate)} ({getTimeAgo(user.joinDate)})
             </span>
           </div>
         </div>
@@ -233,9 +269,15 @@ export default function UserCard({
                           ? 'Deleted'
                           : 'Former'}
             </div>
-            {user.status === 'current' && !user.emailVerified && (
-              <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
-                Email non vérifié
+            {user.status === 'current' && (
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                  user.emailVerified
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}
+              >
+                {user.emailVerified ? 'Email vérifié' : 'Email non vérifié'}
               </div>
             )}
           </div>
@@ -243,47 +285,60 @@ export default function UserCard({
           {/* Actions */}
           {user.status === 'pending' ? (
             <>
-              <button
+              <AdminButton
                 onClick={() => onReviewRequest?.(user.id)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors cursor-pointer"
+                variant="warning"
+                size="sm"
+                icon={Clock}
               >
-                <Clock className="w-3 h-3 mr-1" />
                 Review
-              </button>
-              <LangLink
-                href={`/admin/users/${user.id}`}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              </AdminButton>
+              <AdminButton
+                onClick={() => router.push(`/admin/users/${user.id}`)}
+                variant="secondary"
+                size="sm"
+                icon={Edit}
               >
-                <Edit className="w-3 h-3 mr-1" />
                 Edit
-              </LangLink>
+              </AdminButton>
             </>
           ) : user.status === 'refused' || user.status === 'suspended' ? (
             <>
-              <LangLink
-                href={`/admin/users/${user.id}`}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              <AdminButton
+                onClick={() => router.push(`/admin/users/${user.id}`)}
+                variant="secondary"
+                size="sm"
+                icon={Edit}
               >
-                <Edit className="w-3 h-3 mr-1" />
                 Edit
-              </LangLink>
-              <button
+              </AdminButton>
+              <AdminButton
                 onClick={() => onRestore?.(user.id)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-green-100 border border-green-300 text-green-800 rounded-lg hover:bg-green-200 transition-colors cursor-pointer"
+                variant="success"
+                size="sm"
+                icon={RotateCcw}
               >
                 Restore
-              </button>
+              </AdminButton>
             </>
           ) : (
             <>
-              <LangLink
-                href={`/admin/users/${user.id}`}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              <AdminButton
+                onClick={() => router.push(`/admin/users/${user.id}`)}
+                variant="secondary"
+                size="sm"
+                icon={Edit}
               >
-                <Edit className="w-3 h-3 mr-1" />
                 Edit
-              </LangLink>
-              <ViewProfileButton userId={user.id} variant="button" className="px-3 py-1 text-sm" />
+              </AdminButton>
+              <AdminButton
+                onClick={() => window.open(`/profile/${user.id}`, '_blank')}
+                variant="secondary"
+                size="sm"
+                icon={Eye}
+              >
+                View Profile
+              </AdminButton>
             </>
           )}
         </div>

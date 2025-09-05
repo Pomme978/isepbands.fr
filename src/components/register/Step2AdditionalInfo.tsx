@@ -139,6 +139,24 @@ export default function Step2AdditionalInfo({
             {phoneError && <div className="text-red-500 text-xs mt-1">{phoneError}</div>}
           </div>
         </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Pronoms</label>
+          <select
+            value={data.pronouns}
+            onChange={(e) => onChange({ pronouns: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+          >
+            <option value="">Sélectionner vos pronoms</option>
+            <option value="he/him">he/him (il/lui)</option>
+            <option value="she/her">she/her (elle/elle)</option>
+            <option value="they/them">they/them (iel/ellui)</option>
+            <option value="other">Other (autre)</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Cette information apparaîtra sur votre profil (optionnel)
+          </p>
+        </div>
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">

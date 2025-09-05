@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/utils/authMiddleware';
 
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       where: { id: userId },
       data: {
         password: hashedPassword,
+        requirePasswordChange: requireChange,
       },
     });
 
@@ -62,17 +64,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         {
           userEmail: user.email,
           sendEmail: sendEmail,
-          resetAt: new Date().toISOString()
-        }
+          resetAt: new Date().toISOString(),
+        },
       );
     } catch (err) {
       // Activity log error
     }
 
-    // TODO: Implement email notification if sendEmail is true
+    // Send email notification if requested
     if (sendEmail) {
-      // Here you would integrate with your email service
-      // await sendPasswordResetNotification(user.email, user.firstName);
+      try {
+        console.log('Sending admin password reset email to', user.email);
+        const { EmailService } = await import('@/services/emailService');
+        const resetToken = `${user.id}.${Date.now()}.${crypto.randomUUID()}`;
+
+        await EmailService.sendAdminPasswordResetEmail(
+          user.email,
+          `${user.firstName} ${user.lastName}`,
+          resetToken,
+          `${authResult.user.firstName} ${authResult.user.lastName}`,
+        );
+        console.log('Admin password reset email sent successfully to', user.email);
+      } catch (emailError) {
+        console.error('Error sending admin password reset email:', emailError);
+        // Don't block password reset if email fails
+      }
     }
 
     return NextResponse.json({

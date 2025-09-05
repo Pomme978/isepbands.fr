@@ -136,11 +136,13 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
             </div>
 
             {/* Bio */}
-            <div>
-              <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 italic rounded-xl">
-                {user.bio}
-              </p>
-            </div>
+            {user.bio && user.bio.trim() && (
+              <div>
+                <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 italic rounded-xl">
+                  {user.bio}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -2,33 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Mail } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 import Loading from '@/components/ui/Loading';
-
-// Function to format French phone numbers
-const formatPhoneNumber = (phone: string): string => {
-  // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, '');
-
-  // Handle international format (+33)
-  if (digits.startsWith('33') && digits.length === 11) {
-    return `+33 ${digits.slice(2, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)} ${digits.slice(9, 11)}`;
-  }
-
-  // Handle national format (10 digits starting with 0)
-  if (digits.startsWith('0') && digits.length === 10) {
-    return `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)} ${digits.slice(8, 10)}`;
-  }
-
-  // Handle mobile format (9 digits starting with 6 or 7)
-  if ((digits.startsWith('6') || digits.startsWith('7')) && digits.length === 9) {
-    return `0${digits.slice(0, 1)} ${digits.slice(1, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
-  }
-
-  // Return unformatted if doesn't match patterns
-  return phone;
-};
+import AdminButton from '../../common/AdminButton';
+import { formatPhoneNumber, formatPhoneInput } from '@/utils/phoneUtils';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -204,17 +183,17 @@ export default function UserEditMain({
                 />
                 <label
                   htmlFor="profilePhoto"
-                  className={`inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md transition-colors ${
+                  className={`inline-flex cursor-pointer items-center justify-center font-medium border px-4 py-1.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-200 ${
                     uploadingImage || isReadOnly
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'hover:bg-gray-50 cursor-pointer'
+                      ? 'cursor-not-allowed opacity-50 hover:bg-white hover:border-gray-200'
+                      : ''
                   }`}
                 >
                   {uploadingImage ? (
                     <Loading text="Uploading..." size="sm" />
                   ) : (
                     <>
-                      <Upload className="w-3 h-3 mr-1" />
+                      <Upload className="w-4 h-4 mr-2" />
                       {previewImage ? 'Change Photo' : 'Upload Photo'}
                     </>
                   )}
@@ -227,20 +206,17 @@ export default function UserEditMain({
               </div>
 
               {previewImage && !isReadOnly && (
-                <button
+                <AdminButton
                   onClick={removeImage}
-                  className="inline-flex items-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                  variant="danger"
+                  size="sm"
+                  icon={X}
                   disabled={isDeleting}
+                  loading={isDeleting}
+                  loadingText="Removing..."
                 >
-                  {isDeleting ? (
-                    <Loading text="Removing..." size="sm" />
-                  ) : (
-                    <>
-                      <X className="w-3 h-3 mr-1" />
-                      Delete Avatar
-                    </>
-                  )}
-                </button>
+                  Delete Avatar
+                </AdminButton>
               )}
             </div>
           </div>
@@ -263,7 +239,7 @@ export default function UserEditMain({
             <input
               type="text"
               value={user.lastName}
-              onChange={(e) => updateField('lastName', e.target.value)}
+              onChange={(e) => updateField('lastName', e.target.value.toUpperCase())}
               disabled={isReadOnly}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
@@ -284,8 +260,11 @@ export default function UserEditMain({
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
             <input
               type="tel"
-              value={formatPhoneNumber(user.phoneNumber || '')}
-              onChange={(e) => updateField('phoneNumber', e.target.value)}
+              value={formatPhoneInput(user.phoneNumber || '')}
+              onChange={(e) => {
+                const formatted = formatPhoneInput(e.target.value);
+                updateField('phoneNumber', formatted);
+              }}
               disabled={isReadOnly}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
               placeholder="+33 6 12 34 56 78"
@@ -309,7 +288,19 @@ export default function UserEditMain({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Birth Date
+              {user.birthDate && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (
+                  {Math.floor(
+                    (new Date().getTime() - new Date(user.birthDate).getTime()) /
+                      (1000 * 60 * 60 * 24 * 365.25),
+                  )}{' '}
+                  ans)
+                </span>
+              )}
+            </label>
             <input
               type="date"
               value={user.birthDate || ''}
@@ -432,30 +423,50 @@ export default function UserEditMain({
               )}
             </div>
 
-            {!user.emailVerified && !isReadOnly && (
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    const response = await fetch(`/api/admin/users/${user.id}/send-verification`, {
-                      method: 'POST',
-                    });
+            <div className="flex items-center gap-3">
+              {!isReadOnly && (
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={user.emailVerified || false}
+                    onChange={(e) => {
+                      updateField('emailVerified', e.target.checked);
+                    }}
+                    className="rounded border-gray-300 text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-sm text-gray-700">Forcer la vérification</span>
+                </label>
+              )}
 
-                    if (response.ok) {
-                      alert('Email de vérification envoyé !');
-                    } else {
-                      const data = await response.json();
-                      alert(data.error || "Erreur lors de l'envoi");
+              {!user.emailVerified && !isReadOnly && (
+                <AdminButton
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(
+                        `/api/admin/users/${user.id}/send-verification`,
+                        {
+                          method: 'POST',
+                        },
+                      );
+
+                      if (response.ok) {
+                        toast.success('Email de vérification envoyé !');
+                      } else {
+                        const data = await response.json();
+                        toast.error(data.error || "Erreur lors de l'envoi");
+                      }
+                    } catch (error) {
+                      toast.error("Erreur lors de l'envoi de l'email");
                     }
-                  } catch (error) {
-                    alert("Erreur lors de l'envoi de l'email");
-                  }
-                }}
-                className="px-3 py-1 text-xs font-medium text-primary hover:text-primary-dark border border-primary hover:border-primary-dark rounded-md transition-colors"
-              >
-                Envoyer email de vérification
-              </button>
-            )}
+                  }}
+                  variant="secondary"
+                  size="xs"
+                  icon={Mail}
+                >
+                  Envoyer email de vérification
+                </AdminButton>
+              )}
+            </div>
           </div>
         </div>
       </div>

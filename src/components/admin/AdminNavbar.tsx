@@ -308,12 +308,12 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
               </div>
             ) : (
               <div className="space-y-2">
-                <button
+                <Button
                   onClick={() => handleMobileNavClick('/login')}
-                  className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-base md:text-sm"
+                  className="w-full text-base md:text-sm"
                 >
                   Se connecter
-                </button>
+                </Button>
               </div>
             )}
 

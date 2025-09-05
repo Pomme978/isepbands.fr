@@ -43,18 +43,34 @@ export default function Step4Instruments({
   const translateSkillLevel = (key: string) =>
     t(`user.skillLevels.${key}` as Parameters<typeof t>[0]);
 
+  const calculateUserAge = () => {
+    if (!data.birthDate) return 0;
+    const birthDate = new Date(data.birthDate);
+    const today = new Date();
+    return Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+  };
+
   const handleInstrumentChange = (
     index: number,
     field: 'instrumentId' | 'skillLevel' | 'yearsPlaying' | 'isPrimary',
     value: number | SkillLevel | boolean,
   ) => {
-    const updated = [...data.instruments];
+    const updated = [...(data.instruments || [])];
 
     // Si on marque un instrument comme primaire, retirer le statut primaire des autres
     if (field === 'isPrimary' && value === true) {
       updated.forEach((inst, i) => {
         if (i !== index) inst.isPrimary = false;
       });
+    }
+
+    // Validation des années d'expérience
+    if (field === 'yearsPlaying' && typeof value === 'number') {
+      const userAge = calculateUserAge();
+      if (value > userAge) {
+        // Limiter à l'âge de l'utilisateur
+        value = userAge;
+      }
     }
 
     updated[index] = { ...updated[index], [field]: value };
@@ -69,7 +85,7 @@ export default function Step4Instruments({
 
     onChange({
       instruments: [
-        ...data.instruments,
+        ...(data.instruments || []),
         {
           instrumentId: availableInstruments[0]?.id || 0,
           skillLevel: 'BEGINNER',
@@ -81,13 +97,13 @@ export default function Step4Instruments({
   };
 
   const removeInstrument = (index: number) => {
-    const updated = [...data.instruments];
+    const updated = [...(data.instruments || [])];
     updated.splice(index, 1);
     onChange({ instruments: updated });
   };
 
   const validateInstruments = () => {
-    if (!data.instruments || data.instruments.length === 0) return t('validator.selectInstrument');
+    // Les instruments sont maintenant optionnels
     return '';
   };
 
@@ -123,12 +139,7 @@ export default function Step4Instruments({
           <Button type="button" variant="outline" onClick={onBack} className="px-6 py-2">
             Retour
           </Button>
-          <Button
-            type="button"
-            onClick={onNext}
-            disabled={data.instruments.length === 0}
-            className="px-6 py-2"
-          >
+          <Button type="button" onClick={onNext} disabled={false} className="px-6 py-2">
             Suivant
           </Button>
         </div>
@@ -145,11 +156,13 @@ export default function Step4Instruments({
       }}
     >
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Instruments et niveau</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Instruments et niveau (optionnel)
+        </h3>
 
         {/* Instruments List */}
         <div className="space-y-4">
-          {data.instruments.map((inst, i) => (
+          {(data.instruments || []).map((inst, i) => (
             <div key={i} className="p-4 bg-gray-50 rounded-lg border">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div>
@@ -208,7 +221,7 @@ export default function Step4Instruments({
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                     placeholder="0"
                     min="0"
-                    max="50"
+                    max={calculateUserAge() || 50}
                   />
                 </div>
 
@@ -236,14 +249,15 @@ export default function Step4Instruments({
           ))}
         </div>
 
-        {data.instruments.length > 0 && !data.instruments.some((inst) => inst.isPrimary) && (
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-xs text-amber-700">
-              Conseil : Marquez votre instrument de prédilection comme &quot;principal&quot; en
-              cochant la case
-            </p>
-          </div>
-        )}
+        {(data.instruments || []).length > 0 &&
+          !(data.instruments || []).some((inst) => inst.isPrimary) && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs text-amber-700">
+                Conseil : Marquez votre instrument de prédilection comme &quot;principal&quot; en
+                cochant la case
+              </p>
+            </div>
+          )}
       </div>
 
       {/* Add Instrument Button */}
@@ -294,8 +308,9 @@ export default function Step4Instruments({
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Vos goûts musicaux</h4>
         <p className="text-sm text-blue-700">
-          Ajoutez tous les instruments que vous savez jouer avec votre niveau actuel et vos genres
-          préférés. Cela nous aide à vous proposer des groupes adaptés !
+          Ajoutez les instruments que vous savez jouer avec votre niveau actuel et vos genres
+          préférés. Cette étape est optionnelle, mais cela nous aide à vous proposer des groupes
+          adaptés !
         </p>
       </div>
 

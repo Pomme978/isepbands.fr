@@ -41,6 +41,7 @@ const initialData: RegistrationData = {
   cycle: '',
   birthDate: '',
   phone: '',
+  pronouns: '',
   motivation: '',
   experience: '',
   instruments: [],
@@ -126,9 +127,12 @@ export default function RegisterPage() {
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('register.error.submit');
-      
+
       // Vérifier si c'est une erreur d'email déjà utilisé
-      if (errorMessage.includes('email existe déjà') || errorMessage.includes('email already exists')) {
+      if (
+        errorMessage.includes('email existe déjà') ||
+        errorMessage.includes('email already exists')
+      ) {
         setFieldErrors({ email: 'Un utilisateur avec cet email existe déjà.' });
         setStep(1); // Retourner au Step 1 pour afficher l'erreur
         toast.error('Email déjà utilisé. Veuillez en choisir un autre.');
@@ -167,8 +171,12 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="flex md:mt-0 mt-10 md:flex-row flex-col items-center justify-center md:justify-between p-6 border-b border-gray-200">
           <div>
-            <h1 className="text-2xl md:text-left text-center font-bold text-gray-900">{t('register.title')}</h1>
-            <p className="text-sm md:text-left text-center text-gray-600 mt-1">{t(stepTitles[step - 1])}</p>
+            <h1 className="text-2xl md:text-left text-center font-bold text-gray-900">
+              {t('register.title')}
+            </h1>
+            <p className="text-sm md:text-left text-center text-gray-600 mt-1">
+              {t(stepTitles[step - 1])}
+            </p>
             <div className="flex mt-5 md:mt-2">
               {Array.from({ length: 6 }, (_, i) => (
                 <div
@@ -185,7 +193,15 @@ export default function RegisterPage() {
 
         {/* Contenu des étapes */}
         <div className="p-6 md:max-h-[70vh] md:overflow-y-auto">
-          {step === 1 && <Step1BasicInfo data={data} onChange={handleChange} onNext={handleNext} fieldErrors={fieldErrors} onClearError={setFieldErrors} />}
+          {step === 1 && (
+            <Step1BasicInfo
+              data={data}
+              onChange={handleChange}
+              onNext={handleNext}
+              fieldErrors={fieldErrors}
+              onClearError={setFieldErrors}
+            />
+          )}
           {step === 2 && (
             <Step2AdditionalInfo
               data={data}
@@ -249,7 +265,6 @@ export default function RegisterPage() {
             </div>
           </div>
         )}
-
       </RegisterFormCard>
     </div>
   );

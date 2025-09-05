@@ -2,6 +2,8 @@ import { Resend } from 'resend';
 import { render } from '@react-email/components';
 import WelcomeEmail from '@/emails/WelcomeEmail';
 import PasswordResetEmail from '@/emails/PasswordResetEmail';
+import AdminPasswordResetEmail from '@/emails/AdminPasswordResetEmail';
+import SetPasswordEmail from '@/emails/SetPasswordEmail';
 import ApprovalEmail from '@/emails/ApprovalEmail';
 import RejectionEmail from '@/emails/RejectionEmail';
 import { prisma } from '@/lib/prisma';
@@ -54,7 +56,7 @@ export class EmailService {
   }
 
   static async sendPasswordResetEmail(email: string, name: string, resetToken: string) {
-    const resetUrl = `https://isepbands.fr/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
     const emailHtml = render(PasswordResetEmail({ name, resetUrl }));
 
     return this.send({
@@ -179,6 +181,38 @@ export class EmailService {
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
       platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr',
+    });
+  }
+
+  static async sendAdminPasswordResetEmail(
+    email: string,
+    name: string,
+    resetToken: string,
+    adminName?: string,
+  ) {
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const emailHtml = render(AdminPasswordResetEmail({ name, resetUrl, adminName }));
+
+    return this.send({
+      to: email,
+      subject: 'Votre mot de passe a été réinitialisé par un administrateur',
+      html: emailHtml,
+    });
+  }
+
+  static async sendSetPasswordEmail(
+    email: string,
+    name: string,
+    resetToken: string,
+    adminName?: string,
+  ) {
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const emailHtml = render(SetPasswordEmail({ name, resetUrl, adminName }));
+
+    return this.send({
+      to: email,
+      subject: 'Définissez votre mot de passe pour accéder à ISEP Bands',
+      html: emailHtml,
     });
   }
 

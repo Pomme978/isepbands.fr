@@ -46,6 +46,7 @@ const updateUserSchema = z.object({
     }),
   isLookingForGroup: z.boolean().optional(),
   isFullAccess: z.boolean().optional(),
+  emailVerified: z.boolean().optional(),
   rejectionReason: z.string().nullable().optional(),
   // Relations
   instruments: z
@@ -114,6 +115,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         preferredGenres: true,
         registrationRequest: {
           select: {
+            motivation: true,
+            experience: true,
             rejectionReason: true,
           },
         },
@@ -184,10 +187,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Transform the user data to include rejectionReason at the root level
+    // Transform the user data to include registrationRequest data at the root level
     const transformedUser = {
       ...user,
+      joinDate: user.createdAt.toISOString().split('T')[0], // Map createdAt to joinDate as date string
       rejectionReason: user.registrationRequest?.rejectionReason || null,
+      registrationRequest: user.registrationRequest
+        ? {
+            motivation: user.registrationRequest.motivation,
+            experience: user.registrationRequest.experience,
+            rejectionReason: user.registrationRequest.rejectionReason,
+          }
+        : null,
     };
 
     return NextResponse.json({ user: transformedUser });
@@ -296,6 +307,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         baseUpdateData.isLookingForGroup = validatedData.isLookingForGroup;
       if (validatedData.isFullAccess !== undefined)
         baseUpdateData.isFullAccess = validatedData.isFullAccess;
+      if (validatedData.emailVerified !== undefined)
+        baseUpdateData.emailVerified = validatedData.emailVerified;
       if (validatedData.preferredGenres !== undefined)
         baseUpdateData.preferredGenres = JSON.stringify(validatedData.preferredGenres);
 
@@ -502,6 +515,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         preferredGenres: true,
         registrationRequest: {
           select: {
+            motivation: true,
+            experience: true,
             rejectionReason: true,
           },
         },
@@ -560,6 +575,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // Transform the user data to include rejectionReason at the root level
     const transformedUser = {
       ...fullUser,
+      joinDate: fullUser?.createdAt
+        ? fullUser.createdAt.toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0], // Map createdAt to joinDate as date string
       rejectionReason: fullUser?.registrationRequest?.rejectionReason || null,
     };
 

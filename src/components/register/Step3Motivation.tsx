@@ -90,6 +90,10 @@ export default function Step3Motivation({ data, onChange, onNext, onBack }: Step
           Cette information est essentielle pour évaluer votre candidature et déterminer si vous
           pourrez rejoindre l&lsquo;association. Soyez authentique !
         </p>
+        <p className="text-sm text-blue-700 mt-2 font-medium">
+          Si vous souhaitez postuler pour un de nos pôles (events, communication, sponsors, créa),
+          c&lsquo;est ici qu&lsquo;il faut le mentionner et expliquer votre intérêt.
+        </p>
       </div>
 
       <div className="flex md:flex-row flex-col gap-4 justify-center md:justify-end pt-4">

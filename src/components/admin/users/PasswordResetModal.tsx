@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react';
 import { X, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
+import AdminButton from '../common/AdminButton';
+import { toast } from 'sonner';
 
 interface PasswordResetModalProps {
   isOpen: boolean;
@@ -71,12 +73,12 @@ export default function PasswordResetModal({
 
   const handleReset = async () => {
     if (!password.trim()) {
-      alert('Veuillez saisir un mot de passe');
+      toast.error('Veuillez saisir un mot de passe');
       return;
     }
 
     if (!isPasswordValid) {
-      alert('Le mot de passe ne respecte pas les critères de sécurité');
+      toast.error('Le mot de passe ne respecte pas les critères de sécurité');
       return;
     }
 
@@ -106,10 +108,14 @@ export default function PasswordResetModal({
       setPassword('');
 
       // Show success message
-      alert('Password reset successfully!');
+      toast.success('Mot de passe réinitialisé avec succès !');
     } catch (error) {
       console.error('Password reset error:', error);
-      alert(error instanceof Error ? error.message : 'Failed to reset password. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Échec de la réinitialisation du mot de passe. Veuillez réessayer.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -153,14 +159,9 @@ export default function PasswordResetModal({
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-gray-700">New Password</label>
-              <button
-                type="button"
-                onClick={generatePassword}
-                className="text-sm text-primary hover:text-primary/80 font-medium flex items-center"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" />
+              <AdminButton onClick={generatePassword} variant="ghost" size="xs" icon={RefreshCw}>
                 Generate
-              </button>
+              </AdminButton>
             </div>
 
             <div className="relative">
@@ -235,24 +236,19 @@ export default function PasswordResetModal({
 
           {/* Actions */}
           <div className="flex justify-end space-x-3">
-            <button
-              onClick={handleClose}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
+            <AdminButton onClick={handleClose} disabled={isLoading} variant="secondary" size="sm">
               Cancel
-            </button>
-            <button
+            </AdminButton>
+            <AdminButton
               onClick={handleReset}
               disabled={isLoading || !password.trim() || !isPasswordValid}
-              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              variant="danger"
+              size="sm"
+              loading={isLoading}
+              loadingText="Resetting..."
             >
-              {isLoading ? (
-                <Loading text="Resetting..." size="sm" />
-              ) : (
-                'Reset Password'
-              )}
-            </button>
+              Reset Password
+            </AdminButton>
           </div>
         </div>
       </div>

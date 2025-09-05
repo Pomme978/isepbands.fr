@@ -136,10 +136,15 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">Votre identité visuelle</h4>
+        <h4 className="font-medium text-blue-900 mb-2">Photo de visage obligatoire</h4>
         <p className="text-sm text-blue-700">
-          Ajoutez une belle photo de profil pour que les autres membres puissent vous reconnaître !
-          Une photo souriante et professionnelle est idéale.
+          Il est <strong>obligatoire d&lsquo;uploader une photo de votre visage</strong> afin que
+          nous puissions vous identifier facilement lors des événements et activités de
+          l&lsquo;association.
+        </p>
+        <p className="text-sm text-blue-700 mt-2">
+          Une photo souriante, claire et récente est idéale. Évitez les photos de groupe, les
+          selfies flous ou les images où votre visage n&lsquo;est pas clairement visible.
         </p>
       </div>
 

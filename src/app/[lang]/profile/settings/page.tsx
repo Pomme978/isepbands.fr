@@ -137,6 +137,7 @@ export default function ProfileSettingsPage() {
             birthDate: profileData.data.birthDate
               ? new Date(profileData.data.birthDate).toISOString().split('T')[0]
               : null,
+            pronouns: profileData.data.pronouns || null,
           },
           music: {
             isLookingForGroup: profileData.data.isLookingForGroup || false,
@@ -214,7 +215,7 @@ export default function ProfileSettingsPage() {
       // Handle photo upload
       else if (pendingPhotoFile) {
         try {
-          const uploadResult = await uploadImageToStorage(pendingPhotoFile);
+          const uploadResult = await uploadImageToStorage(pendingPhotoFile, 'avatars');
           if (uploadResult.success && uploadResult.url) {
             finalPhotoUrl = uploadResult.url;
             // Clear pending file after successful upload
@@ -237,7 +238,7 @@ export default function ProfileSettingsPage() {
         biography: formData.profile?.biography,
         bureauQuote: formData.profile?.bureauQuote,
         photoUrl: finalPhotoUrl,
-        pronouns: formData.privacy?.pronouns,
+        pronouns: formData.profile?.pronouns || formData.privacy?.pronouns,
         birthDate: formData.profile?.birthDate,
       };
 

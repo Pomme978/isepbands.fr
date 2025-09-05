@@ -8,12 +8,15 @@ import { calculateAge } from '@/utils/schoolUtils';
 import { getPrimaryRoleName } from '@/utils/roleUtils';
 import Loading from '@/components/ui/Loading';
 import ApprovalModal from '../dashboard/ApprovalModal';
+import AdminButton from '../common/AdminButton';
+import { RefreshCcw } from 'lucide-react';
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  emailVerified: boolean;
   promotion: string;
   birthDate: string;
   status:
@@ -353,6 +356,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      emailVerified: user.emailVerified,
       avatar: user.photoUrl,
       promotion: user.promotion,
       role: roleDisplay,
@@ -429,12 +433,9 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       <div className="text-center py-8">
         <div className="text-red-600 mb-2">Error loading users</div>
         <div className="text-gray-500 mb-4">{error}</div>
-        <button
-          onClick={fetchUsers}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-        >
+        <AdminButton onClick={fetchUsers} variant="primary" size="md" icon={RefreshCcw}>
           Retry
-        </button>
+        </AdminButton>
       </div>
     );
   }
@@ -472,12 +473,9 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
           Aucun utilisateur ne correspond aux critères de recherche actuels. Essayez de modifier vos
           filtres ou ajoutez de nouveaux membres.
         </p>
-        <button
-          onClick={fetchUsers}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-        >
+        <AdminButton onClick={fetchUsers} variant="primary" size="md" icon={RefreshCcw}>
           Actualiser
-        </button>
+        </AdminButton>
       </div>
     );
   }

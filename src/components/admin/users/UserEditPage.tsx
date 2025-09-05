@@ -17,12 +17,13 @@ import {
   Trash2,
   Archive,
   RotateCcw,
+  Eye,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 import LangLink from '@/components/common/LangLink';
-import ViewProfileButton from '../common/ViewProfileButton';
 import UnsavedChangesModal from '../common/UnsavedChangesModal';
 import Avatar from '@/components/common/Avatar';
+import AdminButton from '../common/AdminButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { getPrimaryRoleName, getAllRoleNames } from '@/utils/roleUtils';
+import { getAllRoleNames } from '@/utils/roleUtils';
 import { uploadImageToStorage } from '@/utils/imageUpload';
 import UserEditMain from './edit-tabs/UserEditMain';
 import UserEditPermissions from './edit-tabs/UserEditPermissions';
@@ -43,6 +44,7 @@ import UserEditGroups from './edit-tabs/UserEditGroups';
 import UserEditEvents from './edit-tabs/UserEditEvents';
 import UserEditActivityLog from './edit-tabs/UserEditActivityLog';
 import PasswordResetModal from './PasswordResetModal';
+import ApprovalModal from '../dashboard/ApprovalModal';
 
 interface UserEditPageProps {
   userId: string;
@@ -134,6 +136,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [pendingUserForApproval, setPendingUserForApproval] = useState<User | null>(null);
 
   // Fetch current user session
   useEffect(() => {
@@ -206,7 +210,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       if (pendingImageFile) {
         try {
           // Upload the pending image using reusable utility
-          const uploadResult = await uploadImageToStorage(pendingImageFile);
+          const uploadResult = await uploadImageToStorage(pendingImageFile, 'avatars');
           if (uploadResult.success && uploadResult.url) {
             finalPhotoUrl = uploadResult.url;
             // Clear the pending file after successful upload
@@ -233,6 +237,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         isOutOfSchool: user.isOutOfSchool,
         photoUrl: finalPhotoUrl === '' || finalPhotoUrl === null ? null : finalPhotoUrl, // Map avatar back to photoUrl, handle null and empty string
         status: user.status,
+        emailVerified: user.emailVerified,
         isLookingForGroup: user.isLookingForGroup,
         instruments: user.instruments?.map((inst: UserInstrument) => {
           return {
@@ -458,6 +463,110 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
     }
   };
 
+  const handleReviewRequest = () => {
+    if (!user) return;
+
+    // Transform user data to match ApprovalModal format
+    const pendingUser = {
+      id: user.id,
+      type: 'user' as const,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone || user.phoneNumber || '',
+      currentLevel: user.promotion || '',
+      dateOfBirth: user.birthDate || '',
+      isOutOfSchool: user.isOutOfSchool || false,
+      pronouns: user.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other' | undefined,
+      motivation: user.registrationRequest?.motivation || '',
+      experience: user.registrationRequest?.experience || '',
+      instruments:
+        user.instruments?.map((inst) => ({
+          instrumentId: inst.instrument?.id || inst.instrumentId || 0,
+          instrumentName: inst.instrument?.name || '',
+          instrumentNameFr: inst.instrument?.name || '',
+          instrumentNameEn: inst.instrument?.name || '',
+          skillLevel: inst.skillLevel || 'INTERMEDIATE',
+          yearsPlaying: inst.yearsPlaying,
+          isPrimary: inst.isPrimary || false,
+        })) || [],
+      preferredGenres: user.preferredGenres || [],
+      profilePhoto: user.avatar || user.photoUrl,
+      submittedAt: user.createdAt
+        ? new Date(user.createdAt).toLocaleDateString('fr-FR')
+        : new Date().toLocaleDateString('fr-FR'),
+    };
+
+    setPendingUserForApproval(pendingUser);
+    setShowApprovalModal(true);
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      const response = await fetch(`/api/admin/pending-users/${id}/approve`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Refresh user data
+        const updatedUserResponse = await fetch(`/api/admin/users/${userId}`);
+        if (updatedUserResponse.ok) {
+          const data = await updatedUserResponse.json();
+          setUser({
+            ...data.user,
+            avatar: data.user.photoUrl,
+            phoneNumber: data.user.phone,
+            joinDate: data.user.createdAt
+              ? new Date(data.user.createdAt).toISOString().split('T')[0]
+              : '',
+            birthDate: data.user.birthDate
+              ? new Date(data.user.birthDate).toISOString().split('T')[0]
+              : '',
+            bio: data.user.biography || '',
+            status: data.user.status ? data.user.status.toLowerCase() : 'current',
+            rejectionReason: data.user.rejectionReason,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error approving user:', error);
+    }
+  };
+
+  const handleReject = async (id: string, reason: string) => {
+    try {
+      const response = await fetch(`/api/admin/pending-users/${id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (response.ok) {
+        // Refresh user data
+        const updatedUserResponse = await fetch(`/api/admin/users/${userId}`);
+        if (updatedUserResponse.ok) {
+          const data = await updatedUserResponse.json();
+          setUser({
+            ...data.user,
+            avatar: data.user.photoUrl,
+            phoneNumber: data.user.phone,
+            joinDate: data.user.createdAt
+              ? new Date(data.user.createdAt).toISOString().split('T')[0]
+              : '',
+            birthDate: data.user.birthDate
+              ? new Date(data.user.birthDate).toISOString().split('T')[0]
+              : '',
+            bio: data.user.biography || '',
+            status: data.user.status ? data.user.status.toLowerCase() : 'current',
+            rejectionReason: data.user.rejectionReason,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+    }
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'main':
@@ -621,76 +730,70 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
         <div className="flex items-center space-x-2">
           {!isArchived && (
-            <ViewProfileButton userId={userId} onClick={handleViewProfile} variant="button" />
+            <AdminButton onClick={handleViewProfile} variant="secondary" size="sm" icon={Eye}>
+              View Profile
+            </AdminButton>
           )}
 
           {!isArchived && (
             <>
-              <button
-                onClick={handleSendEmail}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Mail className="w-4 h-4 mr-2" />
+              <AdminButton onClick={handleSendEmail} variant="ghost" size="sm" icon={Mail}>
                 Send Email
-              </button>
+              </AdminButton>
 
-              <button
-                onClick={handleResetPassword}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Lock className="w-4 h-4 mr-2" />
+              <AdminButton onClick={handleResetPassword} variant="ghost" size="sm" icon={Lock}>
                 Reset Password
-              </button>
+              </AdminButton>
             </>
           )}
 
           {currentUserId !== user.id && (
             <>
               {needsRestore && (
-                <button
+                <AdminButton
                   onClick={() => setShowRestoreConfirm(true)}
-                  className="inline-flex items-center px-4 py-2 text-sm bg-white border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+                  variant="success"
+                  size="sm"
+                  icon={RotateCcw}
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
                   Restaurer l&apos;utilisateur
-                </button>
+                </AdminButton>
               )}
 
-              <button
-                onClick={() => setShowArchiveConfirm(true)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
-              >
-                <Archive className="w-4 h-4 mr-2" />
-                Archive User
-              </button>
+              {!isArchived && (
+                <AdminButton
+                  onClick={() => setShowArchiveConfirm(true)}
+                  variant="warning"
+                  size="sm"
+                  icon={Archive}
+                >
+                  Archive User
+                </AdminButton>
+              )}
 
-              <button
+              <AdminButton
                 onClick={() => setShowDeleteConfirm(true)}
-                className="inline-flex items-center px-4 py-2 text-sm bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                variant="danger"
+                size="sm"
+                icon={Trash2}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
                 Delete User
-              </button>
+              </AdminButton>
             </>
           )}
 
           {!needsRestore && (
-            <button
+            <AdminButton
               onClick={handleSave}
               disabled={!hasUnsavedChanges || saving}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                hasUnsavedChanges && !saving
-                  ? 'bg-primary text-white hover:bg-primary/90'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
+              variant="primary"
+              size="sm"
+              icon={Save}
+              loading={saving}
+              loadingText="Saving..."
             >
-              {saving ? (
-                <Loading text="" size="sm" centered={false} />
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+              Save Changes
+            </AdminButton>
           )}
         </div>
       </div>
@@ -715,14 +818,9 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                 log in until their registration is reviewed and approved.
               </p>
               <div className="mt-3">
-                <button
-                  onClick={() => {
-                    /* TODO: Open review modal */
-                  }}
-                  className="flex items-center px-4 py-2 text-xs font-medium bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-                >
+                <AdminButton onClick={handleReviewRequest} variant="warning" size="xs">
                   Review Registration Request
-                </button>
+                </AdminButton>
               </div>
             </div>
           </div>
@@ -781,20 +879,24 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
                 </div>
               )}
               <div className="mt-3 flex space-x-2">
-                <button
+                <AdminButton
                   onClick={() => setShowRestoreConfirm(true)}
-                  className="flex items-center px-4 py-2 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  variant="success"
+                  size="xs"
+                  icon={RotateCcw}
                 >
-                  <RotateCcw className="w-3 h-3 mr-1" />
                   Restore Account
-                </button>
-                <button
-                  onClick={() => setShowArchiveConfirm(true)}
-                  className="flex items-center px-4 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  <Archive className="w-3 h-3 mr-1" />
-                  Archive User
-                </button>
+                </AdminButton>
+                {!isArchived && (
+                  <AdminButton
+                    onClick={() => setShowArchiveConfirm(true)}
+                    variant="secondary"
+                    size="xs"
+                    icon={Archive}
+                  >
+                    Archive User
+                  </AdminButton>
+                )}
               </div>
             </div>
           </div>
@@ -1002,6 +1104,18 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Approval Modal */}
+      <ApprovalModal
+        item={pendingUserForApproval}
+        isOpen={showApprovalModal}
+        onClose={() => {
+          setShowApprovalModal(false);
+          setPendingUserForApproval(null);
+        }}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
     </div>
   );
 }
