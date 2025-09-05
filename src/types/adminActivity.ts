@@ -6,17 +6,18 @@ export interface AdminActivityUser {
 }
 
 // Types standardisés pour les logs admin
-export type AdminActivityLogType = 
+export type AdminActivityLogType =
   // Gestion des utilisateurs
   | 'user_created'
-  | 'user_updated' 
+  | 'user_updated'
   | 'user_deleted'
   | 'user_approved'
-  | 'user_rejected' 
+  | 'user_rejected'
   | 'user_archived'
   | 'user_restored'
   | 'user_registered'
   | 'user_password_reset'
+  | 'user_login'
   // Gestion des rôles et permissions
   | 'role_created'
   | 'role_updated'

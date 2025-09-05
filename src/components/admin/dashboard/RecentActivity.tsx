@@ -18,6 +18,7 @@ import {
   Shield,
   Archive,
   RefreshCw,
+  LogIn,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
 import AdminActivitiesModal from './AdminActivitiesModal';
@@ -69,6 +70,8 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
         return { icon: Settings, type: 'info' as const };
       case 'root_login':
         return { icon: Shield, type: 'warning' as const };
+      case 'user_login':
+        return { icon: LogIn, type: 'info' as const };
       case 'first_login':
         return { icon: UserCheck, type: 'success' as const };
       case 'post':
@@ -84,7 +87,7 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
   };
 
   const { icon, type } = getIconAndType(apiActivity.type);
-  
+
   return {
     id: apiActivity.id,
     title: apiActivity.title,
@@ -98,13 +101,14 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
     type,
     icon,
     metadata: apiActivity.metadata as Record<string, unknown>,
-    adminAction: apiActivity.createdByName ? {
-      adminName: apiActivity.createdByName,
-      adminRole: apiActivity.createdByRole,
-    } : undefined,
+    adminAction: apiActivity.createdByName
+      ? {
+          adminName: apiActivity.createdByName,
+          adminRole: apiActivity.createdByRole,
+        }
+      : undefined,
   };
 };
-
 
 const getActivityColors = (type: ActivityData['type']) => {
   switch (type) {
@@ -201,7 +205,10 @@ export default function RecentActivity({
           <div className="space-y-4">
             {/* Skeleton pour 3 activités */}
             {[1, 2, 3].map((index) => (
-              <div key={index} className="py-4 border-b border-gray-200 last:border-b-0 animate-pulse">
+              <div
+                key={index}
+                className="py-4 border-b border-gray-200 last:border-b-0 animate-pulse"
+              >
                 <div className="flex items-start space-x-3">
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0"></div>
                   <div className="flex-1 min-w-0">
@@ -239,7 +246,7 @@ export default function RecentActivity({
               {refreshing ? 'Actualisation...' : 'Actualiser'}
             </button>
             {activities.length > maxItems && (
-              <button 
+              <button
                 onClick={() => setShowAllModal(true)}
                 className="text-sm text-primary hover:text-primary/80 font-medium"
               >
@@ -253,43 +260,43 @@ export default function RecentActivity({
         {displayedActivities.length > 0 ? (
           <div className="divide-y divide-gray-200">
             {displayedActivities.map((activity) => {
-                const colors = getActivityColors(activity.type);
+              const colors = getActivityColors(activity.type);
 
-                // Extract creator info for separate display
-                const createdBy = activity.adminAction 
-                  ? `${activity.adminAction.adminName}${activity.adminAction.adminRole ? ` (${activity.adminAction.adminRole})` : ''}`
-                  : 'Système';
+              // Extract creator info for separate display
+              const createdBy = activity.adminAction
+                ? `${activity.adminAction.adminName}${activity.adminAction.adminRole ? ` (${activity.adminAction.adminRole})` : ''}`
+                : 'Système';
 
-                return (
-                  <ActivityItem
-                    key={activity.id}
-                    title={activity.title}
-                    description={activity.description}
-                    timestamp={activity.timestamp}
-                    icon={activity.icon}
-                    iconColor={colors.iconColor}
-                    iconBgColor={colors.iconBgColor}
-                    createdBy={createdBy}
-                    metadata={activity.metadata}
-                    isExpanded={expandedId === activity.id}
-                    onToggleExpand={() => setExpandedId(expandedId === activity.id ? null : activity.id)}
-                  />
-                );
-              })}
+              return (
+                <ActivityItem
+                  key={activity.id}
+                  title={activity.title}
+                  description={activity.description}
+                  timestamp={activity.timestamp}
+                  icon={activity.icon}
+                  iconColor={colors.iconColor}
+                  iconBgColor={colors.iconBgColor}
+                  createdBy={createdBy}
+                  metadata={activity.metadata}
+                  isExpanded={expandedId === activity.id}
+                  onToggleExpand={() =>
+                    setExpandedId(expandedId === activity.id ? null : activity.id)
+                  }
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-8">
             <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-muted-foreground mb-2">Aucune activité pour le moment</p>
-            <p className="text-sm text-gray-500">
-              Les actions administratives apparaîtront ici
-            </p>
+            <p className="text-sm text-gray-500">Les actions administratives apparaîtront ici</p>
           </div>
         )}
       </div>
 
       {/* Modal for all activities */}
-      <AdminActivitiesModal 
+      <AdminActivitiesModal
         isOpen={showAllModal}
         onClose={() => setShowAllModal(false)}
         activities={activities}

@@ -54,10 +54,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Logger la connexion pour le root user et première connexion des utilisateurs
+  // Logger toutes les connexions utilisateur
   try {
     const { logAdminAction } = await import('@/services/activityLogService');
-    
+
     if (user.id === 'root') {
       // Log root login
       await logAdminAction(
@@ -69,12 +69,29 @@ export async function POST(req: NextRequest) {
         {
           userAgent: req.headers.get('user-agent'),
           ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
-          loginAt: new Date().toISOString()
-        }
+          loginAt: new Date().toISOString(),
+        },
       );
+    } else {
+      // Log user login - l'utilisateur se connecte à son propre compte
+      console.log('Logging user login for:', user.id, user.email);
+      await logAdminAction(
+        user.id, // createdBy - qui fait l'action (l'utilisateur lui-même)
+        'user_login',
+        'Connexion utilisateur',
+        `Connexion de **${user.firstName || ''} ${user.lastName || ''}** (${user.email})`,
+        user.id, // userId - sur quel utilisateur porte l'action
+        {
+          userAgent: req.headers.get('user-agent'),
+          ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
+          loginAt: new Date().toISOString(),
+        },
+      );
+      console.log('User login logged successfully');
     }
   } catch (err) {
-    // Activity log error
+    // Activity log error - don't fail login for this
+    console.error('Failed to log user login:', err);
   }
   // Check if user needs to change password
   const userWithPasswordChangeFlag = await prisma.user.findUnique({
@@ -86,15 +103,15 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const res = NextResponse.json({ 
-    success: true, 
-    user: { 
-      id: user.id, 
+  const res = NextResponse.json({
+    success: true,
+    user: {
+      id: user.id,
       email: user.email,
       firstName: userWithPasswordChangeFlag?.firstName,
       lastName: userWithPasswordChangeFlag?.lastName,
-      requirePasswordChange: userWithPasswordChangeFlag?.requirePasswordChange || false
-    }
+      requirePasswordChange: userWithPasswordChangeFlag?.requirePasswordChange || false,
+    },
   });
   await setSession(res, { id: user.id, email: user.email });
   return res;

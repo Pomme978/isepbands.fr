@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  FileText, 
-  User, 
-  MessageSquare, 
-  Clock, 
-  CheckCircle, 
+import {
+  FileText,
+  User,
+  MessageSquare,
+  Clock,
+  CheckCircle,
   AlertCircle,
   UserCheck,
   UserX,
@@ -18,7 +18,8 @@ import {
   LucideIcon,
   ChevronDown,
   ChevronRight,
-  Info
+  Info,
+  LogIn,
 } from 'lucide-react';
 import { formatActivityDescription } from '@/services/activityLogService';
 import { useAuth } from '@/lib/auth-client';
@@ -80,19 +81,19 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
 
     const formatKey = (key: string): string => {
       const keyMap: Record<string, string> = {
-        'email': 'Email',
-        'role': 'Rôle',
-        'promotion': 'Promotion',
-        'instrumentsCount': 'Nombre d\'instruments',
-        'badgesCount': 'Nombre de badges',
-        'hasTemporaryPassword': 'Mot de passe temporaire',
-        'sendWelcomeEmail': 'Email de bienvenue envoyé',
-        'postTitle': 'Titre du post',
-        'targetUserId': 'Utilisateur cible',
-        'originalAction': 'Action originale',
-        'adminAction': 'Action administrateur',
-        'deletedByOwner': 'Supprimé par le propriétaire',
-        'deletedByAdmin': 'Supprimé par un admin'
+        email: 'Email',
+        role: 'Rôle',
+        promotion: 'Promotion',
+        instrumentsCount: "Nombre d'instruments",
+        badgesCount: 'Nombre de badges',
+        hasTemporaryPassword: 'Mot de passe temporaire',
+        sendWelcomeEmail: 'Email de bienvenue envoyé',
+        postTitle: 'Titre du post',
+        targetUserId: 'Utilisateur cible',
+        originalAction: 'Action originale',
+        adminAction: 'Action administrateur',
+        deletedByOwner: 'Supprimé par le propriétaire',
+        deletedByAdmin: 'Supprimé par un admin',
       };
       return keyMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
     };
@@ -139,6 +140,9 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
         return { icon: Settings, color: 'text-blue-500' };
       case 'system_announcement':
         return { icon: Settings, color: 'text-gray-500' };
+      case 'user_login':
+      case 'root_login':
+        return { icon: LogIn, color: 'text-green-500' };
       default:
         return { icon: CheckCircle, color: 'text-primary' };
     }
@@ -201,7 +205,8 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
             <div className="h-4 w-64 bg-gray-100 rounded mb-2" />
           </div>
         </div>
-      ) : registrationDetails && (registrationDetails.motivation || registrationDetails.experience) ? (
+      ) : registrationDetails &&
+        (registrationDetails.motivation || registrationDetails.experience) ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-2 mb-4">
             <User className="w-5 h-5 text-blue-600" />
@@ -282,7 +287,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                 const isExpanded = expandedItems.has(log.id);
                 const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
                 const formattedDescription = formatActivityDescription(log, user?.id);
-                
+
                 return (
                   <li key={log.id} className="mb-8 ml-6">
                     <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white border-2 border-gray-200 rounded-full">
@@ -294,7 +299,9 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                           day: '2-digit',
                           month: '2-digit',
                           year: 'numeric',
-                        })} à {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
+                        })}{' '}
+                        à{' '}
+                        {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
@@ -308,7 +315,7 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                           Par {log.createdByName || 'Système'}
                         </span>
                       )}
-                      
+
                       {/* Bouton pour afficher/masquer les détails */}
                       {hasMetadata && (
                         <button
@@ -323,17 +330,17 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
                           <span>Détails</span>
                         </button>
                       )}
-                      
+
                       {/* Détails expandables */}
                       {isExpanded && hasMetadata && (
                         <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                           <div className="flex items-center space-x-1 mb-2">
                             <Info className="w-3 h-3 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">Détails de l'action</span>
+                            <span className="text-xs font-medium text-gray-600">
+                              Détails de l&apos;action
+                            </span>
                           </div>
-                          <div className="space-y-1">
-                            {formatMetadata(log.metadata)}
-                          </div>
+                          <div className="space-y-1">{formatMetadata(log.metadata)}</div>
                         </div>
                       )}
                     </div>
