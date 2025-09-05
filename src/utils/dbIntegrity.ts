@@ -247,8 +247,17 @@ export async function ensureDBIntegrity(executorUserId?: string) {
       stats.checked++;
 
       if (!existing) {
-        // Utiliser l'utilisateur qui exécute ou 'root' par défaut
-        const createdById = executorUserId || 'root';
+        // Vérifier si l'utilisateur existe, sinon utiliser null
+        let createdById = null;
+        if (executorUserId) {
+          const userExists = await prisma.user.findUnique({
+            where: { id: executorUserId },
+            select: { id: true },
+          });
+          if (userExists) {
+            createdById = executorUserId;
+          }
+        }
 
         await prisma.$executeRaw`
           INSERT INTO EmailTemplate (name, description, subject, htmlContent, templateType, isDefault, variables, createdById, createdAt, updatedAt)
@@ -282,8 +291,22 @@ export async function checkEmailTemplatesDifferences(executorUserId?: string) {
   const differences = [];
 
   // D'abord corriger les templates avec createdById null en utilisant raw SQL
-  const defaultUserId = executorUserId || 'root';
-  await prisma.$executeRaw`UPDATE EmailTemplate SET createdById = ${defaultUserId} WHERE createdById IS NULL OR createdById = ''`;
+  // Vérifier si l'utilisateur existe avant de l'utiliser
+  let defaultUserId = null;
+  if (executorUserId) {
+    const userExists = await prisma.user.findUnique({
+      where: { id: executorUserId },
+      select: { id: true },
+    });
+    if (userExists) {
+      defaultUserId = executorUserId;
+    }
+  }
+
+  // Mettre à jour seulement si on a un utilisateur valide, sinon garder NULL
+  if (defaultUserId) {
+    await prisma.$executeRaw`UPDATE EmailTemplate SET createdById = ${defaultUserId} WHERE createdById IS NULL OR createdById = ''`;
+  }
 
   // Utiliser raw SQL pour éviter les problèmes avec createdById null
   for (const template of baseEmailTemplates) {
@@ -388,7 +411,17 @@ export async function updateEmailTemplatesFromSource(executorUserId?: string) {
       }
     } else {
       // Créer un template manquant avec raw SQL
-      const createdById = executorUserId || 'root';
+      // Vérifier si l'utilisateur existe, sinon utiliser null
+      let createdById = null;
+      if (executorUserId) {
+        const userExists = await prisma.user.findUnique({
+          where: { id: executorUserId },
+          select: { id: true },
+        });
+        if (userExists) {
+          createdById = executorUserId;
+        }
+      }
 
       await prisma.$executeRaw`
         INSERT INTO EmailTemplate (name, description, subject, htmlContent, templateType, isDefault, variables, createdById, createdAt, updatedAt)

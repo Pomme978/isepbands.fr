@@ -13,10 +13,13 @@ export async function POST(req: NextRequest) {
 
   // Check user status and handle suspended/refused accounts
   if (user.status === 'REFUSED') {
-    const registrationRequest = await prisma.registrationRequest.findUnique({
-      where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
-      select: { rejectionReason: true },
-    });
+    let registrationRequest = null;
+    if (user.id !== 'root') {
+      registrationRequest = await prisma.registrationRequest.findUnique({
+        where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
+        select: { rejectionReason: true },
+      });
+    }
     const rejectionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
     return NextResponse.json(
       {
@@ -29,10 +32,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (user.status === 'SUSPENDED') {
-    const registrationRequest = await prisma.registrationRequest.findUnique({
-      where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
-      select: { rejectionReason: true },
-    });
+    let registrationRequest = null;
+    if (user.id !== 'root') {
+      registrationRequest = await prisma.registrationRequest.findUnique({
+        where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
+        select: { rejectionReason: true },
+      });
+    }
     const suspensionMessage = registrationRequest?.rejectionReason || 'Aucune raison spécifiée.';
     return NextResponse.json(
       {
@@ -93,15 +99,18 @@ export async function POST(req: NextRequest) {
     // Activity log error - don't fail login for this
     console.error('Failed to log user login:', err);
   }
-  // Check if user needs to change password
-  const userWithPasswordChangeFlag = await prisma.user.findUnique({
-    where: { id: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
-    select: {
-      requirePasswordChange: true,
-      firstName: true,
-      lastName: true,
-    },
-  });
+  // Check if user needs to change password (skip for root user)
+  let userWithPasswordChangeFlag = null;
+  if (user.id !== 'root') {
+    userWithPasswordChangeFlag = await prisma.user.findUnique({
+      where: { id: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
+      select: {
+        requirePasswordChange: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+  }
 
   const res = NextResponse.json({
     success: true,

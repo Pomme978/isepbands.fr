@@ -7,35 +7,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BadgeDefinition {
+  id                Int      @id @default(autoincrement())
+  key               String   @unique
+  labelFr           String
+  labelEn           String
+  description       String?
+  color             String   @default("#4ECDC4")
+  colorEnd          String?
+  gradientDirection String   @default("to right")
+  textColor         String   @default("white")
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  userBadges        Badge[]
+}
+
+model Badge {
+  id                Int              @id @default(autoincrement())
+  name              String
+  userId            String
+  badgeDefinitionId Int?
+  assignedAt        DateTime         @default(now())
+  badgeDefinition   BadgeDefinition? @relation(fields: [badgeDefinitionId], references: [id])
+  user              User             @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Badge_userId_fkey")
+  @@index([badgeDefinitionId], map: "Badge_badgeDefinitionId_fkey")
+}
+
 model RegistrationRequest {
-  id        Int                        @id @default(autoincrement())
-  userId    Int                        @unique
-  status    RegistrationRequest_status @default(PENDING)
-  createdAt DateTime                   @default(now())
-  user      User                       @relation(fields: [userId], references: [id])
+  id              Int                @id @default(autoincrement())
+  userId          String             @unique
+  status          RegistrationStatus @default(PENDING)
+  createdAt       DateTime           @default(now())
+  experience      String?
+  motivation      String?
+  rejectionReason String?
+  user            User               @relation(fields: [userId], references: [id])
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
-  name                String
-  surname             String
-  username            String               @unique
-  promotion           String
-  birthDate           DateTime
-  biography           String?
-  password            String
-  email               String               @unique
-  emailVerified       Boolean              @default(false)
-  photoUrl            String?
-  status              String               @default("membre")
-  isLookingForGroup   Boolean              @default(false)
-  groupMemberships    GroupMembership[]
-  ownedNews           News[]
-  registrationRequest RegistrationRequest?
-  storageObjects      StorageObject[]
-  instruments         UserInstrument[]
-  roles               UserRole[]
-  votes               Vote[]
+  id                            String               @id @default(uuid())
+  promotion                     String
+  birthDate                     DateTime
+  biography                     String?
+  password                      String
+  email                         String               @unique
+  emailVerified                 Boolean              @default(false)
+  photoUrl                      String?
+  status                        UserStatus           @default(PENDING)
+  isLookingForGroup             Boolean              @default(false)
+  archiveReason                 String?
+  archivedAt                    DateTime?
+  archivedBy                    String?
+  createdAt                     DateTime             @default(now())
+  emailVerificationToken        String?
+  emailVerificationTokenExpires DateTime?
+  emailVerifiedAt               DateTime?
+  firstName                     String               @default("Prénom")
+  isArchived                    Boolean              @default(false)
+  isFullAccess                  Boolean              @default(false)
+  lastName                      String               @default("Nom")
+  phone                         String?
+  preferredGenres               String?
+  pronouns                      String?
+  bureauQuote                   String?              @db.Text
+  updatedAt                     DateTime?            @default(now()) @updatedAt
+  requirePasswordChange         Boolean              @default(false)
+  adminActivities               AdminActivity[]      @relation("AdminActivityUser")
+  badges                        Badge[]
+  createdEmailTemplates         EmailTemplate[]
+  groupMemberships              GroupMembership[]
+  inventoryItems                Inventory[]
+  ownedNews                     News[]
+  createdNewsletters            Newsletter[]
+  publicFeedItems               PublicFeed[]
+  registrationRequest           RegistrationRequest?
+  storageObjects                StorageObject[]
+  systemLogs                    SystemLog[]          @relation("SystemLogPerformedBy")
+  instruments                   UserInstrument[]
+  roles                         UserRole[]
+  votes                         Vote[]
+  wishlistItems                 WishlistItem[]
 }
 
 model StorageObject {
@@ -46,7 +100,7 @@ model StorageObject {
   contentType String
   category    String?  // Category: avatars, events, inventory, venues, groups, badges, documents
   uploadedAt  DateTime @default(now())
-  userId      Int?
+  userId      String?
   user        User?    @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "StorageObject_userId_fkey")
@@ -57,14 +111,18 @@ model Instrument {
   id                Int                     @id @default(autoincrement())
   name              String
   imageUrl          String?
+  nameEn            String
+  nameFr            String
   groupRequirements InstrumentRequirement[]
   users             UserInstrument[]
 }
 
 model UserInstrument {
-  userId       Int
+  userId       String
   instrumentId Int
   skillLevel   SkillLevel
+  isPrimary    Boolean    @default(false)
+  yearsPlaying Int?
   instrument   Instrument @relation(fields: [instrumentId], references: [id])
   user         User       @relation(fields: [userId], references: [id])
 
@@ -73,24 +131,32 @@ model UserInstrument {
 }
 
 model Role {
-  id          Int              @id @default(autoincrement())
-  name        String
-  weight      Int
-  permissions RolePermission[]
-  users       UserRole[]
+  id           Int              @id @default(autoincrement())
+  name         String
+  weight       Int
+  isCore       Boolean          @default(false)
+  nameEnFemale String
+  nameEnMale   String
+  nameFrFemale String
+  nameFrMale   String
+  permissions  RolePermission[]
+  users        UserRole[]
 }
 
 model Permission {
-  id    Int              @id @default(autoincrement())
-  name  String
-  roles RolePermission[]
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String?
+  nameEn      String
+  nameFr      String
+  roles       RolePermission[]
 }
 
 model UserRole {
-  userId Int
+  userId String
   roleId Int
-  role   Role @relation(fields: [roleId], references: [id])
-  user   User @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@id([userId, roleId])
   @@index([roleId], map: "UserRole_roleId_fkey")
@@ -114,6 +180,7 @@ model Group {
   isVerified             Boolean                 @default(false)
   isLookingForMembers    Boolean                 @default(false)
   isInPreparation        Boolean                 @default(false)
+  genre                  String?
   events                 GroupEvent[]
   members                GroupMembership[]
   instrumentRequirements InstrumentRequirement[]
@@ -121,7 +188,7 @@ model Group {
 }
 
 model GroupMembership {
-  userId  Int
+  userId  String
   groupId Int
   role    String?
   isAdmin Boolean @default(false)
@@ -155,8 +222,39 @@ model Event {
   isVisible    Boolean      @default(true)
   isArchived   Boolean      @default(false)
   helloAssoUrl String?
+  venueId      String?
+  venue        Venue?       @relation(fields: [venueId], references: [id])
   groups       GroupEvent[]
   setlists     Setlist[]
+
+  @@index([venueId], map: "Event_venueId_fkey")
+}
+
+model Venue {
+  id                 String      @id @default(uuid())
+  name               String
+  description        String?     @db.Text
+  venueType          VenueType
+  address            String
+  city               String
+  postalCode         String?
+  country            String      @default("France")
+  photoUrl           String?
+  metroLine          String?
+  accessInstructions String?     @db.Text
+  staffNotes         String?     @db.Text
+  status             VenueStatus @default(ACTIVE)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @default(now()) @updatedAt
+  isArchived         Boolean     @default(false)
+  archivedAt         DateTime?
+  archivedBy         String?
+  archiveReason      String?
+  events             Event[]
+
+  @@index([status])
+  @@index([venueType])
+  @@index([city])
 }
 
 model GroupEvent {
@@ -197,7 +295,7 @@ model SetlistSong {
 }
 
 model Vote {
-  userId Int
+  userId String
   songId Int
   song   SetlistSong @relation(fields: [songId], references: [id])
   user   User        @relation(fields: [userId], references: [id])
@@ -213,10 +311,259 @@ model News {
   type      String
   startDate DateTime
   endDate   DateTime
-  authorId  Int
+  authorId  String
   author    User     @relation(fields: [authorId], references: [id])
 
   @@index([authorId], map: "News_authorId_fkey")
+}
+
+model PublicFeed {
+  id            String    @id @default(cuid())
+  type          String
+  title         String
+  description   String?   @db.Text
+  metadata      String?   @db.LongText
+  userId        String
+  createdAt     DateTime  @default(now())
+  archiveReason String?
+  archivedAt    DateTime?
+  archivedBy    String?
+  isArchived    Boolean   @default(false)
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "PublicFeed_userId_fkey")
+  @@index([createdAt])
+}
+
+model AdminActivity {
+  id            String    @id @default(cuid())
+  type          String
+  title         String
+  description   String?   @db.Text
+  metadata      String?   @db.LongText
+  userId        String?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  isArchived    Boolean   @default(false)
+  archivedAt    DateTime?
+  archivedBy    String?
+  archiveReason String?
+  user          User?     @relation("AdminActivityUser", fields: [userId], references: [id])
+
+  @@index([userId], map: "AdminActivity_userId_fkey")
+  @@index([createdAt])
+}
+
+model MusicGenre {
+  id     String @id
+  nameFr String
+  nameEn String
+}
+
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  platform  String   @unique
+  url       String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model SystemSettings {
+  id                      Int      @id @default(1)
+  currentYear             String
+  primaryColor            String   @default("oklch(0.559 0.238 307.331)")
+  associationName         String   @default("ISEP Bands")
+  associationLegalStatus  String   @default("Association loi 1901")
+  associationAddress      String   @default("")
+  associationSiret        String?
+  associationEmail        String   @default("contact@isepbands.fr")
+  publicationDirectorName String   @default("")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @default(now()) @updatedAt
+}
+
+model SystemLog {
+  id            Int      @id @default(autoincrement())
+  action        String
+  details       String   @db.LongText
+  performedById String
+  createdAt     DateTime @default(now())
+  performedBy   User     @relation("SystemLogPerformedBy", fields: [performedById], references: [id])
+
+  @@index([performedById], map: "SystemLog_performedById_fkey")
+  @@index([createdAt])
+}
+
+model Inventory {
+  id        String         @id @default(uuid())
+  category  String
+  name      String
+  brand     String?
+  model     String?
+  state     InventoryState @default(GOOD)
+  quantity  Int            @default(1)
+  comment   String?        @db.Text
+  images    String?        @db.LongText
+  usable    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @default(now()) @updatedAt
+  createdBy String?
+  creator   User?          @relation(fields: [createdBy], references: [id])
+
+  @@index([category])
+  @@index([state])
+  @@index([usable])
+  @@index([createdBy], map: "Inventory_createdBy_fkey")
+}
+
+model NewsletterSubscriber {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  isActive       Boolean   @default(true)
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+  source         String?
+  metadata       String?   @db.LongText
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model EmailTemplate {
+  id           Int               @id @default(autoincrement())
+  name         String            @unique
+  description  String?
+  subject      String
+  htmlContent  String            @db.LongText
+  cssContent   String?           @db.Text
+  variables    String?           @db.LongText
+  templateType EmailTemplateType
+  isActive     Boolean           @default(true)
+  isDefault    Boolean           @default(false)
+  createdById  String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @default(now()) @updatedAt
+  emailLogs    EmailLog[]
+  createdBy    User?             @relation(fields: [createdById], references: [id])
+  newsletters  Newsletter[]
+
+  @@index([createdById], map: "EmailTemplate_createdById_fkey")
+  @@index([templateType])
+}
+
+model Newsletter {
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String?
+  templateId     Int
+  subject        String
+  variables      String?          @db.LongText
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  status         NewsletterStatus @default(DRAFT)
+  recipientCount Int              @default(0)
+  openCount      Int              @default(0)
+  clickCount     Int              @default(0)
+  createdById    String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  emailLogs      EmailLog[]
+  createdBy      User             @relation(fields: [createdById], references: [id])
+  template       EmailTemplate    @relation(fields: [templateId], references: [id])
+
+  @@index([templateId], map: "Newsletter_templateId_fkey")
+  @@index([createdById], map: "Newsletter_createdById_fkey")
+  @@index([status])
+  @@index([sentAt])
+}
+
+model EmailLog {
+  id           String         @id @default(cuid())
+  templateId   Int?
+  newsletterId Int?
+  recipient    String
+  subject      String
+  emailType    EmailLogType
+  status       EmailLogStatus @default(PENDING)
+  errorMessage String?        @db.Text
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  metadata     String?        @db.LongText
+  createdAt    DateTime       @default(now())
+  newsletter   Newsletter?    @relation(fields: [newsletterId], references: [id])
+  template     EmailTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([templateId], map: "EmailLog_templateId_fkey")
+  @@index([newsletterId], map: "EmailLog_newsletterId_fkey")
+  @@index([recipient])
+  @@index([status])
+  @@index([emailType])
+  @@index([createdAt])
+}
+
+model WishlistItem {
+  id             String           @id @default(uuid())
+  name           String
+  category       String
+  brand          String?
+  model          String?
+  estimatedPrice Float?
+  priority       WishlistPriority @default(MEDIUM)
+  status         WishlistStatus   @default(WANTED)
+  productUrl     String?
+  description    String?          @db.Text
+  imageUrl       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  creatorId      String
+  creator        User             @relation(fields: [creatorId], references: [id])
+
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([creatorId], map: "WishlistItem_creatorId_fkey")
+}
+
+model LegalMentions {
+  id              String   @id @default(uuid())
+  presidentName   String
+  contactEmail    String   @default("contact@isepbands.fr")
+  technicalEmail  String   @default("tech@isepbands.fr")
+  hostingProvider String?
+  hostingAddress  String?
+  hostingPhone    String?
+  hostingEmail    String?
+  domainProvider  String?
+  domainAddress   String?
+  domainPhone     String?
+  developmentTeam String?
+  designTeam      String?
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("legal_mentions")
+}
+
+enum UserStatus {
+  CURRENT
+  FORMER
+  GRADUATED
+  ALUMNI
+  PENDING
+  REFUSED
+  SUSPENDED
+  DELETED
+  ARCHIVED
+}
+
+enum RegistrationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  SUSPENDED
+  DELETED
 }
 
 enum SkillLevel {
@@ -235,8 +582,80 @@ enum EventType {
   OTHER
 }
 
-enum RegistrationRequest_status {
+enum VenueType {
+  CAMPUS
+  CONCERT_HALL
+  REHEARSAL_ROOM
+  RECORDING_STUDIO
+  BAR
+  RESTAURANT
+  NIGHTCLUB
+  EXTERNAL
+  OTHER
+}
+
+enum VenueStatus {
+  ACTIVE
+  INACTIVE
+  AVOID
+}
+
+enum EmailTemplateType {
+  NEWSLETTER
+  SYSTEM
+  TRANSACTIONAL
+  CUSTOM
+}
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+  FAILED
+}
+
+enum EmailLogType {
+  NEWSLETTER
+  WELCOME
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+  SYSTEM_NOTIFICATION
+  CUSTOM
+}
+
+enum EmailLogStatus {
   PENDING
-  ACCEPTED
-  REJECTED
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  FAILED
+  SPAM
+}
+
+enum InventoryState {
+  NEW
+  VERY_GOOD
+  GOOD
+  AVERAGE
+  DAMAGED
+  DEFECTIVE
+  OUT_OF_SERVICE
+}
+
+enum WishlistPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WishlistStatus {
+  WANTED
+  ORDERED
+  PURCHASED
+  CANCELLED
 }

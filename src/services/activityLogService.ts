@@ -4,8 +4,8 @@ import type { AdminActivityLogType } from '@/types/adminActivity';
 
 // Fonction pour formater les descriptions pour l'affichage public
 export function formatActivityDescription(
-  activity: any,
-  currentViewerId?: string
+  activity: { description: string },
+  currentViewerId?: string,
 ): string {
   // Toujours retourner la description originale - plus de messages personnalisés
   return activity.description;
@@ -41,7 +41,7 @@ export async function createAdminActivityLog({
       type,
       title,
       description,
-      metadata,
+      metadata: metadata ? JSON.stringify(metadata) : null,
       createdBy,
     },
   });
@@ -105,7 +105,7 @@ export async function updateAdminActivityLog({
     data: {
       ...(title !== undefined ? { title } : {}),
       ...(description !== undefined ? { description } : {}),
-      ...(metadata !== undefined ? { metadata } : {}),
+      ...(metadata !== undefined ? { metadata: metadata ? JSON.stringify(metadata) : null } : {}),
     },
   });
 }
@@ -135,7 +135,7 @@ export async function logAdminAction(
   title: string,
   description: string,
   targetUserId?: string | null,
-  metadata?: Prisma.InputJsonValue
+  metadata?: Prisma.InputJsonValue,
 ) {
   try {
     // Un seul log : action générale visible par tous
@@ -145,7 +145,7 @@ export async function logAdminAction(
       title,
       description,
       metadata: metadata || {},
-      createdBy: adminId
+      createdBy: adminId,
     });
   } catch (error) {
     console.error('Failed to log admin action:', error);
