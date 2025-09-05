@@ -25,6 +25,7 @@ import { formatActivityDescription } from '@/services/activityLogService';
 import { useAuth } from '@/lib/auth-client';
 import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import { Button } from '@/components/ui/button';
+import ActivityItem from '@/components/admin/dashboard/ActivityItem';
 interface ActivityLog {
   id: string;
   type: string;
@@ -350,73 +351,59 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
               <p className="text-sm">Les actions de l&apos;utilisateur apparaîtront ici</p>
             </div>
           ) : (
-            <ol className="relative border-l-2 border-primary/30 ml-4">
+            <div className="divide-y divide-gray-200">
               {activityLog.slice(0, MAX_DISPLAYED_LOGS).map((log) => {
                 const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
                 const isExpanded = expandedItems.has(log.id);
                 const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
                 const formattedDescription = formatActivityDescription(log, user?.id);
 
+                // Pass raw timestamp to ActivityItem for proper formatting
+                const timestamp = log.createdAt;
+
+                // Get appropriate colors based on activity type
+                const getActivityColors = (type: string) => {
+                  switch (type) {
+                    case 'user_approved':
+                    case 'user_restored':
+                    case 'first_login':
+                      return { iconColor: 'text-green-600', iconBgColor: 'bg-green-100' };
+                    case 'user_rejected':
+                    case 'user_archived':
+                      return { iconColor: 'text-red-600', iconBgColor: 'bg-red-100' };
+                    case 'profile_updated':
+                    case 'user_edited':
+                      return { iconColor: 'text-amber-600', iconBgColor: 'bg-amber-100' };
+                    case 'role_assigned':
+                    case 'permissions_updated':
+                      return { iconColor: 'text-purple-600', iconBgColor: 'bg-purple-100' };
+                    case 'user_login':
+                    case 'root_login':
+                      return { iconColor: 'text-blue-600', iconBgColor: 'bg-blue-100' };
+                    default:
+                      return { iconColor: 'text-gray-600', iconBgColor: 'bg-gray-100' };
+                  }
+                };
+
+                const colors = getActivityColors(log.type);
+
                 return (
-                  <li key={log.id} className="mb-8 ml-6">
-                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white border-2 border-gray-200 rounded-full">
-                      <IconComponent className={`w-3 h-3 ${color}`} />
-                    </span>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs text-gray-400">
-                        {new Date(log.createdAt).toLocaleDateString('fr-FR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        })}{' '}
-                        à{' '}
-                        {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                      <span className="font-semibold text-gray-900">{log.title}</span>
-                      {formattedDescription && (
-                        <span className="text-sm text-gray-700">{formattedDescription}</span>
-                      )}
-                      {(log.createdByName || log.createdBy) && (
-                        <span className="text-xs text-gray-500">
-                          Par {log.createdByName || 'Système'}
-                        </span>
-                      )}
-
-                      {/* Bouton pour afficher/masquer les détails */}
-                      {hasMetadata && (
-                        <button
-                          onClick={() => toggleExpanded(log.id)}
-                          className="flex items-center space-x-1 text-xs text-primary hover:text-primary/80 mt-1 w-fit"
-                        >
-                          {isExpanded ? (
-                            <ChevronDown className="w-3 h-3" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3" />
-                          )}
-                          <span>Détails</span>
-                        </button>
-                      )}
-
-                      {/* Détails expandables */}
-                      {isExpanded && hasMetadata && (
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <div className="flex items-center space-x-1 mb-2">
-                            <Info className="w-3 h-3 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">
-                              Détails de l&apos;action
-                            </span>
-                          </div>
-                          <div className="space-y-1">{formatMetadata(log.metadata)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </li>
+                  <ActivityItem
+                    key={log.id}
+                    title={log.title}
+                    description={formattedDescription || ''}
+                    timestamp={timestamp}
+                    icon={IconComponent}
+                    iconColor={colors.iconColor}
+                    iconBgColor={colors.iconBgColor}
+                    createdBy={log.createdByName || 'Système'}
+                    metadata={hasMetadata ? log.metadata : undefined}
+                    isExpanded={isExpanded}
+                    onToggleExpand={() => toggleExpanded(log.id)}
+                  />
                 );
               })}
-            </ol>
+            </div>
           )}
         </div>
       )}

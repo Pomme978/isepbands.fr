@@ -104,40 +104,40 @@ export default function UserCard({
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-      <div className="flex items-start space-x-4 mb-3">
-        {/* Avatar */}
-        <Avatar
-          src={user.avatar}
-          alt={`${user.firstName} ${user.lastName}`}
-          name={`${user.firstName} ${user.lastName}`}
-          size="md"
-          className="flex-shrink-0"
-        />
+      {/* Mobile Layout */}
+      <div className="sm:hidden">
+        <div className="flex items-center space-x-4 mb-3">
+          {/* Avatar */}
+          <Avatar
+            src={user.avatar}
+            alt={`${user.firstName} ${user.lastName}`}
+            name={`${user.firstName} ${user.lastName}`}
+            size="md"
+            className="flex-shrink-0"
+          />
 
-        {/* User Basic Info */}
-        <div className="flex-1 min-w-0">
-          {/* Name (never truncated) */}
-          <div className="mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {user.firstName} {user.lastName}
-              {currentUserId === user.id && (
-                <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
-              )}
-            </h3>
-          </div>
+          {/* User Basic Info */}
+          <div className="flex-1 min-w-0">
+            {/* Name (never truncated) */}
+            <div className="mb-2">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {user.firstName} {user.lastName}
+                {currentUserId === user.id && (
+                  <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
+                )}
+              </h3>
+            </div>
 
-          {/* Promotion and Role */}
-          <div className="flex items-center space-x-3">
-            <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
-            <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>{user.role}</span>
+            {/* Promotion and Role */}
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
+              <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>{user.role}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Full width content below avatar */}
-      <div className="space-y-3">
         {/* Status and Email Verification */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 mb-3">
           <div
             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} flex-shrink-0`}
           >
@@ -167,7 +167,7 @@ export default function UserCard({
         </div>
 
         {/* Contact Info */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-gray-500 mb-4">
           <span className="flex items-center">
             <Mail className="w-3 h-3 mr-1" />
             <span className="truncate">{user.email}</span>
@@ -179,7 +179,7 @@ export default function UserCard({
         </div>
 
         {/* Actions */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 mt-4">
           {user.status === 'pending' ? (
             <>
               <AdminButton
@@ -244,6 +244,147 @@ export default function UserCard({
               </AdminButton>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden sm:flex items-center space-x-4">
+        {/* Avatar */}
+        <Avatar
+          src={user.avatar}
+          alt={`${user.firstName} ${user.lastName}`}
+          name={`${user.firstName} ${user.lastName}`}
+          size="md"
+          className="flex-shrink-0"
+        />
+
+        {/* User Basic Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                {user.firstName} {user.lastName}
+                {currentUserId === user.id && (
+                  <span className="text-sm font-normal text-blue-600 ml-2">(moi)</span>
+                )}
+              </h3>
+              <div className="flex items-center space-x-3 mt-1">
+                <span className="text-sm font-medium text-gray-600">{user.promotion}</span>
+                <span className={`text-sm font-medium ${getRoleColor(user.role)}`}>
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            {/* Status and Actions on the right */}
+            <div className="flex items-center space-x-3 flex-shrink-0">
+              {/* Status badges */}
+              <div className="flex items-center gap-2">
+                <div
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}
+                >
+                  {user.status === 'current'
+                    ? 'Active'
+                    : user.status === 'pending'
+                      ? 'Pending'
+                      : user.status === 'graduated'
+                        ? 'Graduated'
+                        : user.status === 'refused'
+                          ? 'Refused'
+                          : user.status === 'suspended'
+                            ? 'Suspended'
+                            : user.status === 'deleted'
+                              ? 'Deleted'
+                              : 'Former'}
+                </div>
+                {user.status === 'current' && (
+                  <div
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      user.emailVerified
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {user.emailVerified ? 'Email vérifié' : 'Email non vérifié'}
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center space-x-2">
+                {user.status === 'pending' ? (
+                  <>
+                    <AdminButton
+                      onClick={() => onReviewRequest?.(user.id)}
+                      variant="warning"
+                      size="sm"
+                      icon={Clock}
+                    >
+                      Review
+                    </AdminButton>
+                    <AdminButton
+                      onClick={() => router.push(`/admin/users/${user.id}`)}
+                      variant="secondary"
+                      size="sm"
+                      icon={Edit}
+                    >
+                      Edit
+                    </AdminButton>
+                  </>
+                ) : user.status === 'refused' || user.status === 'suspended' ? (
+                  <>
+                    <AdminButton
+                      onClick={() => router.push(`/admin/users/${user.id}`)}
+                      variant="secondary"
+                      size="sm"
+                      icon={Edit}
+                    >
+                      Edit
+                    </AdminButton>
+                    <AdminButton
+                      onClick={() => onRestore?.(user.id)}
+                      variant="success"
+                      size="sm"
+                      icon={RotateCcw}
+                    >
+                      Restore
+                    </AdminButton>
+                  </>
+                ) : (
+                  <>
+                    <AdminButton
+                      onClick={() => router.push(`/admin/users/${user.id}`)}
+                      variant="secondary"
+                      size="sm"
+                      icon={Edit}
+                    >
+                      Edit
+                    </AdminButton>
+                    <AdminButton
+                      onClick={() => window.open(`/profile/${user.id}`, '_blank')}
+                      variant="secondary"
+                      size="sm"
+                      icon={Eye}
+                    >
+                      View Profile
+                    </AdminButton>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+            <span className="flex items-center">
+              <Mail className="w-3 h-3 mr-1" />
+              <span className="truncate">{user.email}</span>
+            </span>
+            <span className="flex items-center">
+              <Calendar className="w-3 h-3 mr-1" />
+              Joined: {formatDate(user.joinDate)} ({getTimeAgo(user.joinDate)})
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { LucideIcon, ChevronDown, ChevronRight } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface ActivityItemProps {
   title: string;
@@ -35,13 +37,13 @@ const formatMetadataField = (key: string, value: unknown) => {
     badgesCount: 'Badges',
     hasTemporaryPassword: 'Mot de passe temporaire',
     sendWelcomeEmail: 'Email de bienvenue',
-    
+
     // User status changes
-    previousStatus: 'Statut précédent', 
+    previousStatus: 'Statut précédent',
     newStatus: 'Nouveau statut',
     rejectionReason: 'Raison du refus',
     updatedFields: 'Champs modifiés',
-    
+
     // Actions timing
     sendEmail: 'Email envoyé',
     resetAt: 'Réinitialisé le',
@@ -52,19 +54,19 @@ const formatMetadataField = (key: string, value: unknown) => {
     restoredAt: 'Restauré le',
     loginAt: 'Connecté le',
     firstLoginAt: 'Première connexion le',
-    
+
     // Archive info
     wasArchivedBy: 'Archivé par',
     previousPhotoUrl: 'Ancienne photo',
     newPhotoUrl: 'Nouvelle photo',
     changes: 'Modifications détaillées',
-    
+
     // System info
     userAgent: 'Navigateur',
     ip: 'Adresse IP',
     platform: 'Plateforme',
     url: 'URL',
-    
+
     // Configuration
     badgeKey: 'Clé du badge',
     labelFr: 'Label français',
@@ -77,13 +79,13 @@ const formatMetadataField = (key: string, value: unknown) => {
 
   // Map status values to French
   const statusLabels: Record<string, string> = {
-    'PENDING': 'En attente',
-    'CURRENT': 'Actuel',
-    'DELETED': 'Archivé',
-    'REFUSED': 'Refusé',
-    'FORMER': 'Ancien',
-    'GRADUATED': 'Diplômé',
-    'SUSPENDED': 'Suspendu',
+    PENDING: 'En attente',
+    CURRENT: 'Actuel',
+    DELETED: 'Archivé',
+    REFUSED: 'Refusé',
+    FORMER: 'Ancien',
+    GRADUATED: 'Diplômé',
+    SUSPENDED: 'Suspendu',
   };
 
   const label = fieldLabels[key];
@@ -106,10 +108,10 @@ const formatMetadataField = (key: string, value: unknown) => {
     try {
       displayValue = new Date(value).toLocaleString('fr-FR', {
         day: '2-digit',
-        month: '2-digit', 
+        month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
     } catch {
       displayValue = String(value);
@@ -131,6 +133,31 @@ const formatMetadataField = (key: string, value: unknown) => {
   return { label, displayValue };
 };
 
+// Format timestamp to show relative time for recent dates, full date for older ones
+const formatTimestamp = (timestampString: string) => {
+  try {
+    const date = new Date(timestampString);
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Use relative time for recent dates (less than 4 days)
+    if (diffInDays < 4) {
+      return formatDistanceToNow(date, { addSuffix: true, locale: fr });
+    }
+
+    // Use full date for older dates
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return timestampString; // Fallback to original string if parsing fails
+  }
+};
+
 export default function ActivityItem({
   title,
   description,
@@ -143,26 +170,38 @@ export default function ActivityItem({
   isExpanded = false,
   onToggleExpand,
 }: ActivityItemProps) {
-  
   // Determine if this is a publication/post (system_announcement with post content)
   const isPost = metadata?.action === 'post_published' || metadata?.postType === 'post';
-  
+
   // For posts, use the generic title, NOT the post title
   const displayTitle = title;
-  
+
   // Extract post content if it's a post
   const postContent = isPost ? description.match(/Contenu:\s*(.+)$/s)?.[1]?.trim() : null;
-  
+
   // Check if there are any expandable details
-  const hasMetadataToShow = metadata && Object.keys(metadata).filter(key => 
-    !['action', 'postType', 'postTitle', 'publicPostId', 'userId', 'id', '_id', 'previousData', 'newData'].includes(key) &&
-    !(key === 'userEmail' && description.includes(String(metadata[key]))) &&
-    !(key === 'updatedFields' && description.includes('→'))
-  ).length > 0;
-  
+  const hasMetadataToShow =
+    metadata &&
+    Object.keys(metadata).filter(
+      (key) =>
+        ![
+          'action',
+          'postType',
+          'postTitle',
+          'publicPostId',
+          'userId',
+          'id',
+          '_id',
+          'previousData',
+          'newData',
+        ].includes(key) &&
+        !(key === 'userEmail' && description.includes(String(metadata[key]))) &&
+        !(key === 'updatedFields' && description.includes('→')),
+    ).length > 0;
+
   const hasExpandableContent = (isPost && postContent) || (!isPost && hasMetadataToShow);
   const shouldShowExpandButton = hasExpandableContent;
-  
+
   const formattedDescription = formatText(description);
 
   return (
@@ -174,8 +213,8 @@ export default function ActivityItem({
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between">
-            <div className="flex-1 mr-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between">
+            <div className="flex-1 sm:mr-3">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-900">{displayTitle}</h3>
                 {shouldShowExpandButton && (
@@ -195,15 +234,20 @@ export default function ActivityItem({
               <div className="text-sm text-gray-700 leading-relaxed mt-1">
                 <span dangerouslySetInnerHTML={{ __html: formattedDescription }} />
               </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <span className="text-xs text-gray-400 block">{timestamp}</span>
               {createdBy && (
-                <span className="text-xs text-gray-500 block mt-0.5">Par {createdBy}</span>
+                <span className="text-xs text-gray-500 block mt-2">Par {createdBy}</span>
               )}
             </div>
+            {/* Date à droite sur desktop */}
+            <div className="hidden sm:block text-right flex-shrink-0">
+              <span className="text-xs text-gray-400">{formatTimestamp(timestamp)}</span>
+            </div>
           </div>
-          
+          {/* Date en dessous sur mobile */}
+          <div className="mt-2 sm:hidden">
+            <span className="text-xs text-gray-400">{formatTimestamp(timestamp)}</span>
+          </div>
+
           {/* Expanded content */}
           {isExpanded && hasExpandableContent && (
             <div className="mt-3 pt-3 border-t border-gray-100">
@@ -212,7 +256,7 @@ export default function ActivityItem({
                 <div className="text-sm text-gray-700 leading-relaxed space-y-2">
                   {metadata?.postTitle && (
                     <div className="font-medium text-gray-900">
-                      "{metadata.postTitle}"
+                      &quot;{metadata.postTitle}&quot;
                     </div>
                   )}
                   {postContent && (
@@ -224,34 +268,45 @@ export default function ActivityItem({
               ) : (
                 // For admin actions, show relevant metadata
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <h4 className="text-xs font-medium text-gray-700 mb-2">Détails de l'action</h4>
+                  <h4 className="text-xs font-medium text-gray-700 mb-2">
+                    Détails de l&apos;action
+                  </h4>
                   <div className="space-y-1 text-xs">
                     {Object.entries(metadata || {}).map(([key, value]) => {
                       // Skip internal/system fields and irrelevant fields
-                      if (key.startsWith('_') || key === 'id' || key === 'userId' || key === 'action' || key === 'postType' || key === 'postTitle' || key === 'publicPostId' || key === 'previousData' || key === 'newData') return null;
-                      
+                      if (
+                        key.startsWith('_') ||
+                        key === 'id' ||
+                        key === 'userId' ||
+                        key === 'action' ||
+                        key === 'postType' ||
+                        key === 'postTitle' ||
+                        key === 'publicPostId' ||
+                        key === 'previousData' ||
+                        key === 'newData'
+                      )
+                        return null;
+
                       // Skip userEmail if it's already in description
                       if (key === 'userEmail' && description.includes(String(value))) return null;
-                      
+
                       // Skip generic updatedFields if we have specific changes
                       if (key === 'updatedFields' && description.includes('→')) return null;
-                      
+
                       // Handle wasArchivedBy (user ID) - should be resolved on server side
                       if (key === 'wasArchivedBy' && typeof value === 'string') {
                         // Skip if it's just an ID (will be resolved server-side later)
                         if (value.length > 10 && !value.includes(' ')) return null;
                       }
-                      
+
                       // Get French labels and formatted values
                       const { label, displayValue } = formatMetadataField(key, value);
-                      
+
                       if (!label || !displayValue) return null;
 
                       return (
                         <div key={key} className="flex justify-between items-start">
-                          <span className="text-gray-600 font-medium">
-                            {label}:
-                          </span>
+                          <span className="text-gray-600 font-medium">{label}:</span>
                           <span className="text-gray-800 ml-2 max-w-xs break-words text-right">
                             {displayValue}
                           </span>

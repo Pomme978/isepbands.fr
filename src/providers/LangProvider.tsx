@@ -10,6 +10,16 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   const urlLang = useMemo(() => {
     if (typeof params?.lang === 'string') return params.lang;
     if (Array.isArray(params?.lang)) return params.lang[0];
+
+    // Fallback to cookie if no URL lang
+    if (typeof window !== 'undefined') {
+      const cookieLang = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('NEXT_LOCALE='))
+        ?.split('=')[1];
+      if (cookieLang === 'fr' || cookieLang === 'en') return cookieLang;
+    }
+
     return 'fr';
   }, [params]);
 
@@ -34,7 +44,12 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
     // Update local state immediately for instant UI feedback
     setCurrentLang(newLang);
 
-    // Update URL without page reload
+    // Update cookie to persist language choice
+    if (typeof window !== 'undefined') {
+      document.cookie = `NEXT_LOCALE=${newLang}; path=/`;
+    }
+
+    // Update URL with Next.js router without refresh
     const segments = pathname.split('/');
     if (segments[1] === 'fr' || segments[1] === 'en') {
       segments[1] = newLang;
@@ -44,11 +59,9 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
     const newPath = segments.join('/') || '/';
 
-    // Use window.history.replaceState to avoid page reload
+    // Use window.history.pushState to update URL without refresh
     if (typeof window !== 'undefined') {
-      window.history.replaceState({}, '', newPath);
-      // Trigger a popstate event to update Next.js router
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      window.history.pushState({}, '', newPath);
     }
   };
 
