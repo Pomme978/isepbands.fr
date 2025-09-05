@@ -197,7 +197,7 @@ function BoardTeamContent() {
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   onChange={handlePhotoUpload}
                   className="hidden"
                   id="photo-upload"

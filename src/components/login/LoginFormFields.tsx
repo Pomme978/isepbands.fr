@@ -42,7 +42,7 @@ export default function LoginFormFields({
       <div className="mt-8">
         <div className="flex flew-row justify-between">
           <Label htmlFor="password">{t('auth.login.password')}</Label>
-          <a href={`/${lang}/reset-password`} className="text-sm hover:underline">
+          <a href={`/${lang}/forgot-password`} className="text-sm hover:underline">
             {t('auth.login.forgot')}
           </a>
         </div>

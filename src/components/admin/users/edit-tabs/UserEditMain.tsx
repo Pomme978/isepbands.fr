@@ -176,7 +176,7 @@ export default function UserEditMain({
                 <input
                   type="file"
                   id="profilePhoto"
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   onChange={handleImageUpload}
                   disabled={uploadingImage || isReadOnly}
                   className="hidden"

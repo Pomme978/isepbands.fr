@@ -17,7 +17,6 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
     setFormData({ ...formData, [field]: value });
   };
 
-
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -83,7 +82,7 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
               <input
                 type="file"
                 id="profilePhoto"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 onChange={handleImageUpload}
                 className="hidden"
               />
@@ -96,6 +95,8 @@ export default function Step5Profile({ formData, setFormData }: Step5ProfileProp
               </label>
               <p className="text-xs text-gray-500 mt-1">
                 Recommended: Square image, at least 200x200px (max 5MB)
+                <br />
+                Formats: JPG, PNG, WebP, HEIC
               </p>
               {formData.profilePhoto && (
                 <p className="text-xs text-orange-600 mt-1">

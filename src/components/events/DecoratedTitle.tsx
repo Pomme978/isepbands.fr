@@ -16,8 +16,8 @@ export default function DecoratedTitle({ title, className = '' }: DecoratedTitle
       <div className="relative hidden md:block w-32 h-16">
         {Array.from({ length: 4 }, (_, i) => {
           const rotation = -(i + 1) * 15;
-          const blur = 1 + i * 2;
-          const offsetX = i * 12;
+          const blur = 0.5 + i;
+          const offsetX = i * 30;
 
           return (
             <Image
@@ -55,8 +55,8 @@ export default function DecoratedTitle({ title, className = '' }: DecoratedTitle
       <div className="relative hidden md:block w-32 h-16">
         {Array.from({ length: 4 }, (_, i) => {
           const rotation = -(i + 1) * 15;
-          const blur = 1 + i * 2;
-          const offsetX = i * 12;
+          const blur = 0.5 + i;
+          const offsetX = i * 30;
 
           return (
             <Image

@@ -31,14 +31,14 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
     const baseClasses =
       'absolute top-1/2 -translate-y-1/2 w-11 h-7 rounded-full transition-all duration-300 ease-in-out transform shadow-md';
     if (variant === 'transparent') {
-      return `${baseClasses} bg-white ${isFr ? 'left-0.5' : 'left-[calc(50%-1px)]'}`;
+      return `${baseClasses} bg-white ${isFr ? 'left-1' : 'left-[calc(50%+2px)]'}`;
     }
-    return `${baseClasses} bg-white ${isFr ? 'left-0.5' : 'left-[calc(50%-1px)]'}`;
+    return `${baseClasses} bg-white ${isFr ? 'left-1' : 'left-[calc(50%+2px)]'}`;
   };
 
   const getTextClasses = (isActive: boolean) => {
     const baseClasses =
-      'relative z-10 px-3 py-1.5 text-xs font-semibold transition-all duration-300 rounded-full';
+      'relative z-10 flex items-center justify-center w-11 h-7 text-xs font-semibold transition-all duration-300 rounded-full';
     if (variant === 'transparent') {
       return `${baseClasses} ${isActive ? 'text-gray-900' : 'text-white'}`;
     }

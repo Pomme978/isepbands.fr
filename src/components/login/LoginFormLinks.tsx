@@ -14,14 +14,6 @@ export default function LoginFormLinks({ lang }: LoginFormLinksProps) {
           {t('auth.login.noAccount')} {t('auth.login.register')}
         </LangLink>
       </div>
-      <div>
-        <LangLink
-          href="/forgot-password"
-          className="text-muted-foreground hover:text-foreground hover:underline"
-        >
-          Mot de passe oublié ?
-        </LangLink>
-      </div>
     </div>
   );
 }

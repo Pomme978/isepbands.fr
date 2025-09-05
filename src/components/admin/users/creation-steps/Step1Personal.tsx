@@ -18,6 +18,10 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
     updateField('phone', formatted);
   };
 
+  const handleLastNameChange = (value: string) => {
+    updateField('lastName', value.toUpperCase());
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,7 +43,7 @@ export default function Step1Personal({ formData, setFormData }: Step1PersonalPr
             <input
               type="text"
               value={formData.lastName}
-              onChange={(e) => updateField('lastName', e.target.value)}
+              onChange={(e) => handleLastNameChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               placeholder="Enter last name"
             />

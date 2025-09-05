@@ -101,7 +101,7 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
             <input
               id="profilePhoto"
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               onChange={handleFileChange}
               className="hidden"
             />
@@ -116,7 +116,7 @@ export default function Step5Photo({ data, onChange, onNext, onBack }: Step5Phot
               <p className="mb-1">• Format recommandé : image carrée</p>
               <p className="mb-1">• Taille minimale : 200x200 pixels</p>
               <p className="mb-1">• Taille maximale : 5 MB</p>
-              <p>• Formats acceptés : JPG, PNG, WebP</p>
+              <p>• Formats acceptés : JPG, PNG, WebP, HEIC</p>
             </div>
             {data.profilePhoto && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
