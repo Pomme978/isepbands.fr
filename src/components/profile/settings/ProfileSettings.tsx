@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import CustomAvatar from '@/components/common/Avatar';
 import { Camera, Info, Trash2 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
@@ -82,7 +89,10 @@ export function ProfileSettings({
   const [birthDate, setBirthDate] = useState(
     formData?.birthDate ||
       (initialProfile?.birthDate
-        ? new Date(initialProfile.birthDate).toISOString().split('T')[0]
+        ? (() => {
+            const date = new Date(initialProfile.birthDate);
+            return !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : '';
+          })()
         : ''),
   );
   const [pronouns, setPronouns] = useState(formData?.pronouns || initialProfile?.pronouns || '');
@@ -352,20 +362,25 @@ export function ProfileSettings({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pronouns">Pronoms</Label>
-                <select
-                  id="pronouns"
-                  value={pronouns}
-                  onChange={(e) => handleFieldChange('pronouns', e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                <Select
+                  value={pronouns === '' || pronouns === null ? 'none' : (pronouns as string)}
+                  onValueChange={(value) =>
+                    handleFieldChange('pronouns', value === 'none' ? '' : value)
+                  }
                 >
-                  <option value="">Sélectionner vos pronoms</option>
-                  <option value="he/him">he/him (il/lui)</option>
-                  <option value="she/her">she/her (elle/elle)</option>
-                  <option value="they/them">they/them (iel/ellui)</option>
-                  <option value="other">Other (autre)</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez vos pronoms" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucun pronoms spécifié</SelectItem>
+                    <SelectItem value="he/him">he/him (il/lui)</SelectItem>
+                    <SelectItem value="she/her">she/her (elle/elle)</SelectItem>
+                    <SelectItem value="they/them">they/them (iel/ellui)</SelectItem>
+                    <SelectItem value="other">Other (autre)</SelectItem>
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">
-                  Cette information apparaîtra sur votre profil (optionnel)
+                  Indiquez vos pronoms pour aider les autres à s&apos;adresser à vous correctement.
                 </p>
               </div>
               <div className="space-y-1.5">

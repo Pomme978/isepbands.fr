@@ -3,6 +3,9 @@
 
 import { Star } from 'lucide-react';
 import { getRoleColor } from '@/utils/roleColors';
+import { defaultRoles, type DefaultRole } from '@/data/roles';
+import { useI18n } from '@/locales/client';
+import { useLang } from '@/hooks/useLang';
 
 type Pronouns = 'he/him' | 'she/her' | 'they/them' | 'other';
 
@@ -32,12 +35,75 @@ interface BadgeDisplayProps {
   isLookingForGroup: boolean;
   pronouns: Pronouns;
   className?: string;
-  bgColor?: string;
   textSize?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
-// Role display name is now handled by the API based on user pronouns
+// Utility function to get the localized role name based on language and gender
+const getRoleDisplayName = (
+  roleName: string,
+  pronouns: Pronouns,
+  currentLocale: string,
+): string => {
+  // Try to find by exact name first
+  let roleData: DefaultRole | undefined = defaultRoles.find((role) => role.name === roleName);
+
+  // If not found, try to find by any of the translated names
+  if (!roleData) {
+    roleData = defaultRoles.find(
+      (role) =>
+        role.nameFrMale === roleName ||
+        role.nameFrFemale === roleName ||
+        role.nameEnMale === roleName ||
+        role.nameEnFemale === roleName,
+    );
+  }
+
+  console.log('🔍 getRoleDisplayName DEBUG:', {
+    roleName,
+    pronouns,
+    currentLocale,
+    roleData,
+    foundByTranslation: !defaultRoles.find((role) => role.name === roleName) && !!roleData,
+    allRoleNames: defaultRoles.map((r) => r.name),
+    allRoleVariants: defaultRoles.map((r) => ({
+      name: r.name,
+      frMale: r.nameFrMale,
+      frFemale: r.nameFrFemale,
+      enMale: r.nameEnMale,
+      enFemale: r.nameEnFemale,
+    })),
+  });
+
+  if (!roleData) {
+    console.log('⚠️ Role not found anywhere, returning original:', roleName);
+    return roleName; // Fallback to original name if role not found
+  }
+
+  const isFrench = currentLocale === 'fr';
+  const isFeminine = pronouns === 'she/her';
+
+  let result;
+  if (isFrench) {
+    result = isFeminine ? roleData.nameFrFemale : roleData.nameFrMale;
+  } else {
+    result = isFeminine ? roleData.nameEnFemale : roleData.nameEnMale;
+  }
+
+  console.log('🔍 Translation result:', {
+    isFrench,
+    isFeminine,
+    result,
+    availableNames: {
+      nameFrMale: roleData.nameFrMale,
+      nameFrFemale: roleData.nameFrFemale,
+      nameEnMale: roleData.nameEnMale,
+      nameEnFemale: roleData.nameEnFemale,
+    },
+  });
+
+  return result;
+};
 
 // Utility function to determine if a color is dark
 const isColorDark = (color: string): boolean => {
@@ -61,10 +127,20 @@ export default function BadgeDisplay({
   isLookingForGroup,
   pronouns,
   className = '',
-  bgColor = 'bg-gradient-to-r from-secondary to-primary',
   textSize = 'text-sm',
   size = 'md',
 }: BadgeDisplayProps) {
+  const t = useI18n();
+  const { lang: currentLocale } = useLang();
+
+  // DEBUG: Log all values
+  console.log('🔍 BadgeDisplay DEBUG:', {
+    role,
+    pronouns,
+    currentLocale,
+    defaultRoles: defaultRoles.length,
+    roleFound: defaultRoles.find((r) => r.name === role),
+  });
   // Size configurations
   const sizeConfig = {
     xs: {
@@ -99,13 +175,16 @@ export default function BadgeDisplay({
   // Get role colors
   const roleColors = getRoleColor(role);
 
+  // Get localized role name based on language and gender
+  const localizedRoleName = getRoleDisplayName(role, pronouns, currentLocale);
+
   return (
     <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
       {/* Badge de rôle principal */}
       <span
         className={`inline-flex items-center ${config.padding} ${roleColors.bg} ${roleColors.text} rounded-full ${finalTextSize} shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
       >
-        {role}
+        {localizedRoleName}
       </span>
 
       {/* Badges supplémentaires */}
@@ -131,8 +210,11 @@ export default function BadgeDisplay({
             // Use textColor from badgeDefinition if available, otherwise calculate optimal
             const textColor =
               badge.badgeDefinition?.textColor || (isColorDark(badgeColor) ? 'white' : 'black');
-            // Use labelFr from badgeDefinition if available, otherwise use badge.name
-            const displayName = badge.badgeDefinition?.labelFr || badge.name;
+            // Use appropriate language label from badgeDefinition
+            const displayName =
+              currentLocale === 'fr'
+                ? badge.badgeDefinition?.labelFr || badge.name
+                : badge.badgeDefinition?.labelEn || badge.badgeDefinition?.labelFr || badge.name;
             const description = badge.badgeDefinition?.description || badge.description;
 
             // Determine background style (gradient or solid)
@@ -151,7 +233,7 @@ export default function BadgeDisplay({
                     ...backgroundStyle,
                     color: textColor,
                     '--badge-text-color': textColor,
-                  } as React.CSSProperties & { '--badge-text-color': string }
+                  } as React.CSSProperties
                 }
                 title={description || undefined}
               >
@@ -167,7 +249,7 @@ export default function BadgeDisplay({
           className={`inline-flex items-center ${config.padding} bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full ${finalTextSize} font-medium shadow-sm hover:shadow-md animate-pulse hover:scale-105 transition-all duration-200 ease-in-out`}
         >
           <Star className={`${config.icon} mr-1`} />
-          Prêt à rejoindre un groupe
+          {t('page.badges.lookingForGroup')}
         </span>
       )}
     </div>

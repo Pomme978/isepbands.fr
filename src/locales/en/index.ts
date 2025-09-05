@@ -214,6 +214,55 @@ const en = {
           },
         },
       },
+      loggedIn: {
+        welcome: 'Welcome back, {name}',
+        actions: {
+          title: 'Quick Actions',
+          profile: 'My Profile',
+          groups: 'My Groups',
+          admin: 'Admin',
+          settings: 'Settings',
+          logout: 'Logout',
+          loggingOut: 'Logging out...',
+        },
+        feed: {
+          title: 'Latest News',
+          loading: 'Loading news...',
+          offline: 'Offline mode',
+          error: 'Unable to load latest news',
+        },
+        profile: {
+          promotion: 'Promotion {year}',
+          age: '{age} years old',
+          fallbackName: 'User',
+        },
+        pending: {
+          title: 'Registration under validation',
+          description:
+            'Welcome to the ISEP Bands community! Your registration request has been received and our team is currently reviewing your profile.',
+          notification:
+            'An email notification will be sent upon validation within 2-3 business days.',
+        },
+      },
+    },
+    badges: {
+      lookingForGroup: 'Ready to join a group',
+    },
+    activities: {
+      labels: {
+        new_member: 'New member',
+        post: 'Post',
+        post_with_image: 'Post with image',
+        new_group: 'New group',
+        event: 'Event',
+        announcement: 'Announcement',
+        system_announcement: 'System announcement',
+        default: 'Activity',
+      },
+      unknownUser: 'Unknown user',
+      noActivity: 'No recent activity',
+      showHistory: 'Show full history',
+      moreActivities: '{count} more activities',
     },
   },
   welcome: 'Welcome, {name}!',

@@ -29,7 +29,19 @@ const updateProfileSchema = z.object({
   pronouns: z.string().nullable().optional(),
   birthDate: z
     .string()
-    .transform((val) => new Date(val))
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const date = new Date(val);
+        return (
+          !isNaN(date.getTime()) &&
+          date.getFullYear() >= 1900 &&
+          date.getFullYear() <= new Date().getFullYear()
+        );
+      },
+      { message: 'Date de naissance invalide' },
+    )
+    .transform((val) => (val ? new Date(val) : undefined))
     .optional(),
 });
 

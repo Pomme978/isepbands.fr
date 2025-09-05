@@ -26,4 +26,5 @@ export const defaultInstruments: DefaultInstrument[] = [
   { name: 'cajon', nameFr: 'Cajon', nameEn: 'Cajon' },
   { name: 'vocals', nameFr: 'Chant', nameEn: 'Vocals' },
   { name: 'beatbox', nameFr: 'Beatbox', nameEn: 'Beatbox' },
+  { name: 'bassoon', nameFr: 'Basson', nameEn: 'Bassoon' },
 ];

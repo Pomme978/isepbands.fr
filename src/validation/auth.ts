@@ -12,5 +12,5 @@ export const registerSchema = z.object({
 export const precheckSchema = z.object({});
 
 export const loginSchema = z.object({
-  password: z.string().min(1).max(100),
+  password: z.union([z.string().min(1).max(100), z.number()]).transform((val) => val.toString()),
 });

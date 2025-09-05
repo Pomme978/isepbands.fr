@@ -126,8 +126,12 @@ export default function ProfileSettingsPage() {
 
         setUserProfile(profileData.data);
 
+        console.log('=== INITIALIZING FORM DATA ===');
+        console.log('Profile data received:', profileData.data);
+        console.log('Pronouns from API:', profileData.data.pronouns);
+
         // Initialize form data with current values
-        setFormData({
+        const initialFormData = {
           profile: {
             firstName: profileData.data.firstName || '',
             lastName: profileData.data.lastName || '',
@@ -147,7 +151,11 @@ export default function ProfileSettingsPage() {
             pronouns: profileData.data.pronouns || null,
             // Add other privacy settings here
           },
-        });
+        };
+
+        console.log('Initial form data:', initialFormData);
+        console.log('Initial pronouns value:', initialFormData.privacy.pronouns);
+        setFormData(initialFormData);
       } catch (err) {
         console.error('Error fetching user data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -175,10 +183,19 @@ export default function ProfileSettingsPage() {
 
   // Update form data from child components
   const updateFormData = (section: string, data: Record<string, unknown>) => {
-    setFormData((prev: Record<string, unknown>) => ({
-      ...prev,
-      [section]: { ...prev[section], ...data },
-    }));
+    console.log('=== UPDATE FORM DATA ===');
+    console.log('Section:', section);
+    console.log('Data received:', data);
+    console.log('Current formData before update:', formData);
+
+    setFormData((prev: Record<string, unknown>) => {
+      const newFormData = {
+        ...prev,
+        [section]: { ...prev[section], ...data },
+      };
+      console.log('New formData after update:', newFormData);
+      return newFormData;
+    });
     setHasUnsavedChanges(true);
   };
 
@@ -245,6 +262,8 @@ export default function ProfileSettingsPage() {
       console.log('=== SAVING PROFILE DATA ===');
       console.log('Profile data to save:', profileDataToSave);
       console.log('User ID:', userSession.user.id);
+      console.log('Form data privacy section:', formData.privacy);
+      console.log('Pronouns value:', formData.privacy?.pronouns);
 
       const profileResponse = await fetch(`/api/profile/${userSession.user.id}`, {
         method: 'PUT',
@@ -303,7 +322,10 @@ export default function ProfileSettingsPage() {
       }
 
       // Update user profile and form data after successful save
-      setUserProfile((prev) => (prev ? { ...prev, ...profileDataToSave } : null));
+      const updatedProfile = { ...profileDataToSave };
+      console.log('Updating user profile with:', updatedProfile);
+
+      setUserProfile((prev) => (prev ? { ...prev, ...updatedProfile } : null));
       setFormData((prev) => ({
         ...prev,
         profile: {
@@ -312,7 +334,13 @@ export default function ProfileSettingsPage() {
           pendingPhoto: false,
           photoDeleted: false,
         },
+        privacy: {
+          ...prev.privacy,
+          pronouns: updatedProfile.pronouns,
+        },
       }));
+
+      console.log('Profile and form data updated');
 
       setHasUnsavedChanges(false);
       // Show success message with auto-hide

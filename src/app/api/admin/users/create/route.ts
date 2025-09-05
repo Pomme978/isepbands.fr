@@ -18,6 +18,17 @@ const createUserSchema = z.object({
   birthDate: z
     .string()
     .min(1, 'Birth date is required')
+    .refine(
+      (val) => {
+        const date = new Date(val);
+        return (
+          !isNaN(date.getTime()) &&
+          date.getFullYear() >= 1900 &&
+          date.getFullYear() <= new Date().getFullYear()
+        );
+      },
+      { message: 'Invalid birth date' },
+    )
     .transform((str) => new Date(str)),
   promotion: z.string().min(1, 'Promotion is required'),
 

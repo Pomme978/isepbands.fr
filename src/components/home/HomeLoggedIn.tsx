@@ -13,6 +13,7 @@ import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
 import Loading from '@/components/ui/Loading';
 import { calculateGraduationYear } from '@/utils/schoolUtils';
 import BadgeDisplay from '@/components/profile/BadgeDisplay';
+import { useI18n } from '@/locales/client';
 interface HomeLoggedInProps {
   user: User;
   lang: string;
@@ -49,67 +50,68 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   const [feedError, setFeedError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const t = useI18n();
 
   // Fetch club feed activities
   const fetchActivities = async () => {
-      try {
-        setIsLoadingFeed(true);
-        setFeedError(null);
+    try {
+      setIsLoadingFeed(true);
+      setFeedError(null);
 
-        // Try to fetch from public club feed API
-        const response = await fetch('/api/clubfeed?t=' + Date.now());
-        if (response.ok) {
-          const data = await response.json();
+      // Try to fetch from public club feed API
+      const response = await fetch('/api/clubfeed?t=' + Date.now());
+      if (response.ok) {
+        const data = await response.json();
 
-          // Transform API data to PublicFeedType format
-          const transformedActivities: PublicFeedType[] =
-            data.activities?.map(
-              (activity: {
-                id: string;
-                type: string;
-                createdAt: string;
-                title: string;
-                description?: string;
-                userName?: string;
-                userAvatar?: string;
-                userRole?: string;
-              }) => ({
-                id: activity.id,
-                type: activity.type === 'custom' ? 'post' : (activity.type as PublicFeedType['type']),
-                timestamp: new Date(activity.createdAt),
-                title: activity.title, // Titre séparé
-                description: activity.description || '', // Description séparée (peut être vide)
-                user: {
-                  name: activity.userName || 'Utilisateur',
-                  avatar: activity.userAvatar || '/avatars/default.jpg',
-                  role: activity.userRole || undefined, // Use real role from API
-                },
-              }),
-            ) || [];
+        // Transform API data to PublicFeedType format
+        const transformedActivities: PublicFeedType[] =
+          data.activities?.map(
+            (activity: {
+              id: string;
+              type: string;
+              createdAt: string;
+              title: string;
+              description?: string;
+              userName?: string;
+              userAvatar?: string;
+              userRole?: string;
+            }) => ({
+              id: activity.id,
+              type: activity.type === 'custom' ? 'post' : (activity.type as PublicFeedType['type']),
+              timestamp: new Date(activity.createdAt),
+              title: activity.title, // Titre séparé
+              description: activity.description || '', // Description séparée (peut être vide)
+              user: {
+                name: activity.userName || 'Utilisateur',
+                avatar: activity.userAvatar || '/avatars/default.jpg',
+                role: activity.userRole || undefined, // Use real role from API
+              },
+            }),
+          ) || [];
 
-          // Use only real data from the API
-          setActivities(transformedActivities);
-        } else {
-          // If API fails, show empty state
-          console.warn('Failed to fetch club feed');
-          setActivities([]);
-        }
-      } catch (error) {
-        console.error('Error fetching club feed:', error);
-        // Show empty state on error
+        // Use only real data from the API
+        setActivities(transformedActivities);
+      } else {
+        // If API fails, show empty state
+        console.warn('Failed to fetch club feed');
         setActivities([]);
-        setFeedError('Impossible de charger les dernières actualités');
-      } finally {
-        setIsLoadingFeed(false);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching club feed:', error);
+      // Show empty state on error
+      setActivities([]);
+      setFeedError(t('page.home.loggedIn.feed.error'));
+    } finally {
+      setIsLoadingFeed(false);
+    }
+  };
 
   useEffect(() => {
     fetchActivities();
 
     // Auto-refresh every 30 seconds to catch new posts
     const interval = setInterval(fetchActivities, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -151,7 +153,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   // Hook pour gérer l'historique des activités
   const activityHistory = useActivityHistory({
     activities: activities,
-    title: 'Historique des activités - Accueil',
+    title: t('page.home.loggedIn.feed.title') + ' - Historique',
   });
 
   return (
@@ -160,7 +162,12 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
         {/* Header */}
         <div className="pt-8 mb-8">
           <h1 className="text-2xl md:text-left text-center font-bold text-gray-900 mb-2">
-            Welcome back, {userProfile?.firstName || user.name?.split(' ')[0] || 'User'}
+            {t('page.home.loggedIn.welcome', {
+              name:
+                userProfile?.firstName ||
+                user.name?.split(' ')[0] ||
+                t('page.home.loggedIn.profile.fallbackName'),
+            })}
           </h1>
         </div>
 
@@ -186,7 +193,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                       name={
                         userProfile
                           ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`
-                          : user.name || 'Utilisateur'
+                          : user.name || t('page.home.loggedIn.profile.fallbackName')
                       }
                       size="lg"
                     />
@@ -194,11 +201,13 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                       <h3 className="font-semibold text-base md:text-lg">
                         {userProfile
                           ? `${userProfile.firstName} ${userProfile.lastName}`
-                          : user.name || 'User'}
+                          : user.name || t('page.home.loggedIn.profile.fallbackName')}
                       </h3>
                       {userProfile && userProfile.promotion && (
                         <p className="text-xs md:text-sm text-gray-600">
-                          Promotion {calculateGraduationYear(userProfile.promotion)}
+                          {t('page.home.loggedIn.profile.promotion', {
+                            year: calculateGraduationYear(userProfile.promotion),
+                          })}
                         </p>
                       )}
                       <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">
@@ -206,7 +215,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                           <>
                             {userProfile.promotion}
                             {calculateAge(userProfile.birthDate) &&
-                              `, ${calculateAge(userProfile.birthDate)} ans`}
+                              `, ${t('page.home.loggedIn.profile.age', { age: calculateAge(userProfile.birthDate) })}`}
                           </>
                         )}
                       </p>
@@ -229,7 +238,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                   </div>
                 )}
 
-                <h4 className="font-semibold text-gray-900 mb-3 md:mb-4">Actions rapides</h4>
+                <h4 className="font-semibold text-gray-900 mb-3 md:mb-4">
+                  {t('page.home.loggedIn.actions.title')}
+                </h4>
 
                 <div className="space-y-2 md:space-y-3">
                   <Button
@@ -237,7 +248,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                     asChild
                   >
-                    <LangLink href={`/${lang}/profile`}>Mon profil</LangLink>
+                    <LangLink href={`/${lang}/profile`}>
+                      {t('page.home.loggedIn.actions.profile')}
+                    </LangLink>
                   </Button>
 
                   <Button
@@ -245,7 +258,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                     asChild
                   >
-                    <LangLink href={`/${lang}/groups`}>Mes groupes</LangLink>
+                    <LangLink href={`/${lang}/groups`}>
+                      {t('page.home.loggedIn.actions.groups')}
+                    </LangLink>
                   </Button>
 
                   {userProfile?.primaryRole && (
@@ -254,7 +269,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                       className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                       asChild
                     >
-                      <LangLink href={`/${lang}/admin`}>Admin</LangLink>
+                      <LangLink href={`/${lang}/admin`}>
+                        {t('page.home.loggedIn.actions.admin')}
+                      </LangLink>
                     </Button>
                   )}
 
@@ -263,7 +280,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"
                     asChild
                   >
-                    <LangLink href={`/${lang}/profile/settings`}>Paramètres</LangLink>
+                    <LangLink href={`/${lang}/profile/settings`}>
+                      {t('page.home.loggedIn.actions.settings')}
+                    </LangLink>
                   </Button>
                 </div>
 
@@ -276,7 +295,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     disabled={loading}
                     className="w-full cursor-pointer text-sm md:text-base"
                   >
-                    {loading ? 'Déconnexion...' : 'Logout'}
+                    {loading
+                      ? t('page.home.loggedIn.actions.loggingOut')
+                      : t('page.home.loggedIn.actions.logout')}
                   </Button>
                 </div>
               </CardContent>
@@ -288,13 +309,19 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
             <Card className="p-4 py-8">
               <CardContent>
                 <div className="flex justify-between items-center mb-4 md:mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center md:text-left">Dernières Actualités</h2>
-                  {feedError && <span className="text-sm text-amber-600">Mode hors ligne</span>}
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center md:text-left">
+                    {t('page.home.loggedIn.feed.title')}
+                  </h2>
+                  {feedError && (
+                    <span className="text-sm text-amber-600">
+                      {t('page.home.loggedIn.feed.offline')}
+                    </span>
+                  )}
                 </div>
 
                 {isLoadingFeed ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loading text="Chargement des actualités..." size="sm" />
+                    <Loading text={t('page.home.loggedIn.feed.loading')} size="sm" />
                   </div>
                 ) : (
                   <RecentActivity

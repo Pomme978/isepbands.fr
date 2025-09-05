@@ -2,9 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPassword, getUserByEmail, setSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { loginSchema } from '@/validation/auth';
 
 export async function POST(req: NextRequest) {
-  const { email, password } = await req.json();
+  const body = await req.json();
+
+  // Validate request body
+  const validatedData = loginSchema.parse({ password: body.password });
+  const { email, password } = { email: body.email, password: validatedData.password };
   const user = await getUserByEmail(email);
 
   if (!user || !(await verifyPassword(password, user.password))) {
@@ -16,7 +21,7 @@ export async function POST(req: NextRequest) {
     let registrationRequest = null;
     if (user.id !== 'root') {
       registrationRequest = await prisma.registrationRequest.findUnique({
-        where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
+        where: { userId: typeof user.id === 'string' ? user.id : user.id.toString() },
         select: { rejectionReason: true },
       });
     }
@@ -35,7 +40,7 @@ export async function POST(req: NextRequest) {
     let registrationRequest = null;
     if (user.id !== 'root') {
       registrationRequest = await prisma.registrationRequest.findUnique({
-        where: { userId: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
+        where: { userId: typeof user.id === 'string' ? user.id : user.id.toString() },
         select: { rejectionReason: true },
       });
     }
@@ -103,7 +108,7 @@ export async function POST(req: NextRequest) {
   let userWithPasswordChangeFlag = null;
   if (user.id !== 'root') {
     userWithPasswordChangeFlag = await prisma.user.findUnique({
-      where: { id: typeof user.id === 'string' ? parseInt(user.id, 10) : user.id },
+      where: { id: typeof user.id === 'string' ? user.id : user.id.toString() },
       select: {
         requirePasswordChange: true,
         firstName: true,

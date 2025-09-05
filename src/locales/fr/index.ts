@@ -225,6 +225,55 @@ const fr = {
           },
         },
       },
+      loggedIn: {
+        welcome: 'Bienvenue, {name}',
+        actions: {
+          title: 'Actions rapides',
+          profile: 'Mon profil',
+          groups: 'Mes groupes',
+          admin: 'Admin',
+          settings: 'Paramètres',
+          logout: 'Se déconnecter',
+          loggingOut: 'Déconnexion...',
+        },
+        feed: {
+          title: 'Dernières Actualités',
+          loading: 'Chargement des actualités...',
+          offline: 'Mode hors ligne',
+          error: 'Impossible de charger les dernières actualités',
+        },
+        profile: {
+          promotion: 'Promotion {year}',
+          age: '{age} ans',
+          fallbackName: 'Utilisateur',
+        },
+        pending: {
+          title: 'Inscription en cours de validation',
+          description:
+            "Bienvenue dans la communauté ISEP Bands ! Votre demande d'inscription a bien été reçue et notre équipe examine actuellement votre profil.",
+          notification:
+            'Une notification par email vous sera envoyée dès validation sous 2-3 jours ouvrés.',
+        },
+      },
+    },
+    badges: {
+      lookingForGroup: 'Prêt à rejoindre un groupe',
+    },
+    activities: {
+      labels: {
+        new_member: 'Nouveau membre',
+        post: 'Publication',
+        post_with_image: 'Publication avec image',
+        new_group: 'Nouveau groupe',
+        event: 'Événement',
+        announcement: 'Annonce',
+        system_announcement: 'Annonce système',
+        default: 'Activité',
+      },
+      unknownUser: 'Utilisateur inconnu',
+      noActivity: 'Aucune activité récente',
+      showHistory: "Voir l'historique complet",
+      moreActivities: '{count} activités supplémentaires',
     },
   },
   welcome: 'Bienvenue, {name}!',
