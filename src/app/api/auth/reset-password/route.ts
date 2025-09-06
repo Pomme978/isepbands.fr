@@ -94,10 +94,17 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({
+      // Create response and clear any active session to force re-authentication
+      const response = NextResponse.json({
         success: true,
         message: 'Mot de passe mis à jour avec succès',
       });
+
+      // Clear the session cookie to force logout after password reset
+      const { clearSession } = await import('@/lib/auth');
+      clearSession(response);
+
+      return response;
     } catch (error) {
       console.error('Reset password error:', error);
       return NextResponse.json(

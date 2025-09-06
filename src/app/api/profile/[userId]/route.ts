@@ -365,17 +365,11 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update the user profile
-    console.log('🔄 Updating user profile with data:', {
-      ...validatedData,
-      updatedAt: new Date(),
-    });
+    console.log('🔄 Updating user profile with data:', validatedData);
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        ...validatedData,
-        updatedAt: new Date(),
-      },
+      data: validatedData,
       select: {
         id: true,
         firstName: true,

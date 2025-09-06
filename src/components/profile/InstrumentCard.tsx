@@ -4,6 +4,7 @@
 import { Star, Guitar } from 'lucide-react';
 import LevelBadge from './LevelBadge';
 import React from 'react';
+import { useI18n } from '@/locales/client';
 
 interface Instrument {
   id: string;
@@ -30,57 +31,33 @@ const instrumentIcons = {
 };
 
 export default function InstrumentCard({ instrument }: InstrumentCardProps) {
+  const t = useI18n();
   const IconComponent = instrumentIcons[instrument.name as keyof typeof instrumentIcons] || Guitar;
 
   return (
-    <div
-      className={`relative group max-w-xs mx-auto ${
-        instrument.isPrimary
-          ? 'bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-300 shadow-sm hover:shadow-md'
-          : 'bg-white border border-gray-200 hover:shadow-md'
-      } p-4 rounded-xl transition-all duration-200`}
-    >
-      {/* Primary instrument indicator */}
-      {instrument.isPrimary && (
-        <div className="absolute -top-2 -right-2">
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-1 rounded-full shadow-sm">
-            <Star className="h-3 w-3 text-white" />
-          </div>
-        </div>
-      )}
-
+    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
       <div className="text-center space-y-3">
-        {/* Icon */}
-        <div
-          className={`p-3 rounded-xl mx-auto w-fit ${
-            instrument.isPrimary ? 'bg-purple-100' : 'bg-gray-100'
-          }`}
-        >
-          <IconComponent
-            className={`h-8 w-8 ${instrument.isPrimary ? 'text-purple-600' : 'text-gray-600'}`}
-          />
+        <div className="p-3 bg-gray-50 rounded-lg mx-auto w-fit">
+          <IconComponent className="h-6 w-6 text-gray-600" />
         </div>
 
-        {/* Instrument info */}
         <div className="space-y-2">
-          <>
-            <h4 className="font-bold text-gray-900 text-lg">{instrument.name}</h4>
-            <div className="space-y-1">
-              <LevelBadge level={instrument.level} />
-              {instrument.yearsPlaying !== undefined &&
-                instrument.yearsPlaying !== null &&
-                instrument.yearsPlaying > 0 && (
-                  <p className="text-xs text-gray-500">
-                    {instrument.yearsPlaying === 1
-                      ? 'Depuis 1 an'
-                      : `Depuis ${instrument.yearsPlaying} ans`}
-                  </p>
-                )}
-              {instrument.isPrimary && (
-                <p className="text-xs text-purple-600 font-medium">Instrument principal</p>
-              )}
-            </div>
-          </>
+          <div className="flex items-center justify-center gap-2">
+            <h4 className="font-semibold text-gray-900">{instrument.name}</h4>
+            {instrument.isPrimary && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+          </div>
+
+          <LevelBadge level={instrument.level} size="sm" />
+
+          {instrument.yearsPlaying && instrument.yearsPlaying > 0 && (
+            <p className="text-sm text-gray-500">
+              {instrument.yearsPlaying === 1
+                ? t('user.profile.instruments.years_experience_single')
+                : t('user.profile.instruments.years_experience_multiple', {
+                    years: instrument.yearsPlaying,
+                  })}
+            </p>
+          )}
         </div>
       </div>
     </div>

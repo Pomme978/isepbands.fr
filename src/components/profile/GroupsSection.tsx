@@ -47,38 +47,19 @@ export default function GroupsSection({ groups, onGroupClick }: GroupsSectionPro
     <Card className="p-6 border-0 h-full flex flex-col">
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
-        {t('user.settings.groups.title')}
+        {t('user.profile.groups.title')}
       </h2>
 
-      <div className="flex-1 space-y-4">
-        {/* Active Groups */}
-        {activeGroups.map((group: Group) => (
-          <GroupCard key={group.id} group={group} onClick={() => onGroupClick(group.slug)} />
-        ))}
-
-        {/* Separator for inactive groups */}
-        {inactiveGroups.length > 0 && activeGroups.length > 0 && (
-          <div className="flex items-center my-6">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-3 py-1 text-xs text-gray-500 bg-gray-50 rounded">
-              {t('user.settings.groups.inactive_label')}
-            </span>
-            <div className="flex-1 border-t border-gray-300"></div>
-          </div>
-        )}
-
-        {/* Inactive Groups */}
-        {inactiveGroups.map((group: Group) => (
-          <GroupCard key={group.id} group={group} onClick={() => onGroupClick(group.slug)} />
-        ))}
-
-        {groups.length === 0 && (
-          <EmptyState
-            icon={Users}
-            title={t('user.settings.groups.empty_title')}
-            description={t('user.settings.groups.empty_description')}
-          />
-        )}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center py-8">
+          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {t('user.profile.groups.coming_soon_title')}
+          </h3>
+          <p className="text-gray-600 max-w-sm mx-auto">
+            {t('user.profile.groups.coming_soon_description')}
+          </p>
+        </div>
       </div>
     </Card>
   );

@@ -515,9 +515,9 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       {/* Former Members - Show only if filter allows */}
       {shouldShowFormerMembers && displayFormerMembers.length > 0 && (
         <AdminExpandableSection
-          title="Former Members & Graduates"
+          title="Former Members"
           count={displayFormerMembers.length}
-          defaultExpanded={false}
+          defaultExpanded={true}
         >
           <div className="space-y-4">
             {displayFormerMembers.map((user) => (

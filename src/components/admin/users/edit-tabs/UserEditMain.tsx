@@ -8,6 +8,17 @@ import Loading from '@/components/ui/Loading';
 import AdminButton from '../../common/AdminButton';
 import { formatPhoneNumber, formatPhoneInput } from '@/utils/phoneUtils';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface User {
   id: string;
@@ -224,41 +235,38 @@ export default function UserEditMain({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-            <input
+            <Label>First Name *</Label>
+            <Input
               type="text"
               value={user.firstName}
               onChange={(e) => updateField('firstName', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-            <input
+            <Label>Last Name *</Label>
+            <Input
               type="text"
               value={user.lastName}
               onChange={(e) => updateField('lastName', e.target.value.toUpperCase())}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-            <input
+            <Label>Email *</Label>
+            <Input
               type="email"
               value={user.email}
               onChange={(e) => updateField('email', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <input
+            <Label>Phone Number</Label>
+            <Input
               type="tel"
               value={formatPhoneInput(user.phoneNumber || '')}
               onChange={(e) => {
@@ -266,29 +274,31 @@ export default function UserEditMain({
                 updateField('phoneNumber', formatted);
               }}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
               placeholder="+33 6 12 34 56 78"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pronouns</label>
-            <select
-              value={user.pronouns || ''}
-              onChange={(e) => updateField('pronouns', e.target.value)}
+            <Label>Pronouns</Label>
+            <Select
+              value={user.pronouns || undefined}
+              onValueChange={(value) => updateField('pronouns', value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              <option value="">Select pronouns</option>
-              <option value="he/him">he/him (il/lui)</option>
-              <option value="she/her">she/her (elle/elle)</option>
-              <option value="they/them">they/them (iel/ellui)</option>
-              <option value="other">Other (autre)</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select pronouns" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="he/him">he/him (il/lui)</SelectItem>
+                <SelectItem value="she/her">she/her (elle/elle)</SelectItem>
+                <SelectItem value="they/them">they/them (iel/ellui)</SelectItem>
+                <SelectItem value="other">Other (autre)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label>
               Birth Date
               {user.birthDate && (
                 <span className="text-sm font-normal text-gray-500 ml-2">
@@ -300,45 +310,47 @@ export default function UserEditMain({
                   ans)
                 </span>
               )}
-            </label>
-            <input
+            </Label>
+            <Input
               type="date"
               value={user.birthDate || ''}
               onChange={(e) => updateField('birthDate', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Promotion *</label>
-            <select
+            <Label>Promotion *</Label>
+            <Select
               value={user.promotion}
-              onChange={(e) => updateField('promotion', e.target.value)}
+              onValueChange={(value) => updateField('promotion', value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              <option value="P1">P1</option>
-              <option value="P2">P2</option>
-              <option value="I1">I1</option>
-              <option value="I2">I2</option>
-              <option value="A1">A1</option>
-              <option value="A2">A2</option>
-              <option value="A3">A3</option>
-              <option value="B1">B1</option>
-              <option value="B2">B2</option>
-              <option value="B3">B3</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="P1">P1</SelectItem>
+                <SelectItem value="P2">P2</SelectItem>
+                <SelectItem value="I1">I1</SelectItem>
+                <SelectItem value="I2">I2</SelectItem>
+                <SelectItem value="A1">A1</SelectItem>
+                <SelectItem value="A2">A2</SelectItem>
+                <SelectItem value="A3">A3</SelectItem>
+                <SelectItem value="B1">B1</SelectItem>
+                <SelectItem value="B2">B2</SelectItem>
+                <SelectItem value="B3">B3</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-          <textarea
+          <Label>Bio</Label>
+          <Textarea
             value={user.bio || ''}
             onChange={(e) => updateField('bio', e.target.value)}
             disabled={isReadOnly}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             rows={4}
             placeholder="Brief biography..."
           />
@@ -351,32 +363,35 @@ export default function UserEditMain({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Member Status</label>
-            <select
+            <Label>Member Status</Label>
+            <Select
               value={user.status}
-              onChange={(e) => updateField('status', e.target.value)}
+              onValueChange={(value) => updateField('status', value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              <option value="current">Current Member</option>
-              <option value="former">Former Member</option>
-              <option value="pending">Pending Approval</option>
-              <option value="refused">Refused</option>
-              <option value="suspended">Suspended</option>
-              {(user.status === 'deleted' || user.status === 'DELETED') && (
-                <option value="deleted">Archived</option>
-              )}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="current">Current Member</SelectItem>
+                <SelectItem value="former">Former Member</SelectItem>
+                <SelectItem value="pending">Pending Approval</SelectItem>
+                <SelectItem value="refused">Refused</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                {(user.status === 'deleted' || user.status === 'DELETED') && (
+                  <SelectItem value="deleted">Archived</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Join Date</label>
-            <input
+            <Label>Join Date</Label>
+            <Input
               type="date"
               value={user.joinDate}
               onChange={(e) => updateField('joinDate', e.target.value)}
               disabled={isReadOnly}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
             />
           </div>
         </div>
@@ -384,16 +399,14 @@ export default function UserEditMain({
         {/* Suspension/Rejection Reason - Show only for suspended or refused users */}
         {(user.status === 'suspended' || user.status === 'refused') && (
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {user.status === 'suspended' ? 'Suspension Reason' : 'Rejection Reason'}
-            </label>
-            <textarea
+            <Label>{user.status === 'suspended' ? 'Suspension Reason' : 'Rejection Reason'}</Label>
+            <Textarea
               value={user.rejectionReason || ''}
               onChange={(e) => updateField('rejectionReason', e.target.value)}
               disabled={isReadOnly}
               rows={3}
               placeholder={`Enter the reason for ${user.status}...`}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none disabled:bg-gray-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="resize-none"
             />
             <p className="text-xs text-gray-500 mt-1">
               This reason will be shown to the user when they try to log in.
@@ -425,13 +438,11 @@ export default function UserEditMain({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {!isReadOnly && (
                 <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={user.emailVerified || false}
-                    onChange={(e) => {
-                      updateField('emailVerified', e.target.checked);
+                    onCheckedChange={(checked) => {
+                      updateField('emailVerified', checked as boolean);
                     }}
-                    className="rounded border-gray-300 text-primary focus:ring-primary/20"
                   />
                   <span className="text-sm text-gray-700">Forcer la vérification</span>
                 </label>

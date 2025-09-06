@@ -1,10 +1,27 @@
 // @components/settings/LevelBadge.tsx
+import { useI18n } from '@/locales/client';
 interface LevelBadgeProps {
   level: string;
   size?: 'sm' | 'md';
 }
 
 export default function LevelBadge({ level, size = 'md' }: LevelBadgeProps) {
+  const t = useI18n();
+
+  const getTranslatedLevel = (level: string) => {
+    const normalizedLevel = level.toLowerCase();
+    const levelMap: Record<string, string> = {
+      débutant: t('user.skillLevels.beginner'),
+      intermédiaire: t('user.skillLevels.intermediate'),
+      avancé: t('user.skillLevels.advanced'),
+      expert: t('user.skillLevels.expert'),
+      beginner: t('user.skillLevels.beginner'),
+      intermediate: t('user.skillLevels.intermediate'),
+      advanced: t('user.skillLevels.advanced'),
+      expert: t('user.skillLevels.expert'),
+    };
+    return levelMap[normalizedLevel] || level;
+  };
   const getLevelColor = (level: string) => {
     // Normalize the level to handle both french and english formats
     const normalizedLevel = level.toLowerCase();
@@ -37,7 +54,7 @@ export default function LevelBadge({ level, size = 'md' }: LevelBadgeProps) {
     <span
       className={`inline-block rounded-full font-medium ${getLevelColor(level)} ${sizeClasses[size]}`}
     >
-      {level}
+      {getTranslatedLevel(level)}
     </span>
   );
 }

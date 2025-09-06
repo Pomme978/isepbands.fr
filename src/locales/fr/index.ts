@@ -171,6 +171,33 @@ const fr = {
       expert: 'Expert',
     },
     profile: {
+      defaultRole: 'Membre',
+      instruments: {
+        title: 'Instruments',
+        empty_title: 'Aucun instrument ajouté',
+        empty_description: 'Ajoutez vos instruments pour que les groupes puissent vous trouver !',
+        years_experience: "ans d'expérience",
+        years_experience_single: 'Depuis 1 an',
+        years_experience_multiple: 'Depuis {years} ans',
+        primary_label: 'Instrument principal',
+      },
+      groups: {
+        title: 'Groupes',
+        inactive_label: 'Groupes Inactifs',
+        empty_title: "N'a rejoint aucun groupe pour le moment",
+        empty_description: 'Les groupes apparaîtront ici une fois rejoint !',
+        coming_soon_title: 'Fonctionnalité à venir',
+        coming_soon_description:
+          'La gestion des groupes et formations musicales sera bientôt disponible sur votre profil !',
+      },
+      music_genres: {
+        title: 'Genres musicaux',
+        subtitle: 'Styles de musique préférés',
+        empty_title: 'Aucun genre musical renseigné',
+        empty_description: 'Les genres musicaux apparaîtront ici une fois ajoutés',
+        count_one: '{count} genre préféré',
+        count_other: '{count} genres préférés',
+      },
       notfound: {
         title: 'Profil introuvable',
         description: "L'utilisateur demandé n'existe pas ou n'est pas disponible.",
@@ -179,27 +206,24 @@ const fr = {
       role: {
         default: 'Membre',
       },
-      promotion_year: 'Année de promo',
+      promotion_year: 'Promotion',
+      age_years: 'ans',
       pronouns: 'Pronoms',
       member_since: 'Membre depuis',
-      pronouns: {
+      preferred_genres: 'Genres préférés',
+      stats: {
+        group: 'groupe',
+        groups: 'groupes',
+        instrument: 'instrument',
+        instruments: 'instruments',
+        event: 'événement',
+        events: 'événements',
+      },
+      pronouns_values: {
         hehim: 'il/lui',
         sheher: 'elle/elle',
         theythem: 'iel/ellui',
         other: 'autre',
-      },
-      instruments: {
-        title: 'Instruments',
-        empty_title: 'Aucun instrument ajouté',
-        empty_description: 'Ajoutez vos instruments pour que les groupes puissent vous trouver !',
-        years_experience: "ans d'expérience",
-        primary_label: 'Instrument principal',
-      },
-      groups: {
-        title: 'Groupes',
-        inactive_label: 'Groupes Inactifs',
-        empty_title: "N'a rejoint aucun groupe pour le moment",
-        empty_description: 'Les groupes apparaîtront ici une fois rejoint !',
       },
     },
   },

@@ -8,6 +8,7 @@ import Avatar from '../common/Avatar';
 import React from 'react';
 import Link from 'next/link';
 import { useLang } from '@/hooks/useLang';
+import { useI18n } from '@/locales/client';
 import { formatPreferredGenres } from '@/utils/genreUtils';
 import { calculateGraduationYear } from '@/utils/schoolUtils';
 
@@ -65,18 +66,19 @@ interface ProfileHeaderProps {
   isUserProfile?: boolean;
 }
 
-const getPronounDisplay = (pronouns: UserProfile['pronouns']): string => {
-  const pronounLabels = {
-    'he/him': 'il/lui',
-    'she/her': 'elle/elle',
-    'they/them': 'iel/ellui',
-    other: 'autre',
-  };
-  return pronounLabels[pronouns];
-};
-
 export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProps) {
   const { lang } = useLang();
+  const t = useI18n();
+
+  const getPronounDisplay = (pronouns: UserProfile['pronouns']): string => {
+    const pronounLabels = {
+      'he/him': t('user.profile.pronouns_values.hehim'),
+      'she/her': t('user.profile.pronouns_values.sheher'),
+      'they/them': t('user.profile.pronouns_values.theythem'),
+      other: t('user.profile.pronouns_values.other'),
+    };
+    return pronounLabels[pronouns];
+  };
 
   return (
     <Card className="p-8 bg-gradient-to-r bg-white border-0">
@@ -102,21 +104,23 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
                   </Link>
                 )}
               </div>
-              {/* Affiche l'année de promotion, la promotion et l'âge sur la même ligne */}
               {(user.currentLevel || user.promotion || user.age) && (
                 <p className="text-gray-600 text-lg">
-                  {user.currentLevel && `Promotion ${calculateGraduationYear(user.currentLevel)}`}
+                  {user.currentLevel &&
+                    `${t('user.profile.promotion_year')} ${calculateGraduationYear(user.currentLevel)}`}
                   {user.currentLevel && (user.promotion || user.age) && ' • '}
                   {user.promotion}
                   {user.promotion && user.age && ', '}
-                  {user.age && `${user.age} ans`}
+                  {user.age && `${user.age} ${t('user.profile.age_years')}`}
                 </p>
               )}
               <p className="text-sm text-gray-500">
-                Pronoms: {getPronounDisplay(user.pronouns)} • Membre depuis {user.memberSince}
+                {t('user.profile.pronouns')}: {getPronounDisplay(user.pronouns)} •{' '}
+                {t('user.profile.member_since')} {user.memberSince}
               </p>
               <p className="text-sm text-gray-500 mb-1">
-                Genres préférés: {formatPreferredGenres(user.preferredGenres, 'fr')}
+                {t('user.profile.preferred_genres')}:{' '}
+                {formatPreferredGenres(user.preferredGenres, lang)}
               </p>
             </div>
 

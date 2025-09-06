@@ -160,15 +160,18 @@ export async function getSessionUser(req: NextRequest) {
       return null; // Force logout for suspended/refused users
     }
 
-    // Session validation based on user updates
-    const tokenIssuedAt = payload.iat as number;
-    const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
+    // TODO: This validation is too strict and logs users out when they update their profile
+    // because Prisma automatically updates the updatedAt field with @updatedAt
+    // We need to either:
+    // 1. Track security-critical updates separately, or
+    // 2. Disable this validation for now
+    // Commenting out until we have a better solution
 
-    // Invalidate session if user was updated after token was issued
-    // This handles password resets and other security-critical updates
-    if (userUpdatedAt > tokenIssuedAt) {
-      return null; // Force re-authentication
-    }
+    // const tokenIssuedAt = payload.iat as number;
+    // const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
+    // if (userUpdatedAt > tokenIssuedAt) {
+    //   return null; // Force re-authentication
+    // }
     const band = user.groupMemberships[0]?.group?.name || null;
 
     // Check if user has admin permissions

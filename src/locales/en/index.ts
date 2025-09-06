@@ -164,9 +164,21 @@ const en = {
   },
   user: {
     profile: {
-      promotion_year: 'Promotion year',
+      defaultRole: 'Member',
+      promotion_year: 'Promotion',
+      age_years: 'years old',
+      pronouns: 'Pronouns',
       member_since: 'Member since',
-      pronouns: {
+      preferred_genres: 'Preferred genres',
+      stats: {
+        group: 'group',
+        groups: 'groups',
+        instrument: 'instrument',
+        instruments: 'instruments',
+        event: 'event',
+        events: 'events',
+      },
+      pronouns_values: {
         hehim: 'he/him',
         sheher: 'she/her',
         theythem: 'they/them',
@@ -177,6 +189,8 @@ const en = {
         empty_title: 'No instrument added',
         empty_description: 'Add your instruments so groups can find you!',
         years_experience: 'years experience',
+        years_experience_single: 'Playing for 1 year',
+        years_experience_multiple: 'Playing for {years} years',
         primary_label: 'Primary instrument',
       },
       groups: {
@@ -184,6 +198,22 @@ const en = {
         inactive_label: 'Inactive Groups',
         empty_title: "Hasn't joined any group yet",
         empty_description: 'Groups will appear here once joined!',
+        coming_soon_title: 'Coming Soon',
+        coming_soon_description:
+          'Group and band management will be available soon on your profile!',
+      },
+      music_genres: {
+        title: 'Music Genres',
+        subtitle: 'Preferred music styles',
+        empty_title: 'No music genre specified',
+        empty_description: 'Music genres will appear here once added',
+        count_one: '{count} preferred genre',
+        count_other: '{count} preferred genres',
+      },
+      notfound: {
+        title: 'Profile not found',
+        description: "The requested user doesn't exist or is not available.",
+        action: 'Back to home',
       },
     },
     skillLevels: {

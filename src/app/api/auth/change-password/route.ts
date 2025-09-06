@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/middlewares/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { clearSession } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   // Skip password change verification for this endpoint
@@ -84,10 +85,16 @@ export async function POST(req: NextRequest) {
       // Don't fail the password change if logging fails
     }
 
-    return NextResponse.json({
+    // Create response and clear session to force re-authentication
+    const response = NextResponse.json({
       success: true,
       message: 'Mot de passe modifié avec succès',
     });
+
+    // Clear the session cookie to force logout after password change
+    clearSession(response);
+
+    return response;
   } catch (error) {
     console.error('Error changing password:', error);
     return NextResponse.json(

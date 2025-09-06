@@ -40,11 +40,7 @@ export default function ArchivedPosts({ filters }: ArchivedPostsProps) {
   const [error, setError] = useState<string | null>(null);
   const [restoringPostId, setRestoringPostId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchArchivedPosts();
-  }, [filters]);
-
-  const fetchArchivedPosts = async () => {
+  const fetchArchivedPosts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -73,7 +69,11 @@ export default function ArchivedPosts({ filters }: ArchivedPostsProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchArchivedPosts();
+  }, [fetchArchivedPosts]);
 
   const handleRestorePost = async (postId: string) => {
     setRestoringPostId(postId);

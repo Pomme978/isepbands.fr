@@ -6,6 +6,7 @@ import { Music } from 'lucide-react';
 import InstrumentCard from './InstrumentCard';
 import EmptyState from './EmptyState';
 import React from 'react';
+import { useI18n } from '@/locales/client';
 
 interface Instrument {
   id: string;
@@ -21,6 +22,8 @@ interface InstrumentsSectionProps {
 }
 
 export default function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
+  const t = useI18n();
+
   const getGridCols = () => {
     // Always use the same grid with max 4 columns, items will pile up from left
     return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
@@ -31,7 +34,7 @@ export default function InstrumentsSection({ instruments }: InstrumentsSectionPr
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-3">
           <Music className="h-6 w-6 text-purple-600" />
-          Instruments
+          {t('user.profile.instruments.title')}
         </h2>
       </div>
 
@@ -47,8 +50,8 @@ export default function InstrumentsSection({ instruments }: InstrumentsSectionPr
         ) : (
           <EmptyState
             icon={Music}
-            title="Aucun instrument ajouté"
-            description="Ajoutez vos instruments pour que les groupes puissent vous trouver !"
+            title={t('user.profile.instruments.empty_title')}
+            description={t('user.profile.instruments.empty_description')}
           />
         )}
       </div>
