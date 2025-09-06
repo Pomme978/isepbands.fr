@@ -260,29 +260,19 @@ export async function POST(req: NextRequest) {
     // Auto-subscribe to newsletter when user is created by admin
     await autoSubscribeUser(user.email, 'admin_created');
 
-    // Send welcome email if requested
+    // Send welcome email if requested (always with temporary password for admin-created users)
     if (validatedData.sendWelcomeEmail) {
       try {
         console.log('Sending welcome email to', user.email);
         const { EmailService } = await import('@/services/emailService');
 
-        if (validatedData.requirePasswordChange) {
-          // Send password setup email if they need to change password
-          const resetToken = `${user.id}.${Date.now()}.${crypto.randomUUID()}`;
-          await EmailService.sendSetPasswordEmail(
-            user.email,
-            `${user.firstName} ${user.lastName}`,
-            resetToken,
-            `${auth.user.firstName} ${auth.user.lastName}`,
-          );
-        } else {
-          // Send regular welcome email with temporary password
-          await EmailService.sendWelcomeEmail(
-            user.email,
-            `${user.firstName} ${user.lastName}`,
-            validatedData.temporaryPassword,
-          );
-        }
+        // Always send welcome email with temporary password for admin-created users
+        await EmailService.sendWelcomeEmail(
+          user.email,
+          `${user.firstName} ${user.lastName}`,
+          validatedData.temporaryPassword,
+        );
+
         console.log('Welcome email sent successfully to', user.email);
       } catch (emailError) {
         console.error('Error sending welcome email:', emailError);

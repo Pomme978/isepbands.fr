@@ -8,12 +8,14 @@ interface BackButtonProps {
   variant?: 'default' | 'ghost' | 'outline' | 'secondary' | 'destructive';
   withIcon?: boolean;
   withText?: boolean;
+  onClick?: () => void;
 }
 
 export default function BackButton({
   variant = 'default',
   withIcon = true,
   withText = true,
+  onClick,
 }: BackButtonProps) {
   const router = useRouter();
   const t = useI18n();
@@ -35,7 +37,7 @@ export default function BackButton({
   return (
     <Button
       variant={variant}
-      onClick={() => router.back()}
+      onClick={onClick || (() => router.back())}
       size={withText ? 'default' : 'icon'}
       aria-label="Back"
     >

@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: NextRequest) {
-  const auth = await requireAuth(req);
+  // Skip password change verification for this endpoint
+  const auth = await requireAuth(req, false);
   if (!auth.ok) {
     return auth.res;
   }

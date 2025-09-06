@@ -668,7 +668,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       await logAdminAction(
         authResult.user.id,
-        'user_edited',
+        'user_updated',
         'Utilisateur modifié',
         `**${transformedUser.firstName} ${transformedUser.lastName}** (${transformedUser.email}) a été modifié${changeDescription}`,
         String(transformedUser.id),

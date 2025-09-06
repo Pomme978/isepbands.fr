@@ -112,6 +112,8 @@ export async function POST(req: NextRequest) {
   }
   // Check if user needs to change password (skip for root user)
   let userWithPasswordChangeFlag = null;
+  let passwordChangeToken = null;
+
   if (user.id !== 'root') {
     userWithPasswordChangeFlag = await prisma.user.findUnique({
       where: { id: typeof user.id === 'string' ? user.id : user.id.toString() },
@@ -121,6 +123,37 @@ export async function POST(req: NextRequest) {
         lastName: true,
       },
     });
+
+    // If user needs to change password, create a secure token
+    if (userWithPasswordChangeFlag?.requirePasswordChange) {
+      const crypto = await import('crypto');
+      const tokenValue = crypto.randomBytes(64).toString('hex'); // 128 char secure token
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+
+      try {
+        // Clean up any existing unused tokens for this user
+        await prisma.passwordChangeToken.deleteMany({
+          where: {
+            userId: typeof user.id === 'string' ? user.id : user.id.toString(),
+            OR: [{ used: true }, { expiresAt: { lt: new Date() } }],
+          },
+        });
+
+        // Create new token
+        passwordChangeToken = await prisma.passwordChangeToken.create({
+          data: {
+            token: tokenValue,
+            userId: typeof user.id === 'string' ? user.id : user.id.toString(),
+            expiresAt,
+          },
+        });
+        console.log('Password change token created successfully for user:', user.email);
+      } catch (tokenError) {
+        console.error('Error creating password change token for user', user.email, ':', tokenError);
+        // Continue without token - will use email fallback
+        passwordChangeToken = null;
+      }
+    }
   }
 
   const res = NextResponse.json({
@@ -131,6 +164,7 @@ export async function POST(req: NextRequest) {
       firstName: userWithPasswordChangeFlag?.firstName,
       lastName: userWithPasswordChangeFlag?.lastName,
       requirePasswordChange: userWithPasswordChangeFlag?.requirePasswordChange || false,
+      passwordChangeToken: passwordChangeToken?.token || null,
     },
   });
   await setSession(res, {

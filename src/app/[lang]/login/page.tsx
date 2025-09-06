@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { loginSchema } from '@/validation/auth';
 import { useI18n } from '@/locales/client';
-import { useAuth, useSession } from '@/lib/auth-client';
+import { useSession } from '@/lib/auth-client';
 import BackButton from '@/components/ui/back-button';
 import Loading from '@/components/ui/Loading';
 import LoginFormCard from '@/components/login/LoginFormCard';
@@ -30,9 +30,8 @@ export default function LoginPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Use useSession for faster auth check, useAuth only for signIn function
+  // Use useSession for faster auth check
   const { user, loading } = useSession();
-  const { signIn } = useAuth();
 
   // Load remembered email on component mount
   useEffect(() => {
@@ -96,12 +95,21 @@ export default function LoginPage() {
         if (data.user.requirePasswordChange) {
           const searchParams = new URLSearchParams(window.location.search);
           const redirectTo = searchParams.get('redirect') || `/${lang}`;
-          router.push(`/${lang}/change-password?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirectTo)}`);
+          const token = data.user.passwordChangeToken;
+          if (token) {
+            router.push(
+              `/${lang}/change-password?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectTo)}`,
+            );
+          } else {
+            // Fallback to email-based approach
+            router.push(
+              `/${lang}/change-password?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirectTo)}`,
+            );
+          }
           return;
         }
 
-        // Set user and redirect normally
-        await signIn(email, password);
+        // User is already logged in from the first API call, just redirect
         router.push('/' + lang);
       } else {
         setLoginError(data.message || data.error || t('auth.login.connectionError'));

@@ -28,22 +28,25 @@ export async function signIn(email: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
-  
+
   const data = await res.json().catch(() => ({}));
-  
+
   if (!res.ok) {
     // Use message field first, then error field, then default
     throw new Error(data?.message || data?.error || 'Invalid credentials');
   }
-  
+
   // Check if password change is required
   if (data?.requirePasswordChange) {
-    const error = new Error(data.message || 'Password change required');
-    (error as any).requirePasswordChange = true;
-    (error as any).userData = data.user;
+    const error = new Error(data.message || 'Password change required') as Error & {
+      requirePasswordChange: boolean;
+      userData: unknown;
+    };
+    error.requirePasswordChange = true;
+    error.userData = data.user;
     throw error;
   }
-  
+
   return data;
 }
 
@@ -83,6 +86,32 @@ export function useSession(onAutoLogout?: () => void) {
         if (onAutoLogout) onAutoLogout();
         return;
       }
+
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        if (data.requirePasswordChange) {
+          // User needs to change password - redirect to change password page
+          if (typeof window !== 'undefined' && !pathname.includes('/change-password')) {
+            const currentLang = pathname.split('/')[1] || 'fr';
+            const token = data.passwordChangeToken;
+            const email = data.email;
+
+            if (token) {
+              window.location.href = `/${currentLang}/change-password?token=${encodeURIComponent(token)}`;
+            } else if (email) {
+              window.location.href = `/${currentLang}/change-password?email=${encodeURIComponent(email)}`;
+            } else {
+              // Force logout if we can't redirect properly
+              setUser(null);
+              if (onAutoLogout) onAutoLogout();
+            }
+          }
+          return;
+        }
+        setUser(null);
+        return;
+      }
+
       if (res.ok) {
         const data = await res.json();
         setUser(data && data.user ? data.user : null);
@@ -95,7 +124,7 @@ export function useSession(onAutoLogout?: () => void) {
     } finally {
       setLoading(false);
     }
-  }, [mounted, onAutoLogout]);
+  }, [mounted, onAutoLogout, pathname]);
 
   useEffect(() => {
     if (mounted) {
