@@ -29,18 +29,9 @@ const updateUserSchema = z.object({
       if (!val) return val;
       const uppercased = val.toUpperCase();
       if (
-        ['CURRENT', 'FORMER', 'GRADUATED', 'PENDING', 'REFUSED', 'SUSPENDED', 'DELETED'].includes(
-          uppercased,
-        )
+        ['CURRENT', 'FORMER', 'PENDING', 'REFUSED', 'SUSPENDED', 'DELETED'].includes(uppercased)
       ) {
-        return uppercased as
-          | 'CURRENT'
-          | 'FORMER'
-          | 'GRADUATED'
-          | 'PENDING'
-          | 'REFUSED'
-          | 'SUSPENDED'
-          | 'DELETED';
+        return uppercased as 'CURRENT' | 'FORMER' | 'PENDING' | 'REFUSED' | 'SUSPENDED' | 'DELETED';
       }
       throw new Error(`Invalid status: ${val}`);
     }),
@@ -319,6 +310,53 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           updatedAt: new Date(),
         },
       });
+
+      // Auto-assign roles based on status changes
+      if (validatedData.status && validatedData.status !== existingUser.status) {
+        let roleToAssign: string | null = null;
+
+        if (validatedData.status === 'FORMER') {
+          roleToAssign = 'former_member';
+        } else if (validatedData.status === 'CURRENT') {
+          roleToAssign = 'member';
+        }
+
+        if (roleToAssign) {
+          const targetRole = await tx.role.findFirst({
+            where: { name: roleToAssign },
+          });
+
+          if (targetRole) {
+            if (validatedData.roleIds === undefined) {
+              // No explicit roles provided, auto-assign
+              validatedData.roleIds = [targetRole.id];
+            } else {
+              // Explicit roles provided, ensure the appropriate role is included
+              if (!validatedData.roleIds.includes(targetRole.id)) {
+                validatedData.roleIds.push(targetRole.id);
+              }
+              // Remove conflicting roles (member vs former_member)
+              if (roleToAssign === 'former_member') {
+                const memberRole = await tx.role.findFirst({ where: { name: 'member' } });
+                if (memberRole) {
+                  validatedData.roleIds = validatedData.roleIds.filter(
+                    (id) => id !== memberRole.id,
+                  );
+                }
+              } else if (roleToAssign === 'member') {
+                const formerMemberRole = await tx.role.findFirst({
+                  where: { name: 'former_member' },
+                });
+                if (formerMemberRole) {
+                  validatedData.roleIds = validatedData.roleIds.filter(
+                    (id) => id !== formerMemberRole.id,
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
 
       // Update instruments
       if (validatedData.instruments !== undefined) {
@@ -641,7 +679,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           DELETED: 'Archivé',
           REFUSED: 'Refusé',
           FORMER: 'Ancien',
-          GRADUATED: 'Diplômé',
           SUSPENDED: 'Suspendu',
         };
         const oldStatus = statusLabels[existingUser.status] || existingUser.status;

@@ -3,7 +3,7 @@ import BasicLayout from '@/components/layouts/BasicLayout';
 
 export default function ProfileSettingsLayout({ children }: { children: ReactNode }) {
   return (
-    <BasicLayout showNavbar={false} navbarMode="static" showFooter={false}>
+    <BasicLayout showNavbar={true} navbarMode="static" showFooter={true}>
       {children}
     </BasicLayout>
   );

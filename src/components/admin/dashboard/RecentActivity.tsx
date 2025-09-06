@@ -60,6 +60,12 @@ const transformApiActivity = (apiActivity: ApiActivity): ActivityData => {
         return { icon: Archive, type: 'warning' as const };
       case 'user_restored':
         return { icon: UserCheck, type: 'success' as const };
+      case 'post_archived':
+        return { icon: Archive, type: 'warning' as const };
+      case 'post_restored':
+        return { icon: RefreshCw, type: 'success' as const };
+      case 'post_edited':
+        return { icon: MessageSquare, type: 'info' as const };
       case 'role_created':
       case 'permission_created':
         return { icon: Shield, type: 'info' as const };

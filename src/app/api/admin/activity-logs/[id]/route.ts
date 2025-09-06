@@ -51,8 +51,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
-    // Check if admin activity exists and if user is the creator
-    const existingActivity = await prisma.adminActivity
+    // Check if it's an admin activity first
+    const existingAdminActivity = await prisma.adminActivity
       .findUnique({
         where: { id },
         include: {
@@ -68,35 +68,81 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       })
       .catch(() => null);
 
+    // If not found in AdminActivity, check PublicFeed
+    const existingPublicPost = !existingAdminActivity
+      ? await prisma.publicFeed
+          .findUnique({
+            where: { id },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  photoUrl: true,
+                },
+              },
+            },
+          })
+          .catch(() => null)
+      : null;
+
+    const existingActivity = existingAdminActivity || existingPublicPost;
+
     if (!existingActivity) {
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
     }
 
-    // Only allow editing if user is the creator (for custom activities)
-    if (existingActivity.type === 'custom' && existingActivity.createdBy !== auth.user.id) {
+    const isPublicFeed = !existingAdminActivity;
+
+    // Only allow editing if user is the creator (for custom activities and posts)
+    if (
+      (existingActivity.type === 'custom' || existingActivity.type === 'post') &&
+      existingActivity.userId !== auth.user.id
+    ) {
       return NextResponse.json({ error: 'You can only edit your own activities' }, { status: 403 });
     }
 
-    // Update admin activity
-    const updatedActivity = await prisma.adminActivity
-      .update({
-        where: { id },
-        data: {
-          title,
-          description,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              photoUrl: true,
+    // Update activity in appropriate table
+    const updatedActivity = isPublicFeed
+      ? await prisma.publicFeed
+          .update({
+            where: { id },
+            data: {
+              title,
+              description,
             },
-          },
-        },
-      })
-      .catch(() => null);
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  photoUrl: true,
+                },
+              },
+            },
+          })
+          .catch(() => null)
+      : await prisma.adminActivity
+          .update({
+            where: { id },
+            data: {
+              title,
+              description,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  photoUrl: true,
+                },
+              },
+            },
+          })
+          .catch(() => null);
 
     if (!updatedActivity) {
       // If table doesn't exist, return mock data
@@ -110,6 +156,38 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           userName: 'Admin',
         },
       });
+    }
+
+    // Create admin log for the edit action (only for PublicFeed posts)
+    if (isPublicFeed) {
+      try {
+        const adminUser = await prisma.user.findUnique({
+          where: { id: auth.user.id },
+          select: { firstName: true, lastName: true },
+        });
+
+        const adminName = adminUser ? `${adminUser.firstName} ${adminUser.lastName}` : 'Admin';
+
+        await prisma.adminActivity.create({
+          data: {
+            type: 'post_edited',
+            title: 'Publication modifiée',
+            description: `${adminName} a modifié la publication **"${title}"**`,
+            createdBy: auth.user.id,
+            userId: auth.user.id,
+            metadata: JSON.stringify({
+              action: 'edit_post',
+              postId: id,
+              postTitle: title,
+              newTitle: title,
+              hasDescription: !!description,
+              postSource: 'publicFeed',
+            }),
+          },
+        });
+      } catch (logError) {
+        console.error('Failed to create admin log for edit:', logError);
+      }
     }
 
     return NextResponse.json({

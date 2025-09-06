@@ -104,10 +104,7 @@ export default function ArchiveConfirmModal({
               className="bg-orange-600 hover:bg-orange-700 text-white w-full sm:w-auto"
             >
               {isLoading ? (
-                <>
-                  <Loading size="sm" />
-                  <span className="ml-2">Archivage...</span>
-                </>
+                <Loading text="Archivage..." size="sm" variant="spinner" theme="white" />
               ) : (
                 <>
                   <Archive className="w-4 h-4 mr-2" />

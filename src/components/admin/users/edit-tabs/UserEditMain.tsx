@@ -360,7 +360,6 @@ export default function UserEditMain({
             >
               <option value="current">Current Member</option>
               <option value="former">Former Member</option>
-              <option value="graduated">Graduated</option>
               <option value="pending">Pending Approval</option>
               <option value="refused">Refused</option>
               <option value="suspended">Suspended</option>

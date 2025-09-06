@@ -17,100 +17,82 @@ const ROLE_COLORS: Record<string, RoleColorConfig> = {
   président: {
     bg: 'bg-gradient-to-r from-red-600 to-red-800',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-red-600 to-red-800',
   },
   présidente: {
     bg: 'bg-gradient-to-r from-red-600 to-red-800',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-red-600 to-red-800',
   },
   president: {
     bg: 'bg-gradient-to-r from-red-600 to-red-800',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-red-600 to-red-800',
   },
 
   // Vice-président - Primary gradient sophisticated
   'vice-président': {
     bg: 'bg-gradient-to-r from-purple-600 to-violet-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
   },
   'vice-présidente': {
     bg: 'bg-gradient-to-r from-purple-600 to-violet-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
   },
   'vice-president': {
     bg: 'bg-gradient-to-r from-purple-600 to-violet-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
   },
 
   // Secrétaire Général - Or gradient premium
   'secrétaire général': {
     bg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
   },
   'secrétaire générale': {
     bg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
   },
   sg: {
     bg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
   },
 
   // Trésorier - Vert émeraude gradient
   trésorier: {
     bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
   },
   trésorière: {
     bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
   },
   treasurer: {
     bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
   },
 
   // Responsables de pôles - Bleu océan gradient
   responsable: {
     bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   resp: {
     bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable communication': {
     bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable événementiel': {
     bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable technique': {
     bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
   'responsable partenariats': {
     bg: 'bg-gradient-to-r from-blue-600 to-cyan-600',
     text: 'text-white font-bold',
-    gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
   },
 };
 
@@ -120,7 +102,6 @@ const ROLE_COLORS: Record<string, RoleColorConfig> = {
 const DEFAULT_ROLE_COLOR: RoleColorConfig = {
   bg: 'bg-gradient-to-r from-gray-600 to-slate-600',
   text: 'text-white font-bold',
-  gradient: 'bg-gradient-to-r from-gray-600 to-slate-600',
 };
 
 /**
@@ -138,7 +119,7 @@ export function getRoleColor(
   // Si des couleurs personnalisées sont fournies, les utiliser (priorité absolue)
   if (customColors?.gradientStart && customColors?.gradientEnd) {
     return {
-      bg: `bg-gradient-to-r`,
+      bg: '', // Pas de classe CSS car on utilise du style inline
       text: 'text-white font-bold',
       gradient: `linear-gradient(to right, ${customColors.gradientStart}, ${customColors.gradientEnd})`,
     };

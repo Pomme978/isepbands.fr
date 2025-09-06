@@ -565,8 +565,6 @@ model LegalMentions {
 enum UserStatus {
   CURRENT
   FORMER
-  GRADUATED
-  ALUMNI
   PENDING
   REFUSED
   SUSPENDED

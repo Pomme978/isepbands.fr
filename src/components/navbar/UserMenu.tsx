@@ -122,7 +122,7 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-60 z-[500] border-0 rounded-none !rounded-b-lg"
+          className="w-60 z-50 border-0 rounded-none !rounded-b-lg"
           sideOffset={0}
           alignOffset={-24}
           avoidCollisions={true}
@@ -149,7 +149,7 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
           <DropdownMenuItem
             onClick={handleSignOut}
             disabled={isLoggingOut}
-            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-red-600 focus:text-red-600 hover:bg-red-50"
           >
             <div className="flex items-center space-x-2">
               {isLoggingOut && <Spinner size="sm" color="gray" />}

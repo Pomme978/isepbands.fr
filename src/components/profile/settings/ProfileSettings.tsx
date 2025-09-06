@@ -100,7 +100,7 @@ export function ProfileSettings({
   // Report changes to parent
   const handleFieldChange = (field: string, value: string | null | boolean) => {
     if (field === 'firstName') setFirstName(value);
-    if (field === 'lastName') setLastName(value);
+    if (field === 'lastName') setLastName(typeof value === 'string' ? value.toUpperCase() : value);
     if (field === 'biography') setBio(value);
     if (field === 'bureauQuote') setBureauQuote(value);
     if (field === 'photoUrl') setPhotoUrl(value);
@@ -109,7 +109,8 @@ export function ProfileSettings({
 
     const updatedData: Record<string, unknown> = {
       firstName: field === 'firstName' ? value : firstName,
-      lastName: field === 'lastName' ? value : lastName,
+      lastName:
+        field === 'lastName' ? (typeof value === 'string' ? value.toUpperCase() : value) : lastName,
       biography: field === 'biography' ? value : bio,
       bureauQuote: field === 'bureauQuote' ? value : bureauQuote,
       photoUrl: field === 'photoUrl' ? value : photoUrl,
@@ -145,8 +146,6 @@ export function ProfileSettings({
         return 'Membre actuel';
       case 'FORMER':
         return 'Ancien membre';
-      case 'GRADUATED':
-        return 'Diplômé';
       case 'PENDING':
         return 'En attente';
       default:
@@ -449,7 +448,7 @@ export function ProfileSettings({
         {/* Org / school data (read-only and clean) */}
         <Card>
           <CardHeader>
-            <CardTitle>Données établissement</CardTitle>
+            <CardTitle>Données de l&apos;association</CardTitle>
             <CardDescription>Informations synchronisées automatiquement.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
@@ -464,9 +463,7 @@ export function ProfileSettings({
                 disabled
                 aria-disabled="true"
               />
-              <p className="text-xs text-muted-foreground">
-                L’adresse est gérée par l’administration ISEP.
-              </p>
+              <p className="text-xs text-muted-foreground">Adresse ISEP non modifiable.</p>
             </div>
 
             {/* Statut (non modifiable) */}
@@ -475,7 +472,9 @@ export function ProfileSettings({
               <div className="rounded-md border border-input bg-muted/30 px-3 py-2 text-sm">
                 {currentStatus}
               </div>
-              <p className="text-xs text-muted-foreground">Champ administré automatiquement.</p>
+              <p className="text-xs text-muted-foreground">
+                Statut du compte dans l&apos;association.
+              </p>
             </div>
 
             {/* Promotion (texte auto) */}
@@ -489,7 +488,7 @@ export function ProfileSettings({
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Déterminée selon vos informations scolaires.
+                Contactez un membre du bureau en cas d&apos;erreur.
               </p>
             </div>
           </CardContent>

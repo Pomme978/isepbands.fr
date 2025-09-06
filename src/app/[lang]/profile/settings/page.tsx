@@ -6,13 +6,11 @@ import LangLink from '@/components/common/LangLink';
 import BackButton from '@/components/ui/back-button';
 import { SettingsContent } from '@/components/profile/settings/SettingsContent';
 import Loading from '@/components/ui/Loading';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, XCircle, User, Music, Shield, Save } from 'lucide-react';
+import { User, Music, Shield, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadImageToStorage } from '@/utils/imageUpload';
-import Navbar from '@/components/navbar/Navbar';
-import Footer from '@/components/footer/Footer';
 import { cn } from '@/utils/utils';
+import { toast } from 'sonner';
 
 interface UserSession {
   user: {
@@ -73,8 +71,6 @@ export default function ProfileSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Store all form data from all sections
   const [formData, setFormData] = useState<Record<string, unknown>>({});
@@ -196,6 +192,11 @@ export default function ProfileSettingsPage() {
       console.log('New formData after update:', newFormData);
       return newFormData;
     });
+
+    // Show toast only if there were no unsaved changes before
+    if (!hasUnsavedChanges) {
+      toast.info('Vous avez des modifications non sauvegardées');
+    }
     setHasUnsavedChanges(true);
   };
 
@@ -242,8 +243,7 @@ export default function ProfileSettingsPage() {
           }
         } catch (uploadError) {
           console.error('Error uploading photo:', uploadError);
-          setSaveError('Erreur lors du téléchargement de la photo');
-          setTimeout(() => setSaveError(null), 5000);
+          toast.error('Erreur lors du téléchargement de la photo');
           return;
         }
       }
@@ -343,17 +343,13 @@ export default function ProfileSettingsPage() {
       console.log('Profile and form data updated');
 
       setHasUnsavedChanges(false);
-      // Show success message with auto-hide
-      setSaveSuccess(true);
-      setSaveError(null);
+      // Show success toast
+      toast.success('Modifications enregistrées avec succès');
       console.log('=== SAVE COMPLETED SUCCESSFULLY ===');
-      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('=== SAVE FAILED ===');
       console.error('Error saving profile:', error);
-      setSaveError("Erreur lors de l'enregistrement");
-      setSaveSuccess(false);
-      setTimeout(() => setSaveError(null), 5000);
+      toast.error("Erreur lors de l'enregistrement");
     } finally {
       setIsSaving(false);
       console.log('=== HANDLE SAVE ALL END ===');
@@ -397,29 +393,6 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar static */}
-      <Navbar mode="static" lang={locale} />
-
-      {/* Toast notifications using Alert component */}
-      {saveSuccess && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
-          <Alert className="bg-green-50 border-green-200 max-w-sm">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800 ml-2">
-              Modifications enregistrées avec succès
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-      {saveError && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
-          <Alert className="bg-red-50 border-red-200 max-w-sm">
-            <XCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800 ml-2">{saveError}</AlertDescription>
-          </Alert>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -447,33 +420,13 @@ export default function ProfileSettingsPage() {
               {/* Titre au centre */}
               <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
 
-              {/* Save button à droite */}
-              <Button
-                onClick={handleSaveAll}
-                disabled={!hasUnsavedChanges || isSaving}
-                className={cn(
-                  hasUnsavedChanges
-                    ? 'bg-primary hover:bg-primary/90 text-white'
-                    : 'bg-gray-200 text-gray-500 cursor-not-allowed',
-                )}
-              >
-                {isSaving ? (
-                  <>
-                    <Loading text="" size="sm" centered={false} />
-                    <span className="ml-2 hidden sm:inline">Enregistrement...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Enregistrer</span>
-                  </>
-                )}
-              </Button>
+              {/* Empty space to maintain header balance */}
+              <div className="w-[120px]"></div>
             </div>
 
             {/* Navigation sections - tabs style */}
             <div className="flex justify-center">
-              <nav className="flex space-x-8 border-b border-gray-200 w-full justify-center">
+              <nav className="flex space-x-8 border-gray-200 w-full justify-center">
                 {settingsItems.map((item) => (
                   <button
                     key={item.id}
@@ -491,13 +444,6 @@ export default function ProfileSettingsPage() {
                 ))}
               </nav>
             </div>
-
-            {/* Status message */}
-            {hasUnsavedChanges && !isSaving && (
-              <div className="mt-4 text-center">
-                <p className="text-sm text-orange-600">Des modifications non sauvegardées</p>
-              </div>
-            )}
           </div>
 
           {/* Contenu des sections */}
@@ -512,8 +458,29 @@ export default function ProfileSettingsPage() {
         </div>
       </div>
 
-      {/* Footer static */}
-      <Footer />
+      {/* Floating save button for mobile/scroll visibility */}
+      {hasUnsavedChanges && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-2 fade-in duration-300">
+          <Button
+            onClick={handleSaveAll}
+            disabled={isSaving}
+            size="lg"
+            className="bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {isSaving ? (
+              <>
+                <Loading text="" size="sm" centered={false} />
+                <span className="ml-2">Enregistrement...</span>
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-5 w-5" />
+                <span>Enregistrer</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

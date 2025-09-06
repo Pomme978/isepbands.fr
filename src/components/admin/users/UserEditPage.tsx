@@ -256,7 +256,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             badgeDefinitionId: badge.badgeDefinitionId || badge.badgeDefinition?.id,
           }))
           .filter((b) => b.badgeDefinitionId),
-        preferredGenres: user.preferredGenres || [],
+        preferredGenres: Array.isArray(user.preferredGenres) ? user.preferredGenres : [],
         rejectionReason: user.rejectionReason,
       };
 
@@ -477,17 +477,18 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       pronouns: user.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other' | undefined,
       motivation: user.registrationRequest?.motivation || '',
       experience: user.registrationRequest?.experience || '',
-      instruments:
-        user.instruments?.map((inst) => ({
-          instrumentId: inst.instrument?.id || inst.instrumentId || 0,
-          instrumentName: inst.instrument?.name || '',
-          instrumentNameFr: inst.instrument?.name || '',
-          instrumentNameEn: inst.instrument?.name || '',
-          skillLevel: inst.skillLevel || 'INTERMEDIATE',
-          yearsPlaying: inst.yearsPlaying,
-          isPrimary: inst.isPrimary || false,
-        })) || [],
-      preferredGenres: user.preferredGenres || [],
+      instruments: Array.isArray(user.instruments)
+        ? user.instruments.map((inst) => ({
+            instrumentId: inst.instrument?.id || inst.instrumentId || 0,
+            instrumentName: inst.instrument?.name || '',
+            instrumentNameFr: inst.instrument?.name || '',
+            instrumentNameEn: inst.instrument?.name || '',
+            skillLevel: inst.skillLevel || 'INTERMEDIATE',
+            yearsPlaying: inst.yearsPlaying,
+            isPrimary: inst.isPrimary || false,
+          }))
+        : [],
+      preferredGenres: Array.isArray(user.preferredGenres) ? user.preferredGenres : [],
       profilePhoto: user.avatar || user.photoUrl,
       submittedAt: user.createdAt
         ? new Date(user.createdAt).toLocaleDateString('fr-FR')
@@ -500,8 +501,12 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleApprove = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/pending-users/${id}/approve`, {
-        method: 'POST',
+      const response = await fetch(`/api/admin/pending-users/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'approve' }),
       });
 
       if (response.ok) {
@@ -532,10 +537,10 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
 
   const handleReject = async (id: string, reason: string) => {
     try {
-      const response = await fetch(`/api/admin/pending-users/${id}/reject`, {
-        method: 'POST',
+      const response = await fetch(`/api/admin/pending-users/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ action: 'reject', reason }),
       });
 
       if (response.ok) {
@@ -644,7 +649,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         </div>
         <div className="mt-4">
           <button
-            onClick={() => window.location.href = '/admin/users'}
+            onClick={() => (window.location.href = '/admin/users')}
             className="text-sm text-red-600 hover:text-red-500 font-medium"
           >
             ← Back to Users
@@ -660,7 +665,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
       <div className="text-center py-12">
         <p className="text-gray-500">User not found</p>
         <button
-          onClick={() => window.location.href = '/admin/users'}
+          onClick={() => (window.location.href = '/admin/users')}
           className="text-primary hover:text-primary/80 font-medium mt-2 inline-block"
         >
           ← Back to Users
@@ -690,7 +695,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             </p>
           </div>
         </div>
-      </div>
+      </div>,
     );
   }
 
@@ -724,7 +729,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             </div>
           </div>
         </div>
-      </div>
+      </div>,
     );
   }
 
@@ -753,7 +758,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             )}
           </div>
         </div>
-      </div>
+      </div>,
     );
   }
 
@@ -782,7 +787,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
             )}
           </div>
         </div>
-      </div>
+      </div>,
     );
   }
 
@@ -798,8 +803,8 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         variant: 'secondary' as const,
       },
       {
-        label: 'Send Email',
-        mobileLabel: 'Email',
+        label: user.emailVerified ? 'Send Email' : 'Send Verification Email',
+        mobileLabel: user.emailVerified ? 'Email' : 'Verify',
         icon: Mail,
         onClick: handleSendEmail,
         variant: 'ghost' as const,
@@ -810,7 +815,7 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
         icon: Lock,
         onClick: handleResetPassword,
         variant: 'ghost' as const,
-      }
+      },
     );
   }
 

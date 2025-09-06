@@ -196,6 +196,12 @@ const formatMetadataField = (key: string, value: unknown) => {
     platform: 'Plateforme',
     url: 'URL',
 
+    // Post/Publication info
+    postTitle: 'Titre de la publication',
+    postSource: 'Source',
+    newTitle: 'Nouveau titre',
+    hasDescription: 'Description',
+
     // Configuration
     badgeKey: 'Clé du badge',
     labelFr: 'Label français',
@@ -213,7 +219,6 @@ const formatMetadataField = (key: string, value: unknown) => {
     DELETED: 'Archivé',
     REFUSED: 'Refusé',
     FORMER: 'Ancien',
-    GRADUATED: 'Diplômé',
     SUSPENDED: 'Suspendu',
   };
 
@@ -255,6 +260,15 @@ const formatMetadataField = (key: string, value: unknown) => {
     displayValue = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
   } else if (key === 'promotion' && typeof value === 'string') {
     displayValue = value.toUpperCase();
+  } else if (key === 'postSource' && typeof value === 'string') {
+    displayValue =
+      value === 'adminActivity'
+        ? 'Admin Activity'
+        : value === 'publicFeed'
+          ? 'Feed Public'
+          : String(value);
+  } else if (key === 'hasDescription' && typeof value === 'boolean') {
+    displayValue = value ? 'Oui' : 'Non';
   } else {
     displayValue = String(value);
   }

@@ -87,13 +87,17 @@ export async function GET(req: NextRequest) {
           userName: activity.user ? `${activity.user.firstName} ${activity.user.lastName}` : null,
           userAvatar: activity.user?.photoUrl,
           userRole: userRole,
-          metadata: activity.metadata,
+          metadata: activity.metadata
+            ? typeof activity.metadata === 'string'
+              ? JSON.parse(activity.metadata)
+              : activity.metadata
+            : {},
           createdAt: activity.createdAt,
           createdBy: activity.createdBy,
           createdByName: createdByName,
           createdByRole: createdByRole,
         };
-      })
+      }),
     );
 
     return NextResponse.json({ activities: transformedActivities });
@@ -127,7 +131,7 @@ export async function POST(req: NextRequest) {
     // First, verify the user exists in the database
     const userExists = await prisma.user.findUnique({
       where: { id: auth.user.id },
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, lastName: true, photoUrl: true },
     });
 
     if (!userExists) {
@@ -156,7 +160,7 @@ export async function POST(req: NextRequest) {
         const userName = userExists ? `${userExists.firstName} ${userExists.lastName}` : 'Admin';
         const logTitle = `Publication sur le feed public`;
         const logDescription = `${userName} a publié "${title}"${description ? `\n\nContenu: ${description}` : ''}`;
-        
+
         activityLog = await prisma.adminActivity.create({
           data: {
             type: 'system_announcement',
@@ -164,12 +168,12 @@ export async function POST(req: NextRequest) {
             description: logDescription,
             createdBy: auth.user.id,
             userId: auth.user.id,
-            metadata: { 
+            metadata: JSON.stringify({
               publicPostId: activity.id,
               action: 'post_published',
               postType: activity.type,
-              postTitle: title
-            },
+              postTitle: title,
+            }),
           },
         });
       } else {
@@ -180,14 +184,13 @@ export async function POST(req: NextRequest) {
             description: description || null,
             createdBy: auth.user.id,
             userId: auth.user.id,
-            metadata: {},
+            metadata: null,
           },
         });
       }
     } catch (error) {
       throw error;
     }
-
 
     // Fetch user info separately to avoid relation issues
     let userName = 'Admin';
@@ -241,16 +244,22 @@ export async function POST(req: NextRequest) {
         userName: userName,
         userAvatar: userExists?.photoUrl || null,
         userRole: userRole,
-        metadata: activity.metadata,
+        metadata: activity.metadata
+          ? typeof activity.metadata === 'string'
+            ? JSON.parse(activity.metadata)
+            : activity.metadata
+          : {},
         createdAt: activity.createdAt,
         createdBy: isPublicPost ? null : activity.createdBy, // Public feed has no createdBy
       },
     });
   } catch (error) {
+    console.error('POST /api/admin/clubfeed error:', error);
     return NextResponse.json(
       {
         error: 'Failed to create activity',
         details: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 },
     );

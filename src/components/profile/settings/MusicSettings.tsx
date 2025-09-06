@@ -26,6 +26,8 @@ import {
 
 import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
 import { MUSIC_GENRES } from '@/data/musicGenres';
+import LevelBadge from '@/components/profile/LevelBadge';
+import { Spinner } from '@/components/ui/spinner';
 
 // Types
 type LevelKey = 'beginner' | 'intermediate' | 'advanced' | 'expert';
@@ -172,69 +174,108 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
   const [openAdd, setOpenAdd] = useState(false);
   const [instrumentToAdd, setInstrumentToAdd] = useState<string>('');
 
+  // Loading states
+  const [isAddingInstrument, setIsAddingInstrument] = useState(false);
+  const [removingInstrumentId, setRemovingInstrumentId] = useState<string | null>(null);
+  const [updatingLevelId, setUpdatingLevelId] = useState<string | null>(null);
+  const [updatingYearsId, setUpdatingYearsId] = useState<string | null>(null);
+  const [updatingPrimary, setUpdatingPrimary] = useState(false);
+  const [updatingSeekingBand, setUpdatingSeekingBand] = useState(false);
+  const [updatingStyles, setUpdatingStyles] = useState(false);
+
   // ===== Handlers =====
-  const setPrimary = (id: string, checked: boolean) => {
-    if (checked) {
-      // Set this instrument as primary
-      handleMusicDataChange({ primaryInstrumentId: id });
-    } else {
-      // Remove primary status (no primary instrument)
-      handleMusicDataChange({ primaryInstrumentId: '' });
+  const setPrimary = async (id: string, checked: boolean) => {
+    setUpdatingPrimary(true);
+    try {
+      if (checked) {
+        // Set this instrument as primary
+        handleMusicDataChange({ primaryInstrumentId: id });
+      } else {
+        // Remove primary status (no primary instrument)
+        handleMusicDataChange({ primaryInstrumentId: '' });
+      }
+    } finally {
+      setUpdatingPrimary(false);
     }
   };
 
-  const addInstrument = () => {
+  const addInstrument = async () => {
     if (!instrumentToAdd) return;
     const found = availableInstruments.find((i) => i.id === instrumentToAdd);
     if (!found) return;
 
-    const newInstrument: Instrument = {
-      id: found.id,
-      name: found.name,
-      level: 'beginner',
-      yearsPlaying: 0,
-    };
+    setIsAddingInstrument(true);
+    try {
+      const newInstrument: Instrument = {
+        id: found.id,
+        name: found.name,
+        level: 'beginner',
+        yearsPlaying: 0,
+      };
 
-    const currentInstruments = [...userMusic.instruments, newInstrument];
-    const updates: Partial<UserMusicProfile> = {
-      instruments: currentInstruments,
-    };
-    if (!userMusic.primaryInstrumentId) {
-      updates.primaryInstrumentId = found.id;
+      const currentInstruments = [...userMusic.instruments, newInstrument];
+      const updates: Partial<UserMusicProfile> = {
+        instruments: currentInstruments,
+      };
+      if (!userMusic.primaryInstrumentId) {
+        updates.primaryInstrumentId = found.id;
+      }
+      handleMusicDataChange(updates);
+      setInstrumentToAdd('');
+      setOpenAdd(false);
+    } finally {
+      setIsAddingInstrument(false);
     }
-    handleMusicDataChange(updates);
-    setInstrumentToAdd('');
-    setOpenAdd(false);
   };
 
-  const removeInstrument = (id: string) => {
-    const nextInstruments = userMusic.instruments.filter((i) => i.id !== id);
-    let nextPrimary = userMusic.primaryInstrumentId;
-    if (userMusic.primaryInstrumentId === id) {
-      nextPrimary = nextInstruments[0]?.id ?? '';
+  const removeInstrument = async (id: string) => {
+    setRemovingInstrumentId(id);
+    try {
+      const nextInstruments = userMusic.instruments.filter((i) => i.id !== id);
+      let nextPrimary = userMusic.primaryInstrumentId;
+      if (userMusic.primaryInstrumentId === id) {
+        nextPrimary = nextInstruments[0]?.id ?? '';
+      }
+      handleMusicDataChange({ instruments: nextInstruments, primaryInstrumentId: nextPrimary });
+    } finally {
+      setRemovingInstrumentId(null);
     }
-    handleMusicDataChange({ instruments: nextInstruments, primaryInstrumentId: nextPrimary });
   };
 
-  const updateLevel = (id: string, level: LevelKey) => {
-    const updatedInstruments = userMusic.instruments.map((i) =>
-      i.id === id ? { ...i, level } : i,
-    );
-    handleMusicDataChange({ instruments: updatedInstruments });
+  const updateLevel = async (id: string, level: LevelKey) => {
+    setUpdatingLevelId(id);
+    try {
+      const updatedInstruments = userMusic.instruments.map((i) =>
+        i.id === id ? { ...i, level } : i,
+      );
+      handleMusicDataChange({ instruments: updatedInstruments });
+    } finally {
+      setUpdatingLevelId(null);
+    }
   };
 
-  const updateYears = (id: string, years: number) => {
-    const updatedInstruments = userMusic.instruments.map((i) =>
-      i.id === id ? { ...i, yearsPlaying: years } : i,
-    );
-    handleMusicDataChange({ instruments: updatedInstruments });
+  const updateYears = async (id: string, years: number) => {
+    setUpdatingYearsId(id);
+    try {
+      const updatedInstruments = userMusic.instruments.map((i) =>
+        i.id === id ? { ...i, yearsPlaying: years } : i,
+      );
+      handleMusicDataChange({ instruments: updatedInstruments });
+    } finally {
+      setUpdatingYearsId(null);
+    }
   };
 
-  const toggleStyle = (genreId: string, checked: boolean) => {
-    const set = new Set(userMusic.styles);
-    if (checked) set.add(genreId);
-    else set.delete(genreId);
-    handleMusicDataChange({ styles: Array.from(set) });
+  const toggleStyle = async (genreId: string, checked: boolean) => {
+    setUpdatingStyles(true);
+    try {
+      const set = new Set(userMusic.styles);
+      if (checked) set.add(genreId);
+      else set.delete(genreId);
+      handleMusicDataChange({ styles: Array.from(set) });
+    } finally {
+      setUpdatingStyles(false);
+    }
   };
 
   // Save functions removed - handled by parent layout's save functionality
@@ -328,9 +369,13 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                 </PopoverContent>
               </Popover>
             </div>
-            <Button onClick={addInstrument} disabled={!instrumentToAdd}>
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter
+            <Button onClick={addInstrument} disabled={!instrumentToAdd || isAddingInstrument}>
+              {isAddingInstrument ? (
+                <Spinner size="sm" color="white" className="mr-2" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              {isAddingInstrument ? 'Ajout...' : 'Ajouter'}
             </Button>
           </div>
 
@@ -353,7 +398,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                   >
                     <div className="flex items-center gap-3">
                       <span className="font-medium">{instrument.name}</span>
-                      <Badge>{levelLabels[instrument.level]}</Badge>
+                      <LevelBadge level={levelLabels[instrument.level]} size="sm" />
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 md:min-w-[480px]">
@@ -363,8 +408,12 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                         <Select
                           value={instrument.level}
                           onValueChange={(v) => updateLevel(instrument.id, v as LevelKey)}
+                          disabled={updatingLevelId === instrument.id}
                         >
                           <SelectTrigger className="w-[140px]">
+                            {updatingLevelId === instrument.id ? (
+                              <Spinner size="sm" color="gray" className="mr-2" />
+                            ) : null}
                             <SelectValue placeholder="Sélectionner" />
                           </SelectTrigger>
                           <SelectContent>
@@ -382,8 +431,12 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                         <Select
                           value={String(instrument.yearsPlaying || 0)}
                           onValueChange={(v) => updateYears(instrument.id, parseInt(v))}
+                          disabled={updatingYearsId === instrument.id}
                         >
                           <SelectTrigger className="w-[80px]">
+                            {updatingYearsId === instrument.id ? (
+                              <Spinner size="sm" color="gray" className="mr-2" />
+                            ) : null}
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -398,11 +451,15 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
 
                       {/* Primary — checkbox (unique) */}
                       <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`primary-${instrument.id}`}
-                          checked={isPrimary}
-                          onCheckedChange={(v) => setPrimary(instrument.id, Boolean(v))}
-                        />
+                        <div className="flex items-center gap-1">
+                          <Checkbox
+                            id={`primary-${instrument.id}`}
+                            checked={isPrimary}
+                            onCheckedChange={(v) => setPrimary(instrument.id, Boolean(v))}
+                            disabled={updatingPrimary}
+                          />
+                          {updatingPrimary && <Spinner size="sm" color="gray" />}
+                        </div>
                         <Label htmlFor={`primary-${instrument.id}`} className="text-sm">
                           Principal
                         </Label>
@@ -412,9 +469,14 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => removeInstrument(instrument.id)}
+                        disabled={removingInstrumentId === instrument.id}
                         aria-label={`Retirer ${instrument.name}`}
                       >
-                        <X className="h-4 w-4" />
+                        {removingInstrumentId === instrument.id ? (
+                          <Spinner size="sm" color="gray" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -437,11 +499,22 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
               <Label htmlFor="seeking-band">Recherche un groupe</Label>
               <p>Votre profil pourra apparaître dans les recommandations.</p>
             </div>
-            <Switch
-              id="seeking-band"
-              checked={userMusic.seekingBand}
-              onCheckedChange={(v) => handleMusicDataChange({ seekingBand: Boolean(v) })}
-            />
+            <div className="flex items-center gap-2">
+              <Switch
+                id="seeking-band"
+                checked={userMusic.seekingBand}
+                onCheckedChange={async (v) => {
+                  setUpdatingSeekingBand(true);
+                  try {
+                    handleMusicDataChange({ seekingBand: Boolean(v) });
+                  } finally {
+                    setUpdatingSeekingBand(false);
+                  }
+                }}
+                disabled={updatingSeekingBand}
+              />
+              {updatingSeekingBand && <Spinner size="sm" color="gray" />}
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -451,11 +524,15 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                 const checked = userMusic.styles.includes(genre.id);
                 return (
                   <div key={genre.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={genre.id}
-                      checked={checked}
-                      onCheckedChange={(v) => toggleStyle(genre.id, Boolean(v))}
-                    />
+                    <div className="flex items-center gap-1">
+                      <Checkbox
+                        id={genre.id}
+                        checked={checked}
+                        onCheckedChange={(v) => toggleStyle(genre.id, Boolean(v))}
+                        disabled={updatingStyles}
+                      />
+                      {updatingStyles && <Spinner size="sm" color="gray" />}
+                    </div>
                     <Label
                       htmlFor={genre.id}
                       className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

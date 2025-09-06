@@ -37,7 +37,7 @@ export async function createPublicFeedItem({
       type,
       title,
       description,
-      metadata,
+      metadata: metadata && Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
     },
   });
 }
@@ -103,7 +103,12 @@ export async function updatePublicFeedItem({
     data: {
       ...(title !== undefined ? { title } : {}),
       ...(description !== undefined ? { description } : {}),
-      ...(metadata !== undefined ? { metadata } : {}),
+      ...(metadata !== undefined
+        ? {
+            metadata:
+              metadata && Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
+          }
+        : {}),
     },
   });
 }

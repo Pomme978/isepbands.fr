@@ -138,11 +138,28 @@ export async function POST(req: NextRequest) {
 
     // Log the password change activity
     try {
+      // Check if there was a recent admin password reset for this user
+      const recentAdminReset = await prisma.adminActivity.findFirst({
+        where: {
+          userId: user.id,
+          type: 'user_password_reset',
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Within last 24 hours
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const isAdminReset = !!recentAdminReset;
+      const logMessage = isAdminReset
+        ? `**${user.firstName} ${user.lastName}** (${user.email}) a changé son mot de passe après un reset par un administrateur`
+        : `**${user.firstName} ${user.lastName}** (${user.email}) a changé son mot de passe lors de la première connexion`;
+
       await logAdminAction(
         'system',
         'password_changed',
         'Changement de mot de passe',
-        `**${user.firstName} ${user.lastName}** (${user.email}) a changé son mot de passe lors de la première connexion`,
+        logMessage,
         user.id.toString(),
         {
           userEmail: user.email,
@@ -150,6 +167,7 @@ export async function POST(req: NextRequest) {
           changedAt: new Date().toISOString(),
           userAgent: req.headers.get('user-agent'),
           ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'IP inconnue',
+          wasAdminReset: isAdminReset,
         },
       );
     } catch (logError) {

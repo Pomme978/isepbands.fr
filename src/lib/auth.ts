@@ -160,15 +160,14 @@ export async function getSessionUser(req: NextRequest) {
       return null; // Force logout for suspended/refused users
     }
 
-    // Quick token validation - only check if token is significantly old
+    // Session validation based on user updates
     const tokenIssuedAt = payload.iat as number;
     const userUpdatedAt = Math.floor(new Date(user.updatedAt || 0).getTime() / 1000);
-    const timeDifferenceMinutes = (userUpdatedAt - tokenIssuedAt) / 60;
 
-    // Only invalidate session for significant updates (like password changes), not status changes
-    if (timeDifferenceMinutes > 60) {
-      // Token was issued more than 1 hour before user update - likely password reset
-      return null;
+    // Invalidate session if user was updated after token was issued
+    // This handles password resets and other security-critical updates
+    if (userUpdatedAt > tokenIssuedAt) {
+      return null; // Force re-authentication
     }
     const band = user.groupMemberships[0]?.group?.name || null;
 

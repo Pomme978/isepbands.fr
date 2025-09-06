@@ -89,9 +89,12 @@ const AdminButton = React.forwardRef<HTMLButtonElement, AdminButtonProps>(
 
     const renderContent = () => {
       if (loading) {
+        // Determine spinner color based on variant
+        const spinnerColor = variant === 'primary' ? 'white' : 'gray';
+
         return (
           <>
-            <Loading size="sm" text="" centered={false} />
+            <Loading size="sm" text="" centered={false} color={spinnerColor} />
             {loadingText && <span className="ml-2">{loadingText}</span>}
           </>
         );

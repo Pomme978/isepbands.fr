@@ -71,7 +71,7 @@ export default function PendingApprovalCard({
                     className="flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start justify-between">
                       <h4 className="font-medium text-foreground truncate">{item.name}</h4>
                       {/* Desktop button */}
                       <button
@@ -84,7 +84,7 @@ export default function PendingApprovalCard({
                     </div>
 
                     {/* Mobile button - Above date info */}
-                    <div className="sm:hidden mb-3">
+                    <div className="sm:hidden mb-3 flex justify-center">
                       <button
                         onClick={() => onViewDetails(item)}
                         className="inline-flex items-center justify-center px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-xs font-medium"

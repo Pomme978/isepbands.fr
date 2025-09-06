@@ -19,15 +19,7 @@ interface User {
   emailVerified: boolean;
   promotion: string;
   birthDate: string;
-  status:
-    | 'CURRENT'
-    | 'FORMER'
-    | 'GRADUATED'
-    | 'PENDING'
-    | 'REFUSED'
-    | 'SUSPENDED'
-    | 'DELETED'
-    | 'ARCHIVED';
+  status: 'CURRENT' | 'FORMER' | 'PENDING' | 'REFUSED' | 'SUSPENDED' | 'DELETED' | 'ARCHIVED';
   photoUrl?: string;
   createdAt: string;
   isOutOfSchool: boolean;
@@ -126,7 +118,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         phone: user.phone || '',
         currentLevel: user.promotion,
         dateOfBirth: user.birthDate || '',
-        isOutOfSchool: user.status === 'GRADUATED',
+        isOutOfSchool: user.status === 'FORMER',
         pronouns: user.pronouns as 'he/him' | 'she/her' | 'they/them' | 'other' | null,
         motivation: user.registrationRequest?.motivation || '',
         experience: user.registrationRequest?.experience || '',
@@ -317,8 +309,6 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
         return 'FORMER';
       case 'pending':
         return 'PENDING';
-      case 'graduated':
-        return 'GRADUATED';
       case 'refused':
         return 'REFUSED';
       case 'suspended':
@@ -360,12 +350,11 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
       avatar: user.photoUrl,
       promotion: user.promotion,
       role: roleDisplay,
-      joinDate: new Date(user.createdAt).toISOString().split('T')[0],
+      joinDate: user.createdAt,
       status: user.status.toLowerCase() as
         | 'current'
         | 'former'
         | 'pending'
-        | 'graduated'
         | 'refused'
         | 'suspended'
         | 'deleted',
@@ -380,9 +369,7 @@ export default function UsersList({ filters, refreshTrigger }: UsersListProps) {
 
   // Group users by status
   const currentMembers = users.filter((user) => user.status === 'CURRENT').map(transformUser);
-  const formerMembers = users
-    .filter((user) => user.status === 'FORMER' || user.status === 'GRADUATED')
-    .map(transformUser);
+  const formerMembers = users.filter((user) => user.status === 'FORMER').map(transformUser);
   const pendingMembers = users.filter((user) => user.status === 'PENDING').map(transformUser);
   const refusedMembers = users.filter((user) => user.status === 'REFUSED').map(transformUser);
   const suspendedMembers = users.filter((user) => user.status === 'SUSPENDED').map(transformUser);

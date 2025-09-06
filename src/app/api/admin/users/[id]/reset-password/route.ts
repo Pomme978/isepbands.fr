@@ -49,6 +49,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       data: {
         password: hashedPassword,
         requirePasswordChange: requireChange,
+        updatedAt: new Date(), // Force session invalidation
       },
     });
 

@@ -147,7 +147,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
 
   // Container classes selon le mode
   const getContainerClasses = () => {
-    const baseClasses = `flex justify-center z-[150] items-center w-full max-w-7xl transition-all duration-300 ease-in-out`;
+    const baseClasses = `flex justify-center z-50 items-center w-full max-w-7xl transition-all duration-300 ease-in-out`;
 
     if (mode === 'static') {
       return `absolute md:top-3 ${baseClasses} ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`;
@@ -186,7 +186,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
       {/* Main Navbar Container */}
       <div className={`${getContainerClasses()} ${className || ''}`}>
         <header
-          className={`w-full z-[300] rounded-lg backdrop-blur md:mx-0 mx-2 mt-2 md:mt-0 ${
+          className={`w-full z-50 rounded-lg backdrop-blur md:mx-0 mx-2 mt-2 md:mt-0 ${
             style === 'transparent' ? 'bg-black/60 lg:bg-transparent md:bg-white' : 'bg-white'
           }`}
         >
@@ -206,7 +206,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
             </div>
 
             {/* Mobile Navigation */}
-            <div className="lg:hidden flex items-center justify-between w-full min-w-0 z-[300]">
+            <div className="lg:hidden flex items-center justify-between w-full min-w-0 z-50">
               {/* Page Title */}
               <div className="flex-1 text-left min-w-0">
                 <LangLink href="/" className="block">
@@ -241,7 +241,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
 
       {/* Mobile Menu Dropdown */}
       <div
-        className={`lg:hidden fixed top-10 left-0 right-0 bottom-0 z-[50] transition-all duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-10 left-0 right-0 bottom-0 z-40 transition-all duration-300 ease-in-out ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >

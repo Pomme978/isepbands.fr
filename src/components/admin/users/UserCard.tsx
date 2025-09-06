@@ -84,6 +84,12 @@ export default function UserCard({
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Date invalide';
+    }
+
     const diffInMs = now.getTime() - date.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     const diffInMonths = Math.floor(diffInDays / 30);
@@ -96,7 +102,11 @@ export default function UserCard({
     } else if (diffInDays > 0) {
       return `il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
     } else {
-      return "aujourd'hui";
+      // Use local time zone for display
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const timeStr = `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+      return `aujourd'hui à ${timeStr}`;
     }
   };
 

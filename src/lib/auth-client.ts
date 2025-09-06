@@ -62,7 +62,7 @@ export type SessionUser = {
   firstName?: string;
   lastName?: string;
   band?: string | null;
-  status?: 'CURRENT' | 'FORMER' | 'GRADUATED' | 'PENDING';
+  status?: 'CURRENT' | 'FORMER' | 'PENDING';
   isFullAccess?: boolean;
 } | null;
 

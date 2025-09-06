@@ -100,7 +100,7 @@ export function PendingValidationProfile({ user, lang }: PendingValidationProfil
 
   return (
     <div className="py-8">
-      <div className="max-w-4xl mx-auto space-y-6 mx-2 md:mx-0">
+      <div className="max-w-4xl space-y-6 mx-2 md:mx-auto">
         {/* Header avec titre et icône */}
         <div className="text-center space-y-3 mb-5">
           <div className="flex justify-center">

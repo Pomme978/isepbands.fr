@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       phone: user.phone || '',
       currentLevel: user.promotion || '',
       dateOfBirth: user.birthDate ? user.birthDate.toISOString().split('T')[0] : '',
-      isOutOfSchool: user.status === 'GRADUATED' || user.status === 'ALUMNI',
+      isOutOfSchool: user.status === 'FORMER',
       pronouns: user.pronouns,
       motivation: user.registrationRequest?.motivation || '',
       experience: user.registrationRequest?.experience || '',

@@ -48,6 +48,10 @@ export type AdminActivityLogType =
   | 'social_link_deleted'
   | 'team_photo_updated'
   | 'team_settings_updated'
+  // Gestion des publications
+  | 'post_archived'
+  | 'post_restored'
+  | 'post_edited'
   // Legacy/autres
   | 'custom'
   | 'post'

@@ -32,6 +32,10 @@ interface PublicFeedType {
     name: string;
     avatar: string;
     role?: string;
+    roleColors?: {
+      gradientStart: string;
+      gradientEnd: string;
+    };
   };
   images?: string[];
 }
@@ -188,6 +192,7 @@ function ActivityItem({
                     isLookingForGroup={false}
                     pronouns="they/them"
                     size="xs"
+                    roleCustomColors={activity.user.roleColors}
                   />
                 )}
               </>

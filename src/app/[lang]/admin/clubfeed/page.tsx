@@ -108,6 +108,10 @@ export default function AdminClubFeedPage() {
               userName?: string;
               userAvatar?: string;
               userRole?: string;
+              userRoleColors?: {
+                gradientStart: string;
+                gradientEnd: string;
+              };
               createdBy?: string;
             }) => ({
               id: activity.id,
@@ -119,6 +123,7 @@ export default function AdminClubFeedPage() {
                 name: activity.userName || 'Utilisateur',
                 avatar: activity.userAvatar || '/avatars/default.jpg',
                 role: activity.userRole || undefined,
+                roleColors: activity.userRoleColors || undefined,
               },
               createdBy: activity.createdBy,
             }),
@@ -139,7 +144,7 @@ export default function AdminClubFeedPage() {
   const fetchActivities = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/clubfeed');
+      const response = await fetch('/api/admin/activity-logs');
       if (response.ok) {
         const data = await response.json();
         setActivities(data.activities || []);
@@ -193,7 +198,7 @@ export default function AdminClubFeedPage() {
     setSaveError(null);
 
     try {
-      const response = await fetch('/api/admin/clubfeed', {
+      const response = await fetch('/api/admin/activity-logs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,6 +213,7 @@ export default function AdminClubFeedPage() {
       }
 
       const data = await response.json();
+      console.log('Publication créée avec succès:', data.activity);
       setActivities([data.activity, ...activities]);
 
       // Update display activities too
@@ -227,6 +233,7 @@ export default function AdminClubFeedPage() {
         isSystemMessage: false,
         createdBy: data.activity.createdBy,
       };
+      console.log('Nouvelle activité ajoutée localement:', newDisplayActivity);
       setDisplayActivities([newDisplayActivity, ...displayActivities]);
 
       // Reset form
@@ -234,6 +241,7 @@ export default function AdminClubFeedPage() {
       setShowCreateForm(false);
 
       // Refresh public feed to show the new post
+      console.log('Rafraîchissement du feed public...');
       fetchPublicFeed();
 
       // Show success message
@@ -260,7 +268,12 @@ export default function AdminClubFeedPage() {
     setSaveError(null);
 
     try {
-      const response = await fetch(`/api/admin/clubfeed/${editingActivity.id}`, {
+      console.log('Editing activity:', editingActivity.id, 'Data:', {
+        title: editingActivity.title,
+        description: editingActivity.description,
+      });
+
+      const response = await fetch(`/api/admin/activity-logs/${editingActivity.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -271,8 +284,12 @@ export default function AdminClubFeedPage() {
         }),
       });
 
+      console.log('Edit response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to update activity');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Edit error:', errorData);
+        throw new Error(errorData.error || 'Failed to update activity');
       }
 
       const data = await response.json();
@@ -301,6 +318,23 @@ export default function AdminClubFeedPage() {
 
       // Reset editing state
       setEditingActivity(null);
+
+      // Update public feed items if this post exists there
+      const updatedPublicFeedItems = publicFeedItems.map((item) => {
+        if (item.id === editingActivity.id) {
+          return {
+            ...item,
+            title: data.activity.title,
+            description: data.activity.description || '',
+          };
+        }
+        return item;
+      });
+      setPublicFeedItems(updatedPublicFeedItems);
+
+      // Also refresh from API to be sure
+      console.log('Refreshing public feed after edit...');
+      fetchPublicFeed();
 
       // Show success message
       setSaveSuccess(true);
@@ -469,7 +503,10 @@ export default function AdminClubFeedPage() {
               Publiez des actualités qui apparaîtront sur la page d&apos;accueil des membres
             </p>
           </div>
-          <Button onClick={() => setShowCreateForm(!showCreateForm)} className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
             Publier une actualité
           </Button>
@@ -510,7 +547,11 @@ export default function AdminClubFeedPage() {
                   disabled={isSaving || !newActivity.title.trim()}
                   className="w-full sm:w-auto"
                 >
-                  {isSaving ? <Loading text="" size="sm" /> : 'Publier'}
+                  {isSaving ? (
+                    <Loading text="Publication..." size="sm" variant="spinner" theme="white" />
+                  ) : (
+                    'Publier'
+                  )}
                 </Button>
                 <Button
                   variant="outline"
@@ -566,7 +607,11 @@ export default function AdminClubFeedPage() {
                   disabled={isSaving || !editingActivity.title.trim()}
                   className="w-full sm:w-auto"
                 >
-                  {isSaving ? <Loading text="" size="sm" /> : 'Sauvegarder'}
+                  {isSaving ? (
+                    <Loading text="Sauvegarde..." size="sm" variant="spinner" theme="white" />
+                  ) : (
+                    'Sauvegarder'
+                  )}
                 </Button>
                 <Button
                   variant="outline"

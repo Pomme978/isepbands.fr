@@ -63,24 +63,7 @@ const getRoleDisplayName = (
     );
   }
 
-  console.log('🔍 getRoleDisplayName DEBUG:', {
-    roleName,
-    pronouns,
-    currentLocale,
-    roleData,
-    foundByTranslation: !defaultRoles.find((role) => role.name === roleName) && !!roleData,
-    allRoleNames: defaultRoles.map((r) => r.name),
-    allRoleVariants: defaultRoles.map((r) => ({
-      name: r.name,
-      frMale: r.nameFrMale,
-      frFemale: r.nameFrFemale,
-      enMale: r.nameEnMale,
-      enFemale: r.nameEnFemale,
-    })),
-  });
-
   if (!roleData) {
-    console.log('⚠️ Role not found anywhere, returning original:', roleName);
     return roleName; // Fallback to original name if role not found
   }
 
@@ -93,18 +76,6 @@ const getRoleDisplayName = (
   } else {
     result = isFeminine ? roleData.nameEnFemale : roleData.nameEnMale;
   }
-
-  console.log('🔍 Translation result:', {
-    isFrench,
-    isFeminine,
-    result,
-    availableNames: {
-      nameFrMale: roleData.nameFrMale,
-      nameFrFemale: roleData.nameFrFemale,
-      nameEnMale: roleData.nameEnMale,
-      nameEnFemale: roleData.nameEnFemale,
-    },
-  });
 
   return result;
 };
@@ -138,14 +109,6 @@ export default function BadgeDisplay({
   const t = useI18n();
   const { lang: currentLocale } = useLang();
 
-  // DEBUG: Log all values
-  console.log('🔍 BadgeDisplay DEBUG:', {
-    role,
-    pronouns,
-    currentLocale,
-    defaultRoles: defaultRoles.length,
-    roleFound: defaultRoles.find((r) => r.name === role),
-  });
   // Size configurations
   const sizeConfig = {
     xs: {
@@ -179,6 +142,14 @@ export default function BadgeDisplay({
 
   // Get role colors with database colors if available
   const roleColorConfig = getRoleColor(role, roleCustomColors);
+  console.log(
+    'BadgeDisplay - role:',
+    role,
+    'customColors:',
+    roleCustomColors,
+    'config:',
+    roleColorConfig,
+  );
 
   // Get localized role name - API already returns French translation
   // Only translate if we need English or if API returned raw role name
