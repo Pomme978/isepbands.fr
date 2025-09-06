@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -46,6 +46,48 @@ export const ActivityHistoryModal = ({
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(true);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handle scroll to show/hide filters on mobile
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const scrollingDown = scrollTop > lastScrollTop;
+      const scrollingUp = scrollTop < lastScrollTop;
+
+      // Only hide filters on mobile and when scrolling down past a threshold
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+      if (isMobile) {
+        if (scrollingDown && scrollTop > 50) {
+          setIsFilterVisible(false);
+        } else if (scrollingUp || scrollTop < 50) {
+          setIsFilterVisible(true);
+        }
+      } else {
+        // Always show filters on desktop
+        setIsFilterVisible(true);
+      }
+
+      setLastScrollTop(scrollTop);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [lastScrollTop]);
+
+  // Reset filter visibility when opening modal
+  useEffect(() => {
+    if (isOpen) {
+      setIsFilterVisible(true);
+      setLastScrollTop(0);
+    }
+  }, [isOpen]);
 
   const filteredActivities = useMemo(() => {
     let filtered = [...activities];
@@ -140,47 +182,51 @@ export const ActivityHistoryModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[98vh] sm:max-h-[95vh] h-[98vh] sm:h-[95vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-            <History className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-            <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{title}</h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
-                trouvée{filteredActivities.length !== 1 ? 's' : ''}
-              </p>
-            </div>
+    <>
+      {/* Mobile fullscreen layout */}
+      <div className="md:hidden fixed inset-0 bg-white z-50 flex flex-col">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1 text-center">
+            <h2 className="text-lg font-semibold text-gray-900">Historique</h2>
+            <p className="text-xs text-gray-500">
+              {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}
+            </p>
           </div>
           <button
-            onClick={onClose}
-            className="p-1 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            onClick={() => setShowFilters(!showFilters)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Filter className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Rechercher dans l'historique..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        {/* Mobile Filters - Collapsible */}
+        <div
+          className={`border-b border-gray-200 transition-all duration-300 overflow-hidden ${
+            isFilterVisible && showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="p-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Rechercher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
+            <div className="grid grid-cols-2 gap-2">
               <Select
                 value={periodFilter}
                 onValueChange={(value: FilterPeriod) => setPeriodFilter(value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="Période" />
                 </SelectTrigger>
                 <SelectContent>
@@ -189,94 +235,82 @@ export const ActivityHistoryModal = ({
                   <SelectItem value="lastMonth">Mois dernier</SelectItem>
                   <SelectItem value="thisYear">Cette année</SelectItem>
                   <SelectItem value="lastYear">Année dernière</SelectItem>
-                  <SelectItem value="custom">Période personnalisée</SelectItem>
+                  <SelectItem value="custom">Personnalisée</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            <div className="flex-1">
               <Select
                 value={typeFilter}
                 onValueChange={(value: ActivityTypeFilter) => setTypeFilter(value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Type d'activité" />
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   <SelectItem value="post">Publications</SelectItem>
-                  <SelectItem value="post_with_image">Publications avec image</SelectItem>
-                  <SelectItem value="new_member">Nouveaux membres</SelectItem>
-                  <SelectItem value="new_group">Nouveaux groupes</SelectItem>
+                  <SelectItem value="new_member">Membres</SelectItem>
+                  <SelectItem value="new_group">Groupes</SelectItem>
                   <SelectItem value="event">Événements</SelectItem>
                   <SelectItem value="announcement">Annonces</SelectItem>
-                  <SelectItem value="system_announcement">Annonces système</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="sm:w-auto"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Plus
+            {periodFilter === 'custom' && (
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="text-sm"
+                />
+                <Input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+            )}
+
+            <Button variant="outline" size="sm" onClick={resetFilters} className="w-full text-sm">
+              Réinitialiser
             </Button>
           </div>
-
-          {showFilters && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium text-sm mb-3">Filtres avancés</h4>
-
-              {periodFilter === 'custom' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Date de début
-                    </label>
-                    <Input
-                      type="date"
-                      value={customStartDate}
-                      onChange={(e) => setCustomStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Date de fin
-                    </label>
-                    <Input
-                      type="date"
-                      value={customEndDate}
-                      onChange={(e) => setCustomEndDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <Button variant="outline" size="sm" onClick={resetFilters}>
-                Réinitialiser les filtres
-              </Button>
-            </div>
-          )}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Mobile Content */}
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto"
+          onScroll={(e) => {
+            const scrollTop = e.currentTarget.scrollTop;
+            const scrollingDown = scrollTop > lastScrollTop;
+
+            if (scrollingDown && scrollTop > 100 && showFilters) {
+              setIsFilterVisible(false);
+            } else if (!scrollingDown || scrollTop < 50) {
+              setIsFilterVisible(true);
+            }
+
+            setLastScrollTop(scrollTop);
+          }}
+        >
           {activitiesByMonth.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">Aucune activité trouvée avec ces filtres</p>
+            <div className="text-center py-12 px-4">
+              <p className="text-gray-500 mb-4">Aucune activité trouvée</p>
               <Button variant="outline" onClick={resetFilters}>
-                Réinitialiser les filtres
+                Réinitialiser
               </Button>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="p-4 space-y-6">
               {activitiesByMonth.map(({ month, activities }) => (
                 <div key={month}>
-                  <div className="flex items-center mb-6">
+                  <div className="flex items-center mb-4">
                     <div className="flex-1 border-t border-gray-200"></div>
-                    <span className="px-4 text-sm font-medium text-gray-500 bg-white">{month}</span>
+                    <span className="px-3 text-xs font-medium text-gray-500 bg-white">{month}</span>
                     <div className="flex-1 border-t border-gray-200"></div>
                   </div>
                   <RecentActivity activities={activities} showHistoryButton={false} />
@@ -286,6 +320,155 @@ export const ActivityHistoryModal = ({
           )}
         </div>
       </div>
-    </div>
+
+      {/* Desktop modal layout */}
+      <div className="hidden md:block fixed inset-0 bg-black/50 z-50">
+        <div className="flex items-center justify-center min-h-full p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col">
+            {/* Desktop Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3 min-w-0">
+                <History className="w-6 h-6 text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <h2 className="text-xl font-semibold text-gray-900 truncate">{title}</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
+                    trouvée{filteredActivities.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Desktop Filters */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Rechercher dans l'historique..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <Select
+                    value={periodFilter}
+                    onValueChange={(value: FilterPeriod) => setPeriodFilter(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toute la période</SelectItem>
+                      <SelectItem value="thisMonth">Ce mois-ci</SelectItem>
+                      <SelectItem value="lastMonth">Mois dernier</SelectItem>
+                      <SelectItem value="thisYear">Cette année</SelectItem>
+                      <SelectItem value="lastYear">Année dernière</SelectItem>
+                      <SelectItem value="custom">Période personnalisée</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex-1">
+                  <Select
+                    value={typeFilter}
+                    onValueChange={(value: ActivityTypeFilter) => setTypeFilter(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Type d'activité" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les types</SelectItem>
+                      <SelectItem value="post">Publications</SelectItem>
+                      <SelectItem value="post_with_image">Publications avec image</SelectItem>
+                      <SelectItem value="new_member">Nouveaux membres</SelectItem>
+                      <SelectItem value="new_group">Nouveaux groupes</SelectItem>
+                      <SelectItem value="event">Événements</SelectItem>
+                      <SelectItem value="announcement">Annonces</SelectItem>
+                      <SelectItem value="system_announcement">Annonces système</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Plus
+                </Button>
+              </div>
+
+              {showFilters && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-sm mb-3">Filtres avancés</h4>
+
+                  {periodFilter === 'custom' && (
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Date de début
+                        </label>
+                        <Input
+                          type="date"
+                          value={customStartDate}
+                          onChange={(e) => setCustomStartDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Date de fin
+                        </label>
+                        <Input
+                          type="date"
+                          value={customEndDate}
+                          onChange={(e) => setCustomEndDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <Button variant="outline" size="sm" onClick={resetFilters}>
+                    Réinitialiser les filtres
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {activitiesByMonth.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 mb-4">Aucune activité trouvée avec ces filtres</p>
+                  <Button variant="outline" onClick={resetFilters}>
+                    Réinitialiser les filtres
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {activitiesByMonth.map(({ month, activities }) => (
+                    <div key={month}>
+                      <div className="flex items-center mb-6">
+                        <div className="flex-1 border-t border-gray-200"></div>
+                        <span className="px-4 text-sm font-medium text-gray-500 bg-white">
+                          {month}
+                        </span>
+                        <div className="flex-1 border-t border-gray-200"></div>
+                      </div>
+                      <RecentActivity activities={activities} showHistoryButton={false} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };

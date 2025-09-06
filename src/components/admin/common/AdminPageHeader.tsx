@@ -1,5 +1,3 @@
-'use client';
-
 import { ReactNode } from 'react';
 import { ArrowLeft, LucideIcon } from 'lucide-react';
 import LangLink from '@/components/common/LangLink';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import ActivityItem from './ActivityItem';
-import { Search, X, Filter, User } from 'lucide-react';
+import { Search, X, Filter, User, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   format,
   isAfter,
@@ -65,6 +65,11 @@ export default function AdminActivitiesModal({
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [userFilter, setUserFilter] = useState<string>('all');
+  const [isFilterVisible, setIsFilterVisible] = useState(true);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const itemsPerPage = 10;
 
   // Extract unique users from activities
   const uniqueUsers = useMemo(() => {
@@ -187,12 +192,32 @@ export default function AdminActivitiesModal({
     setDateRange(undefined);
     setExpandedId(null);
     setUserFilter('all');
+    setCurrentPage(1);
   };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedActivities = filteredActivities.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchQuery,
+    typeFilter,
+    periodFilter,
+    userFilter,
+    dateRange,
+    customStartDate,
+    customEndDate,
+  ]);
 
   const activitiesByMonth = useMemo(() => {
     const groups: { [key: string]: ActivityData[] } = {};
 
-    filteredActivities.forEach((activity) => {
+    paginatedActivities.forEach((activity) => {
       // Parse the timestamp which is a formatted French date string
       const dateMatch = activity.timestamp.match(/(\d{1,2})\s+(\w+)\s+(\d{1,2}):(\d{2})/);
       if (dateMatch) {
@@ -242,7 +267,7 @@ export default function AdminActivitiesModal({
         month,
         activities,
       }));
-  }, [filteredActivities]);
+  }, [paginatedActivities]);
 
   const getActivityColors = (type: ActivityData['type']) => {
     switch (type) {
@@ -274,148 +299,254 @@ export default function AdminActivitiesModal({
     }
   };
 
+  // Handle scroll to show/hide filters on mobile
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const scrollingDown = scrollTop > lastScrollTop;
+
+      // Only hide filters on mobile and when scrolling down past a threshold
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+      if (isMobile) {
+        if (scrollingDown && scrollTop > 100) {
+          setIsFilterVisible(false);
+        } else if (!scrollingDown || scrollTop < 50) {
+          setIsFilterVisible(true);
+        }
+      } else {
+        setIsFilterVisible(true);
+      }
+
+      setLastScrollTop(scrollTop);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [lastScrollTop]);
+
+  // Reset filter visibility when opening modal
+  useEffect(() => {
+    if (isOpen) {
+      setIsFilterVisible(true);
+      setLastScrollTop(0);
+    }
+  }, [isOpen]);
+
+  // Pagination component
+  const PaginationControls = ({ isMobile = false }: { isMobile?: boolean }) => {
+    if (totalPages <= 1) return null;
+
+    const getVisiblePages = () => {
+      const maxVisible = isMobile ? 3 : 5;
+      const half = Math.floor(maxVisible / 2);
+      let start = Math.max(1, currentPage - half);
+      const end = Math.min(totalPages, start + maxVisible - 1);
+
+      if (end - start < maxVisible - 1) {
+        start = Math.max(1, end - maxVisible + 1);
+      }
+
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    };
+
+    const visiblePages = getVisiblePages();
+
+    return (
+      <div
+        className={`flex items-center ${isMobile ? 'justify-center gap-2 p-4 bg-white border-t border-gray-200' : 'justify-center mt-6 gap-1'}`}
+      >
+        <Button
+          variant="outline"
+          size={isMobile ? 'sm' : 'default'}
+          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className={isMobile ? 'h-8 w-8 p-0' : ''}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+
+        {!isMobile && currentPage > 3 && (
+          <>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)}>
+              1
+            </Button>
+            {currentPage > 4 && <span className="px-2 text-gray-500">...</span>}
+          </>
+        )}
+
+        {visiblePages.map((page) => (
+          <Button
+            key={page}
+            variant={page === currentPage ? 'default' : 'outline'}
+            size={isMobile ? 'sm' : 'default'}
+            onClick={() => setCurrentPage(page)}
+            className={isMobile ? 'h-8 min-w-8' : ''}
+          >
+            {page}
+          </Button>
+        ))}
+
+        {!isMobile && currentPage < totalPages - 2 && (
+          <>
+            {currentPage < totalPages - 3 && <span className="px-2 text-gray-500">...</span>}
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)}>
+              {totalPages}
+            </Button>
+          </>
+        )}
+
+        <Button
+          variant="outline"
+          size={isMobile ? 'sm' : 'default'}
+          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className={isMobile ? 'h-8 w-8 p-0' : ''}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+
+        {isMobile && (
+          <span className="text-sm text-gray-500 ml-2">
+            {currentPage}/{totalPages}
+          </span>
+        )}
+
+        {!isMobile && (
+          <span className="text-sm text-gray-500 ml-4">
+            Page {currentPage} sur {totalPages} ({filteredActivities.length} résultats)
+          </span>
+        )}
+      </div>
+    );
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
-              trouvée{filteredActivities.length !== 1 ? 's' : ''}
+    <>
+      {/* Mobile fullscreen layout */}
+      <div className="md:hidden fixed inset-0 bg-white z-50 flex flex-col h-full w-full">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1 text-center">
+            <h2 className="text-lg font-semibold text-gray-900">Activités</h2>
+            <p className="text-xs text-gray-500">
+              {totalPages > 1 ? (
+                <>
+                  Page {currentPage}/{totalPages} • {filteredActivities.length} résultats
+                </>
+              ) : (
+                <>
+                  {filteredActivities.length} résultat{filteredActivities.length !== 1 ? 's' : ''}
+                </>
+              )}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="w-6 h-6" />
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Filter className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Rechercher dans les activités..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        {/* Mobile Filters - Collapsible */}
+        <div
+          className={`border-b border-gray-200 bg-white transition-all duration-300 overflow-hidden ${
+            isFilterVisible && showAdvancedFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="p-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Rechercher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 items-start">
-            <div className="flex-1">
+            <div className="grid grid-cols-2 gap-2">
               <Select
                 value={periodFilter}
                 onValueChange={(value: FilterPeriod) => setPeriodFilter(value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="Période" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toute la période</SelectItem>
-                  <SelectItem value="thisMonth">Ce mois-ci</SelectItem>
+                  <SelectItem value="all">Toutes</SelectItem>
+                  <SelectItem value="thisMonth">Ce mois</SelectItem>
                   <SelectItem value="lastMonth">Mois dernier</SelectItem>
                   <SelectItem value="thisYear">Cette année</SelectItem>
                   <SelectItem value="lastYear">Année dernière</SelectItem>
-                  <SelectItem value="custom">Période personnalisée</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            <div className="flex-1">
               <Select
                 value={typeFilter}
                 onValueChange={(value: typeof typeFilter) => setTypeFilter(value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Type d'activité" />
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   <SelectItem value="success">Succès</SelectItem>
-                  <SelectItem value="info">Information</SelectItem>
-                  <SelectItem value="warning">Avertissement</SelectItem>
+                  <SelectItem value="info">Info</SelectItem>
+                  <SelectItem value="warning">Alerte</SelectItem>
                   <SelectItem value="error">Erreur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex-1">
-              <Select value={userFilter} onValueChange={setUserFilter}>
-                <SelectTrigger>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <SelectValue placeholder="Filtrer par utilisateur" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les utilisateurs</SelectItem>
-                  {uniqueUsers.map((user) => (
-                    <SelectItem key={user} value={user}>
-                      {user}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={userFilter} onValueChange={setUserFilter}>
+              <SelectTrigger className="text-sm">
+                <div className="flex items-center gap-2">
+                  <User className="h-3 w-3" />
+                  <SelectValue placeholder="Utilisateur" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les utilisateurs</SelectItem>
+                {uniqueUsers.map((user) => (
+                  <SelectItem key={user} value={user}>
+                    {user}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            {periodFilter === 'custom' && (
-              <div className="flex-1">
-                <DateRangePicker
-                  value={dateRange}
-                  onChange={setDateRange}
-                  placeholder="Sélectionner une période"
-                />
-              </div>
-            )}
+            <Button variant="outline" size="sm" onClick={resetFilters} className="w-full text-sm">
+              Réinitialiser
+            </Button>
+          </div>
+        </div>
 
-            <div className="flex gap-2 flex-shrink-0">
-              <Button
-                variant="outline"
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Plus
-              </Button>
-
+        {/* Mobile Content */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
+          {activitiesByMonth.length === 0 ? (
+            <div className="text-center py-12 px-4">
+              <p className="text-gray-500 mb-4">Aucune activité trouvée</p>
               <Button variant="outline" onClick={resetFilters}>
                 Réinitialiser
               </Button>
             </div>
-          </div>
-
-          {showAdvancedFilters && (
-            <div className="mt-4 p-4 bg-white rounded-lg border">
-              <h4 className="font-medium text-sm mb-3">Filtres avancés</h4>
-
-              <div className="text-sm text-gray-600">
-                Utilisez le sélecteur de période ci-dessus pour filtrer par dates personnalisées.
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 min-h-0">
-          {activitiesByMonth.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">Aucune activité trouvée avec ces filtres</p>
-              <Button variant="outline" onClick={resetFilters}>
-                Réinitialiser les filtres
-              </Button>
-            </div>
           ) : (
-            <div className="space-y-8">
+            <div className="p-4 space-y-6">
               {activitiesByMonth.map(({ month, activities }) => (
                 <div key={month}>
-                  <div className="flex items-center mb-6">
+                  <div className="flex items-center mb-4">
                     <div className="flex-1 border-t border-gray-200"></div>
-                    <span className="px-4 text-sm font-medium text-gray-500 bg-gray-50">
-                      {month}
-                    </span>
+                    <span className="px-3 text-xs font-medium text-gray-500 bg-white">{month}</span>
                     <div className="flex-1 border-t border-gray-200"></div>
                   </div>
                   <div className="bg-white rounded-lg border divide-y divide-gray-200">
@@ -426,7 +557,7 @@ export default function AdminActivitiesModal({
                         : 'Système';
 
                       return (
-                        <div key={activity.id} className="p-6">
+                        <div key={activity.id} className="p-4">
                           <ActivityItem
                             title={activity.title}
                             description={activity.description}
@@ -450,7 +581,193 @@ export default function AdminActivitiesModal({
             </div>
           )}
         </div>
+
+        {/* Mobile Pagination */}
+        {totalPages > 1 && <PaginationControls isMobile />}
       </div>
-    </div>
+
+      {/* Desktop modal layout */}
+      <div className="hidden md:flex fixed inset-0 bg-black/50 items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col">
+          {/* Desktop Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredActivities.length} activité{filteredActivities.length !== 1 ? 's' : ''}{' '}
+                trouvée{filteredActivities.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Desktop Filters */}
+          <div className="p-6 border-b border-gray-200 bg-gray-50">
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Rechercher dans les activités..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <div className="flex gap-3 items-start">
+              <div className="flex-1">
+                <Select
+                  value={periodFilter}
+                  onValueChange={(value: FilterPeriod) => setPeriodFilter(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Période" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toute la période</SelectItem>
+                    <SelectItem value="thisMonth">Ce mois-ci</SelectItem>
+                    <SelectItem value="lastMonth">Mois dernier</SelectItem>
+                    <SelectItem value="thisYear">Cette année</SelectItem>
+                    <SelectItem value="lastYear">Année dernière</SelectItem>
+                    <SelectItem value="custom">Période personnalisée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1">
+                <Select
+                  value={typeFilter}
+                  onValueChange={(value: typeof typeFilter) => setTypeFilter(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Type d'activité" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="success">Succès</SelectItem>
+                    <SelectItem value="info">Information</SelectItem>
+                    <SelectItem value="warning">Avertissement</SelectItem>
+                    <SelectItem value="error">Erreur</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1">
+                <Select value={userFilter} onValueChange={setUserFilter}>
+                  <SelectTrigger>
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <SelectValue placeholder="Filtrer par utilisateur" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les utilisateurs</SelectItem>
+                    {uniqueUsers.map((user) => (
+                      <SelectItem key={user} value={user}>
+                        {user}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {periodFilter === 'custom' && (
+                <div className="flex-1">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    placeholder="Sélectionner une période"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Plus
+                </Button>
+
+                <Button variant="outline" onClick={resetFilters}>
+                  Réinitialiser
+                </Button>
+              </div>
+            </div>
+
+            {showAdvancedFilters && (
+              <div className="mt-4 p-4 bg-white rounded-lg border">
+                <h4 className="font-medium text-sm mb-3">Filtres avancés</h4>
+                <div className="text-sm text-gray-600">
+                  Utilisez le sélecteur de période ci-dessus pour filtrer par dates personnalisées.
+                </div>
+              </div>
+            )}
+
+            {/* Desktop Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-end mt-4">
+                <PaginationControls />
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Content */}
+          <div className="flex-1 overflow-y-auto p-6 min-h-0">
+            {activitiesByMonth.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 mb-4">Aucune activité trouvée avec ces filtres</p>
+                <Button variant="outline" onClick={resetFilters}>
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {activitiesByMonth.map(({ month, activities }) => (
+                  <div key={month}>
+                    <div className="flex items-center mb-6">
+                      <div className="flex-1 border-t border-gray-200"></div>
+                      <span className="px-4 text-sm font-medium text-gray-500 bg-gray-50">
+                        {month}
+                      </span>
+                      <div className="flex-1 border-t border-gray-200"></div>
+                    </div>
+                    <div className="bg-white rounded-lg border divide-y divide-gray-200">
+                      {activities.map((activity) => {
+                        const colors = getActivityColors(activity.type);
+                        const createdBy = activity.adminAction
+                          ? `${activity.adminAction.adminName}${activity.adminAction.adminRole ? ` (${activity.adminAction.adminRole})` : ''}`
+                          : 'Système';
+
+                        return (
+                          <div key={activity.id} className="p-6">
+                            <ActivityItem
+                              title={activity.title}
+                              description={activity.description}
+                              timestamp={activity.timestamp}
+                              icon={activity.icon}
+                              iconColor={colors.iconColor}
+                              iconBgColor={colors.iconBgColor}
+                              createdBy={createdBy}
+                              metadata={activity.metadata}
+                              isExpanded={expandedId === activity.id}
+                              onToggleExpand={() =>
+                                setExpandedId(expandedId === activity.id ? null : activity.id)
+                              }
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

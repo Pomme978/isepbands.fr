@@ -15,15 +15,14 @@ import {
   Edit3,
   Archive,
   LucideIcon,
-  ChevronDown,
-  ChevronRight,
   Info,
   LogIn,
   History,
 } from 'lucide-react';
 import { formatActivityDescription } from '@/services/activityLogService';
 import { useAuth } from '@/lib/auth-client';
-import { ActivityHistoryModal } from '@/components/common/ActivityHistoryModal';
+import AdminActivitiesModal from '../../dashboard/AdminActivitiesModal';
+import ActivityItem from '../../dashboard/ActivityItem';
 import { Button } from '@/components/ui/button';
 interface ActivityLog {
   id: string;
@@ -53,21 +52,11 @@ interface UserEditActivityLogProps {
 export default function UserEditActivityLog({ userId }: UserEditActivityLogProps) {
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [loadingLog, setLoadingLog] = useState(true);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const { user } = useAuth();
 
-  const MAX_DISPLAYED_LOGS = 10;
-
-  const toggleExpanded = (logId: string) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(logId)) {
-      newExpanded.delete(logId);
-    } else {
-      newExpanded.add(logId);
-    }
-    setExpandedItems(newExpanded);
-  };
+  const MAX_DISPLAYED_LOGS = 5;
 
   // Helper function pour formater les métadonnées de manière lisible
   const formatMetadata = (metadata: Record<string, unknown>) => {
@@ -122,36 +111,85 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
       ));
   };
 
-  // Transform ActivityLog to ActivityType format for the modal
+  // Transform ActivityLog to AdminActivitiesModal format
   const transformLogsForModal = (logs: ActivityLog[]) => {
-    return logs.map((log) => ({
-      id: log.id,
-      type: log.type as
-        | 'user_approved'
-        | 'user_rejected'
-        | 'user_created'
-        | 'user_archived'
-        | 'user_restored'
-        | 'profile_updated'
-        | 'user_edited'
-        | 'role_assigned'
-        | 'role_created'
-        | 'permissions_updated'
-        | 'permission_created'
-        | 'event_created'
-        | 'event_updated'
-        | 'archived'
-        | 'unarchived'
-        | 'system_settings_updated'
-        | 'year_migration'
-        | 'system_announcement'
-        | 'user_login'
-        | 'root_login'
-        | string,
-      timestamp: new Date(log.createdAt),
-      description: log.title,
-      user: log.createdByName ? { name: log.createdByName } : undefined,
-    }));
+    return logs.map((log) => {
+      const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
+      const activityType = getActivityType(log.type);
+
+      return {
+        id: log.id,
+        title: log.title,
+        description: formatActivityDescription(log, user?.id) || log.description || '',
+        timestamp: new Date(log.createdAt).toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        type: activityType,
+        icon: IconComponent,
+        metadata: log.metadata,
+        adminAction: log.createdByName
+          ? {
+              adminName: log.createdByName,
+            }
+          : undefined,
+      };
+    });
+  };
+
+  // Get activity type for AdminActivitiesModal
+  const getActivityType = (type: string): 'success' | 'info' | 'warning' | 'error' | 'default' => {
+    switch (type) {
+      case 'user_approved':
+      case 'user_restored':
+      case 'user_created':
+        return 'success';
+      case 'user_rejected':
+      case 'user_archived':
+        return 'error';
+      case 'profile_updated':
+      case 'user_edited':
+      case 'role_assigned':
+        return 'warning';
+      case 'user_login':
+      case 'root_login':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  // Get colors for ActivityItem based on type
+  const getActivityColors = (type: 'success' | 'info' | 'warning' | 'error' | 'default') => {
+    switch (type) {
+      case 'success':
+        return {
+          iconColor: 'text-green-600',
+          iconBgColor: 'bg-green-100',
+        };
+      case 'info':
+        return {
+          iconColor: 'text-blue-600',
+          iconBgColor: 'bg-blue-100',
+        };
+      case 'warning':
+        return {
+          iconColor: 'text-yellow-600',
+          iconBgColor: 'bg-yellow-100',
+        };
+      case 'error':
+        return {
+          iconColor: 'text-red-600',
+          iconBgColor: 'bg-red-100',
+        };
+      default:
+        return {
+          iconColor: 'text-primary',
+          iconBgColor: 'bg-primary/10',
+        };
+    }
   };
 
   // Helper function pour obtenir l'icône et la couleur selon le type d'activité
@@ -350,79 +388,64 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
               <p className="text-sm">Les actions de l&apos;utilisateur apparaîtront ici</p>
             </div>
           ) : (
-            <ol className="relative border-l-2 border-primary/30 ml-4">
-              {activityLog.slice(0, MAX_DISPLAYED_LOGS).map((log) => {
-                const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
-                const isExpanded = expandedItems.has(log.id);
-                const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
-                const formattedDescription = formatActivityDescription(log, user?.id);
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg border divide-y divide-gray-200">
+                {activityLog.slice(0, MAX_DISPLAYED_LOGS).map((log) => {
+                  const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
+                  const activityType = getActivityType(log.type);
+                  const formattedDescription =
+                    formatActivityDescription(log, user?.id) || log.description || '';
+                  const timestamp = new Date(log.createdAt).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
 
-                return (
-                  <li key={log.id} className="mb-8 ml-6">
-                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white border-2 border-gray-200 rounded-full">
-                      <IconComponent className={`w-3 h-3 ${color}`} />
-                    </span>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs text-gray-400">
-                        {new Date(log.createdAt).toLocaleDateString('fr-FR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        })}{' '}
-                        à{' '}
-                        {new Date(log.createdAt).toLocaleTimeString('fr-FR', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                      <span className="font-semibold text-gray-900">{log.title}</span>
-                      {formattedDescription && (
-                        <span className="text-sm text-gray-700">{formattedDescription}</span>
-                      )}
-                      {(log.createdByName || log.createdBy) && (
-                        <span className="text-xs text-gray-500">
-                          Par {log.createdByName || 'Système'}
-                        </span>
-                      )}
+                  const colors = getActivityColors(activityType);
+                  const createdBy = log.createdByName || 'Système';
 
-                      {/* Bouton pour afficher/masquer les détails */}
-                      {hasMetadata && (
-                        <button
-                          onClick={() => toggleExpanded(log.id)}
-                          className="flex items-center space-x-1 text-xs text-primary hover:text-primary/80 mt-1 w-fit"
-                        >
-                          {isExpanded ? (
-                            <ChevronDown className="w-3 h-3" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3" />
-                          )}
-                          <span>Détails</span>
-                        </button>
-                      )}
-
-                      {/* Détails expandables */}
-                      {isExpanded && hasMetadata && (
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <div className="flex items-center space-x-1 mb-2">
-                            <Info className="w-3 h-3 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">
-                              Détails de l&apos;action
-                            </span>
-                          </div>
-                          <div className="space-y-1">{formatMetadata(log.metadata)}</div>
-                        </div>
-                      )}
+                  return (
+                    <div key={log.id} className="p-4">
+                      <ActivityItem
+                        title={log.title}
+                        description={formattedDescription}
+                        timestamp={timestamp}
+                        icon={IconComponent}
+                        iconColor={colors.iconColor}
+                        iconBgColor={colors.iconBgColor}
+                        createdBy={createdBy}
+                        metadata={log.metadata}
+                        isExpanded={expandedId === log.id}
+                        onToggleExpand={() => setExpandedId(expandedId === log.id ? null : log.id)}
+                      />
                     </div>
-                  </li>
-                );
-              })}
-            </ol>
+                  );
+                })}
+              </div>
+
+              {/* Indication des activités restantes */}
+              {activityLog.length > MAX_DISPLAYED_LOGS && (
+                <div className="text-center py-4 text-sm text-gray-500">
+                  {activityLog.length - MAX_DISPLAYED_LOGS} autre
+                  {activityLog.length - MAX_DISPLAYED_LOGS > 1 ? 's' : ''} activité
+                  {activityLog.length - MAX_DISPLAYED_LOGS > 1 ? 's' : ''} disponible
+                  {activityLog.length - MAX_DISPLAYED_LOGS > 1 ? 's' : ''}.{' '}
+                  <button
+                    onClick={() => setShowHistoryModal(true)}
+                    className="text-primary hover:text-primary/80 underline"
+                  >
+                    Voir tout
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
 
       {/* Modal historique complet */}
-      <ActivityHistoryModal
+      <AdminActivitiesModal
         activities={transformLogsForModal(activityLog)}
         isOpen={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}

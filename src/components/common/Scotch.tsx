@@ -1,6 +1,4 @@
 // src/components/common/Scotch.tsx
-'use client';
-
 import React from 'react';
 
 interface ScotchProps {
@@ -21,11 +19,7 @@ const Scotch: React.FC<ScotchProps> = ({
   style = {},
 }) => {
   // Generate a consistent random rotation if none provided
-  const finalRotation = React.useMemo(() => {
-    if (rotation !== undefined) return rotation;
-    // Generate a random rotation between -15 and 15 degrees
-    return Math.random() * 30 - 15;
-  }, [rotation]);
+  const finalRotation = rotation !== undefined ? rotation : Math.random() * 30 - 15;
 
   return (
     <div

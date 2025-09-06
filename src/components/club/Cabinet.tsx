@@ -67,12 +67,9 @@ export default function Cabinet({ cards }: CabinetProps) {
 
   // Distribution logic: mobile = 1 card per drawer, desktop = distribute across 3 drawers
   const createDrawers = (cards: CardData[]) => {
-    console.log('createDrawers called:', { isMobile, cardsLength: cards.length });
     if (isMobile) {
       // Mobile: 1 card per drawer
-      const result = cards.map((card) => [card]);
-      console.log('Mobile distribution:', result.length, 'drawers');
-      return result;
+      return cards.map((card) => [card]);
     } else {
       // Desktop: distribute across 3 drawers
       const drawers: CardData[][] = [[], [], []];
@@ -80,7 +77,6 @@ export default function Cabinet({ cards }: CabinetProps) {
         const drawerIndex = index % 3; // Round-robin distribution across 3 drawers
         drawers[drawerIndex].push(card);
       });
-      console.log('Desktop distribution:', drawers.length, 'drawers');
       return drawers;
     }
   };

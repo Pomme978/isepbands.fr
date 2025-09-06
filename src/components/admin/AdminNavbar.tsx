@@ -36,42 +36,39 @@ interface AdminNavbarProps {
 
 const ADMIN_SECTIONS = [
   {
-    title: 'Overview',
-    items: [
-      { name: 'Dashboard', href: '/admin', icon: Home, isExact: true },
-      { name: 'Club Feed', href: '/admin/clubfeed', icon: Megaphone },
-    ],
+    title: 'Dashboard',
+    items: [{ name: 'Overview', href: '/admin', icon: Home, isExact: true }],
   },
   {
-    title: 'Content Management',
+    title: 'Content',
     items: [
-      { name: 'Users', href: '/admin/users', icon: Users },
       { name: 'Bands', href: '/admin/bands', icon: Megaphone },
       { name: 'Events', href: '/admin/events', icon: Calendar },
       { name: 'Venues', href: '/admin/venues', icon: Building2 },
-      { name: 'Pages Content', href: '/admin/pages', icon: FileText },
-      { name: 'Media Library', href: '/admin/media', icon: Image },
+      // { name: 'Media Library', href: '/admin/media', icon: ImageIcon },
     ],
   },
   {
-    title: 'Communication',
+    title: 'Community',
     items: [
-      { name: 'Newsletter', href: '/admin/newsletter', icon: Send },
-      { name: 'Notifications', href: '/admin/notifications', icon: Bell },
+      { name: 'Users', href: '/admin/users', icon: Users },
+      { name: 'Club Feed', href: '/admin/clubfeed', icon: Bell },
+      { name: 'Newsletter & Emails', href: '/admin/newsletter', icon: Send },
     ],
   },
   {
-    title: 'Reports',
+    title: 'Operations',
     items: [
-      { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
-      { name: 'Statistics', href: '/admin/statistics', icon: TrendingUp },
+      { name: 'Inventory', href: '/admin/inventory', icon: FileText },
+      { name: 'Wishlist', href: '/admin/wishlist', icon: BarChart3 },
     ],
   },
   {
-    title: 'Board Management',
+    title: 'Administration',
     items: [
-      { name: 'Board Members', href: '/admin/team', icon: Crown },
+      { name: 'Board Team', href: '/admin/team', icon: Crown },
       { name: 'Roles & Permissions', href: '/admin/roles', icon: Shield },
+      { name: 'Badges', href: '/admin/badges', icon: TrendingUp },
     ],
   },
   {
@@ -314,8 +311,7 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
 
                 {/* Language Switcher */}
                 <div className="px-3 py-2">
-                  <div className="text-sm text-gray-600 mb-2">Langue</div>
-                  <LanguageSwitcher variant="compact" className="w-full" />
+                  <LanguageSwitcher variant="compact" className="w-full rounded-lg" />
                 </div>
 
                 <div className="border-t pt-2">
@@ -346,7 +342,7 @@ export default function AdminNavbar({ className }: AdminNavbarProps) {
             {/* Footer */}
             <div className="border-t pt-4">
               <div className="flex flex-col items-center text-xs text-gray-500 space-y-1">
-                <p>© {new Date().getFullYear()} gngn. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} ISEPBANDS. All rights reserved.</p>
                 <div className="flex space-x-2">
                   <span>Version 1.0.0</span>
                   <span>•</span>

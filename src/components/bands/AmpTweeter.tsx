@@ -1,5 +1,3 @@
-'use client';
-
 export default function AmpTweeter() {
   const barHeight = 50; // Hauteur des barres
 

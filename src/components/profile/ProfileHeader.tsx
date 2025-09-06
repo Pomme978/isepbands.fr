@@ -1,6 +1,4 @@
 // @components/settings/ProfileHeader.tsx
-'use client';
-
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';

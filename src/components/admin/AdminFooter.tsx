@@ -1,5 +1,3 @@
-'use client';
-
 export default function AdminFooter() {
   const currentYear = new Date().getFullYear();
 

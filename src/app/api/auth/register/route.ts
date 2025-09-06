@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadToStorage } from '@/lib/storageService';
 import { prisma } from '@/lib/prisma';
 import { setSession } from '@/lib/auth';
+import { registerLimiter } from '@/lib/rateLimiter';
 import crypto from 'crypto';
 
 // Cache pour éviter les doubles inscriptions
@@ -22,6 +23,12 @@ setInterval(
 );
 
 export async function POST(req: NextRequest) {
+  // Apply rate limiting for registrations
+  const rateLimitResult = await registerLimiter(req);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   const registrationId = crypto.randomUUID().slice(0, 8);
   console.log(`🚀 [${registrationId}] Starting registration process`);
 

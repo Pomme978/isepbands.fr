@@ -58,6 +58,7 @@ export async function GET(req: NextRequest) {
       };
     }
 
+    // Fix N+1 query by including creator in the main query
     const activities = await prisma.adminActivity.findMany({
       where: whereCondition,
       orderBy: { createdAt: 'desc' },
@@ -72,30 +73,21 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Get creator names
-    const activitiesWithCreatorNames = await Promise.all(
-      activities.map(async (activity) => {
-        let createdByName = null;
-        if (activity.createdBy) {
-          try {
-            const creator = await prisma.user.findUnique({
-              where: { id: activity.createdBy },
-              select: { firstName: true, lastName: true },
-            });
-            if (creator) {
-              createdByName = `${creator.firstName} ${creator.lastName}`;
-            }
-          } catch (error) {
-            // Error fetching creator name
-          }
-        }
+    // Get unique creator IDs to fetch in one query
+    const creatorIds = [...new Set(activities.map((a) => a.createdBy).filter(Boolean))];
+    const creators = await prisma.user.findMany({
+      where: { id: { in: creatorIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
 
-        return {
-          ...activity,
-          createdByName,
-        };
-      }),
-    );
+    // Create a map for quick lookup
+    const creatorsMap = new Map(creators.map((c) => [c.id, `${c.firstName} ${c.lastName}`]));
+
+    // Map activities with creator names
+    const activitiesWithCreatorNames = activities.map((activity) => ({
+      ...activity,
+      createdByName: activity.createdBy ? creatorsMap.get(activity.createdBy) || null : null,
+    }));
 
     return NextResponse.json({ success: true, activities: activitiesWithCreatorNames });
   } catch (error) {

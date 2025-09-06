@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/services/emailService';
+import { passwordResetLimiter } from '@/lib/rateLimiter';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Add rate limiting in production
+    // Apply strict rate limiting for password resets
+    const rateLimitResult = await passwordResetLimiter(request);
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
 
     const { email } = await request.json();
 
@@ -25,25 +30,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Return different messages for different cases
+    // Always return the same message to prevent email enumeration
+    const standardResponse = {
+      success: true,
+      message:
+        'Si un compte existe avec cette adresse email, un lien de réinitialisation vous sera envoyé.',
+    };
+
+    // If user doesn't exist, return success to avoid enumeration
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Aucun compte associé à cette adresse email.',
-        },
-        { status: 404 },
-      );
+      return NextResponse.json(standardResponse, { status: 200 });
     }
 
+    // If account is inactive, still send success but don't send email
     if (user.status !== 'CURRENT') {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Ce compte est inactif. Contactez un administrateur.',
-        },
-        { status: 403 },
-      );
+      return NextResponse.json(standardResponse, { status: 200 });
     }
 
     // Generate reset token (valid for 1 hour)
@@ -57,10 +58,8 @@ export async function POST(request: NextRequest) {
       resetToken,
     );
 
-    return NextResponse.json({
-      success: true,
-      message: 'Un lien de réinitialisation a été envoyé à votre adresse email.',
-    });
+    // Return the same standardized response
+    return NextResponse.json(standardResponse);
   } catch (error) {
     console.error('Forgot password error:', error);
     return NextResponse.json(

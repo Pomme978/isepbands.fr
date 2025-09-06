@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT /api/admin/settings - Update system settings
+// PUT /api/admin/settings - Update system settings (partial updates supported)
 export async function PUT(request: NextRequest) {
   const authResult = await standardAuth(request);
   if (authResult instanceof NextResponse) {
@@ -88,53 +88,119 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const body = (await request.json()) as SystemSettings;
+    const body = (await request.json()) as Partial<SystemSettings>;
 
-    // Validate required fields
-    const requiredFields = [
-      body.association.name,
-      body.association.legalStatus,
-      body.association.address,
-      body.association.email,
-      body.publicationDirector.name,
-    ];
+    // Validate required fields only if they are provided (partial updates)
+    if (body.association) {
+      const requiredFields = [
+        body.association.name,
+        body.association.legalStatus,
+        body.association.address,
+        body.association.email,
+      ];
 
-    if (requiredFields.some((field) => !field?.trim())) {
+      if (requiredFields.some((field) => field !== undefined && !field?.trim())) {
+        return NextResponse.json(
+          { error: 'Tous les champs obligatoires doivent être remplis' },
+          { status: 400 },
+        );
+      }
+
+      // Validate email format if provided
+      if (body.association.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(body.association.email)) {
+          return NextResponse.json({ error: "Format d'email invalide" }, { status: 400 });
+        }
+      }
+    }
+
+    // Validate publication director name if provided
+    if (body.publicationDirector?.name !== undefined && !body.publicationDirector.name.trim()) {
       return NextResponse.json(
-        { error: 'Tous les champs obligatoires doivent être remplis' },
+        { error: 'Le nom du directeur de publication est requis' },
         { status: 400 },
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.association.email)) {
-      return NextResponse.json({ error: "Format d'email invalide" }, { status: 400 });
+    // Validate OKLCH color format if provided
+    if (body.primaryColor) {
+      const oklchRegex = /^oklch\([\d.]+\s+[\d.]+\s+[\d.]+\)$/;
+      if (!oklchRegex.test(body.primaryColor)) {
+        return NextResponse.json({ error: 'Format de couleur OKLCH invalide' }, { status: 400 });
+      }
     }
 
-    // Validate OKLCH color format
-    const oklchRegex = /^oklch\([\d.]+\s+[\d.]+\s+[\d.]+\)$/;
-    if (!oklchRegex.test(body.primaryColor)) {
-      return NextResponse.json({ error: 'Format de couleur OKLCH invalide' }, { status: 400 });
+    // Build update data based on what's provided
+    const updateData: {
+      currentYear?: string;
+      primaryColor?: string;
+      associationName?: string;
+      associationLegalStatus?: string;
+      associationAddress?: string;
+      associationSiret?: string | null;
+      associationEmail?: string;
+      publicationDirectorName?: string;
+    } = {};
+
+    if (body.currentYear !== undefined) {
+      updateData.currentYear = body.currentYear;
     }
 
-    // Update or create settings
-    const settingsData = {
-      currentYear: body.currentYear,
-      primaryColor: body.primaryColor,
-      associationName: body.association.name.trim(),
-      associationLegalStatus: body.association.legalStatus.trim(),
-      associationAddress: body.association.address.trim(),
-      associationSiret: body.association.siret?.trim() || null,
-      associationEmail: body.association.email.trim().toLowerCase(),
-      publicationDirectorName: body.publicationDirector.name.trim(),
-    };
+    if (body.primaryColor !== undefined) {
+      updateData.primaryColor = body.primaryColor;
+    }
 
-    const settings = await prisma.systemSettings.upsert({
-      where: { id: 1 },
-      update: settingsData,
-      create: { id: 1, ...settingsData },
-    });
+    if (body.association) {
+      if (body.association.name !== undefined) {
+        updateData.associationName = body.association.name.trim();
+      }
+      if (body.association.legalStatus !== undefined) {
+        updateData.associationLegalStatus = body.association.legalStatus.trim();
+      }
+      if (body.association.address !== undefined) {
+        updateData.associationAddress = body.association.address.trim();
+      }
+      if (body.association.siret !== undefined) {
+        updateData.associationSiret = body.association.siret?.trim() || null;
+      }
+      if (body.association.email !== undefined) {
+        updateData.associationEmail = body.association.email.trim().toLowerCase();
+      }
+    }
+
+    if (body.publicationDirector?.name !== undefined) {
+      updateData.publicationDirectorName = body.publicationDirector.name.trim();
+    }
+
+    // Get current settings first
+    let settings = await prisma.systemSettings.findFirst();
+
+    if (!settings) {
+      // Create new settings with defaults and provided values
+      const defaultSettings = {
+        id: 1,
+        currentYear: new Date().getFullYear().toString(),
+        primaryColor: 'oklch(0.559 0.238 307.331)',
+        associationName: 'ISEP Bands',
+        associationLegalStatus: 'Association loi 1901',
+        associationAddress: '',
+        associationSiret: null,
+        associationEmail: 'contact@isepbands.fr',
+        publicationDirectorName: '',
+        ...updateData,
+      };
+
+      settings = await prisma.systemSettings.create({
+        data: defaultSettings,
+      });
+    } else {
+      // Update existing settings
+      settings = await prisma.systemSettings.update({
+        where: { id: settings.id },
+        data: updateData,
+      });
+    }
 
     // Update CSS file if primary color changed
     if (body.primaryColor) {
@@ -151,20 +217,26 @@ export async function PUT(request: NextRequest) {
       {
         changes: {
           associationName: body.association.name !== (settings.associationName || 'ISEP Bands'),
-          associationLegalStatus: body.association.legalStatus !== (settings.associationLegalStatus || 'Association loi 1901'),
+          associationLegalStatus:
+            body.association.legalStatus !==
+            (settings.associationLegalStatus || 'Association loi 1901'),
           associationAddress: body.association.address !== (settings.associationAddress || ''),
-          associationEmail: body.association.email !== (settings.associationEmail || 'contact@isepbands.fr'),
-          publicationDirectorName: body.publicationDirector.name !== (settings.publicationDirectorName || ''),
-          primaryColor: body.primaryColor !== (settings.primaryColor || 'oklch(0.559 0.238 307.331)'),
-          currentYear: body.currentYear !== (settings.currentYear || new Date().getFullYear().toString()),
+          associationEmail:
+            body.association.email !== (settings.associationEmail || 'contact@isepbands.fr'),
+          publicationDirectorName:
+            body.publicationDirector.name !== (settings.publicationDirectorName || ''),
+          primaryColor:
+            body.primaryColor !== (settings.primaryColor || 'oklch(0.559 0.238 307.331)'),
+          currentYear:
+            body.currentYear !== (settings.currentYear || new Date().getFullYear().toString()),
         },
         newValues: {
           associationName: body.association.name,
           associationEmail: body.association.email,
           primaryColor: body.primaryColor,
-          currentYear: body.currentYear
-        }
-      }
+          currentYear: body.currentYear,
+        },
+      },
     );
 
     return NextResponse.json({ success: true, settings });

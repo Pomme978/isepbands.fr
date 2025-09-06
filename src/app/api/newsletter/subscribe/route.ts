@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { EmailService } from '@/services/emailService';
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,17 +9,11 @@ export async function POST(req: NextRequest) {
 
     // Validation
     if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Email requis' }, { status: 400 });
     }
 
     if (!email.includes('@') || email.length < 5) {
-      return NextResponse.json(
-        { success: false, error: 'Email invalide' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Email invalide' }, { status: 400 });
     }
 
     const emailLower = email.toLowerCase().trim();
@@ -32,7 +27,7 @@ export async function POST(req: NextRequest) {
       if (existing.isActive) {
         return NextResponse.json(
           { success: false, error: 'Cet email est déjà inscrit à la newsletter' },
-          { status: 409 }
+          { status: 409 },
         );
       } else {
         // Reactivate subscriber
@@ -45,6 +40,20 @@ export async function POST(req: NextRequest) {
           },
         });
 
+        // Envoyer email de bienvenue seulement si inscription depuis le footer
+        if (source === 'footer') {
+          try {
+            const unsubscribeToken = Buffer.from(emailLower).toString('base64');
+            const unsubscribeUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/unsubscribe?email=${encodeURIComponent(emailLower)}&token=${encodeURIComponent(unsubscribeToken)}`;
+
+            await EmailService.sendTemplateEmail('Bienvenue newsletter', emailLower, {
+              unsubscribeUrl,
+            });
+          } catch (emailError) {
+            console.error('Error sending welcome newsletter email:', emailError);
+            // Ne pas faire échouer l'inscription si l'email échoue
+          }
+        }
 
         return NextResponse.json({
           success: true,
@@ -66,6 +75,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Envoyer email de bienvenue seulement si inscription depuis le footer
+    if (source === 'footer') {
+      try {
+        const unsubscribeToken = Buffer.from(emailLower).toString('base64');
+        const unsubscribeUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.fr'}/unsubscribe?email=${encodeURIComponent(emailLower)}&token=${encodeURIComponent(unsubscribeToken)}`;
+
+        await EmailService.sendTemplateEmail('Bienvenue newsletter', emailLower, {
+          unsubscribeUrl,
+        });
+      } catch (emailError) {
+        console.error('Error sending welcome newsletter email:', emailError);
+        // Ne pas faire échouer l'inscription si l'email échoue
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -78,8 +101,8 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error subscribing to newsletter:', error);
     return NextResponse.json(
-      { success: false, error: 'Une erreur est survenue lors de l\'inscription' },
-      { status: 500 }
+      { success: false, error: "Une erreur est survenue lors de l'inscription" },
+      { status: 500 },
     );
   }
 }
@@ -91,10 +114,7 @@ export async function DELETE(req: NextRequest) {
     const token = searchParams.get('token'); // For future unsubscribe links
 
     if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Email requis' }, { status: 400 });
     }
 
     const emailLower = email.toLowerCase().trim();
@@ -107,14 +127,14 @@ export async function DELETE(req: NextRequest) {
     if (!subscriber) {
       return NextResponse.json(
         { success: false, error: 'Email non trouvé dans la newsletter' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (!subscriber.isActive) {
       return NextResponse.json(
-        { success: false, error: 'Cet email n\'est déjà plus abonné' },
-        { status: 409 }
+        { success: false, error: "Cet email n'est déjà plus abonné" },
+        { status: 409 },
       );
     }
 
@@ -134,7 +154,7 @@ export async function DELETE(req: NextRequest) {
     console.error('Error unsubscribing from newsletter:', error);
     return NextResponse.json(
       { success: false, error: 'Une erreur est survenue lors de la désinscription' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

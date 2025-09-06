@@ -1,6 +1,4 @@
 // @components/settings/LevelBadge.tsx
-'use client';
-
 interface LevelBadgeProps {
   level: string;
   size?: 'sm' | 'md';

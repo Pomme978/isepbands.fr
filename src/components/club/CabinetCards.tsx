@@ -21,7 +21,6 @@ export default function CabinetCards({ cards }: CabinetCardsProps) {
   const handleMoreInfoClick = () => {
     // TODO: Navigate to events page section when available
     // For now, just scroll to top or show alert
-    console.log("Plus d'info clicked - will navigate to events section");
     // router.push('/events#activities'); // Uncomment when events page is ready
   };
 

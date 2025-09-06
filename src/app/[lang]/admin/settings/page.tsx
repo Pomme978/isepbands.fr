@@ -50,7 +50,7 @@ const TABS = [
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>({
     currentYear: new Date().getFullYear().toString(),
-    primaryColor: 'oklch(0.559 0.238 307.331)',
+    primaryColor: '', // Will be loaded from CSS
   });
 
   const [legalMentions, setLegalMentions] = useState<LegalMentions>({
@@ -80,16 +80,44 @@ export default function SettingsPage() {
     loadSettings();
   }, []);
 
+  // Function to get current primary color from CSS
+  const getCurrentPrimaryColor = (): string => {
+    if (typeof window !== 'undefined') {
+      const rootStyles = getComputedStyle(document.documentElement);
+      const primaryColor = rootStyles.getPropertyValue('--primary').trim();
+      return primaryColor || 'oklch(0.559 0.238 307.331)'; // fallback
+    }
+    return 'oklch(0.559 0.238 307.331)';
+  };
+
   const loadSettings = async () => {
     try {
       setLoading(true);
+
+      // Get current primary color from CSS
+      const currentColor = getCurrentPrimaryColor();
+
       const response = await fetch('/api/admin/settings');
       if (response.ok) {
         const data = await response.json();
-        setSettings(data);
+        setSettings({
+          ...data,
+          primaryColor: data.primaryColor || currentColor, // Use API color or current CSS color
+        });
+      } else {
+        // If API fails, at least load the current CSS color
+        setSettings((prev) => ({
+          ...prev,
+          primaryColor: currentColor,
+        }));
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
+      // If everything fails, at least load the current CSS color
+      setSettings((prev) => ({
+        ...prev,
+        primaryColor: getCurrentPrimaryColor(),
+      }));
       setError('Erreur lors du chargement des paramètres');
     } finally {
       setLoading(false);
@@ -169,12 +197,26 @@ export default function SettingsPage() {
       setHasLegalChanges(false);
       setSuccess('Tous les paramètres ont été sauvegardés avec succès');
 
-      // Apply primary color change
+      // Apply primary color change and reload page if color changed
       if (activeTab === 'appearance') {
-        document.documentElement.style.setProperty('--primary', settings.primaryColor);
-      }
+        const currentCssColor = getCurrentPrimaryColor();
+        if (currentCssColor !== settings.primaryColor) {
+          // Apply the new color immediately
+          document.documentElement.style.setProperty('--primary', settings.primaryColor);
 
-      setTimeout(() => setSuccess(null), 3000);
+          // Show success message briefly, then reload
+          setTimeout(() => {
+            setSuccess('Couleur appliquée ! Actualisation de la page...');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }, 500);
+        } else {
+          setTimeout(() => setSuccess(null), 3000);
+        }
+      } else {
+        setTimeout(() => setSuccess(null), 3000);
+      }
     } catch (error) {
       console.error('Failed to save settings:', error);
       setError(error instanceof Error ? error.message : 'Erreur lors de la sauvegarde');

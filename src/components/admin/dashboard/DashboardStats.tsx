@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import StatCard from './StatCard';
-import { Users, Megaphone, Calendar, LucideIcon } from 'lucide-react';
+import { Users, UsersRound, Calendar, LucideIcon } from 'lucide-react';
 import { getCurrentAcademicYear } from '@/utils/schoolUtils';
 
 interface StatData {
@@ -10,6 +10,7 @@ interface StatData {
   value: string | number;
   icon: LucideIcon;
   iconBgColor: string;
+  invertColors?: boolean;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -35,18 +36,21 @@ const fetchStats = async (): Promise<StatData[]> => {
         value: totalMembers,
         icon: Users,
         iconBgColor: 'bg-blue-500',
+        invertColors: true,
       },
       {
         title: 'Groupes actifs',
         value: 0, // Will be implemented later
-        icon: Megaphone,
-        iconBgColor: 'bg-green-500',
+        icon: UsersRound,
+        iconBgColor: 'bg-orange-500',
+        invertColors: true,
       },
       {
         title: 'Événements cette année',
         value: 0, // Will be implemented later
         icon: Calendar,
         iconBgColor: 'bg-purple-500',
+        invertColors: true,
       },
     ];
   } catch (error) {
@@ -58,18 +62,21 @@ const fetchStats = async (): Promise<StatData[]> => {
         value: 0,
         icon: Users,
         iconBgColor: 'bg-blue-500',
+        invertColors: true,
       },
       {
         title: 'Groupes actifs',
         value: 0,
-        icon: Megaphone,
-        iconBgColor: 'bg-green-500',
+        icon: UsersRound,
+        iconBgColor: 'bg-orange-500',
+        invertColors: true,
       },
       {
         title: 'Événements cette année',
         value: 0,
         icon: Calendar,
         iconBgColor: 'bg-purple-500',
+        invertColors: true,
       },
     ];
   }
@@ -122,7 +129,7 @@ export default function DashboardStats({ currentAcademicYear }: DashboardStatsPr
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-3 md:flex md:gap-6 gap-2">
       {stats.map((stat, index) => (
         <StatCard
           key={`${stat.title}-${index}`}
@@ -130,6 +137,7 @@ export default function DashboardStats({ currentAcademicYear }: DashboardStatsPr
           value={stat.value}
           icon={stat.icon}
           iconBgColor={stat.iconBgColor}
+          invertColors={stat.invertColors}
           trend={stat.trend}
         />
       ))}

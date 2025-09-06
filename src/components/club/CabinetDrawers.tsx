@@ -16,13 +16,15 @@ interface CabinetDrawersProps {
 }
 
 export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: CabinetDrawersProps) {
-  const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-  
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024,
+  );
+
   useEffect(() => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -41,10 +43,12 @@ export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: Ca
     if (isMobile) {
       return { mobile: 300 };
     }
-    
-    if (screenWidth < 1024) { // md to lg breakpoint
+
+    if (screenWidth < 1024) {
+      // md to lg breakpoint
       return { desktop: [550, 360, 150, 60] }; // Reduced extensions for md-lg screens
-    } else { // lg and above
+    } else {
+      // lg and above
       return { desktop: [650, 430, 220, 100] }; // Original extensions for lg+ screens
     }
   };
@@ -88,16 +92,6 @@ export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: Ca
     );
   };
 
-  console.log('CabinetDrawers render:', {
-    drawersCount: drawers.length,
-    isMobile,
-    drawersContent: drawers.map((d, i) => ({
-      index: i,
-      cardCount: d.length,
-      firstCard: d[0]?.title,
-    })),
-  });
-
   return (
     <div className="relative w-full h-full mx-auto">
       {drawers.map((drawerCards, index) => {
@@ -129,17 +123,6 @@ export default function CabinetDrawers({ drawers, scrollProgress, isMobile }: Ca
         const zIndex = isMobile
           ? index * Z_INDEX_SPACING + 10 // Mobile: first drawer (bottom) has lowest z-index, last drawer (top) has highest
           : (drawers.length - index) * Z_INDEX_SPACING + 10; // Desktop: reverse order
-
-        // Debug pour voir les extensions
-        if (isMobile) {
-          console.log(`Drawer ${index} (${drawerCards[0]?.title}):`, {
-            drawerOrder,
-            individualProgress: individualProgress.toFixed(2),
-            maxExtension,
-            extensionDistance: extensionDistance.toFixed(2),
-            zIndex,
-          });
-        }
 
         // Position and styling - center drawers vertically in cabinet
         const cabinetHeight = isMobile ? 300 : 600; // Cabinet height

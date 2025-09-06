@@ -1,6 +1,4 @@
 // src/components/team/GroupPhoto.tsx
-'use client';
-
 import React from 'react';
 import Image, { type StaticImageData } from 'next/image';
 import Scotch from '@/components/common/Scotch';

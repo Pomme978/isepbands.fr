@@ -57,7 +57,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
       widthAndPosition = isFr ? 'w-[calc(50%-2px)] left-1' : 'w-[calc(50%-2px)] right-1';
     } else {
       // For default and transparent variants, use original fixed width
-      widthAndPosition = isFr ? 'w-11 left-1' : 'w-11 left-[calc(50%+2px)]';
+      widthAndPosition = isFr ? 'w-11 left-1' : 'w-11 right-1';
     }
 
     const baseClasses = `absolute top-1/2 -translate-y-1/2 h-7 ${roundedClass} transition-all duration-300 ease-in-out transform shadow-md`;
@@ -84,7 +84,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
       widthClass = 'flex-1';
     }
 
-    const baseClasses = `relative z-10 flex items-center justify-center ${widthClass} h-7 text-xs font-semibold transition-all duration-300 ${roundedClass}`;
+    const baseClasses = `relative z-10 flex items-center justify-center ${widthClass} h-7 text-xs font-semibold transition-all duration-300 ${roundedClass} text-center leading-none`;
     if (variant === 'transparent') {
       return `${baseClasses} ${isActive ? 'text-gray-900' : 'text-white'}`;
     }
@@ -101,8 +101,8 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
       <div className={getSliderClasses()} />
 
       {/* Language options */}
-      <span className={getTextClasses(isFr)}>FR</span>
-      <span className={getTextClasses(!isFr)}>EN</span>
+      <div className={getTextClasses(isFr)}>FR</div>
+      <div className={getTextClasses(!isFr)}>EN</div>
     </button>
   );
 }

@@ -87,8 +87,7 @@ export default function UsersPage() {
             className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base"
           >
             <Plus className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden xs:inline">New User</span>
-            <span className="xs:hidden">Add</span>
+            <span className="">Create User</span>
           </button>
         }
       />

@@ -3,8 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPassword, getUserByEmail, setSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { loginSchema } from '@/validation/auth';
+import { loginLimiter } from '@/lib/rateLimiter';
 
 export async function POST(req: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResult = await loginLimiter(req);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
   const body = await req.json();
 
   // Validate request body

@@ -22,19 +22,31 @@ export async function ensureDBIntegrity(executorUserId?: string) {
     // Remove database duplicates first
     console.log('🧹 Cleaning up database duplicates...');
 
-    // Remove duplicate instruments (keep the first occurrence)
-    const duplicateInstruments = await prisma.$queryRaw<
-      Array<{ name: string; count: number; ids: string }>
-    >`
-      SELECT name, COUNT(*) as count, GROUP_CONCAT(id) as ids
-      FROM Instrument 
-      GROUP BY name 
-      HAVING count > 1
-    `;
+    // Remove duplicate instruments using safe Prisma queries
+    const instrumentGroups = await prisma.instrument.groupBy({
+      by: ['name'],
+      _count: { id: true },
+      having: { id: { _count: { gt: 1 } } },
+    });
+
+    const duplicateInstruments: Array<{ name: string; count: number; ids: number[] }> = [];
+
+    for (const group of instrumentGroups) {
+      const instruments = await prisma.instrument.findMany({
+        where: { name: group.name },
+        select: { id: true },
+        orderBy: { id: 'asc' },
+      });
+
+      duplicateInstruments.push({
+        name: group.name,
+        count: group._count.id,
+        ids: instruments.map((i) => i.id),
+      });
+    }
 
     for (const duplicate of duplicateInstruments) {
-      const ids = duplicate.ids.split(',').map((id) => parseInt(id));
-      const [keepId, ...deleteIds] = ids;
+      const [keepId, ...deleteIds] = duplicate.ids;
 
       for (const deleteId of deleteIds) {
         await prisma.instrument.delete({ where: { id: deleteId } });
@@ -44,18 +56,31 @@ export async function ensureDBIntegrity(executorUserId?: string) {
       }
     }
 
-    // Remove duplicate permissions
-    const duplicatePermissions = await prisma.$queryRaw<
-      Array<{ name: string; count: number; ids: string }>
-    >`
-      SELECT name, COUNT(*) as count, GROUP_CONCAT(id) as ids
-      FROM Permission 
-      GROUP BY name 
-      HAVING count > 1
-    `;
+    // Remove duplicate permissions using safe Prisma queries
+    const permissionGroups = await prisma.permission.groupBy({
+      by: ['name'],
+      _count: { id: true },
+      having: { id: { _count: { gt: 1 } } },
+    });
+
+    const duplicatePermissions: Array<{ name: string; count: number; ids: number[] }> = [];
+
+    for (const group of permissionGroups) {
+      const permissions = await prisma.permission.findMany({
+        where: { name: group.name },
+        select: { id: true },
+        orderBy: { id: 'asc' },
+      });
+
+      duplicatePermissions.push({
+        name: group.name,
+        count: group._count.id,
+        ids: permissions.map((p) => p.id),
+      });
+    }
 
     for (const duplicate of duplicatePermissions) {
-      const ids = duplicate.ids.split(',').map((id) => parseInt(id));
+      const ids = duplicate.ids;
       const [keepId, ...deleteIds] = ids;
 
       for (const deleteId of deleteIds) {
@@ -93,23 +118,27 @@ export async function ensureDBIntegrity(executorUserId?: string) {
       }
     }
 
-    // Remove duplicate music genres
-    const duplicateGenres = await prisma.$queryRaw<Array<{ id: string; count: number }>>`
-      SELECT id, COUNT(*) as count
-      FROM MusicGenre 
-      GROUP BY id 
-      HAVING count > 1
-    `;
+    // Remove duplicate music genres using safe Prisma queries
+    const allGenres = await prisma.musicGenre.findMany({
+      select: { id: true },
+    });
 
-    for (const duplicate of duplicateGenres) {
-      // Keep only one, delete the rest (this is unlikely but just in case)
-      const existing = await prisma.musicGenre.findMany({ where: { id: duplicate.id } });
-      for (let i = 1; i < existing.length; i++) {
-        await prisma.musicGenre.delete({ where: { id: existing[i].id } });
-        console.log(`🗑️ Removed duplicate music genre with id: ${existing[i].id}`);
-        actions.push(`Supprimé le genre musical dupliqué ${existing[i].id}`);
-        stats.deleted++;
+    const seenIds = new Set<string>();
+    const duplicateIds: string[] = [];
+
+    for (const genre of allGenres) {
+      if (seenIds.has(genre.id)) {
+        duplicateIds.push(genre.id);
+      } else {
+        seenIds.add(genre.id);
       }
+    }
+
+    for (const duplicateId of duplicateIds) {
+      await prisma.musicGenre.delete({ where: { id: duplicateId } });
+      console.log(`🗑️ Removed duplicate music genre with id: ${duplicateId}`);
+      actions.push(`Supprimé le genre musical dupliqué ${duplicateId}`);
+      stats.deleted++;
     }
     // Ensure instruments exist
     console.log('🎵 Ensuring instruments exist...');
@@ -259,10 +288,20 @@ export async function ensureDBIntegrity(executorUserId?: string) {
           }
         }
 
-        await prisma.$executeRaw`
-          INSERT INTO EmailTemplate (name, description, subject, htmlContent, templateType, isDefault, variables, createdById, createdAt, updatedAt)
-          VALUES (${template.name}, ${template.description}, ${template.subject}, ${template.htmlContent}, ${template.templateType}, ${template.isDefault}, ${JSON.stringify(template.variables)}, ${createdById}, NOW(), NOW())
-        `;
+        await prisma.emailTemplate.create({
+          data: {
+            name: template.name,
+            description: template.description,
+            subject: template.subject,
+            htmlContent: template.htmlContent,
+            templateType: template.templateType,
+            isDefault: template.isDefault,
+            variables: JSON.stringify(template.variables),
+            createdById: createdById,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
         console.log(`✅ Created missing email template: ${template.name}`);
         actions.push(`Créé le template d'email manquant: ${template.name}`);
         stats.created++;
@@ -305,25 +344,31 @@ export async function checkEmailTemplatesDifferences(executorUserId?: string) {
 
   // Mettre à jour seulement si on a un utilisateur valide, sinon garder NULL
   if (defaultUserId) {
-    await prisma.$executeRaw`UPDATE EmailTemplate SET createdById = ${defaultUserId} WHERE createdById IS NULL OR createdById = ''`;
+    await prisma.emailTemplate.updateMany({
+      where: {
+        OR: [{ createdById: null }, { createdById: '' }],
+      },
+      data: {
+        createdById: defaultUserId,
+      },
+    });
   }
 
   // Utiliser raw SQL pour éviter les problèmes avec createdById null
   for (const template of baseEmailTemplates) {
-    const existingResult = await prisma.$queryRaw<
-      Array<{
-        id: number;
-        name: string;
-        description: string | null;
-        subject: string;
-        htmlContent: string;
-        templateType: string;
-        isDefault: boolean;
-        variables: string | null;
-      }>
-    >`SELECT * FROM EmailTemplate WHERE name = ${template.name} LIMIT 1`;
-
-    const existing = existingResult[0] || null;
+    const existing = await prisma.emailTemplate.findFirst({
+      where: { name: template.name },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        subject: true,
+        htmlContent: true,
+        templateType: true,
+        isDefault: true,
+        variables: true,
+      },
+    });
 
     if (existing) {
       const hasChanged =
@@ -369,20 +414,19 @@ export async function updateEmailTemplatesFromSource(executorUserId?: string) {
   let updatedCount = 0;
 
   for (const template of baseEmailTemplates) {
-    const existingResult = await prisma.$queryRaw<
-      Array<{
-        id: number;
-        name: string;
-        description: string | null;
-        subject: string;
-        htmlContent: string;
-        templateType: string;
-        isDefault: boolean;
-        variables: string | null;
-      }>
-    >`SELECT * FROM EmailTemplate WHERE name = ${template.name} LIMIT 1`;
-
-    const existing = existingResult[0] || null;
+    const existing = await prisma.emailTemplate.findFirst({
+      where: { name: template.name },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        subject: true,
+        htmlContent: true,
+        templateType: true,
+        isDefault: true,
+        variables: true,
+      },
+    });
 
     if (existing) {
       const hasChanged =
@@ -394,17 +438,18 @@ export async function updateEmailTemplatesFromSource(executorUserId?: string) {
         existing.variables !== JSON.stringify(template.variables);
 
       if (hasChanged) {
-        await prisma.$executeRaw`
-          UPDATE EmailTemplate 
-          SET description = ${template.description},
-              subject = ${template.subject},
-              htmlContent = ${template.htmlContent},
-              templateType = ${template.templateType},
-              isDefault = ${template.isDefault},
-              variables = ${JSON.stringify(template.variables)},
-              updatedAt = NOW()
-          WHERE id = ${existing.id}
-        `;
+        await prisma.emailTemplate.update({
+          where: { id: existing.id },
+          data: {
+            description: template.description,
+            subject: template.subject,
+            htmlContent: template.htmlContent,
+            templateType: template.templateType,
+            isDefault: template.isDefault,
+            variables: JSON.stringify(template.variables),
+            updatedAt: new Date(),
+          },
+        });
         console.log(`🔄 Updated email template: ${template.name}`);
         actions.push(`Mis à jour le template d'email: ${template.name}`);
         updatedCount++;
@@ -423,10 +468,20 @@ export async function updateEmailTemplatesFromSource(executorUserId?: string) {
         }
       }
 
-      await prisma.$executeRaw`
-        INSERT INTO EmailTemplate (name, description, subject, htmlContent, templateType, isDefault, variables, createdById, createdAt, updatedAt)
-        VALUES (${template.name}, ${template.description}, ${template.subject}, ${template.htmlContent}, ${template.templateType}, ${template.isDefault}, ${JSON.stringify(template.variables)}, ${createdById}, NOW(), NOW())
-      `;
+      await prisma.emailTemplate.create({
+        data: {
+          name: template.name,
+          description: template.description,
+          subject: template.subject,
+          htmlContent: template.htmlContent,
+          templateType: template.templateType,
+          isDefault: template.isDefault,
+          variables: JSON.stringify(template.variables),
+          createdById: createdById,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
       console.log(`✅ Created missing email template: ${template.name}`);
       actions.push(`Créé le template d'email manquant: ${template.name}`);
       updatedCount++;

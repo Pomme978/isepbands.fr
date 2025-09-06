@@ -1,6 +1,4 @@
 // @components/settings/StatusIndicator.tsx
-'use client';
-
 interface StatusIndicatorProps {
   isActive: boolean;
   type: 'group' | 'recruitment';

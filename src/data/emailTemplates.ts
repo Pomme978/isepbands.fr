@@ -958,4 +958,355 @@ export const baseEmailTemplates = [
       platformUrl: { type: 'url', description: 'URL de la plateforme', required: true },
     },
   },
+  {
+    name: 'Campagne futurs membres',
+    description: 'Template pour inviter les futurs membres à finaliser leur inscription',
+    subject: 'Finalisez votre inscription à ISEP Bands 🎵',
+    templateType: 'NEWSLETTER' as const,
+    isDefault: false,
+    htmlContent: `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Finalisez votre inscription - ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #e0e7ff; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 26px; font-weight: 700; color: #1e293b; margin: 0 0 24px 0; line-height: 1.2; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .highlight-card { background: #f8fafc; border-left: 4px solid #8b5cf6; border-radius: 8px; padding: 24px; margin: 24px 0; }
+          .highlight-title { color: #8b5cf6; font-weight: 600; margin: 0 0 12px 0; font-size: 18px; }
+          .features-list { color: #64748b; margin: 0; padding: 0; list-style: none; }
+          .features-list li { margin: 12px 0; padding-left: 28px; position: relative; }
+          .features-list li::before { content: '🎵'; position: absolute; left: 0; }
+          .cta-section { text-align: center; margin: 40px 0; padding: 32px; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%); border-radius: 16px; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; text-decoration: none; font-weight: 700; padding: 18px 36px; border-radius: 12px; transition: all 0.3s; font-size: 18px; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3); }
+          .cta-button:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(139, 92, 246, 0.4); }
+          .urgency-card { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 24px 0; text-align: center; }
+          .urgency-text { color: #92400e; font-weight: 600; margin: 0; font-size: 14px; }
+          .footer { background: #f1f5f9; padding: 32px 24px; text-align: center; }
+          .footer-text { color: #64748b; font-size: 14px; margin: 8px 0; }
+          .footer a { color: #8b5cf6; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Association musicale de l'ISEP</p>
+          </div>
+          
+          <div class="content">
+            <h2 class="title">Salut {{ email }} !</h2>
+            
+            <p class="text">
+              Tu as manifesté ton intérêt pour rejoindre ISEP Bands, l'association musicale de l'ISEP ! 
+              Nous sommes ravis de ton enthousiasme pour la musique.
+            </p>
+            
+            <div class="highlight-card">
+              <h3 class="highlight-title">🚀 Finalise ton inscription maintenant</h3>
+              <p style="color: #64748b; margin: 0; line-height: 1.6;">
+                Pour faire partie officiellement de notre communauté musicale, il ne te reste qu'une étape : 
+                compléter ton inscription sur notre plateforme.
+              </p>
+            </div>
+            
+            <div class="cta-section">
+              <p style="color: #6366f1; font-weight: 600; margin: 0 0 20px 0; font-size: 16px;">
+                Prêt(e) à rejoindre l'aventure ?
+              </p>
+              <a href="{{ registerUrl }}" class="cta-button">
+                ✨ Terminer mon inscription
+              </a>
+            </div>
+            
+            <div class="highlight-card">
+              <h3 class="highlight-title">Ce qui t'attend chez ISEP Bands</h3>
+              <ul class="features-list">
+                <li>Rejoindre des groupes musicaux avec d'autres étudiants</li>
+                <li>Participer à des concerts et événements</li>
+                <li>Accéder aux salles de répétition équipées</li>
+                <li>Emprunter instruments et matériel audio</li>
+                <li>Rencontrer des musiciens de tous niveaux</li>
+                <li>Développer tes compétences musicales</li>
+              </ul>
+            </div>
+            
+            <div class="urgency-card">
+              <p class="urgency-text">
+                ⏰ Ne laisse pas passer cette opportunité ! Inscris-toi dès maintenant.
+              </p>
+            </div>
+            
+            <p class="text">
+              Si tu as des questions ou besoin d'aide, n'hésite pas à nous contacter à 
+              <a href="mailto:contact@isepbands.fr" style="color: #8b5cf6;">contact@isepbands.fr</a>
+            </p>
+            
+            <p class="text">
+              On a hâte de faire de la musique avec toi ! 🎶
+            </p>
+            
+            <p style="color: #64748b; font-style: italic; margin-top: 32px;">
+              L'équipe ISEP Bands
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p class="footer-text">&copy; 2024 ISEP Bands - Association musicale de l'ISEP</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    variables: {
+      email: { type: 'string', description: 'Email du destinataire', required: true },
+      registerUrl: { type: 'url', description: "URL de la page d'inscription", required: true },
+    },
+  },
+  {
+    name: 'Bienvenue newsletter',
+    description: "Template d'accueil pour nouveaux abonnés newsletter",
+    subject: 'Bienvenue dans la communauté ISEP Bands ! 🎵',
+    templateType: 'NEWSLETTER' as const,
+    isDefault: false,
+    htmlContent: `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenue - ISEP Bands Newsletter</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #a7f3d0; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 26px; font-weight: 700; color: #1e293b; margin: 0 0 24px 0; line-height: 1.2; text-align: center; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .welcome-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; }
+          .welcome-icon { font-size: 48px; margin-bottom: 16px; }
+          .welcome-title { color: #166534; font-weight: 600; margin: 0 0 12px 0; font-size: 20px; }
+          .welcome-text { color: #15803d; margin: 0; }
+          .info-section { background: #f8fafc; border-radius: 12px; padding: 24px; margin: 24px 0; }
+          .info-title { color: #1e293b; font-weight: 600; margin: 0 0 16px 0; font-size: 18px; }
+          .info-list { color: #64748b; margin: 0; padding: 0; list-style: none; }
+          .info-list li { margin: 12px 0; padding-left: 28px; position: relative; }
+          .info-list li::before { content: '📧'; position: absolute; left: 0; }
+          .social-section { text-align: center; margin: 32px 0; padding: 24px; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%); border-radius: 12px; }
+          .social-title { color: #6366f1; font-weight: 600; margin: 0 0 16px 0; font-size: 18px; }
+          .social-links { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+          .social-link { display: inline-block; padding: 10px 20px; background: #8b5cf6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s; }
+          .social-link:hover { transform: translateY(-2px); }
+          .footer { background: #f1f5f9; padding: 32px 24px; text-align: center; }
+          .footer-text { color: #64748b; font-size: 14px; margin: 8px 0; }
+          .footer a { color: #10b981; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+          .unsubscribe { margin-top: 16px; }
+          .unsubscribe a { color: #9ca3af; font-size: 12px; text-decoration: none; }
+          .unsubscribe a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Newsletter</p>
+          </div>
+          
+          <div class="content">
+            <h2 class="title">Bienvenue dans notre communauté ! 🎉</h2>
+            
+            <div class="welcome-card">
+              <div class="welcome-icon">🎵</div>
+              <h3 class="welcome-title">Merci de ton abonnement !</h3>
+              <p class="welcome-text">Tu fais maintenant partie de la communauté ISEP Bands</p>
+            </div>
+            
+            <p class="text">
+              Salut et bienvenue dans la newsletter d'ISEP Bands ! Nous sommes ravis que tu aies rejoint 
+              notre communauté musicale. Tu vas recevoir toutes les actualités, événements et moments 
+              forts de notre association.
+            </p>
+            
+            <div class="info-section">
+              <h3 class="info-title">Ce que tu vas recevoir</h3>
+              <ul class="info-list">
+                <li>Annonces des concerts et événements à venir</li>
+                <li>Actualités des groupes et membres</li>
+                <li>Conseils et astuces musicales</li>
+                <li>Opportunités de collaboration musicale</li>
+                <li>Coulisses et photos des répétitions</li>
+                <li>Invitations exclusives aux événements privés</li>
+              </ul>
+            </div>
+            
+            <p class="text">
+              Notre newsletter sort généralement <strong>2 fois par mois</strong>, et nous promettons 
+              de ne pas spammer ta boîte mail ! Que du contenu de qualité sur l'univers musical de l'ISEP.
+            </p>
+            
+            <div class="social-section">
+              <h3 class="social-title">Suis-nous aussi sur nos réseaux</h3>
+              <div class="social-links">
+                <a href="https://instagram.com/isepbands" class="social-link">Instagram</a>
+                <a href="https://facebook.com/isepbands" class="social-link">Facebook</a>
+                <a href="https://isepbands.fr" class="social-link">Site Web</a>
+              </div>
+            </div>
+            
+            <p class="text">
+              Si tu es étudiant(e) à l'ISEP et que tu souhaites rejoindre activement l'association, 
+              n'hésite pas à <a href="https://isepbands.fr/register" style="color: #10b981;">créer ton compte membre</a> 
+              pour accéder à toutes nos fonctionnalités !
+            </p>
+            
+            <p style="color: #64748b; font-style: italic; text-align: center; margin-top: 32px;">
+              Merci de faire partie de l'aventure ISEP Bands ! 🎶<br>
+              L'équipe ISEP Bands
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p class="footer-text">&copy; 2024 ISEP Bands - Association musicale de l'ISEP</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
+            </p>
+            <div class="unsubscribe">
+              <a href="{{ unsubscribeUrl }}">Se désabonner de cette newsletter</a>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    variables: {
+      unsubscribeUrl: { type: 'url', description: 'URL de désabonnement', required: true },
+    },
+  },
+  {
+    name: 'Confirmation desabonnement',
+    description: 'Template de confirmation de désabonnement newsletter',
+    subject: 'Désabonnement confirmé - ISEP Bands',
+    templateType: 'NEWSLETTER' as const,
+    isDefault: false,
+    htmlContent: `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Désabonnement confirmé - ISEP Bands</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); padding: 40px 24px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+          .tagline { color: #d1d5db; font-size: 14px; margin: 8px 0 0 0; }
+          .content { padding: 40px 24px; }
+          .title { font-size: 24px; font-weight: 600; color: #1e293b; margin: 0 0 24px 0; line-height: 1.2; text-align: center; }
+          .text { color: #64748b; line-height: 1.6; margin: 16px 0; font-size: 16px; }
+          .confirm-card { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; }
+          .confirm-icon { font-size: 48px; margin-bottom: 16px; }
+          .confirm-title { color: #374151; font-weight: 600; margin: 0 0 12px 0; font-size: 18px; }
+          .confirm-text { color: #6b7280; margin: 0; }
+          .feedback-section { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 24px 0; }
+          .feedback-title { color: #92400e; font-weight: 600; margin: 0 0 12px 0; font-size: 16px; }
+          .feedback-text { color: #a16207; margin: 0; font-size: 14px; line-height: 1.5; }
+          .resubscribe-section { text-align: center; margin: 32px 0; padding: 24px; background: #eff6ff; border-radius: 12px; }
+          .resubscribe-title { color: #1e40af; font-weight: 600; margin: 0 0 12px 0; font-size: 16px; }
+          .resubscribe-text { color: #3730a3; margin: 0 0 16px 0; font-size: 14px; }
+          .resubscribe-button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s; }
+          .resubscribe-button:hover { transform: translateY(-2px); }
+          .footer { background: #f9fafb; padding: 32px 24px; text-align: center; }
+          .footer-text { color: #6b7280; font-size: 14px; margin: 8px 0; }
+          .footer a { color: #6b7280; text-decoration: none; }
+          .footer a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">ISEP BANDS</h1>
+            <p class="tagline">Désabonnement</p>
+          </div>
+          
+          <div class="content">
+            <h2 class="title">Désabonnement confirmé</h2>
+            
+            <div class="confirm-card">
+              <div class="confirm-icon">✅</div>
+              <h3 class="confirm-title">C'est fait !</h3>
+              <p class="confirm-text">Tu as été désabonné(e) de notre newsletter avec succès</p>
+            </div>
+            
+            <p class="text">
+              Ton email <strong>{{ email }}</strong> ne recevra plus nos newsletters à partir de maintenant.
+              Nous respectons ta décision et te remercions pour l'intérêt que tu as porté à ISEP Bands.
+            </p>
+            
+            <div class="feedback-section">
+              <h3 class="feedback-title">💭 Ton avis nous intéresse</h3>
+              <p class="feedback-text">
+                Si tu as un moment, nous serions ravis de connaître les raisons de ton désabonnement 
+                pour améliorer notre contenu. N'hésite pas à nous écrire à 
+                <a href="mailto:contact@isepbands.fr" style="color: #92400e;">contact@isepbands.fr</a>
+              </p>
+            </div>
+            
+            <p class="text">
+              <strong>Important :</strong> Si tu as un compte membre sur notre plateforme, celui-ci reste actif. 
+              Seule la newsletter a été désactivée. Tu peux toujours accéder à ton espace membre et 
+              participer aux activités de l'association.
+            </p>
+            
+            <div class="resubscribe-section">
+              <h3 class="resubscribe-title">Tu changes d'avis ?</h3>
+              <p class="resubscribe-text">
+                Tu peux te réabonner à tout moment en visitant notre site
+              </p>
+              <a href="https://isepbands.fr" class="resubscribe-button">Retourner sur le site</a>
+            </div>
+            
+            <p class="text">
+              Nous espérons te revoir bientôt dans notre communauté musicale ! En attendant, 
+              tu peux toujours suivre nos actualités sur nos réseaux sociaux.
+            </p>
+            
+            <p style="color: #64748b; font-style: italic; text-align: center; margin-top: 32px;">
+              Merci d'avoir fait partie de l'aventure ISEP Bands ! 🎶<br>
+              L'équipe ISEP Bands
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p class="footer-text">&copy; 2024 ISEP Bands - Association musicale de l'ISEP</p>
+            <p>
+              <a href="https://isepbands.fr">Site web</a> • 
+              <a href="mailto:contact@isepbands.fr">Contact</a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    variables: {
+      email: { type: 'string', description: 'Email désabonné', required: true },
+    },
+  },
 ];

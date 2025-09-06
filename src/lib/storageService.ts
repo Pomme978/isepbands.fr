@@ -16,8 +16,15 @@ function getCategoryDir(category?: string): string {
 export async function getFromStorageById(id: string) {
   return prisma.storageObject.findUnique({ where: { id } });
 }
-export async function getAllStorage() {
-  return prisma.storageObject.findMany();
+export async function getAllStorage(limit: number = 100, offset: number = 0) {
+  // Protect against loading too much data
+  const safeLimit = Math.min(Math.max(limit, 1), 1000);
+
+  return prisma.storageObject.findMany({
+    take: safeLimit,
+    skip: offset,
+    orderBy: { uploadedAt: 'desc' },
+  });
 }
 export async function getFileBuffer(key: string, category?: string) {
   const categoryDir = getCategoryDir(category);

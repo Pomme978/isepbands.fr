@@ -3,7 +3,18 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Validate JWT_SECRET at startup
 const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is required in environment variables');
+}
+if (JWT_SECRET.length < 32) {
+  throw new Error('JWT_SECRET must be at least 32 characters long for security');
+}
+if (JWT_SECRET === 'your-secret-key' || JWT_SECRET === 'bonjour') {
+  throw new Error('JWT_SECRET must be changed from the default value');
+}
+
 const SESSION_COOKIE = 'session';
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 

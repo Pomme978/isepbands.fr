@@ -81,11 +81,11 @@ const SIDEBAR_SECTIONS: SidebarSectionData[] = [
         href: '/admin/venues',
         icon: Building2,
       },
-      {
-        name: 'Media Library',
-        href: '/admin/media',
-        icon: ImageIcon,
-      },
+      // {
+      //   name: 'Media Library',
+      //   href: '/admin/media',
+      //   icon: ImageIcon,
+      // },
     ],
   },
   {

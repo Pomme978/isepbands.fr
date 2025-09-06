@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,12 +16,9 @@ import {
   Edit3,
   Trash2,
   Eye,
-  Clock,
   CheckCircle,
   AlertCircle,
-  TrendingUp,
   UserCheck,
-  UserX,
   Archive,
   ToggleLeft,
   ToggleRight,
@@ -112,9 +110,12 @@ export default function NewsletterPage() {
     if (!subscriberToDelete) return;
 
     try {
-      const response = await fetch(`/api/admin/newsletter/subscribers?id=${subscriberToDelete.id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/admin/newsletter/subscribers?id=${subscriberToDelete.id}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       const data = await response.json();
 
@@ -126,7 +127,7 @@ export default function NewsletterPage() {
       }
     } catch (error) {
       console.error('Error deleting subscriber:', error);
-      toast.error('Erreur lors de la suppression de l\'abonné');
+      toast.error("Erreur lors de la suppression de l'abonné");
     }
   };
 
@@ -159,9 +160,12 @@ export default function NewsletterPage() {
     if (!subscriberToArchive) return;
 
     try {
-      const response = await fetch(`/api/admin/newsletter/subscribers/${subscriberToArchive.id}/archive`, {
-        method: 'PUT',
-      });
+      const response = await fetch(
+        `/api/admin/newsletter/subscribers/${subscriberToArchive.id}/archive`,
+        {
+          method: 'PUT',
+        },
+      );
 
       const data = await response.json();
 
@@ -169,11 +173,11 @@ export default function NewsletterPage() {
         toast.success('Abonné archivé avec succès');
         fetchData();
       } else {
-        toast.error(data.error || 'Erreur lors de l\'archivage');
+        toast.error(data.error || "Erreur lors de l'archivage");
       }
     } catch (error) {
       console.error('Error archiving subscriber:', error);
-      toast.error('Erreur lors de l\'archivage de l\'abonné');
+      toast.error("Erreur lors de l'archivage de l'abonné");
     }
   };
 
@@ -204,11 +208,11 @@ export default function NewsletterPage() {
         setNewSubscriberEmail('');
         fetchData();
       } else {
-        toast.error(data.error || 'Erreur lors de l\'ajout');
+        toast.error(data.error || "Erreur lors de l'ajout");
       }
     } catch (error) {
       console.error('Error adding subscriber:', error);
-      toast.error('Erreur lors de l\'ajout de l\'abonné');
+      toast.error("Erreur lors de l'ajout de l'abonné");
     } finally {
       setIsAddingSubscriber(false);
     }
@@ -277,7 +281,7 @@ export default function NewsletterPage() {
       case 'SCHEDULED':
         return 'Programmée';
       case 'SENDING':
-        return 'En cours d\'envoi';
+        return "En cours d'envoi";
       case 'FAILED':
         return 'Échoué';
       default:
@@ -332,12 +336,12 @@ export default function NewsletterPage() {
 
   const handleSaveTemplate = async (templateData: EmailTemplate) => {
     try {
-      const url = templateData.id 
+      const url = templateData.id
         ? `/api/admin/newsletter/templates/${templateData.id}`
         : '/api/admin/newsletter/templates';
-      
+
       const method = templateData.id ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -418,14 +422,18 @@ export default function NewsletterPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Newsletter & Emails</h1>
             <p className="text-gray-600 mt-1">
-              Gérez vos abonnés, templates d'emails et campagnes newsletter
+              Gérez vos abonnés, templates d&apos;emails et campagnes newsletter
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => {
-              setSelectedTemplate(null);
-              setShowTemplateEditor(true);
-            }}>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => {
+                setSelectedTemplate(null);
+                setShowTemplateEditor(true);
+              }}
+            >
               <FileText className="w-4 h-4" />
               Nouveau Template
             </Button>
@@ -474,14 +482,13 @@ export default function NewsletterPage() {
                 </div>
               </CardContent>
             </Card>
-
           </div>
         )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
             <TabsTrigger value="subscribers">Abonnés</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="newsletters">Newsletters</TabsTrigger>
@@ -499,7 +506,10 @@ export default function NewsletterPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {newsletters.slice(0, 5).map((newsletter) => (
-                      <div key={newsletter.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={newsletter.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex-1">
                           <h4 className="font-medium">{newsletter.title}</h4>
                           <p className="text-sm text-gray-600">
@@ -534,7 +544,11 @@ export default function NewsletterPage() {
                     <Users className="w-4 h-4 mr-2" />
                     Gérer les abonnés
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" onClick={() => setShowTestModal(true)}>
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    onClick={() => setShowTestModal(true)}
+                  >
                     <Send className="w-4 h-4 mr-2" />
                     Tester les emails
                   </Button>
@@ -549,9 +563,7 @@ export default function NewsletterPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Abonnés Newsletter</CardTitle>
-                  <CardDescription>
-                    {subscribers.length} abonnés au total
-                  </CardDescription>
+                  <CardDescription>{subscribers.length} abonnés au total</CardDescription>
                 </div>
                 <Button size="sm" onClick={() => setShowAddSubscriberModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />
@@ -561,28 +573,44 @@ export default function NewsletterPage() {
               <CardContent>
                 <div className="space-y-4">
                   {subscribers.slice(0, 10).map((subscriber) => (
-                    <div key={subscriber.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={subscriber.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${subscriber.isActive ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <div
+                          className={`w-2 h-2 rounded-full ${subscriber.isActive ? 'bg-green-500' : 'bg-gray-300'}`}
+                        />
                         <div>
                           <p className="font-medium">{subscriber.email}</p>
                           <p className="text-sm text-gray-600">
-                            Inscrit le {new Date(subscriber.subscribedAt).toLocaleDateString('fr-FR')} à {new Date(subscriber.subscribedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                            Inscrit le{' '}
+                            {new Date(subscriber.subscribedAt).toLocaleDateString('fr-FR')} à{' '}
+                            {new Date(subscriber.subscribedAt).toLocaleTimeString('fr-FR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={subscriber.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                        <Badge
+                          className={
+                            subscriber.isActive
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }
+                        >
                           {subscriber.isActive ? 'Actif' : 'Inactif'}
                         </Badge>
                         <div className="flex items-center gap-1">
                           {/* Bouton toggle actif/inactif */}
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="h-6 px-2"
                             onClick={() => handleToggleSubscriberStatus(subscriber)}
-                            title={subscriber.isActive ? 'Désactiver l\'abonné' : 'Activer l\'abonné'}
+                            title={subscriber.isActive ? "Désactiver l'abonné" : "Activer l'abonné"}
                           >
                             {subscriber.isActive ? (
                               <ToggleRight className="w-3 h-3 text-green-600" />
@@ -590,26 +618,29 @@ export default function NewsletterPage() {
                               <ToggleLeft className="w-3 h-3 text-gray-400" />
                             )}
                           </Button>
-                          
+
                           {/* Icône compte utilisateur ou boutons d'action */}
                           {subscriber.hasAccount ? (
                             <div className="h-6 px-2 flex items-center">
-                              <UserCheck className="w-3 h-3 text-blue-500" title="A un compte utilisateur" />
+                              <UserCheck
+                                className="w-3 h-3 text-blue-500"
+                                title="A un compte utilisateur"
+                              />
                             </div>
                           ) : (
                             <>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 className="h-6 px-2"
                                 onClick={() => handleArchiveSubscriber(subscriber)}
                                 title="Archiver l'abonné"
                               >
                                 <Archive className="w-3 h-3 text-orange-500" />
                               </Button>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 className="h-6 px-2"
                                 onClick={() => handleDeleteSubscriber(subscriber)}
                                 title="Supprimer l'abonné"
@@ -632,15 +663,16 @@ export default function NewsletterPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Templates d'Emails</CardTitle>
-                  <CardDescription>
-                    {templates.length} templates disponibles
-                  </CardDescription>
+                  <CardTitle>Templates d&apos;Emails</CardTitle>
+                  <CardDescription>{templates.length} templates disponibles</CardDescription>
                 </div>
-                <Button size="sm" onClick={() => {
-                  setSelectedTemplate(null);
-                  setShowTemplateEditor(true);
-                }}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSelectedTemplate(null);
+                    setShowTemplateEditor(true);
+                  }}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Nouveau Template
                 </Button>
@@ -649,7 +681,7 @@ export default function NewsletterPage() {
                 <div className="space-y-6">
                   {/* Templates par type */}
                   {['SYSTEM', 'NEWSLETTER', 'TRANSACTIONAL', 'CUSTOM'].map((type) => {
-                    const templatesByType = templates.filter(t => t.templateType === type);
+                    const templatesByType = templates.filter((t) => t.templateType === type);
                     if (templatesByType.length === 0) return null;
 
                     return (
@@ -661,9 +693,11 @@ export default function NewsletterPage() {
                           <div>
                             <h3 className="font-semibold text-lg">{getTemplateTypeLabel(type)}</h3>
                             <p className="text-sm text-gray-600">
-                              {type === 'SYSTEM' && 'Templates pour les emails système (bienvenue, mot de passe, etc.)'}
+                              {type === 'SYSTEM' &&
+                                'Templates pour les emails système (bienvenue, mot de passe, etc.)'}
                               {type === 'NEWSLETTER' && 'Templates pour les campagnes newsletter'}
-                              {type === 'TRANSACTIONAL' && 'Templates pour les emails transactionnels'}
+                              {type === 'TRANSACTIONAL' &&
+                                'Templates pour les emails transactionnels'}
                               {type === 'CUSTOM' && 'Templates personnalisés'}
                             </p>
                           </div>
@@ -671,7 +705,7 @@ export default function NewsletterPage() {
                             {templatesByType.length} template{templatesByType.length > 1 ? 's' : ''}
                           </Badge>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {templatesByType.map((template) => (
                             <Card key={template.id} className="hover:shadow-md transition-shadow">
@@ -698,10 +732,16 @@ export default function NewsletterPage() {
                                   <div className="p-2 bg-gray-50 rounded text-sm">
                                     <span className="text-gray-600">Sujet:</span> {template.subject}
                                   </div>
-                                  
+
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                      <Badge className={template.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                                      <Badge
+                                        className={
+                                          template.isActive
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                        }
+                                      >
                                         {template.isActive ? 'Actif' : 'Inactif'}
                                       </Badge>
                                       {template.createdBy && (
@@ -711,17 +751,17 @@ export default function NewsletterPage() {
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1">
-                                      <Button 
-                                        size="sm" 
-                                        variant="ghost" 
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
                                         title="Aperçu"
                                         onClick={() => handlePreviewTemplate(template)}
                                       >
                                         <Eye className="w-4 h-4" />
                                       </Button>
-                                      <Button 
-                                        size="sm" 
-                                        variant="ghost" 
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
                                         title="Modifier"
                                         onClick={() => {
                                           setSelectedTemplate(template);
@@ -732,9 +772,9 @@ export default function NewsletterPage() {
                                       </Button>
                                       {/* Bouton supprimer seulement pour les templates non-système */}
                                       {template.templateType !== 'SYSTEM' && (
-                                        <Button 
-                                          size="sm" 
-                                          variant="ghost" 
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
                                           title="Supprimer"
                                           onClick={() => handleDeleteTemplate(template)}
                                         >
@@ -751,13 +791,13 @@ export default function NewsletterPage() {
                       </div>
                     );
                   })}
-                  
+
                   {templates.length === 0 && (
                     <div className="text-center py-12 text-gray-500">
                       <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Aucun template d'email trouvé</p>
-                      <Button 
-                        className="mt-4" 
+                      <p>Aucun template d&apos;email trouvé</p>
+                      <Button
+                        className="mt-4"
                         onClick={() => {
                           setSelectedTemplate(null);
                           setShowTemplateEditor(true);
@@ -778,9 +818,7 @@ export default function NewsletterPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Campagnes Newsletter</CardTitle>
-                  <CardDescription>
-                    {newsletters.length} newsletters créées
-                  </CardDescription>
+                  <CardDescription>{newsletters.length} newsletters créées</CardDescription>
                 </div>
                 <Button size="sm">
                   <Plus className="w-4 h-4 mr-2" />
@@ -806,7 +844,10 @@ export default function NewsletterPage() {
                               <span>{newsletter.openCount} ouvertures</span>
                               <span>{newsletter.clickCount} clics</span>
                               {newsletter.sentAt && (
-                                <span>Envoyé le {new Date(newsletter.sentAt).toLocaleDateString('fr-FR')}</span>
+                                <span>
+                                  Envoyé le{' '}
+                                  {new Date(newsletter.sentAt).toLocaleDateString('fr-FR')}
+                                </span>
                               )}
                             </div>
                           </div>
@@ -840,12 +881,11 @@ export default function NewsletterPage() {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Ajouter un abonné</h3>
-                <input
+                <Input
                   type="email"
                   value={newSubscriberEmail}
                   onChange={(e) => setNewSubscriberEmail(e.target.value)}
                   placeholder="Email de l'abonné"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddSubscriber()}
                 />
                 <div className="flex justify-end gap-3 mt-6">
@@ -859,10 +899,7 @@ export default function NewsletterPage() {
                   >
                     Annuler
                   </Button>
-                  <Button
-                    onClick={handleAddSubscriber}
-                    disabled={isAddingSubscriber}
-                  >
+                  <Button onClick={handleAddSubscriber} disabled={isAddingSubscriber}>
                     {isAddingSubscriber ? (
                       <Loading text="Ajout..." size="sm" variant="spinner" theme="white" />
                     ) : (
@@ -902,10 +939,7 @@ export default function NewsletterPage() {
         )}
 
         {/* Modal de test d'emails */}
-        <EmailTestModal
-          isOpen={showTestModal}
-          onClose={() => setShowTestModal(false)}
-        />
+        <EmailTestModal isOpen={showTestModal} onClose={() => setShowTestModal(false)} />
 
         {/* Modal de prévisualisation */}
         <TemplatePreviewModal
