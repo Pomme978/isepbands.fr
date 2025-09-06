@@ -272,28 +272,26 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
   }, [userId]);
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Journal d&apos;activité</h3>
-
+    <div className="space-y-8">
       {/* Section : Détails d'inscription originale */}
       {loadingRegistration ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm animate-pulse">
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="w-5 h-5 bg-gray-200 rounded" />
-            <div className="h-5 w-48 bg-gray-200 rounded" />
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+            <div className="h-5 w-48 bg-gray-200 rounded animate-pulse" />
           </div>
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Skeleton pour 2 blocs (motivation + expérience) */}
             {[1, 2].map((index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="w-5 h-5 bg-gray-200 rounded flex-shrink-0 mt-0.5"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-300 rounded w-32"></div>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-full"></div>
-                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
+              <div key={index} className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-300 rounded w-32 animate-pulse"></div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-full animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
                 </div>
               </div>
             ))}
@@ -301,39 +299,39 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
         </div>
       ) : registrationDetails &&
         (registrationDetails.motivation || registrationDetails.experience) ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
             <User className="w-5 h-5 text-blue-600" />
             <h4 className="text-lg font-medium text-gray-900">
               Détails d&apos;inscription originale
             </h4>
           </div>
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bloc Motivation */}
             {registrationDetails.motivation && (
-              <div className="flex items-start space-x-3">
-                <MessageSquare className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h5 className="font-medium text-gray-900 mb-2">Motivation on registration</h5>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      &quot;{registrationDetails.motivation}&quot;
-                    </p>
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                  <h5 className="font-medium text-gray-900">Motivation on registration</h5>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    &quot;{registrationDetails.motivation}&quot;
+                  </p>
                 </div>
               </div>
             )}
             {/* Bloc Expérience musicale */}
             {registrationDetails.experience && (
-              <div className="flex items-start space-x-3">
-                <Clock className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h5 className="font-medium text-gray-900 mb-2">Expérience musicale</h5>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      &quot;{registrationDetails.experience}&quot;
-                    </p>
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                  <h5 className="font-medium text-gray-900">Expérience musicale</h5>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    &quot;{registrationDetails.experience}&quot;
+                  </p>
                 </div>
               </div>
             )}
@@ -343,29 +341,29 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
 
       {/* Section : Timeline d'activité */}
       {loadingLog ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm animate-pulse">
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="w-5 h-5 bg-gray-200 rounded" />
-            <div className="h-5 w-48 bg-gray-200 rounded" />
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+            <div className="h-5 w-48 bg-gray-200 rounded animate-pulse" />
           </div>
           <div className="space-y-6">
             {/* Skeleton pour 3 activités */}
             {[1, 2, 3].map((index) => (
               <div key={index} className="flex items-start space-x-4">
-                <div className="w-6 h-6 bg-gray-200 rounded-full flex-shrink-0"></div>
+                <div className="w-6 h-6 bg-gray-200 rounded-full flex-shrink-0 animate-pulse"></div>
                 <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-gray-200 rounded w-24"></div>
-                  <div className="h-4 bg-gray-300 rounded w-48"></div>
-                  <div className="h-3 bg-gray-200 rounded w-32"></div>
-                  <div className="h-3 bg-gray-100 rounded w-20"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+                  <div className="h-4 bg-gray-300 rounded w-48 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-32 animate-pulse"></div>
+                  <div className="h-3 bg-gray-100 rounded w-20 animate-pulse"></div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <FileText className="w-5 h-5 text-primary" />
               <h4 className="text-lg font-medium text-gray-900">Historique des actions</h4>
@@ -383,46 +381,43 @@ export default function UserEditActivityLog({ userId }: UserEditActivityLogProps
             )}
           </div>
           {activityLog.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
               <p>Aucune activité enregistrée</p>
               <p className="text-sm">Les actions de l&apos;utilisateur apparaîtront ici</p>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg border divide-y divide-gray-200">
-                {activityLog.slice(0, MAX_DISPLAYED_LOGS).map((log) => {
-                  const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
-                  const activityType = getActivityType(log.type);
-                  const formattedDescription =
-                    formatActivityDescription(log, user?.id) || log.description || '';
-                  const timestamp = new Date(log.createdAt).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'long',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  });
+              {activityLog.slice(0, MAX_DISPLAYED_LOGS).map((log) => {
+                const { icon: IconComponent, color } = getActivityIconAndColor(log.type);
+                const activityType = getActivityType(log.type);
+                const formattedDescription =
+                  formatActivityDescription(log, user?.id) || log.description || '';
+                const timestamp = new Date(log.createdAt).toLocaleDateString('fr-FR', {
+                  day: 'numeric',
+                  month: 'long',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
 
-                  const colors = getActivityColors(activityType);
-                  const createdBy = log.createdByName || 'Système';
+                const colors = getActivityColors(activityType);
+                const createdBy = log.createdByName || 'Système';
 
-                  return (
-                    <div key={log.id} className="p-4">
-                      <ActivityItem
-                        title={log.title}
-                        description={formattedDescription}
-                        timestamp={timestamp}
-                        icon={IconComponent}
-                        iconColor={colors.iconColor}
-                        iconBgColor={colors.iconBgColor}
-                        createdBy={createdBy}
-                        metadata={log.metadata}
-                        isExpanded={expandedId === log.id}
-                        onToggleExpand={() => setExpandedId(expandedId === log.id ? null : log.id)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+                return (
+                  <ActivityItem
+                    key={log.id}
+                    title={log.title}
+                    description={formattedDescription}
+                    timestamp={timestamp}
+                    icon={IconComponent}
+                    iconColor={colors.iconColor}
+                    iconBgColor={colors.iconBgColor}
+                    createdBy={createdBy}
+                    metadata={log.metadata}
+                    isExpanded={expandedId === log.id}
+                    onToggleExpand={() => setExpandedId(expandedId === log.id ? null : log.id)}
+                  />
+                );
+              })}
 
               {/* Indication des activités restantes */}
               {activityLog.length > MAX_DISPLAYED_LOGS && (

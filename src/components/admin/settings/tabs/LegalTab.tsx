@@ -8,6 +8,7 @@ interface LegalMentions {
   presidentName: string;
   contactEmail: string;
   technicalEmail: string;
+  associationAddress?: string;
   hostingProvider?: string;
   hostingAddress?: string;
   hostingPhone?: string;
@@ -20,7 +21,7 @@ interface LegalMentions {
 }
 
 interface LegalTabProps {
-  onDataChange: (data: LegalMentions) => void;
+  onDataChange: (data: LegalMentions, isInitialLoad?: boolean) => void;
   onError: (message: string) => void;
 }
 
@@ -52,7 +53,8 @@ export default function LegalTab({ onDataChange, onError }: LegalTabProps) {
       if (response.ok) {
         const data = await response.json();
         setLegalMentions(data);
-        onDataChange(data);
+        // Appeler onDataChange avec isInitialLoad=true pour initialiser les données parentes sans marquer comme modifié
+        onDataChange(data, true);
       }
     } catch (error) {
       console.error('Failed to load legal mentions:', error);
@@ -86,11 +88,11 @@ export default function LegalTab({ onDataChange, onError }: LegalTabProps) {
       </div>
 
       <div className="space-y-6">
-        {/* Contact Information */}
+        {/* Association Information */}
         <div>
           <h3 className="font-medium text-gray-900 mb-4 flex items-center">
             <Building2 className="w-5 h-5 mr-2 text-primary" />
-            Informations de contact
+            Informations de l'association
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -101,12 +103,9 @@ export default function LegalTab({ onDataChange, onError }: LegalTabProps) {
                 type="text"
                 value={legalMentions.presidentName}
                 readOnly
-                placeholder="Récupéré automatiquement du rôle président"
+                placeholder="Récupéré automatiquement du user avec le rôle Président"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
               />
-              <p className="text-xs text-gray-600 mt-1">
-                Récupéré automatiquement de l&apos;utilisateur ayant le rôle président
-              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -119,15 +118,16 @@ export default function LegalTab({ onDataChange, onError }: LegalTabProps) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-900 mb-2">
-                Email technique *
+                Adresse de l'association *
               </label>
-              <input
-                type="email"
-                value={legalMentions.technicalEmail}
-                onChange={(e) => updateLegalMentions({ technicalEmail: e.target.value })}
+              <textarea
+                value={legalMentions.associationAddress || 'Campus de l\'ISEP, 28 rue Notre-Dame des Champs, 75006 Paris, France'}
+                onChange={(e) => updateLegalMentions({ associationAddress: e.target.value })}
+                rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Adresse complète de l'association"
               />
             </div>
           </div>
@@ -228,22 +228,57 @@ export default function LegalTab({ onDataChange, onError }: LegalTabProps) {
           </div>
         </div>
 
-        {/* Team Information */}
+        {/* Site Development */}
         <div className="border-t pt-6">
-          <h3 className="font-medium text-gray-900 mb-4">Équipe de création du site</h3>
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">
-              Développement & Design
-            </label>
-            <input
-              type="text"
-              value="Armand OCTEAU, Sarah LEVY"
-              readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-600 mt-1">
-              Créateurs et développeurs du site ISEP Bands
+          <h3 className="font-medium text-gray-900 mb-4">Développement du site</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Réalisé par
+              </label>
+              <input
+                type="text"
+                value="SOLYZON.COM"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                À destination de
+              </label>
+              <input
+                type="text"
+                value="ISEP Bands"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Équipe développement & design
+              </label>
+              <input
+                type="text"
+                value="Armand OCTEAU, Sarah LÉVY"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Technical Contact */}
+        <div className="border-t pt-6">
+          <h3 className="font-medium text-gray-900 mb-4">Contacts techniques</h3>
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <p className="text-sm text-blue-800 mb-2">
+              <strong>Pour les questions techniques et problèmes du site :</strong>
             </p>
+            <div className="space-y-1 text-sm text-blue-700">
+              <div>• armand@solyzon.com</div>
+              <div>• sarah@solyzon.com</div>
+            </div>
           </div>
         </div>
       </div>

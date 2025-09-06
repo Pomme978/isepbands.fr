@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import Loading from '@/components/ui/Loading';
 import { X, Palette, RotateCcw } from 'lucide-react';
 import { getRoleColor } from '@/utils/roleColors';
 
 interface ColorEditorProps {
+  roleId: number;
   roleName: string;
   currentGradientStart?: string;
   currentGradientEnd?: string;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (gradientStart: string, gradientEnd: string) => void;
+  onSave: (gradientStart: string, gradientEnd: string) => Promise<void>;
 }
 
 // Predefined gradient presets - matching roleColors.ts exactly
@@ -98,6 +100,7 @@ const extractColorsFromRole = (roleName: string): { start: string; end: string }
 };
 
 export default function ColorEditor({
+  roleId,
   roleName,
   currentGradientStart,
   currentGradientEnd,
@@ -105,11 +108,31 @@ export default function ColorEditor({
   onClose,
   onSave,
 }: ColorEditorProps) {
-  // Get default colors from role configuration
+  // Use database colors if available, otherwise fallback to role configuration
   const defaultColors = extractColorsFromRole(roleName);
 
-  const [gradientStart, setGradientStart] = useState(currentGradientStart || defaultColors.start);
-  const [gradientEnd, setGradientEnd] = useState(currentGradientEnd || defaultColors.end);
+  const [gradientStart, setGradientStart] = useState(
+    currentGradientStart || defaultColors.start
+  );
+  const [gradientEnd, setGradientEnd] = useState(
+    currentGradientEnd || defaultColors.end
+  );
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Update state when props change (when opening modal with different role)
+  React.useEffect(() => {
+    if (isOpen) {
+      console.log('🎨 ColorEditor Debug:', {
+        roleId,
+        roleName,
+        currentGradientStart,
+        currentGradientEnd,
+        defaultColors,
+      });
+      setGradientStart(currentGradientStart || defaultColors.start);
+      setGradientEnd(currentGradientEnd || defaultColors.end);
+    }
+  }, [isOpen, currentGradientStart, currentGradientEnd, roleName, roleId, defaultColors.start, defaultColors.end]);
 
   if (!isOpen) return null;
 
@@ -118,14 +141,24 @@ export default function ColorEditor({
     setGradientEnd(preset.end);
   };
 
-  const handleSave = () => {
-    onSave(gradientStart, gradientEnd);
-    onClose();
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      await onSave(gradientStart, gradientEnd);
+      onClose();
+    } catch (error) {
+      console.error('Error saving colors:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
-    setGradientStart(currentGradientStart || defaultColors.start);
-    setGradientEnd(currentGradientEnd || defaultColors.end);
+    const resetStart = currentGradientStart || defaultColors.start;
+    const resetEnd = currentGradientEnd || defaultColors.end;
+    console.log('🔄 Reset colors:', { resetStart, resetEnd, currentGradientStart, currentGradientEnd });
+    setGradientStart(resetStart);
+    setGradientEnd(resetEnd);
   };
 
   const previewStyle = {
@@ -133,16 +166,20 @@ export default function ColorEditor({
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden"
       style={{ zIndex: 9999 }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Palette className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">Modifier les couleurs</h3>
+            <div>
+              <h3 className="text-lg font-semibold">Modifier les couleurs</h3>
+              <p className="text-sm text-gray-500">ID: {roleId}</p>
+            </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -240,12 +277,18 @@ export default function ColorEditor({
             Réinitialiser
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               Annuler
             </Button>
-            <Button onClick={handleSave}>
-              <Palette className="h-4 w-4 mr-2" />
-              Sauvegarder
+            <Button onClick={handleSave} disabled={isLoading}>
+              {isLoading ? (
+                <Loading size="sm" theme="white" text="Sauvegarde..." centered={false} />
+              ) : (
+                <>
+                  <Palette className="h-4 w-4 mr-2" />
+                  Sauvegarder
+                </>
+              )}
             </Button>
           </div>
         </div>

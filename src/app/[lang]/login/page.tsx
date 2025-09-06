@@ -96,7 +96,7 @@ export default function LoginPage() {
         if (data.user.requirePasswordChange) {
           const searchParams = new URLSearchParams(window.location.search);
           const redirectTo = searchParams.get('redirect') || `/${lang}`;
-          router.push(`/${lang}/change-password?redirect=${encodeURIComponent(redirectTo)}`);
+          router.push(`/${lang}/change-password?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirectTo)}`);
           return;
         }
 
@@ -160,11 +160,11 @@ export default function LoginPage() {
         </LoginFormCard>
         <p className="text-xs text-gray-500 mt-4 w-80 text-center">
           {t('auth.login.termsAccept')}{' '}
-          <a href={`/${lang}/conditions-utilisation`} className="hover:text-gray-700 underline">
+          <a href={`/${lang}/terms-of-service`} className="hover:text-gray-700 underline">
             {t('auth.login.termsOfUse')}
           </a>{' '}
           {t('auth.login.and')}{' '}
-          <a href={`/${lang}/politique-confidentialite`} className="hover:text-gray-700 underline">
+          <a href={`/${lang}/privacy-policy`} className="hover:text-gray-700 underline">
             {t('auth.login.privacyPolicy')}
           </a>
           .

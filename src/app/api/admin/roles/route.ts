@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
         nameEnFemale: true,
         weight: true,
         isCore: true,
+        gradientStart: true,
+        gradientEnd: true,
         permissions: {
           select: {
             permission: {
@@ -82,6 +84,8 @@ export async function GET(req: NextRequest) {
         nameEnFemale: role.nameEnFemale,
         weight: role.weight,
         isCore: role.isCore,
+        gradientStart: role.gradientStart,
+        gradientEnd: role.gradientEnd,
         userCount: currentCount,
         maxUsers: maxUsers,
         isAvailable: isAvailable,

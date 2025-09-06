@@ -14,17 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
   ShoppingCart,
   Plus,
-  Search,
   Edit,
   Trash2,
   ExternalLink,
@@ -33,8 +24,14 @@ import {
   Clock,
   CheckCircle,
 } from 'lucide-react';
-import Image from 'next/image';
 import { toast } from 'sonner';
+
+// Import des composants réutilisables
+import ItemGrid from '@/components/admin/common/ItemGrid';
+import ItemFilters from '@/components/admin/common/ItemFilters';
+import ItemStatsCard from '@/components/admin/common/ItemStatsCard';
+import ItemCard from '@/components/admin/common/ItemCard';
+import ItemModal from '@/components/admin/common/ItemModal';
 
 interface WishlistItem {
   id: string;
@@ -271,120 +268,113 @@ export default function WishlistPage() {
       item.model?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const renderItemCard = (item: WishlistItem) => (
-    <div
-      key={item.id}
-      className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
-    >
-      {/* Image */}
-      <div className="relative h-48 bg-gray-50">
-        {item.imageUrl ? (
-          <Image
-            src={item.imageUrl}
-            alt={item.name}
-            width={300}
-            height={200}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-            <ShoppingCart className="w-12 h-12 text-gray-400 mb-2" />
-            <p className="text-sm text-gray-500 font-ubuntu">Pas d'image</p>
-          </div>
-        )}
-        
-        {/* Badges en overlay */}
-        <div className="absolute top-2 right-2 flex flex-col gap-1">
-          <Badge className={`text-xs ${STATUS[item.status].color}`}>
-            {STATUS[item.status].label}
-          </Badge>
-          <Badge className={`text-xs ${PRIORITIES[item.priority].color}`}>
-            {PRIORITIES[item.priority].label}
-          </Badge>
-        </div>
+  const renderItemCard = (item: WishlistItem) => {
+    const badges = [
+      {
+        text: STATUS[item.status].label,
+        className: STATUS[item.status].color,
+      },
+      {
+        text: PRIORITIES[item.priority].label,
+        className: PRIORITIES[item.priority].color,
+      },
+    ];
+
+    const actions = [
+      ...(item.productUrl ? [{
+        icon: <ExternalLink className="w-3 h-3" />,
+        onClick: () => window.open(item.productUrl, '_blank'),
+        title: "Voir le produit",
+      }] : []),
+      {
+        icon: <Edit className="w-3 h-3" />,
+        onClick: () => handleEdit(item),
+        title: "Modifier",
+      },
+      {
+        icon: <Trash2 className="w-3 h-3" />,
+        onClick: () => handleDelete(item.id),
+        className: "text-gray-600 hover:text-red-600 p-1 h-auto",
+        title: "Supprimer",
+      },
+    ];
+
+    const additionalInfo = item.estimatedPrice ? (
+      <div className="flex items-center gap-1">
+        <DollarSign className="w-3 h-3 text-gray-400" />
+        <span className="text-xs text-gray-600 font-ubuntu">
+          {item.estimatedPrice}€
+        </span>
       </div>
+    ) : null;
 
-      {/* Content */}
-      <div className="p-3">
-        <div className="mb-2">
-          <div className="flex items-center justify-between mb-1">
-            <Badge className="text-xs bg-primary/10 text-primary font-medium">
-              {item.category}
-            </Badge>
-            {item.estimatedPrice && (
-              <div className="flex items-center gap-1">
-                <DollarSign className="w-3 h-3 text-gray-400" />
-                <span className="text-xs text-gray-600 font-ubuntu">
-                  {item.estimatedPrice}€
-                </span>
-              </div>
-            )}
-          </div>
-          
-          <h3 className="font-bold text-base font-outfit text-gray-900 leading-tight mb-1">
-            {item.name}
-          </h3>
-          
-          {(item.brand || item.model) && (
-            <p className="text-xs text-gray-600 font-ubuntu">
-              {[item.brand, item.model].filter(Boolean).join(' • ')}
-            </p>
-          )}
-        </div>
+    const creator = item.creator ? {
+      name: `${item.creator.firstName} ${item.creator.lastName}`,
+      date: new Date(item.createdAt).toLocaleDateString('fr-FR'),
+    } : undefined;
 
-        {item.description && (
-          <p className="text-xs text-gray-600 font-ubuntu mb-2 line-clamp-2">
-            {item.description}
-          </p>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex gap-1">
-            {item.productUrl && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.open(item.productUrl, '_blank')}
-                className="text-gray-600 hover:text-primary p-1 h-auto"
-              >
-                <ExternalLink className="w-3 h-3" />
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEdit(item)}
-              className="text-gray-600 hover:text-primary p-1 h-auto"
-            >
-              <Edit className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDelete(item.id)}
-              className="text-gray-600 hover:text-red-600 p-1 h-auto"
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </div>
-
-          {item.creator && (
-            <div className="text-right">
-              <p className="text-xs text-gray-400 font-ubuntu">
-                {item.creator.firstName} {item.creator.lastName}
-              </p>
-              <p className="text-xs text-gray-400 font-ubuntu">
-                {new Date(item.createdAt).toLocaleDateString('fr-FR')}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    return (
+      <ItemCard
+        key={item.id}
+        id={item.id}
+        name={item.name}
+        category={item.category}
+        brand={item.brand}
+        model={item.model}
+        description={item.description}
+        badges={badges}
+        images={item.imageUrl ? [item.imageUrl] : []}
+        actions={actions}
+        creator={creator}
+        additionalInfo={additionalInfo}
+      />
+    );
+  };
 
   const totalEstimated = filteredItems.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
+
+  // Prepare filter options
+  const filterOptions = [
+    {
+      key: 'category',
+      label: 'catégories',
+      value: selectedCategory,
+      onChange: setSelectedCategory,
+      options: CATEGORIES.map(cat => ({ value: cat, label: cat })),
+      placeholder: 'Catégorie',
+      width: 'w-full sm:w-48',
+    },
+    {
+      key: 'priority',
+      label: 'priorités',
+      value: selectedPriority,
+      onChange: setSelectedPriority,
+      options: Object.entries(PRIORITIES).map(([value, { label }]) => ({ value, label })),
+      placeholder: 'Priorité',
+      width: 'w-full sm:w-40',
+    },
+    {
+      key: 'status',
+      label: 'statuts',
+      value: selectedStatus,
+      onChange: setSelectedStatus,
+      options: Object.entries(STATUS).map(([value, { label }]) => ({ value, label })),
+      placeholder: 'Statut',
+      width: 'w-full sm:w-40',
+    }
+  ];
+
+  // Prepare stats
+  const wantedCount = filteredItems.filter((i) => i.status === 'WANTED').length;
+  const orderedCount = filteredItems.filter((i) => i.status === 'ORDERED').length;
+  const purchasedCount = filteredItems.filter((i) => i.status === 'PURCHASED').length;
+
+  const statsData = [
+    { label: 'Souhaités', value: wantedCount },
+    { label: 'Commandés', value: orderedCount },
+    { label: 'Achetés', value: purchasedCount },
+    { label: 'Estimé total', value: `${totalEstimated.toFixed(0)}€` },
+  ];
 
   return (
     <AdminLayout>
@@ -398,19 +388,21 @@ export default function WishlistPage() {
             </p>
           </div>
 
-          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm} className="bg-primary hover:bg-primary/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter un souhait
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="font-outfit">
-                  {editingItem ? 'Modifier le souhait' : 'Nouveau souhait'}
-                </DialogTitle>
-              </DialogHeader>
+          <Button onClick={() => { resetForm(); setShowCreateModal(true); }} className="bg-primary hover:bg-primary/90">
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un souhait
+          </Button>
+        </div>
+
+        <ItemModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          title={editingItem ? 'Modifier le souhait' : 'Nouveau souhait'}
+          onSubmit={handleSubmit}
+          onCancel={() => setShowCreateModal(false)}
+          submitLabel={editingItem ? 'Modifier' : 'Ajouter'}
+          isSubmitDisabled={!formData.name || !formData.category}
+        >
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
@@ -558,143 +550,32 @@ export default function WishlistPage() {
                   </div>
                 </div>
               </div>
-
-              <DialogFooter className="mt-6">
-                <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                  Annuler
-                </Button>
-                <Button onClick={handleSubmit} disabled={!formData.name || !formData.category}>
-                  {editingItem ? 'Modifier' : 'Ajouter'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+        </ItemModal>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Rechercher par nom, marque, modèle..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Catégorie" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les catégories</SelectItem>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedPriority} onValueChange={setSelectedPriority}>
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="Priorité" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les priorités</SelectItem>
-                {Object.entries(PRIORITIES).map(([value, { label }]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="Statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                {Object.entries(STATUS).map(([value, { label }]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <ItemFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filters={filterOptions}
+        />
 
         {/* Stats */}
-        <div className="bg-white rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-lg font-bold font-outfit text-gray-900">Liste de Souhaits ISEP Bands</h2>
-              <p className="text-xs text-gray-600 font-ubuntu">Équipements souhaités par l'association</p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold font-outfit text-primary">{filteredItems.length}</p>
-              <p className="text-xs text-gray-600 font-ubuntu">souhaits</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-4 gap-3 mb-3">
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {filteredItems.filter((i) => i.status === 'WANTED').length}
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Souhaités</p>
-            </div>
-            
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {filteredItems.filter((i) => i.status === 'ORDERED').length}
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Commandés</p>
-            </div>
-            
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {filteredItems.filter((i) => i.status === 'PURCHASED').length}
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Achetés</p>
-            </div>
-
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {totalEstimated.toFixed(0)}€
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Estimé total</p>
-            </div>
-          </div>
-        </div>
+        <ItemStatsCard
+          title="Liste de Souhaits ISEP Bands"
+          subtitle="Équipements souhaités par l'association"
+          mainStat={{ value: filteredItems.length, label: 'souhaits' }}
+          stats={statsData}
+        />
 
         {/* Content */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-            {Array.from({ length: 10 }, (_, i) => (
-              <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </div>
-            ))}
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="text-center py-12">
-            <ShoppingCart className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 font-ubuntu">Aucun souhait trouvé</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-            {filteredItems.map(renderItemCard)}
-          </div>
-        )}
+        <ItemGrid
+          loading={loading}
+          emptyIcon={<ShoppingCart className="w-12 h-12 mx-auto text-gray-400" />}
+          emptyMessage="Aucun souhait trouvé"
+          loadingItemsCount={10}
+        >
+          {filteredItems.map(renderItemCard)}
+        </ItemGrid>
       </div>
     </AdminLayout>
   );

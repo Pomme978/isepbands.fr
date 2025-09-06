@@ -50,31 +50,6 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-secondary/10 flex flex-col items-center justify-center px-4 relative overflow-hidden">
-      {/* Background animated elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Floating musical notes */}
-        {musicalNotes.map((note, index) => (
-          <div
-            key={index}
-            className={`absolute text-4xl text-gray-300 animate-bounce opacity-20`}
-            style={{
-              left: `${10 + index * 12}%`,
-              top: `${20 + (index % 3) * 25}%`,
-              animationDelay: `${index * 0.3}s`,
-              animationDuration: '3s',
-            }}
-          >
-            {note}
-          </div>
-        ))}
-
-        {/* Animated circles */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full opacity-30 animate-pulse"></div>
-        <div
-          className="absolute bottom-32 right-16 w-24 h-24 bg-secondary/10 rounded-full opacity-30 animate-pulse"
-          style={{ animationDelay: '1s' }}
-        ></div>
-      </div>
 
       {/* Main content */}
       <div className="relative z-10 text-center">

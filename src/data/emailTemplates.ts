@@ -1,6 +1,6 @@
 export const baseEmailTemplates = [
   {
-    name: 'Creation compte en attente approbation',
+    name: 'pending_approval_account',
     description: "Template d'accueil pour nouveaux comptes en attente d'approbation",
     subject: 'Bienvenue sur ISEP Bands - Compte en attente',
     templateType: 'SYSTEM' as const,
@@ -94,7 +94,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Compte approuve',
+    name: 'account_approved',
     description: "Template de confirmation d'approbation",
     subject: 'Ton compte ISEP Bands est approuvé',
     templateType: 'SYSTEM' as const,
@@ -187,7 +187,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Reinitialisation mot de passe',
+    name: 'password_reset',
     description: 'Template pour réinitialiser le mot de passe',
     subject: 'Réinitialisation de ton mot de passe',
     templateType: 'SYSTEM' as const,
@@ -271,7 +271,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Newsletter standard',
+    name: 'newsletter_standard',
     description: 'Template pour newsletters régulières',
     subject: '{{ title }} - ISEP Bands',
     templateType: 'NEWSLETTER' as const,
@@ -365,7 +365,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Compte non valide',
+    name: 'account_rejected',
     description: 'Template pour les comptes refusés',
     subject: "Mise à jour de votre demande d'inscription ISEP Bands",
     templateType: 'SYSTEM' as const,
@@ -465,7 +465,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Compte suspendu',
+    name: 'account_suspended',
     description: 'Template pour les comptes suspendus',
     subject: 'Votre compte ISEP Bands a été suspendu',
     templateType: 'SYSTEM' as const,
@@ -559,7 +559,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Compte suspendu restauré',
+    name: 'suspended_account_restored',
     description: 'Template pour les comptes suspendus qui ont été restaurés',
     subject: 'Votre compte ISEP Bands a été restauré',
     templateType: 'SYSTEM' as const,
@@ -658,7 +658,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Membre refusé restauré',
+    name: 'rejected_member_restored',
     description: 'Template pour les membres refusés qui ont été acceptés',
     subject: 'Bonne nouvelle ! Votre candidature ISEP Bands a été acceptée',
     templateType: 'SYSTEM' as const,
@@ -767,7 +767,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Verification email',
+    name: 'email_verification',
     description: "Template pour la vérification d'email",
     subject: 'Vérifiez votre adresse email - ISEP Bands',
     templateType: 'SYSTEM' as const,
@@ -859,7 +859,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Email verifie',
+    name: 'email_verified',
     description: "Template de confirmation de vérification d'email",
     subject: 'Email vérifié avec succès ! - ISEP Bands',
     templateType: 'SYSTEM' as const,
@@ -959,7 +959,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Campagne futurs membres',
+    name: 'future_members_campaign',
     description: 'Template pour inviter les futurs membres à finaliser leur inscription',
     subject: 'Finalisez votre inscription à ISEP Bands 🎵',
     templateType: 'NEWSLETTER' as const,
@@ -1077,7 +1077,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Bienvenue newsletter',
+    name: 'newsletter_welcome',
     description: "Template d'accueil pour nouveaux abonnés newsletter",
     subject: 'Bienvenue dans la communauté ISEP Bands ! 🎵',
     templateType: 'NEWSLETTER' as const,
@@ -1200,7 +1200,7 @@ export const baseEmailTemplates = [
     },
   },
   {
-    name: 'Confirmation desabonnement',
+    name: 'unsubscribe_confirmation',
     description: 'Template de confirmation de désabonnement newsletter',
     subject: 'Désabonnement confirmé - ISEP Bands',
     templateType: 'NEWSLETTER' as const,

@@ -6,6 +6,8 @@ export interface DefaultRole {
   nameEnFemale: string;
   weight: number;
   isCore: boolean;
+  gradientStart?: string;
+  gradientEnd?: string;
   permissions: string[]; // Permission names
 }
 
@@ -18,7 +20,30 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'President',
     weight: 100,
     isCore: true,
-    permissions: [], // President gets all permissions by default via full access
+    gradientStart: '#dc2626', // red-600
+    gradientEnd: '#991b1b',   // red-800
+    permissions: [
+      'admin.dashboard',
+      'admin.users.view',
+      'admin.users.edit',
+      'admin.users.create',
+      'admin.users.delete',
+      'admin.bands.view',
+      'admin.bands.edit',
+      'admin.bands.create',
+      'admin.bands.delete',
+      'admin.events.view',
+      'admin.events.create',
+      'admin.events.edit',
+      'admin.events.delete',
+      'admin.content.edit',
+      'admin.media.manage',
+      'admin.communication',
+      'admin.database.manage',
+      'admin.newsletter',
+      'admin.settings',
+      'admin.files.access',
+    ], // Full administrative access
   },
   {
     name: 'vice_president',
@@ -28,6 +53,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Vice-President',
     weight: 90,
     isCore: true,
+    gradientStart: '#7c3aed', // purple-600
+    gradientEnd: '#8b5cf6',   // violet-600
     permissions: [
       'admin.dashboard',
       'admin.users.view',
@@ -51,6 +78,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Treasurer',
     weight: 80,
     isCore: true,
+    gradientStart: '#059669', // green-600
+    gradientEnd: '#047857',   // emerald-600
     permissions: ['admin.dashboard', 'admin.users.view', 'admin.files.access'],
   },
   {
@@ -61,6 +90,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'General Secretary',
     weight: 80,
     isCore: true,
+    gradientStart: '#eab308', // yellow-500
+    gradientEnd: '#f97316',   // orange-500
     permissions: [
       'admin.dashboard',
       'admin.users.view',
@@ -79,6 +110,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Head of Communication',
     weight: 70,
     isCore: true,
+    gradientStart: '#2563eb', // blue-600
+    gradientEnd: '#0891b2',   // cyan-600
     permissions: [
       'admin.dashboard',
       'admin.users.view',
@@ -95,6 +128,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Head of Creation',
     weight: 70,
     isCore: true,
+    gradientStart: '#2563eb', // blue-600 (même que communication)
+    gradientEnd: '#0891b2',   // cyan-600
     permissions: [
       'admin.dashboard',
       'admin.bands.view',
@@ -113,6 +148,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Member',
     weight: 10,
     isCore: true,
+    gradientStart: '#6b7280', // gray-600
+    gradientEnd: '#475569',   // slate-600
     permissions: [],
   },
   {
@@ -123,6 +160,8 @@ export const defaultRoles: DefaultRole[] = [
     nameEnFemale: 'Former Member',
     weight: 0,
     isCore: true,
+    gradientStart: '#6b7280', // gray-600 (même que membre)
+    gradientEnd: '#475569',   // slate-600
     permissions: [],
   },
 ];

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Archive, Users, UserCheck, Calendar, FileText } from 'lucide-react';
-import AdminPageHeader from '../common/AdminPageHeader';
+import { Archive, Users, UserCheck, Calendar, FileText, Plus, Settings } from 'lucide-react';
 import AdminFilters, { FilterConfig } from '../common/AdminFilters';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import ArchivedUsers from './ArchivedUsers';
 import ArchivedGroups from './ArchivedGroups';
 import ArchivedEvents from './ArchivedEvents';
@@ -45,6 +45,7 @@ export default function ArchivePage() {
     sortBy: 'newest',
     dateRange: 'all',
   });
+  const [error, setError] = useState<string | null>(null);
 
   const filterConfig: FilterConfig[] = [
     {
@@ -104,14 +105,58 @@ export default function ArchivePage() {
 
   const activeCategoryObj = categories.find((cat) => cat.id === activeCategory);
 
+  // Warning banners
+  const warningBanners = [];
+  if (error) {
+    warningBanners.push(
+      <Alert key="error" className="mb-6">
+        <Archive className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Primary actions
+  const primaryActions = [
+    {
+      label: 'Paramètres archives',
+      icon: Settings,
+      onClick: () => console.log('TODO: Archive settings'),
+      variant: 'secondary' as const,
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Archives"
-        description="Gestion et consultation des éléments archivés"
-        icon={Archive}
-      />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Archives</h1>
+          <p className="text-gray-600 mt-2">
+            Gestion et consultation des éléments archivés
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {primaryActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={index}
+                onClick={action.onClick}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              >
+                <Icon className="w-4 h-4" />
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
+      {/* Warning banners */}
+      {warningBanners.length > 0 && (
+        <div>{warningBanners}</div>
+      )}
       {/* Category Navigation */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

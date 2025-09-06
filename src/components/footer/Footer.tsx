@@ -34,9 +34,9 @@ export default function Footer() {
     {
       title: t('footer.columns.legal.title'),
       links: [
-        { label: t('footer.columns.legal.links.terms'), href: '/conditions-utilisation' },
-        { label: t('footer.columns.legal.links.privacy'), href: '/politique-confidentialite' },
-        { label: t('footer.columns.legal.links.legal'), href: '/mentions-legales' },
+        { label: t('footer.columns.legal.links.terms'), href: '/terms-of-service' },
+        { label: t('footer.columns.legal.links.privacy'), href: '/privacy-policy' },
+        { label: t('footer.columns.legal.links.legal'), href: '/legal-notice' },
       ],
     },
   ];

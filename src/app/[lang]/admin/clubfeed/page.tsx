@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminDetailLayout from '@/components/admin/common/AdminDetailLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -437,7 +438,7 @@ export default function AdminClubFeedPage() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-4 sm:py-6 lg:py-8">
+      <div className="space-y-6">
         {/* Toast notifications */}
         {saveSuccess && (
           <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
@@ -461,26 +462,22 @@ export default function AdminClubFeedPage() {
         )}
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start lg:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Club Feed</h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Club Feed</h1>
+            <p className="text-gray-600 mt-2">
               Publiez des actualités qui apparaîtront sur la page d&apos;accueil des membres
             </p>
           </div>
-          <Button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="flex-shrink-0 w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Publier une actualité</span>
-            <span className="sm:hidden">Publier</span>
+          <Button onClick={() => setShowCreateForm(!showCreateForm)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Publier une actualité
           </Button>
         </div>
 
         {/* Create Activity Form */}
         {showCreateForm && (
-          <Card className="mb-6">
+          <Card>
             <CardHeader>
               <CardTitle>Publier une actualité</CardTitle>
               <CardDescription className="text-base md:text-sm">
@@ -532,7 +529,7 @@ export default function AdminClubFeedPage() {
 
         {/* Edit Activity Form */}
         {editingActivity && (
-          <Card className="mb-6 border-orange-200">
+          <Card className="border-orange-200">
             <CardHeader>
               <CardTitle>Modifier l&apos;actualité</CardTitle>
               <CardDescription className="text-base md:text-sm">
@@ -584,7 +581,7 @@ export default function AdminClubFeedPage() {
         )}
 
         {/* Public Feed Preview */}
-        <Card className="mb-6">
+        <Card>
           <CardHeader>
             <CardTitle>Feed Public (Aperçu)</CardTitle>
             <CardDescription className="text-base">

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     if (category) where.category = category;
     if (state) where.state = state as InventoryState;
 
-    const [items, total] = await Promise.all([
+    const [rawItems, total] = await Promise.all([
       prisma.inventory.findMany({
         where,
         include: {
@@ -60,6 +60,12 @@ export async function GET(req: NextRequest) {
       }),
       prisma.inventory.count({ where }),
     ]);
+
+    // Désérialiser les images JSON
+    const items = rawItems.map(item => ({
+      ...item,
+      images: item.images ? JSON.parse(item.images) : []
+    }));
 
     const categories = await prisma.inventory.groupBy({
       by: ['category'],
@@ -90,6 +96,7 @@ export async function POST(req: NextRequest) {
     const item = await prisma.inventory.create({
       data: {
         ...validatedData,
+        images: validatedData.images ? JSON.stringify(validatedData.images) : null,
         createdBy: authResult.user?.id,
       },
       include: {

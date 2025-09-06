@@ -41,7 +41,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Article non trouvé' }, { status: 404 });
     }
 
-    return NextResponse.json({ item });
+    // Désérialiser les images JSON
+    const itemWithImages = {
+      ...item,
+      images: item.images ? JSON.parse(item.images) : []
+    };
+
+    return NextResponse.json({ item: itemWithImages });
   } catch (error) {
     console.error('Error fetching inventory item:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération' }, { status: 500 });
@@ -59,7 +65,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const item = await prisma.inventory.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...validatedData,
+        images: validatedData.images ? JSON.stringify(validatedData.images) : undefined,
+      },
       include: {
         creator: {
           select: {
@@ -71,7 +80,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-    return NextResponse.json({ item });
+    // Désérialiser les images JSON
+    const itemWithImages = {
+      ...item,
+      images: item.images ? JSON.parse(item.images) : []
+    };
+
+    return NextResponse.json({ item: itemWithImages });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });

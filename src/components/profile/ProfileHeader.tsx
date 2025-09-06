@@ -42,6 +42,10 @@ interface UserProfile {
   dateOfBirth: string; // Nouveau champ
   promotion: string; // Calculé automatiquement
   role: string;
+  roleColors?: {
+    gradientStart?: string;
+    gradientEnd?: string;
+  } | null;
   badges: Badge[];
   bio: string;
   pronouns: 'he/him' | 'she/her' | 'they/them' | 'other';
@@ -130,6 +134,7 @@ export default function ProfileHeader({ user, isUserProfile }: ProfileHeaderProp
                 badges={user.badges}
                 isLookingForGroup={user.isLookingForGroup}
                 pronouns={user.pronouns}
+                roleCustomColors={user.roleColors}
               />
             </div>
 

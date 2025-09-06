@@ -12,9 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
-import AdminPageHeader from '@/components/admin/common/AdminPageHeader';
-import AdminTabs from '@/components/admin/common/AdminTabs';
-import AdminButton from '@/components/admin/common/AdminButton';
+import AdminDetailLayout from '@/components/admin/common/AdminDetailLayout';
 import YearTab from '@/components/admin/settings/tabs/YearTab';
 import AppearanceTab from '@/components/admin/settings/tabs/AppearanceTab';
 import SocialTab from '@/components/admin/settings/tabs/SocialTab';
@@ -41,10 +39,10 @@ interface LegalMentions {
 }
 
 const TABS = [
-  { id: 'year', label: 'Année scolaire', icon: Calendar },
+  { id: 'year', label: 'Année scolaire', mobileLabel: 'Année', icon: Calendar },
   { id: 'appearance', label: 'Apparence', icon: Palette },
-  { id: 'social', label: 'Réseaux sociaux', icon: Share2 },
-  { id: 'legal', label: 'Mentions légales', icon: FileText },
+  { id: 'social', label: 'Réseaux sociaux', mobileLabel: 'Réseaux', icon: Share2 },
+  { id: 'legal', label: 'Mentions légales', mobileLabel: 'Légal', icon: FileText },
 ];
 
 export default function SettingsPage() {
@@ -137,19 +135,46 @@ export default function SettingsPage() {
 
   // Settings update handlers
   const updateSettings = (updates: Partial<SystemSettings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
-    setHasUnsavedChanges(true);
+    setSettings((prev) => {
+      // Vérifier s'il y a réellement des changements
+      const hasActualChanges = Object.entries(updates).some(
+        ([key, value]) => prev[key as keyof SystemSettings] !== value
+      );
+      
+      if (hasActualChanges) {
+        setHasUnsavedChanges(true);
+      }
+      
+      return { ...prev, ...updates };
+    });
   };
 
-  const updateLegalMentions = (data: LegalMentions) => {
-    setLegalMentions(data);
-    setHasLegalChanges(true);
+  const updateLegalMentions = (data: LegalMentions, isInitialLoad?: boolean) => {
+    setLegalMentions((prev) => {
+      // Si c'est un chargement initial, ne pas marquer comme modifié
+      if (!isInitialLoad) {
+        // Vérifier s'il y a réellement des changements
+        const hasActualChanges = Object.entries(data).some(
+          ([key, value]) => prev[key as keyof LegalMentions] !== value
+        );
+        
+        if (hasActualChanges) {
+          setHasLegalChanges(true);
+        }
+      }
+      
+      return data;
+    });
   };
 
   // Year update handler for migration
   const updateYear = async (newYear: string) => {
-    setSettings((prev) => ({ ...prev, currentYear: newYear }));
-    setHasUnsavedChanges(true);
+    setSettings((prev) => {
+      if (prev.currentYear !== newYear) {
+        setHasUnsavedChanges(true);
+      }
+      return { ...prev, currentYear: newYear };
+    });
   };
 
   // Save all changes
@@ -256,60 +281,64 @@ export default function SettingsPage() {
     );
   }
 
+  // Warning banners
+  const warningBanners = [];
+  if (error) {
+    warningBanners.push(
+      <div key="error" className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <AlertTriangle className="w-5 h-5 text-red-400 mr-3" />
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    warningBanners.push(
+      <div key="success" className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <div className="w-5 h-5 bg-green-400 rounded-full mr-3 flex items-center justify-center">
+            <div className="w-2 h-2 bg-white rounded-full" />
+          </div>
+          <p className="text-sm text-green-800">{success}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Primary actions
+  const primaryActions = [{
+    label: 'Sauvegarder les changements',
+    mobileLabel: 'Sauvegarder',
+    icon: Save,
+    onClick: handleSaveAll,
+    variant: (hasUnsavedChanges || hasLegalChanges ? 'primary' : 'secondary') as const,
+    disabled: !hasUnsavedChanges && !hasLegalChanges,
+    loading: saving,
+    loadingText: 'Sauvegarde...',
+  }];
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Alert Messages */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <AlertTriangle className="w-5 h-5 text-red-400 mr-3" />
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <div className="w-5 h-5 bg-green-400 rounded-full mr-3 flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full" />
-              </div>
-              <p className="text-sm text-green-800">{success}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Page Header */}
-        <AdminPageHeader
-          title="Paramètres système"
-          subtitle="Configuration générale du site et de l'association"
-          icon={SettingsIcon}
-          actions={
-            <AdminButton
-              onClick={handleSaveAll}
-              disabled={!hasUnsavedChanges && !hasLegalChanges}
-              variant={hasUnsavedChanges || hasLegalChanges ? 'primary' : 'secondary'}
-              size="sm"
-              icon={Save}
-              loading={saving}
-              loadingText="Sauvegarde..."
-            >
-              Sauvegarder les changements
-            </AdminButton>
-          }
-        />
-
-        {/* Tabs */}
-        <AdminTabs
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          hasUnsavedChanges={hasUnsavedChanges || hasLegalChanges}
-        >
-          {renderTabContent()}
-        </AdminTabs>
-      </div>
+      <AdminDetailLayout
+        backHref="/admin"
+        backLabel="Back to Dashboard"
+        backMobileLabel="Dashboard"
+        itemInfo={{
+          title: "Paramètres système",
+          subtitle: "Configuration générale du site et de l'association",
+        }}
+        warningBanners={warningBanners}
+        primaryActions={primaryActions}
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        hasUnsavedChanges={hasUnsavedChanges || hasLegalChanges}
+        unsavedChangesLabel="Vous avez des modifications non sauvegardées"
+      >
+        {renderTabContent()}
+      </AdminDetailLayout>
     </AdminLayout>
   );
 }

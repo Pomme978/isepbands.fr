@@ -122,11 +122,11 @@ export class EmailService {
   }
 
   static async sendPendingApprovalEmail(email: string, name: string) {
-    return this.sendTemplateEmail('Creation compte en attente approbation', email, { name });
+    return this.sendTemplateEmail('pending_approval_account', email, { name });
   }
 
   static async sendAccountApprovedEmail(email: string, firstName: string, lastName: string) {
-    return this.sendTemplateEmail('Compte approuve', email, {
+    return this.sendTemplateEmail('account_approved', email, {
       firstName,
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
@@ -140,7 +140,7 @@ export class EmailService {
     lastName: string,
     reason: string,
   ) {
-    return this.sendTemplateEmail('Compte non valide', email, {
+    return this.sendTemplateEmail('account_rejected', email, {
       firstName,
       lastName,
       reason,
@@ -154,7 +154,7 @@ export class EmailService {
     lastName: string,
     reason: string,
   ) {
-    return this.sendTemplateEmail('Compte suspendu', email, {
+    return this.sendTemplateEmail('account_suspended', email, {
       firstName,
       lastName,
       reason,
@@ -167,7 +167,7 @@ export class EmailService {
     firstName: string,
     lastName: string,
   ) {
-    return this.sendTemplateEmail('Compte suspendu restauré', email, {
+    return this.sendTemplateEmail('suspended_account_restored', email, {
       firstName,
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
@@ -176,7 +176,7 @@ export class EmailService {
   }
 
   static async sendRefusedMemberRestoredEmail(email: string, firstName: string, lastName: string) {
-    return this.sendTemplateEmail('Membre refusé restauré', email, {
+    return this.sendTemplateEmail('rejected_member_restored', email, {
       firstName,
       lastName,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
@@ -222,7 +222,7 @@ export class EmailService {
     verificationToken: string,
   ) {
     const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email?token=${verificationToken}`;
-    return this.sendTemplateEmail('Verification email', email, {
+    return this.sendTemplateEmail('email_verification', email, {
       firstName,
       verificationUrl,
       platformUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://isepbands.com',
@@ -230,7 +230,7 @@ export class EmailService {
   }
 
   static async sendEmailVerifiedEmail(email: string, firstName: string) {
-    return this.sendTemplateEmail('Email verifie', email, {
+    return this.sendTemplateEmail('email_verified', email, {
       firstName,
       email,
       loginUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,

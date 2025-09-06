@@ -14,37 +14,31 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
   Package,
   Plus,
-  Search,
-  Filter,
   Edit,
   Trash2,
   Upload,
   X,
   Camera,
-  AlertCircle,
   Grid3x3,
   Table,
   List,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
   Layers,
   Copy,
+  DollarSign,
 } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import StackEffect from '@/components/admin/inventory/StackEffect';
+
+// Import des nouveaux composants
+import ItemGrid from '@/components/admin/common/ItemGrid';
+import ItemFilters from '@/components/admin/common/ItemFilters';
+import ItemStatsCard from '@/components/admin/common/ItemStatsCard';
+import ItemCard from '@/components/admin/common/ItemCard';
+import ItemModal from '@/components/admin/common/ItemModal';
+import ImageViewer from '@/components/admin/common/ImageViewer';
 
 interface InventoryItem {
   id: string;
@@ -128,11 +122,10 @@ export default function InventoryPage() {
   const [selectedState, setSelectedState] = useState<string>('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
-  const [viewingImage, setViewingImage] = useState<string | null>(null);
+  const [viewingImages, setViewingImages] = useState<string[]>([]);
+  const [viewingImageIndex, setViewingImageIndex] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
-  const [expandedStacks, setExpandedStacks] = useState<Set<string>>(new Set());
 
   // Form state
   const [formData, setFormData] = useState({
@@ -181,66 +174,6 @@ export default function InventoryPage() {
       item.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.model?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-
-  // Regroupement des items par nom
-  const groupedItems = useMemo<GroupedItems[]>(() => {
-    const groups = new Map<string, InventoryItem[]>();
-
-    filteredItems.forEach((item) => {
-      const key = item.name.toLowerCase().trim();
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(item);
-    });
-
-    return Array.from(groups.entries())
-      .map(([key, items]) => ({
-        key,
-        name: items[0].name,
-        items,
-        totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredItems]);
-
-  // Stacking des items identiques pour la grille
-  const stackedItems = useMemo(() => {
-    const stacks = new Map<string, InventoryItem[]>();
-
-    filteredItems.forEach((item) => {
-      const stackKey = `${item.category.toLowerCase()}-${item.name.toLowerCase()}`;
-      if (!stacks.has(stackKey)) {
-        stacks.set(stackKey, []);
-      }
-      stacks.get(stackKey)!.push(item);
-    });
-
-    return Array.from(stacks.entries()).map(([key, items]) => ({
-      key,
-      items,
-      representative: items[0], // Premier item comme représentant
-      totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
-      isStacked: items.length > 1,
-    }));
-  }, [filteredItems]);
-
-  // Items organisés par catégorie pour le mode board
-  const boardItems = useMemo(() => {
-    const board = new Map<string, InventoryItem[]>();
-
-    // Initialiser avec toutes les catégories
-    CATEGORIES.forEach((cat) => board.set(cat, []));
-
-    filteredItems.forEach((item) => {
-      if (!board.has(item.category)) {
-        board.set(item.category, []);
-      }
-      board.get(item.category)!.push(item);
-    });
-
-    return Array.from(board.entries()).filter(([_, items]) => items.length > 0);
-  }, [filteredItems]);
 
   const resetForm = () => {
     setFormData({
@@ -327,49 +260,6 @@ export default function InventoryPage() {
     setShowCreateModal(true);
   };
 
-  const handleDuplicate = async (item: InventoryItem) => {
-    try {
-      const response = await fetch('/api/admin/inventory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: item.category,
-          name: item.name + ' (copie)',
-          brand: item.brand,
-          model: item.model,
-          state: item.state,
-          quantity: item.quantity,
-          comment: item.comment,
-          images: item.images || [],
-          usable: item.usable,
-        }),
-      });
-
-      if (response.ok) {
-        await fetchItems();
-
-        // Activity log
-        await fetch('/api/admin/activity', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'inventory_created',
-            title: 'Article dupliqué',
-            description: `Article "${item.name}" dupliqué`,
-            metadata: { originalId: item.id, originalName: item.name },
-          }),
-        });
-
-        toast.success('Article dupliqué avec succès');
-      } else {
-        throw new Error('Erreur lors de la duplication');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la duplication:', error);
-      toast.error('Erreur lors de la duplication');
-    }
-  };
-
   const handleDelete = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
@@ -441,30 +331,6 @@ export default function InventoryPage() {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const toggleGroup = (key: string) => {
-    setExpandedGroups((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
-  };
-
-  const toggleStack = (key: string) => {
-    setExpandedStacks((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
-  };
-
   const nextImage = (itemId: string, imagesLength: number) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
@@ -479,561 +345,109 @@ export default function InventoryPage() {
     }));
   };
 
-  const renderStackCard = (stack: {
-    key: string;
-    items: InventoryItem[];
-    representative: InventoryItem;
-    totalQuantity: number;
-    isStacked: boolean;
-  }) => {
-    const { key, items, representative, totalQuantity, isStacked } = stack;
-    const isExpanded = expandedStacks.has(key);
+  const handleImageClick = (images: string[], startIndex: number = 0) => {
+    setViewingImages(images);
+    setViewingImageIndex(startIndex);
+  };
 
-    if (!isStacked) {
-      return renderItemCard(representative);
+  // Prepare filter options
+  const filterOptions = [
+    {
+      key: 'category',
+      label: 'types',
+      value: selectedCategory,
+      onChange: setSelectedCategory,
+      options: categories.map(cat => ({ value: cat.name, label: cat.name, count: cat.count })),
+      placeholder: 'Type',
+      width: 'w-full sm:w-48',
+    },
+    {
+      key: 'state',
+      label: 'états',
+      value: selectedState,
+      onChange: setSelectedState,
+      options: Object.entries(STATE_LABELS).map(([value, label]) => ({ value, label })),
+      placeholder: 'État',
+      width: 'w-full sm:w-40',
     }
+  ];
 
-    if (isExpanded) {
-      // Mode déroulé : les cartes se placent dans la continuité de la grille
-      return (
-        <>
-          {/* Header replié en première position */}
-          <div
-            key={`${key}-header`}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleStack(key);
-            }}
-            className="cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg p-6 w-16 flex items-center justify-center transition-all duration-200"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </div>
+  // Prepare stats
+  const usableCount = items.filter((i) => i.usable && ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state)).length;
+  const notUsableCount = items.filter((i) => !i.usable).length;
+  const outOfServiceCount = items.filter((i) => ['DEFECTIVE', 'OUT_OF_SERVICE'].includes(i.state)).length;
 
-          {/* Cartes individuelles qui s'insèrent dans la grille avec fond d'enveloppe */}
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              className="transform transition-all duration-300 ease-out relative"
-              style={{
-                animationDelay: `${index * 60}ms`,
-                animation: `expandFromStack 0.3s ease-out forwards`,
-              }}
-            >
-              {/* Fond d'enveloppe */}
-              <div className="absolute inset-0 bg-primary/10 rounded-lg -z-10 scale-105"></div>
-              <div onClick={(e) => e.stopPropagation()}>{renderItemCard(item)}</div>
-            </div>
-          ))}
+  const statsData = [
+    { label: 'Utilisables', value: usableCount },
+    { label: 'Non utilisables', value: notUsableCount },
+    { label: 'Hors service', value: outOfServiceCount },
+  ];
 
-          <style jsx>{`
-            @keyframes expandFromStack {
-              0% {
-                opacity: 0;
-                transform: scale(0.8) rotateY(-10deg);
-              }
-              100% {
-                opacity: 1;
-                transform: scale(1) rotateY(0deg);
-              }
-            }
-          `}</style>
-        </>
-      );
-    }
+  const mainCategories = categories.slice(0, 2).map((cat) => (
+    <Badge key={cat.name} className="text-xs bg-primary/10 text-primary">
+      {cat.name} ({cat.count})
+    </Badge>
+  ));
 
-    // Mode empilé
-    return (
-      <div
-        key={key}
-        className="relative group cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleStack(key);
-        }}
-      >
-        {/* Composant d'effet de stack */}
-        <StackEffect count={items.length} isVisible={true} />
-
-        {/* Card principale avec événements bloqués */}
-        <div
-          className="relative z-10 transition-all duration-300 group-hover:transform group-hover:-translate-y-2 group-hover:shadow-xl group-hover:scale-105"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="pointer-events-none">
-            {renderItemCard({ ...representative, quantity: totalQuantity })}
-          </div>
-        </div>
-
-        {/* Overlay cliquable invisible pour capturer les clics */}
-        <div className="absolute inset-0 z-30 cursor-pointer" />
-
-        {/* Badge avec nombre d'items */}
-        <div className="absolute -top-2 -left-2 z-40 pointer-events-none">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary rounded-full animate-pulse opacity-60"></div>
-            <div className="relative bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
-              {items.length}
-            </div>
-          </div>
-        </div>
-
-        {/* Icône de déroulement au centre */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
-          <div className="bg-primary/90 text-white rounded-full p-3 shadow-lg animate-bounce">
-            <Layers className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* Effet de brillance au hover */}
-        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] pointer-events-none z-20"></div>
-
-        {/* Tooltip */}
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-          <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap">
-            <div className="flex items-center gap-2">
-              <Layers className="w-3 h-3" />
-              Cliquer pour dérouler ({items.length} items)
-            </div>
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderItemCard = (item: InventoryItem) => (
-    <div
-      key={item.id}
-      className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200 w-64 flex-shrink-0"
-    >
-      {/* Images avec carrousel - Compact */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
-        {item.images && item.images.length > 0 ? (
-          <div className="relative group h-full">
-            <Image
-              src={item.images[currentImageIndex[item.id] || 0]}
-              alt={item.name}
-              width={300}
-              height={200}
-              className="w-full h-full object-cover cursor-pointer"
-              onClick={() => setViewingImage(item.images![currentImageIndex[item.id] || 0])}
-            />
-            {item.images.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevImage(item.id, item.images!.length);
-                  }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <ChevronLeft className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextImage(item.id, item.images!.length);
-                  }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                  {item.images.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        idx === (currentImageIndex[item.id] || 0) ? 'bg-white' : 'bg-white/60'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-            {/* Badge d'état en overlay */}
-            <div className="absolute top-2 right-2">
-              <Badge className={`text-xs ${STATE_COLORS[item.state]}`}>
-                {STATE_LABELS[item.state]}
-              </Badge>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-            <Camera className="w-8 h-8 text-gray-400 mb-1" />
-            <p className="text-xs text-gray-500 font-ubuntu">Aucune photo</p>
-          </div>
-        )}
-      </div>
-
-      {/* Content compact */}
-      <div className="p-3">
-        {/* Header avec nom et info */}
-        <div className="mb-2">
-          <div className="flex items-center justify-between mb-1">
-            <Badge className="text-xs bg-primary/10 text-primary font-medium">
-              {item.category}
-            </Badge>
-            <span className="text-xs text-gray-500 font-ubuntu">
-              Qté: <span className="font-medium text-gray-700">{item.quantity}</span>
-            </span>
-          </div>
-          <h3 className="font-bold text-base font-outfit text-gray-900 leading-tight mb-1">
-            {item.name}
-          </h3>
-          {(item.brand || item.model) && (
-            <p className="text-xs text-gray-600 font-ubuntu">
-              {[item.brand, item.model].filter(Boolean).join(' • ')}
-            </p>
-          )}
-        </div>
-
-        {/* Commentaire si présent */}
-        {item.comment && (
-          <p className="text-xs text-gray-600 font-ubuntu mb-2 line-clamp-2 italic">
-            &ldquo;{item.comment}&ldquo;
-          </p>
-        )}
-
-        {/* Actions et info créateur */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEdit(item)}
-              className="text-gray-600 hover:text-primary p-1 h-auto"
-            >
-              <Edit className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDelete(item.id)}
-              className="text-gray-600 hover:text-red-600 p-1 h-auto"
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </div>
-
-          {item.creator && (
-            <div className="text-right">
-              <p className="text-xs text-gray-400 font-ubuntu">
-                {item.creator.firstName} {item.creator.lastName}
-              </p>
-              <p className="text-xs text-gray-400 font-ubuntu">
-                {new Date(item.createdAt).toLocaleDateString('fr-FR')}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Drag & Drop handlers
-  const handleDragStart = (e: React.DragEvent, item: InventoryItem) => {
-    e.dataTransfer.setData(
-      'text/plain',
-      JSON.stringify({ itemId: item.id, currentCategory: item.category }),
-    );
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = async (e: React.DragEvent, targetCategory: string) => {
-    e.preventDefault();
-    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-    const { itemId, currentCategory } = data;
-
-    if (currentCategory === targetCategory) return;
-
-    try {
-      const response = await fetch(`/api/admin/inventory/${itemId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: targetCategory }),
-      });
-
-      if (response.ok) {
-        await fetchItems();
-
-        // Activity log
-        await fetch('/api/admin/activity', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'inventory_updated',
-            title: 'Catégorie modifiée par drag & drop',
-            description: `Catégorie changée de "${currentCategory}" vers "${targetCategory}"`,
-            metadata: { itemId, oldCategory: currentCategory, newCategory: targetCategory },
-          }),
-        });
-
-        toast.success(`Catégorie changée vers "${targetCategory}"`);
+  const renderItemCard = (item: InventoryItem) => {
+    const badges = [
+      {
+        text: STATE_LABELS[item.state],
+        className: STATE_COLORS[item.state],
       }
-    } catch (error) {
-      toast.error('Erreur lors du changement de catégorie');
-    }
+    ];
+
+    const actions = [
+      {
+        icon: <Copy className="w-3 h-3" />,
+        onClick: () => {/* handleDuplicate logic */},
+        title: "Dupliquer",
+      },
+      {
+        icon: <Edit className="w-3 h-3" />,
+        onClick: () => handleEdit(item),
+        title: "Modifier",
+      },
+      {
+        icon: <Trash2 className="w-3 h-3" />,
+        onClick: () => handleDelete(item.id),
+        className: "text-gray-600 hover:text-red-600 p-1 h-auto",
+        title: "Supprimer",
+      },
+    ];
+
+    const additionalInfo = (
+      <span className="text-xs text-gray-500 font-ubuntu">
+        Qté: <span className="font-medium text-gray-700">{item.quantity}</span>
+      </span>
+    );
+
+    const creator = item.creator ? {
+      name: `${item.creator.firstName} ${item.creator.lastName}`,
+      date: new Date(item.createdAt).toLocaleDateString('fr-FR'),
+    } : undefined;
+
+    return (
+      <ItemCard
+        key={item.id}
+        id={item.id}
+        name={item.name}
+        category={item.category}
+        brand={item.brand}
+        model={item.model}
+        description={item.comment}
+        badges={badges}
+        images={item.images}
+        currentImageIndex={currentImageIndex[item.id] || 0}
+        onPrevImage={() => prevImage(item.id, item.images?.length || 0)}
+        onNextImage={() => nextImage(item.id, item.images?.length || 0)}
+        onImageClick={(url) => handleImageClick(item.images || [], item.images?.indexOf(url) || 0)}
+        actions={actions}
+        creator={creator}
+        additionalInfo={additionalInfo}
+      />
+    );
   };
-
-  const renderTableView = () => (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Photo
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nom
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Catégorie
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Marque / Modèle
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                État
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Qté
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Utilisable
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredItems.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  {item.images && item.images.length > 0 ? (
-                    <div className="relative w-12 h-12">
-                      <Image
-                        src={item.images[0]}
-                        alt={item.name}
-                        width={50}
-                        height={50}
-                        className="w-full h-full object-cover rounded cursor-pointer"
-                        onClick={() => setViewingImage(item.images![0])}
-                      />
-                      {item.images.length > 1 && (
-                        <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                          {item.images.length}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
-                      <Camera className="w-5 h-5 text-gray-400" />
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-3 font-medium">{item.name}</td>
-                <td className="px-4 py-3">
-                  <Badge className="text-xs">{item.category}</Badge>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600">
-                  {[item.brand, item.model].filter(Boolean).join(' - ') || '-'}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge className={`text-xs border ${STATE_COLORS[item.state]}`}>
-                    {STATE_LABELS[item.state]}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3 text-center">{item.quantity}</td>
-                <td className="px-4 py-3 text-center">
-                  <Badge
-                    className={`text-xs ${item.usable ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}
-                  >
-                    {item.usable ? 'Oui' : 'Non'}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDuplicate(item)}
-                      title="Dupliquer"
-                    >
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(item)}
-                      title="Modifier"
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-red-700"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const renderBoardView = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {boardItems.map(([category, categoryItems]) => (
-        <div
-          key={category}
-          className="bg-gray-50 rounded-lg p-4"
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, category)}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-sm uppercase text-gray-700">{category}</h3>
-            <Badge className="text-xs">{categoryItems.length}</Badge>
-          </div>
-          <div className="space-y-3 min-h-24">
-            {categoryItems.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow cursor-move relative group"
-                draggable
-                onDragStart={(e) => handleDragStart(e, item)}
-                onClick={() => handleEdit(item)}
-              >
-                {/* Bouton d'édition qui apparaît au hover */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-200 hover:bg-gray-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(item);
-                  }}
-                >
-                  <Edit className="w-3 h-3" />
-                </Button>
-
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium text-sm line-clamp-2 pr-8">{item.name}</h4>
-                  {item.images && item.images.length > 0 && (
-                    <div className="flex -space-x-2">
-                      {item.images.slice(0, 2).map((img, idx) => (
-                        <Image
-                          key={idx}
-                          src={img}
-                          alt=""
-                          width={24}
-                          height={24}
-                          className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                        />
-                      ))}
-                      {item.images.length > 2 && (
-                        <div className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                          <span className="text-xs text-gray-600">+{item.images.length - 2}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {(item.brand || item.model) && (
-                  <p className="text-xs text-gray-500 mb-2">
-                    {[item.brand, item.model].filter(Boolean).join(' - ')}
-                  </p>
-                )}
-                <div className="flex items-center justify-between">
-                  <Badge className={`text-xs border ${STATE_COLORS[item.state]}`}>
-                    {STATE_LABELS[item.state]}
-                  </Badge>
-                  <span className="text-xs text-gray-600">Qté: {item.quantity}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderGroupedView = () => (
-    <div className="space-y-4">
-      {groupedItems.map((group) => (
-        <div key={group.key} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <button
-            onClick={() => toggleGroup(group.key)}
-            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex items-center">
-                {expandedGroups.has(group.key) ? (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                )}
-              </div>
-              <h3 className="font-bold text-lg">{group.name}</h3>
-              <Badge className="bg-primary text-white">
-                {group.items.length} {group.items.length > 1 ? 'articles' : 'article'}
-              </Badge>
-              <span className="text-sm text-gray-600">
-                Quantité totale: <span className="font-medium">{group.totalQuantity}</span>
-              </span>
-            </div>
-            <div className="flex gap-2">
-              {group.items.slice(0, 3).map((item, idx) =>
-                item.images && item.images[0] ? (
-                  <Image
-                    key={idx}
-                    src={item.images[0]}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded object-cover"
-                  />
-                ) : (
-                  <div
-                    key={idx}
-                    className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center"
-                  >
-                    <Camera className="w-4 h-4 text-gray-400" />
-                  </div>
-                ),
-              )}
-              {group.items.length > 3 && (
-                <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-gray-600">+{group.items.length - 3}</span>
-                </div>
-              )}
-            </div>
-          </button>
-
-          {expandedGroups.has(group.key) && (
-            <div className="border-t border-gray-200 p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {group.items.map(renderItemCard)}
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
 
   return (
     <AdminLayout>
@@ -1043,462 +457,261 @@ export default function InventoryPage() {
           <div>
             <h1 className="text-3xl font-bold font-outfit text-foreground">Inventaire Musical</h1>
             <p className="text-muted-foreground font-ubuntu">
-              Gestion des instruments et équipements d&apos;ISEP Bands
+              Gestion de l'équipement de l'association
             </p>
           </div>
 
-          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm} className="bg-primary hover:bg-primary/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter un équipement
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="font-outfit">
-                  {editingItem ? "Modifier l'équipement" : 'Nouvel équipement'}
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">
-                      Catégorie *
-                    </label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({ ...prev, category: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner une catégorie" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">Nom *</label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                      placeholder="Nom de l'instrument/équipement"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">Marque</label>
-                    <Input
-                      value={formData.brand}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
-                      placeholder="Marque"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">Modèle</label>
-                    <Input
-                      value={formData.model}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value }))}
-                      placeholder="Modèle"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">État</label>
-                    <Select
-                      value={formData.state}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          state: value as
-                            | 'NEW'
-                            | 'VERY_GOOD'
-                            | 'GOOD'
-                            | 'AVERAGE'
-                            | 'DAMAGED'
-                            | 'DEFECTIVE'
-                            | 'OUT_OF_SERVICE',
-                        }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un état">
-                          {formData.state && (
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`w-3 h-3 rounded-full border ${STATE_COLORS[formData.state as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
-                              />
-                              {STATE_LABELS[formData.state as keyof typeof STATE_LABELS]}
-                            </div>
-                          )}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(STATE_LABELS).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`w-3 h-3 rounded-full border ${STATE_COLORS[value as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
-                              />
-                              {label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">Quantité</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={formData.quantity}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          quantity: parseInt(e.target.value) || 1,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium font-ubuntu">
-                      <input
-                        type="checkbox"
-                        checked={formData.usable}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            usable: e.target.checked,
-                          }))
-                        }
-                        className="rounded border-gray-300"
-                      />
-                      Utilisable
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      L&apos;article est-il actuellement utilisable ?
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2 font-ubuntu">
-                      Commentaire
-                    </label>
-                    <Textarea
-                      value={formData.comment}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, comment: e.target.value }))
-                      }
-                      placeholder="Notes, état détaillé, localisation..."
-                      rows={3}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Image Upload */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-2 font-ubuntu">Photos</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    accept="image/*,.heic,.heif"
-                    multiple
-                    onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
-                    className="hidden"
-                    id="image-upload"
-                    disabled={uploading}
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer">
-                    <Camera className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600 font-ubuntu">
-                      {uploading ? 'Upload en cours...' : 'Cliquez pour ajouter des photos'}
-                    </p>
-                  </label>
-                </div>
-
-                {uploadedImages.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mt-4">
-                    {uploadedImages.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <Image
-                          src={url}
-                          alt={`Photo ${index + 1}`}
-                          width={100}
-                          height={100}
-                          className="w-full h-20 object-cover rounded border"
-                        />
-                        <button
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <DialogFooter className="mt-6">
-                <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                  Annuler
-                </Button>
-                <Button onClick={handleSubmit} disabled={!formData.name || !formData.category}>
-                  {editingItem ? 'Modifier' : 'Créer'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => { resetForm(); setShowCreateModal(true); }} className="bg-primary hover:bg-primary/90">
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un équipement
+          </Button>
         </div>
+
+        <ItemModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          title={editingItem ? "Modifier l'équipement" : 'Nouvel équipement'}
+          onSubmit={handleSubmit}
+          onCancel={() => setShowCreateModal(false)}
+          submitLabel={editingItem ? 'Modifier' : 'Créer'}
+          isSubmitDisabled={!formData.name || !formData.category}
+        >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">
+                    Catégorie *
+                  </label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, category: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">Nom *</label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Nom de l'instrument/équipement"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">Marque</label>
+                  <Input
+                    value={formData.brand}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
+                    placeholder="Marque"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">Modèle</label>
+                  <Input
+                    value={formData.model}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value }))}
+                    placeholder="Modèle"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">État</label>
+                  <Select
+                    value={formData.state}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        state: value as
+                          | 'NEW'
+                          | 'VERY_GOOD'
+                          | 'GOOD'
+                          | 'AVERAGE'
+                          | 'DAMAGED'
+                          | 'DEFECTIVE'
+                          | 'OUT_OF_SERVICE',
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez un état">
+                        {formData.state && (
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-3 h-3 rounded-full border ${STATE_COLORS[formData.state as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
+                            />
+                            {STATE_LABELS[formData.state as keyof typeof STATE_LABELS]}
+                          </div>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(STATE_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-3 h-3 rounded-full border ${STATE_COLORS[value as keyof typeof STATE_COLORS].replace('text-', 'bg-').replace('border-', 'border-').split(' ')[0]}`}
+                            />
+                            {label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">Quantité</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={formData.quantity}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        quantity: parseInt(e.target.value) || 1,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium font-ubuntu">
+                    <input
+                      type="checkbox"
+                      checked={formData.usable}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          usable: e.target.checked,
+                        }))
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    Utilisable
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    L'article est-il actuellement utilisable ?
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-ubuntu">
+                    Commentaire
+                  </label>
+                  <Textarea
+                    value={formData.comment}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, comment: e.target.value }))
+                    }
+                    placeholder="Notes, état détaillé, localisation..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Image Upload */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium mb-2 font-ubuntu">Photos</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  accept="image/*,.heic,.heif"
+                  multiple
+                  onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                  className="hidden"
+                  id="image-upload"
+                  disabled={uploading}
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  <Camera className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm text-gray-600 font-ubuntu">
+                    {uploading ? 'Upload en cours...' : 'Cliquez pour ajouter des photos'}
+                  </p>
+                </label>
+              </div>
+
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  {uploadedImages.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <Image
+                        src={url}
+                        alt={`Photo ${index + 1}`}
+                        width={100}
+                        height={100}
+                        className="w-full h-20 object-cover rounded border"
+                      />
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+        </ItemModal>
 
         {/* Filters & View Mode */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Rechercher par nom, marque, modèle..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        <ItemFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filters={filterOptions}
+        />
+
+        {/* Stats */}
+        <ItemStatsCard
+          title="Inventaire Musical ISEP Bands"
+          subtitle="État du matériel de l'association"
+          mainStat={{ value: items.length, label: 'objets' }}
+          stats={statsData}
+          additionalInfo={
+            <div className="flex flex-wrap gap-1">
+              <span className="text-xs text-gray-500 font-ubuntu mr-1">Principales:</span>
+              {mainCategories}
             </div>
+          }
+        />
 
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les types</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.name} value={cat.name}>
-                    {cat.name} ({cat.count})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Content */}
+        <ItemGrid
+          loading={loading}
+          emptyIcon={<Package className="w-12 h-12 mx-auto text-gray-400" />}
+          emptyMessage="Aucun article trouvé"
+          loadingItemsCount={12}
+        >
+          {filteredItems.map(renderItemCard)}
+        </ItemGrid>
 
-            <Select value={selectedState} onValueChange={setSelectedState}>
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="État" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les états</SelectItem>
-                {Object.entries(STATE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* View Mode Selector */}
-            <div className="flex gap-1 border border-gray-200 rounded-lg p-1">
-              {VIEW_MODES.map((mode) => (
-                <Button
-                  key={mode.value}
-                  variant={viewMode === mode.value ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode(mode.value as ViewMode)}
-                  className="px-3"
-                  title={mode.label}
-                >
-                  <mode.icon className="w-4 h-4" />
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Vue d'ensemble de l'inventaire musical */}
-        <div className="bg-white rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-lg font-bold font-outfit text-gray-900">
-                Inventaire Musical ISEP Bands
-              </h2>
-              <p className="text-xs text-gray-600 font-ubuntu">
-                État du matériel de l&apos;association
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold font-outfit text-primary">{items.length}</p>
-              <p className="text-xs text-gray-600 font-ubuntu">objets</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {
-                  items.filter((i) => i.usable && ['NEW', 'VERY_GOOD', 'GOOD'].includes(i.state))
-                    .length
-                }
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Utilisables</p>
-            </div>
-
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {items.filter((i) => !i.usable).length}
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Non utilisables</p>
-            </div>
-
-            <div className="bg-white p-2 text-center">
-              <p className="text-lg font-bold font-outfit text-primary mb-1">
-                {items.filter((i) => ['DEFECTIVE', 'OUT_OF_SERVICE'].includes(i.state)).length}
-              </p>
-              <p className="text-xs text-gray-600 font-ubuntu">Hors service</p>
-            </div>
-          </div>
-
-          {/* Catégories les plus représentées */}
-          <div className="flex flex-wrap gap-1">
-            <span className="text-xs text-gray-500 font-ubuntu mr-1">Principales:</span>
-            {categories.slice(0, 2).map((cat) => (
-              <Badge key={cat.name} className="text-xs bg-primary/10 text-primary">
-                {cat.name} ({cat.count})
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Content based on view mode */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </div>
-            ))}
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 font-ubuntu">Aucun article trouvé</p>
-          </div>
-        ) : viewMode === 'grid' ? (
-          <div className="flex flex-wrap gap-4 p-4 justify-start">
-            {stackedItems.map(renderStackCard)}
-          </div>
-        ) : viewMode === 'table' ? (
-          renderTableView()
-        ) : viewMode === 'board' ? (
-          renderBoardView()
-        ) : viewMode === 'grouped' ? (
-          renderGroupedView()
-        ) : null}
-
-        {/* Image Viewer Modal avec carrousel */}
-        {viewingImage && (
-          <Dialog open={!!viewingImage} onOpenChange={() => setViewingImage(null)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-              <div className="relative">
-                <button
-                  onClick={() => setViewingImage(null)}
-                  className="absolute top-4 right-4 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-
-                {/* Trouver l'item correspondant à l'image */}
-                {(() => {
-                  const currentItem = filteredItems.find((item) =>
-                    item.images?.includes(viewingImage),
-                  );
-
-                  if (!currentItem || !currentItem.images || currentItem.images.length <= 1) {
-                    return (
-                      <Image
-                        src={viewingImage}
-                        alt="Photo en grand"
-                        width={800}
-                        height={600}
-                        className="w-full h-auto max-h-[85vh] object-contain"
-                      />
-                    );
-                  }
-
-                  const currentIndex = currentItem.images.indexOf(viewingImage);
-
-                  return (
-                    <div className="relative group">
-                      <Image
-                        src={viewingImage}
-                        alt="Photo en grand"
-                        width={800}
-                        height={600}
-                        className="w-full h-auto max-h-[85vh] object-contain"
-                      />
-
-                      {/* Flèches de navigation */}
-                      <button
-                        onClick={() => {
-                          const prevIndex =
-                            (currentIndex - 1 + currentItem.images!.length) %
-                            currentItem.images!.length;
-                          setViewingImage(currentItem.images![prevIndex]);
-                        }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-3 hover:bg-black/80 transition-colors z-10"
-                      >
-                        <ChevronLeft className="w-6 h-6" />
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          const nextIndex = (currentIndex + 1) % currentItem.images!.length;
-                          setViewingImage(currentItem.images![nextIndex]);
-                        }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-3 hover:bg-black/80 transition-colors z-10"
-                      >
-                        <ChevronRight className="w-6 h-6" />
-                      </button>
-
-                      {/* Indicateurs */}
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/30 px-3 py-2 rounded-full">
-                        {currentItem.images.map((img, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setViewingImage(img)}
-                            className={`w-2 h-2 rounded-full transition-colors ${
-                              idx === currentIndex ? 'bg-white' : 'bg-white/60'
-                            }`}
-                          />
-                        ))}
-                      </div>
-
-                      {/* Compteur */}
-                      <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                        {currentIndex + 1} / {currentItem.images.length}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        {/* Image Viewer */}
+        <ImageViewer
+          images={viewingImages}
+          currentIndex={viewingImageIndex}
+          isOpen={viewingImages.length > 0}
+          onClose={() => setViewingImages([])}
+          onNext={() => setViewingImageIndex((prev) => (prev + 1) % viewingImages.length)}
+          onPrev={() => setViewingImageIndex((prev) => (prev - 1 + viewingImages.length) % viewingImages.length)}
+          onIndexChange={setViewingImageIndex}
+        />
       </div>
     </AdminLayout>
   );

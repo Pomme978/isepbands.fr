@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft,
   Save,
   Mail,
   Lock,
@@ -20,10 +19,8 @@ import {
   Eye,
 } from 'lucide-react';
 import Loading from '@/components/ui/Loading';
-import LangLink from '@/components/common/LangLink';
+import AdminDetailLayout from '../common/AdminDetailLayout';
 import UnsavedChangesModal from '../common/UnsavedChangesModal';
-import Avatar from '@/components/common/Avatar';
-import AdminButton from '../common/AdminButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,13 +103,13 @@ interface UserBadge {
 }
 
 const TABS = [
-  { id: 'main', label: 'Main', icon: User },
-  { id: 'permissions', label: 'Permissions', icon: Shield },
-  { id: 'instruments', label: 'Instruments', icon: Music },
+  { id: 'main', label: 'Main', mobileLabel: 'Info', icon: User },
+  { id: 'permissions', label: 'Permissions', mobileLabel: 'Perms', icon: Shield },
+  { id: 'instruments', label: 'Instruments', mobileLabel: 'Instru', icon: Music },
   { id: 'badges', label: 'Badges', icon: Award },
   { id: 'groups', label: 'Groups', icon: Users },
   { id: 'events', label: 'Events', icon: Calendar },
-  { id: 'activity', label: 'Activity Log', icon: FileText },
+  { id: 'activity', label: 'Activity Log', mobileLabel: 'Log', icon: FileText },
 ];
 
 export default function UserEditPage({ userId }: UserEditPageProps) {
@@ -646,12 +643,12 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
           </div>
         </div>
         <div className="mt-4">
-          <LangLink
-            href="/admin/users"
+          <button
+            onClick={() => window.location.href = '/admin/users'}
             className="text-sm text-red-600 hover:text-red-500 font-medium"
           >
             ← Back to Users
-          </LangLink>
+          </button>
         </div>
       </div>
     );
@@ -662,323 +659,231 @@ export default function UserEditPage({ userId }: UserEditPageProps) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">User not found</p>
-        <LangLink
-          href="/admin/users"
+        <button
+          onClick={() => window.location.href = '/admin/users'}
           className="text-primary hover:text-primary/80 font-medium mt-2 inline-block"
         >
           ← Back to Users
-        </LangLink>
+        </button>
       </div>
     );
   }
 
   // Get display names for roles using utils
-  // const primaryRoleDisplay = getPrimaryRoleName(user.roles, user.pronouns, 'fr');
   const allRolesDisplay = getAllRoleNames(user.roles, user.pronouns, 'fr');
 
   const isArchived = user.status === 'deleted' || user.status === 'DELETED';
   const needsRestore = isArchived || user.status === 'refused' || user.status === 'suspended';
 
+  // Warning banners
+  const warningBanners = [];
+  if (isArchived) {
+    warningBanners.push(
+      <div key="archived" className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <Archive className="h-5 w-5 text-orange-600 mr-3 flex-shrink-0" />
+          <div>
+            <h3 className="text-sm font-medium text-orange-900">Compte archivé</h3>
+            <p className="text-sm text-orange-700 mt-1">
+              Ce compte utilisateur est actuellement archivé et n&apos;est plus actif. Vous pouvez
+              le restaurer pour permettre à l&apos;utilisateur de se reconnecter.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Status-specific warning banners
+  if (user.status === 'pending') {
+    warningBanners.push(
+      <div key="pending" className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-yellow-800">User Not Approved Yet</h3>
+            <p className="text-sm text-yellow-700 mt-1">
+              This user has not been approved yet. You can edit their information, but they cannot
+              log in until their registration is reviewed and approved.
+            </p>
+            <div className="mt-3">
+              <button
+                onClick={handleReviewRequest}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-xs font-medium"
+              >
+                Review Registration Request
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user.status === 'refused') {
+    warningBanners.push(
+      <div key="refused" className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-red-800">Registration Refused</h3>
+            <p className="text-sm text-red-700 mt-1">
+              This user&apos;s registration was refused. They cannot log in to the platform.
+            </p>
+            {user.rejectionReason && (
+              <div className="mt-2 text-xs text-red-700">
+                <strong>Reason:</strong> {user.rejectionReason}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user.status === 'suspended') {
+    warningBanners.push(
+      <div key="suspended" className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-orange-800">Account Suspended</h3>
+            <p className="text-sm text-orange-700 mt-1">
+              This user&apos;s account is currently suspended. They cannot log in to the platform.
+            </p>
+            {user.rejectionReason && (
+              <div className="mt-2 text-xs text-orange-700">
+                <strong>Reason:</strong> {user.rejectionReason}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Secondary actions (view profile, email, reset password)
+  const secondaryActions = [];
+  if (!isArchived) {
+    secondaryActions.push(
+      {
+        label: 'View Profile',
+        mobileLabel: 'View',
+        icon: Eye,
+        onClick: handleViewProfile,
+        variant: 'secondary' as const,
+      },
+      {
+        label: 'Send Email',
+        mobileLabel: 'Email',
+        icon: Mail,
+        onClick: handleSendEmail,
+        variant: 'ghost' as const,
+      },
+      {
+        label: 'Reset Password',
+        mobileLabel: 'Reset',
+        icon: Lock,
+        onClick: handleResetPassword,
+        variant: 'ghost' as const,
+      }
+    );
+  }
+
+  // Conditional actions (restore, archive, delete)
+  const conditionalActions = [];
+  if (currentUserId !== user.id) {
+    if (needsRestore) {
+      conditionalActions.push({
+        label: "Restaurer l'utilisateur",
+        mobileLabel: 'Restaurer',
+        icon: RotateCcw,
+        onClick: () => setShowRestoreConfirm(true),
+        variant: 'success' as const,
+      });
+    }
+    if (!isArchived) {
+      conditionalActions.push({
+        label: 'Archive User',
+        mobileLabel: 'Archive',
+        icon: Archive,
+        onClick: () => setShowArchiveConfirm(true),
+        variant: 'warning' as const,
+      });
+    }
+    conditionalActions.push({
+      label: 'Delete User',
+      mobileLabel: 'Delete',
+      icon: Trash2,
+      onClick: () => setShowDeleteConfirm(true),
+      variant: 'danger' as const,
+    });
+  }
+
+  // Primary actions (save)
+  const primaryActions = [];
+  if (!needsRestore) {
+    primaryActions.push({
+      label: 'Save Changes',
+      mobileLabel: 'Save',
+      icon: Save,
+      onClick: handleSave,
+      variant: 'primary' as const,
+      disabled: !hasUnsavedChanges || saving,
+      loading: saving,
+      loadingText: 'Saving...',
+    });
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Warning Banner for Archived Users */}
-      {isArchived && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <Archive className="h-5 w-5 text-orange-600 mr-3 flex-shrink-0" />
-            <div>
-              <h3 className="text-sm font-medium text-orange-900">Compte archivé</h3>
-              <p className="text-sm text-orange-700 mt-1">
-                Ce compte utilisateur est actuellement archivé et n&apos;est plus actif. Vous pouvez
-                le restaurer pour permettre à l&apos;utilisateur de se reconnecter.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-          <LangLink
-            href="/admin/users"
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors w-fit"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Back to Users</span>
-            <span className="sm:hidden">Back</span>
-          </LangLink>
-
-          <div className="flex items-center space-x-3">
-            <Avatar
-              src={user.avatar || user.photoUrl}
-              name={`${user.firstName} ${user.lastName}`}
-              size="md"
-              className="flex-shrink-0"
-            />
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                {user.firstName} {user.lastName}
-                {currentUserId === user.id && (
-                  <span className="text-sm sm:text-lg font-normal text-blue-600 ml-2">(moi)</span>
-                )}
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600 truncate">
-                {user.promotion} • {allRolesDisplay}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2">
-          <div className="flex flex-wrap items-center justify-stretch sm:justify-start gap-2">
-            {!isArchived && (
-              <AdminButton
-                onClick={handleViewProfile}
-                variant="secondary"
-                size="sm"
-                icon={Eye}
-                className="flex-1 sm:flex-none"
-              >
-                <span className="hidden sm:inline">View Profile</span>
-                <span className="sm:hidden">View</span>
-              </AdminButton>
-            )}
-
-            {!isArchived && (
-              <>
-                <AdminButton
-                  onClick={handleSendEmail}
-                  variant="ghost"
-                  size="sm"
-                  icon={Mail}
-                  className="flex-1 sm:flex-none"
-                >
-                  <span className="hidden lg:inline">Send Email</span>
-                  <span className="lg:hidden">Email</span>
-                </AdminButton>
-
-                <AdminButton
-                  onClick={handleResetPassword}
-                  variant="ghost"
-                  size="sm"
-                  icon={Lock}
-                  className="flex-1 sm:flex-none"
-                >
-                  <span className="hidden lg:inline">Reset Password</span>
-                  <span className="lg:hidden">Reset</span>
-                </AdminButton>
-              </>
-            )}
-          </div>
-
-          {currentUserId !== user.id && (
-            <div className="flex flex-wrap items-center justify-stretch sm:justify-start gap-2">
-              {needsRestore && (
-                <AdminButton
-                  onClick={() => setShowRestoreConfirm(true)}
-                  variant="success"
-                  size="sm"
-                  icon={RotateCcw}
-                  className="flex-1 sm:flex-none"
-                >
-                  <span className="hidden sm:inline">Restaurer l&apos;utilisateur</span>
-                  <span className="sm:hidden">Restaurer</span>
-                </AdminButton>
-              )}
-
-              {!isArchived && (
-                <AdminButton
-                  onClick={() => setShowArchiveConfirm(true)}
-                  variant="warning"
-                  size="sm"
-                  icon={Archive}
-                  className="flex-1 sm:flex-none"
-                >
-                  <span className="hidden sm:inline">Archive User</span>
-                  <span className="sm:hidden">Archive</span>
-                </AdminButton>
-              )}
-
-              <AdminButton
-                onClick={() => setShowDeleteConfirm(true)}
-                variant="danger"
-                size="sm"
-                icon={Trash2}
-                className="flex-1 sm:flex-none"
-              >
-                <span className="hidden sm:inline">Delete User</span>
-                <span className="sm:hidden">Delete</span>
-              </AdminButton>
-            </div>
-          )}
-
-          {!needsRestore && (
-            <AdminButton
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges || saving}
-              variant="primary"
-              size="sm"
-              icon={Save}
-              loading={saving}
-              loadingText="Saving..."
-              className="w-full sm:w-auto"
-            >
-              <span className="hidden sm:inline">Save Changes</span>
-              <span className="sm:hidden">Save</span>
-            </AdminButton>
-          )}
-        </div>
-      </div>
-
-      {/* Pending User Warning */}
-      {user.status === 'pending' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <svg className="w-5 h-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-800">User Not Approved Yet</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                This user has not been approved yet. You can edit their information, but they cannot
-                log in until their registration is reviewed and approved.
-              </p>
-              <div className="mt-3">
-                <AdminButton onClick={handleReviewRequest} variant="warning" size="xs">
-                  Review Registration Request
-                </AdminButton>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Refused User Warning */}
-      {user.status === 'refused' && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800">Registration Refused</h3>
-              <p className="text-sm text-red-700 mt-1">
-                This user&apos;s registration was refused. They cannot log in to the platform.
-              </p>
-              {user.rejectionReason && (
-                <div className="mt-2 text-xs text-red-700">
-                  <strong>Reason:</strong> {user.rejectionReason}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Suspended User Warning */}
-      {user.status === 'suspended' && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <svg className="w-5 h-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-orange-800">Account Suspended</h3>
-              <p className="text-sm text-orange-700 mt-1">
-                This user&apos;s account is currently suspended. They cannot log in to the platform.
-              </p>
-              {user.rejectionReason && (
-                <div className="mt-2 text-xs text-orange-700">
-                  <strong>Reason:</strong> {user.rejectionReason}
-                </div>
-              )}
-              <div className="mt-3 flex space-x-2">
-                <AdminButton
-                  onClick={() => setShowRestoreConfirm(true)}
-                  variant="success"
-                  size="xs"
-                  icon={RotateCcw}
-                >
-                  Restore Account
-                </AdminButton>
-                {!isArchived && (
-                  <AdminButton
-                    onClick={() => setShowArchiveConfirm(true)}
-                    variant="secondary"
-                    size="xs"
-                    icon={Archive}
-                  >
-                    Archive User
-                  </AdminButton>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tabs Navigation */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-1 sm:space-x-2 px-4 sm:px-6 py-4 sm:py-4 text-sm sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 min-h-[52px] ${
-                activeTab === tab.id
-                  ? 'text-primary border-b-2 border-primary bg-primary/5'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              <tab.icon className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">
-                {tab.id === 'main' && 'Info'}
-                {tab.id === 'permissions' && 'Perms'}
-                {tab.id === 'instruments' && 'Instru'}
-                {tab.id === 'badges' && 'Badges'}
-                {tab.id === 'groups' && 'Groups'}
-                {tab.id === 'events' && 'Events'}
-                {tab.id === 'activity' && 'Log'}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div className="p-4 sm:p-6">{renderTabContent()}</div>
-      </div>
-
-      {/* Unsaved Changes Warning */}
-      {hasUnsavedChanges && (
-        <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 shadow-lg z-40">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse flex-shrink-0" />
-            <span className="text-xs sm:text-sm text-yellow-800 font-medium">
-              You have unsaved changes
-            </span>
-          </div>
-        </div>
-      )}
+    <div>
+      <AdminDetailLayout
+        backHref="/admin/users"
+        backLabel="Back to Users"
+        backMobileLabel="Back"
+        itemInfo={{
+          avatar: user.avatar || user.photoUrl,
+          title: `${user.firstName} ${user.lastName}`,
+          subtitle: `${user.promotion} • ${allRolesDisplay}`,
+          currentUserId,
+          itemId: user.id,
+        }}
+        warningBanners={warningBanners}
+        secondaryActions={secondaryActions}
+        conditionalActions={conditionalActions}
+        primaryActions={primaryActions}
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        hasUnsavedChanges={hasUnsavedChanges}
+        unsavedChangesLabel="You have unsaved changes"
+      >
+        {renderTabContent()}
+      </AdminDetailLayout>
 
       {/* Password Reset Modal */}
       <PasswordResetModal

@@ -4,6 +4,8 @@ import { defaultPermissions } from '@/data/permissions';
 import { defaultRoles } from '@/data/roles';
 import { MUSIC_GENRES } from '@/data/musicGenres';
 import { baseEmailTemplates } from '@/data/emailTemplates';
+import { defaultLegalMentions } from '@/data/legalMentions';
+import { defaultSocialLinks } from '@/data/socialLinks';
 
 /**
  * Check and ensure database integrity by creating missing permissions, roles, and instruments
@@ -207,6 +209,8 @@ export async function ensureDBIntegrity(executorUserId?: string) {
             nameEnFemale: roleData.nameEnFemale,
             weight: roleData.weight,
             isCore: roleData.isCore,
+            gradientStart: roleData.gradientStart,
+            gradientEnd: roleData.gradientEnd,
           },
         });
         console.log(`✅ Created missing role: ${roleData.name}`);
@@ -233,6 +237,20 @@ export async function ensureDBIntegrity(executorUserId?: string) {
             });
             console.log(`✅ Added ${rolePermissions.length} permissions to role: ${roleData.name}`);
           }
+        }
+      } else {
+        // Role exists, check if it has colors
+        if (!role.gradientStart && !role.gradientEnd && roleData.gradientStart && roleData.gradientEnd) {
+          await prisma.role.update({
+            where: { id: role.id },
+            data: {
+              gradientStart: roleData.gradientStart,
+              gradientEnd: roleData.gradientEnd,
+            },
+          });
+          console.log(`✅ Added default colors to existing role: ${roleData.name}`);
+          actions.push(`Ajouté les couleurs par défaut au rôle: ${roleData.nameFrMale}`);
+          stats.created++;
         }
       }
     }
@@ -304,6 +322,60 @@ export async function ensureDBIntegrity(executorUserId?: string) {
         });
         console.log(`✅ Created missing email template: ${template.name}`);
         actions.push(`Créé le template d'email manquant: ${template.name}`);
+        stats.created++;
+      }
+    }
+
+    // Ensure legal mentions exist
+    console.log('⚖️ Ensuring legal mentions exist...');
+    
+    const existingLegalMentions = await prisma.legalMentions.findFirst();
+    stats.checked++;
+
+    if (!existingLegalMentions) {
+      // Get current president
+      const president = await prisma.userRole.findFirst({
+        where: { 
+          role: { 
+            name: 'PRESIDENT' 
+          } 
+        },
+        include: { 
+          user: true 
+        }
+      });
+      
+      const legalData = {
+        ...defaultLegalMentions,
+        presidentName: president?.user ? `${president.user.firstName} ${president.user.lastName}` : 'À définir'
+      };
+      
+      await prisma.legalMentions.create({
+        data: legalData
+      });
+
+      console.log('✅ Created legal mentions');
+      actions.push('Créé les mentions légales');
+      stats.created++;
+    }
+
+    // Ensure social links exist
+    console.log('🔗 Ensuring social links exist...');
+    
+    for (const socialLink of defaultSocialLinks) {
+      const existing = await prisma.socialLink.findFirst({
+        where: { platform: socialLink.platform }
+      });
+      
+      stats.checked++;
+      
+      if (!existing) {
+        await prisma.socialLink.create({
+          data: socialLink
+        });
+        
+        console.log(`✅ Created social link: ${socialLink.platform}`);
+        actions.push(`Créé le lien social: ${socialLink.platform}`);
         stats.created++;
       }
     }

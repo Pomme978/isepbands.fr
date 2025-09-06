@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Palette } from 'lucide-react';
+import { Palette, Pipette } from 'lucide-react';
+import { HexColorPicker } from 'react-colorful';
 
 interface CSSColors {
   primary: string;
@@ -27,13 +28,44 @@ interface CSSColors {
 interface AppearanceTabProps {
   primaryColor: string;
   onColorChange: (color: string) => void;
+  selectedTemplate?: string | null;
+  onTemplateChange?: (template: string | null) => void;
 }
 
-export default function AppearanceTab({ primaryColor, onColorChange }: AppearanceTabProps) {
+export default function AppearanceTab({ primaryColor, onColorChange, selectedTemplate, onTemplateChange }: AppearanceTabProps) {
   const [colors, setColors] = useState<CSSColors | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [pickerColor, setPickerColor] = useState('#8B5CF6');
+
+  // Simple conversion from hex to OKLCH approximation
+  const hexToOklch = (hex: string): string => {
+    // Remove the hash if present
+    const cleanHex = hex.replace('#', '');
+    
+    // Convert hex to RGB
+    const r = parseInt(cleanHex.substr(0, 2), 16) / 255;
+    const g = parseInt(cleanHex.substr(2, 2), 16) / 255;
+    const b = parseInt(cleanHex.substr(4, 2), 16) / 255;
+    
+    // Simple approximation to OKLCH format (not perfect but usable)
+    const lightness = (0.299 * r + 0.587 * g + 0.114 * b);
+    const chroma = Math.sqrt((r - g) ** 2 + (g - b) ** 2 + (b - r) ** 2) / Math.sqrt(2);
+    
+    // Approximate hue calculation
+    let hue = 0;
+    if (r >= g && r >= b) {
+      hue = 60 * ((g - b) / (r - Math.min(g, b))) + (g < b ? 360 : 0);
+    } else if (g >= r && g >= b) {
+      hue = 60 * ((b - r) / (g - Math.min(r, b))) + 120;
+    } else {
+      hue = 60 * ((r - g) / (b - Math.min(r, g))) + 240;
+    }
+    
+    return `oklch(${lightness.toFixed(3)} ${(chroma * 0.4).toFixed(3)} ${hue.toFixed(1)})`;
+  };
 
   const predefinedColors = [
     { name: 'Violet', value: 'oklch(0.559 0.238 307.331)' },
@@ -67,6 +99,11 @@ export default function AppearanceTab({ primaryColor, onColorChange }: Appearanc
     if (!colors) return;
     setColors({ ...colors, [key]: value });
     setHasChanges(true);
+    
+    // Si on change la couleur principale et qu'un template est sélectionné, déselectionner le template
+    if (key === 'primary' && selectedTemplate && onTemplateChange) {
+      onTemplateChange(null);
+    }
   };
 
   const saveColors = async () => {
@@ -188,6 +225,77 @@ export default function AppearanceTab({ primaryColor, onColorChange }: Appearanc
                 )}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Color Picker */}
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-3">
+            Sélecteur de couleur avancé
+          </label>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center gap-4 mb-4">
+              <button
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Pipette className="w-4 h-4" />
+                {showColorPicker ? 'Masquer' : 'Afficher'} le sélecteur
+              </button>
+              {showColorPicker && (
+                <button
+                  onClick={() => {
+                    const oklchColor = hexToOklch(pickerColor);
+                    updateColor('primary', oklchColor);
+                    onColorChange(oklchColor);
+                  }}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  Appliquer à la couleur principale
+                </button>
+              )}
+            </div>
+            
+            {showColorPicker && (
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-shrink-0">
+                  <HexColorPicker color={pickerColor} onChange={setPickerColor} />
+                </div>
+                <div className="flex-1">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Couleur HEX</label>
+                      <input
+                        type="text"
+                        value={pickerColor}
+                        onChange={(e) => setPickerColor(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-mono"
+                        placeholder="#8B5CF6"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Aperçu OKLCH</label>
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-8 h-8 rounded border-2 border-gray-200 shadow-sm flex-shrink-0"
+                          style={{ backgroundColor: pickerColor }}
+                        />
+                        <code className="text-sm bg-gray-100 px-2 py-1 rounded font-mono">
+                          {hexToOklch(pickerColor)}
+                        </code>
+                      </div>
+                    </div>
+                    {selectedTemplate && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                        <p className="text-sm text-amber-800">
+                          ⚠️ Modifier la couleur principale désélectionnera le template actuellement sélectionné.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

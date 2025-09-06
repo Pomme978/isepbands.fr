@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const legalMentionsSchema = z.object({
   contactEmail: z.string().email('Email de contact invalide'),
-  technicalEmail: z.string().email('Email technique invalide'),
+  associationAddress: z.string().optional(),
   hostingProvider: z.string().optional(),
   hostingAddress: z.string().optional(),
   hostingPhone: z.string().optional(),
@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
         presidentName,
         contactEmail: 'contact@isepbands.fr',
         technicalEmail: 'tech@isepbands.fr',
+        associationAddress: 'Campus de l\'ISEP, 28 rue Notre-Dame des Champs, 75006 Paris, France',
         hostingProvider: '',
         hostingAddress: '',
         hostingPhone: '',
@@ -52,18 +53,19 @@ export async function GET(req: NextRequest) {
         domainProvider: '',
         domainAddress: '',
         domainPhone: '',
-        developmentTeam: 'Armand OCTEAU',
-        designTeam: 'Sarah LEVY',
+        developmentTeam: 'Armand OCTEAU, Sarah LÉVY',
+        designTeam: 'Armand OCTEAU, Sarah LÉVY',
       };
       return NextResponse.json(defaultMentions);
     }
 
-    // Toujours utiliser le président et l'équipe de développement fixes
+    // Toujours utiliser le président, l'email technique et l'équipe fixes
     const result = {
       ...legalMentions,
       presidentName,
-      developmentTeam: 'Armand OCTEAU, Sarah LEVY',
-      designTeam: 'Armand OCTEAU, Sarah LEVY',
+      technicalEmail: 'tech@isepbands.fr',
+      developmentTeam: 'Armand OCTEAU, Sarah LÉVY',
+      designTeam: 'Armand OCTEAU, Sarah LÉVY',
     };
 
     return NextResponse.json(result);
@@ -118,12 +120,13 @@ export async function PUT(req: NextRequest) {
       });
     }
 
-    // Retourner avec le président et l'équipe fixes
+    // Retourner avec le président, l'email technique et l'équipe fixes
     const result = {
       ...legalMentions,
       presidentName,
-      developmentTeam: 'Armand OCTEAU, Sarah LEVY',
-      designTeam: 'Armand OCTEAU, Sarah LEVY',
+      technicalEmail: 'tech@isepbands.fr',
+      developmentTeam: 'Armand OCTEAU, Sarah LÉVY',
+      designTeam: 'Armand OCTEAU, Sarah LÉVY',
     };
 
     return NextResponse.json(result);

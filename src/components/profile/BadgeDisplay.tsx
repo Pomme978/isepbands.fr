@@ -37,6 +37,10 @@ interface BadgeDisplayProps {
   className?: string;
   textSize?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
+  roleCustomColors?: {
+    gradientStart?: string;
+    gradientEnd?: string;
+  };
 }
 
 // Utility function to get the localized role name based on language and gender
@@ -129,6 +133,7 @@ export default function BadgeDisplay({
   className = '',
   textSize = 'text-sm',
   size = 'md',
+  roleCustomColors,
 }: BadgeDisplayProps) {
   const t = useI18n();
   const { lang: currentLocale } = useLang();
@@ -172,8 +177,8 @@ export default function BadgeDisplay({
   const config = sizeConfig[size] || sizeConfig.md; // Fallback to 'md' if size is invalid
   const finalTextSize = textSize !== 'text-sm' ? textSize : config.text;
 
-  // Get role colors
-  const roleColors = getRoleColor(role);
+  // Get role colors with database colors if available
+  const roleColorConfig = getRoleColor(role, roleCustomColors);
 
   // Get localized role name based on language and gender
   const localizedRoleName = getRoleDisplayName(role, pronouns, currentLocale);
@@ -182,7 +187,14 @@ export default function BadgeDisplay({
     <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
       {/* Badge de rôle principal */}
       <span
-        className={`inline-flex items-center ${config.padding} ${roleColors.bg} ${roleColors.text} rounded-full ${finalTextSize} shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out`}
+        className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out ${
+          !roleColorConfig.gradient ? `${roleColorConfig.bg} ${roleColorConfig.text}` : ''
+        }`}
+        style={
+          roleColorConfig.gradient
+            ? { background: roleColorConfig.gradient, color: 'white', fontWeight: 'bold' }
+            : undefined
+        }
       >
         {localizedRoleName}
       </span>

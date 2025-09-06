@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/middlewares/auth';
+import { requireAdminAuth } from '@/middlewares/auth';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const updateColorsSchema = z.object({
@@ -9,7 +10,7 @@ const updateColorsSchema = z.object({
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // Check authentication and permissions
-  const authResult = await requireAuth(req);
+  const authResult = await requireAdminAuth(req);
   if (!authResult.ok) {
     return authResult.res;
   }
@@ -21,27 +22,34 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Invalid role ID' }, { status: 400 });
     }
 
+    // Check if role exists
+    const existingRole = await prisma.role.findUnique({
+      where: { id: roleId }
+    });
+
+    if (!existingRole) {
+      return NextResponse.json({ error: 'Role not found' }, { status: 404 });
+    }
+
     const body = await req.json();
     const validatedData = updateColorsSchema.parse(body);
 
-    // TODO: When implementing custom role colors, this would:
-    // 1. Update the role record in the database with custom color fields
-    // 2. Update the roleColors.ts utility to check database for custom colors first
-    // 3. Cache the custom colors for performance
-
-    // For now, just return a success response to indicate the API structure is ready
-    console.log('Role color update request:', {
-      roleId,
-      gradientStart: validatedData.gradientStart,
-      gradientEnd: validatedData.gradientEnd,
+    // Update the role with custom colors
+    const updatedRole = await prisma.role.update({
+      where: { id: roleId },
+      data: {
+        gradientStart: validatedData.gradientStart,
+        gradientEnd: validatedData.gradientEnd,
+        updatedAt: new Date()
+      }
     });
 
     return NextResponse.json({
       message: 'Role colors updated successfully',
       roleId,
       colors: {
-        gradientStart: validatedData.gradientStart,
-        gradientEnd: validatedData.gradientEnd,
+        gradientStart: updatedRole.gradientStart,
+        gradientEnd: updatedRole.gradientEnd,
       },
     });
   } catch (error) {

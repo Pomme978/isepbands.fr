@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import BasicLayout from '@/components/layouts/BasicLayout';
 import { Mail, Home, Phone, User, Globe, Eye, Users } from 'lucide-react';
-import Loading from '@/components/ui/Loading';
+import { defaultLegalMentions } from '@/data/legalMentions';
 
 interface LegalMentions {
   presidentName: string;
   contactEmail: string;
   technicalEmail: string;
+  associationAddress?: string;
   hostingProvider?: string;
   hostingAddress?: string;
   hostingPhone?: string;
@@ -22,10 +23,26 @@ interface LegalMentions {
 
 export default function MentionsLegalesPage() {
   const currentYear = new Date().getFullYear();
-  const [legalData, setLegalData] = useState<LegalMentions | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Initialiser avec les données par défaut pour affichage immédiat
+  const [legalData, setLegalData] = useState<LegalMentions>({
+    presidentName: `Président ${currentYear}`,
+    contactEmail: defaultLegalMentions.contactEmail,
+    technicalEmail: 'tech@isepbands.fr',
+    associationAddress: defaultLegalMentions.associationAddress,
+    hostingProvider: defaultLegalMentions.hostingProvider,
+    hostingAddress: defaultLegalMentions.hostingAddress,
+    hostingPhone: defaultLegalMentions.hostingPhone,
+    hostingEmail: defaultLegalMentions.hostingEmail,
+    domainProvider: defaultLegalMentions.domainProvider,
+    domainAddress: defaultLegalMentions.domainAddress,
+    domainPhone: defaultLegalMentions.domainPhone,
+    developmentTeam: defaultLegalMentions.developmentTeam,
+    designTeam: defaultLegalMentions.designTeam,
+  });
 
   useEffect(() => {
+    // Charger les données de la DB en arrière-plan et mettre à jour discrètement
     const loadLegalMentions = async () => {
       try {
         const response = await fetch('/api/admin/legal-mentions');
@@ -35,25 +52,11 @@ export default function MentionsLegalesPage() {
         }
       } catch (error) {
         console.error('Error loading legal mentions:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     loadLegalMentions();
   }, []);
-
-  if (loading) {
-    return (
-      <BasicLayout navbarMode="static">
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 mt-6 rounded-xl">
-          <div className="flex justify-center items-center h-96">
-            <Loading text="Chargement des mentions légales..." size="lg" />
-          </div>
-        </div>
-      </BasicLayout>
-    );
-  }
 
   return (
     <BasicLayout navbarMode="static">
@@ -83,34 +86,35 @@ export default function MentionsLegalesPage() {
               <p className="text-black text-md text-justify my-1 font-ubuntu">
                 <User className="text-primary text-md mr-2 inline w-4 h-4" />
                 <span className="text-primary">Président de l&apos;association:</span>{' '}
-                {legalData?.presidentName || `[Président ${currentYear} à définir]`}
+                {legalData.presidentName}
               </p>
 
               <p className="text-black text-md text-left my-1 font-ubuntu">
                 <Home className="text-primary text-md mr-2 inline w-4 h-4" />
-                <span className="text-primary">Adresse:</span> Campus de l&apos;ISEP, 28 rue
-                Notre-Dame des Champs, 75006 Paris, France
+                <span className="text-primary">Adresse:</span>{' '}
+                {legalData.associationAddress}
               </p>
 
               <p className="text-black text-md text-left my-1 font-ubuntu">
                 <Mail className="text-primary text-md mr-2 inline w-4 h-4" />
                 <span className="text-primary">Contact Pro:</span>{' '}
                 <a
-                  href={`mailto:${legalData?.contactEmail || 'contact@isepbands.fr'}`}
+                  href={`mailto:${legalData.contactEmail}`}
                   className="hover:underline"
                 >
-                  {legalData?.contactEmail || 'contact@isepbands.fr'}
+                  {legalData.contactEmail}
                 </a>
               </p>
 
               <p className="text-black text-md text-left my-1 font-ubuntu">
                 <Mail className="text-primary text-md mr-2 inline w-4 h-4" />
                 <span className="text-primary">Contact Technique:</span>{' '}
-                <a
-                  href={`mailto:${legalData?.technicalEmail || 'tech@isepbands.fr'}`}
-                  className="hover:underline"
-                >
-                  {legalData?.technicalEmail || 'tech@isepbands.fr'}
+                <a href="mailto:armand@solyzon.com" className="hover:underline">
+                  armand@solyzon.com
+                </a>
+                {' et '}
+                <a href="mailto:sarah@solyzon.com" className="hover:underline">
+                  sarah@solyzon.com
                 </a>
               </p>
             </div>
@@ -126,31 +130,25 @@ export default function MentionsLegalesPage() {
 
               <p className="text-black text-md text-justify my-1 font-ubuntu">
                 <User className="text-primary text-md mr-2 inline w-4 h-4" />
-                {legalData?.hostingProvider || '[Hébergeur à définir]'}
+                {legalData.hostingProvider}
               </p>
 
-              {legalData?.hostingAddress && (
-                <p className="text-black text-md text-left my-1 font-ubuntu">
-                  <Home className="text-primary text-md mr-2 inline w-4 h-4" />
-                  {legalData.hostingAddress}
-                </p>
-              )}
+              <p className="text-black text-md text-left my-1 font-ubuntu">
+                <Home className="text-primary text-md mr-2 inline w-4 h-4" />
+                {legalData.hostingAddress}
+              </p>
 
-              {legalData?.hostingPhone && (
-                <p className="text-black text-md text-left my-1 font-ubuntu">
-                  <Phone className="text-primary text-md mr-2 inline w-4 h-4" />
-                  {legalData.hostingPhone}
-                </p>
-              )}
+              <p className="text-black text-md text-left my-1 font-ubuntu">
+                <Phone className="text-primary text-md mr-2 inline w-4 h-4" />
+                {legalData.hostingPhone}
+              </p>
 
-              {legalData?.hostingEmail && (
-                <p className="text-black text-md text-left my-1 font-ubuntu">
-                  <Mail className="text-primary text-md mr-2 inline w-4 h-4" />
-                  <a href={`mailto:${legalData.hostingEmail}`} className="hover:underline">
-                    {legalData.hostingEmail}
-                  </a>
-                </p>
-              )}
+              <p className="text-black text-md text-left my-1 font-ubuntu">
+                <Mail className="text-primary text-md mr-2 inline w-4 h-4" />
+                <a href={`mailto:${legalData.hostingEmail}`} className="hover:underline">
+                  {legalData.hostingEmail}
+                </a>
+              </p>
 
               <h3 className="text-primary text-md text-left mt-4 font-outfit">
                 Fournisseur du domaine
@@ -158,22 +156,18 @@ export default function MentionsLegalesPage() {
 
               <p className="text-black text-md text-justify my-1 font-ubuntu">
                 <Globe className="text-primary text-md mr-2 inline w-4 h-4" />
-                {legalData?.domainProvider || '[Registrar à définir]'}
+                {legalData.domainProvider}
               </p>
 
-              {legalData?.domainAddress && (
-                <p className="text-black text-md text-left my-1 font-ubuntu">
-                  <Home className="text-primary text-md mr-2 inline w-4 h-4" />
-                  {legalData.domainAddress}
-                </p>
-              )}
+              <p className="text-black text-md text-left my-1 font-ubuntu">
+                <Home className="text-primary text-md mr-2 inline w-4 h-4" />
+                {legalData.domainAddress}
+              </p>
 
-              {legalData?.domainPhone && (
-                <p className="text-black text-md text-left my-1 font-ubuntu">
-                  <Phone className="text-primary text-md mr-2 inline w-4 h-4" />
-                  {legalData.domainPhone}
-                </p>
-              )}
+              <p className="text-black text-md text-left my-1 font-ubuntu">
+                <Phone className="text-primary text-md mr-2 inline w-4 h-4" />
+                {legalData.domainPhone}
+              </p>
             </div>
 
             <h2 className="text-primary text-xl text-left my-3 mt-10 font-outfit">
@@ -183,24 +177,24 @@ export default function MentionsLegalesPage() {
             <div className="ml-3">
               <p className="text-black text-md text-justify my-1 font-ubuntu">
                 <User className="text-primary text-md mr-2 inline w-4 h-4" />
-                <span className="text-primary">Président de l&apos;association:</span>{' '}
-                {legalData?.presidentName || `[Président ${currentYear} à définir]`}
+                <span className="text-primary">Réalisé par:</span> SOLYZON.COM
               </p>
 
-              {legalData?.developmentTeam && (
-                <p className="text-black text-md text-justify my-1 font-ubuntu">
-                  <Users className="text-primary text-md mr-2 inline w-4 h-4" />
-                  <span className="text-primary">Équipe développement:</span>{' '}
-                  {legalData.developmentTeam}
-                </p>
-              )}
+              <p className="text-black text-md text-justify my-1 font-ubuntu">
+                <User className="text-primary text-md mr-2 inline w-4 h-4" />
+                <span className="text-primary">À destination de:</span> ISEP Bands
+              </p>
 
-              {legalData?.designTeam && (
-                <p className="text-black text-md text-justify my-1 font-ubuntu">
-                  <Eye className="text-primary text-md mr-2 inline w-4 h-4" />
-                  <span className="text-primary">Design et UX:</span> {legalData.designTeam}
-                </p>
-              )}
+              <p className="text-black text-md text-justify my-1 font-ubuntu">
+                <Users className="text-primary text-md mr-2 inline w-4 h-4" />
+                <span className="text-primary">Équipe développement & design:</span> Armand OCTEAU, Sarah LÉVY
+              </p>
+
+              <p className="text-black text-md text-justify my-1 font-ubuntu">
+                <User className="text-primary text-md mr-2 inline w-4 h-4" />
+                <span className="text-primary">Président de l&apos;association:</span>{' '}
+                {legalData.presidentName}
+              </p>
             </div>
 
             <h2 className="text-primary text-xl text-left my-3 mt-10 font-outfit">
