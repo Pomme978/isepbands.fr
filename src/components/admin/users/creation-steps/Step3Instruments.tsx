@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Minus, X, Star } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Plus, X, Star } from 'lucide-react';
 import { UserFormData } from '../CreateUserModal';
 import { MUSIC_GENRES } from '@/data/musicGenres';
 
@@ -17,26 +18,28 @@ interface Instrument {
   nameEn: string;
 }
 
-const AVAILABLE_INSTRUMENTS_FALLBACK = [
-  'Guitar',
-  'Bass',
-  'Drums',
-  'Piano/Keyboard',
-  'Vocals',
-  'Violin',
-  'Trumpet',
-  'Saxophone',
-  'Flute',
-  'Clarinet',
-  'Cello',
-  'Percussion',
-  'Harmonica',
-  'Other',
-];
+// const AVAILABLE_INSTRUMENTS_FALLBACK = [
+//   'Guitar',
+//   'Bass',
+//   'Drums',
+//   'Piano/Keyboard',
+//   'Vocals',
+//   'Violin',
+//   'Trumpet',
+//   'Saxophone',
+//   'Flute',
+//   'Clarinet',
+//   'Cello',
+//   'Percussion',
+//   'Harmonica',
+//   'Other',
+// ];
 
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
 
 export default function Step3Instruments({ formData, setFormData }: Step3InstrumentsProps) {
+  const pathname = usePathname();
+  const locale = pathname.startsWith('/fr') ? 'fr' : 'en';
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [isLoadingInstruments, setIsLoadingInstruments] = useState(true);
   const [newInstrument, setNewInstrument] = useState('');
@@ -85,13 +88,8 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
       updatedInstruments = updatedInstruments.map((inst) => ({ ...inst, isPrimary: false }));
     }
 
-    // Find the instrument data to get the French name for display
-    const instrumentData = instruments.find((inst) => inst.name === newInstrument);
-    const displayName = instrumentData ? instrumentData.nameFr : newInstrument;
-
     const newInstrumentEntry = {
       instrument: newInstrument, // technical name for API
-      displayName: displayName, // French name for display
       level: newLevel,
       yearsPlaying: newYearsPlaying === '' ? undefined : Number(newYearsPlaying),
       isPrimary: newIsPrimary,
@@ -124,7 +122,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
     )
     .map((instrument) => ({
       value: instrument.name,
-      label: instrument.nameFr,
+      label: locale === 'en' ? instrument.nameEn : instrument.nameFr,
       nameEn: instrument.nameEn,
     }));
 
@@ -136,9 +134,9 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
     setNewInstrument(availableInstruments[0].value);
   }
 
-  const updateField = (field: keyof UserFormData, value: string) => {
-    setFormData({ ...formData, [field]: value });
-  };
+  // const updateField = (field: keyof UserFormData, value: string) => {
+  //   setFormData({ ...formData, [field]: value });
+  // };
 
   const toggleGenre = (genreId: string) => {
     const currentGenres = formData.preferredGenres || [];
@@ -244,7 +242,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
         </div>
 
         {/* Current Instruments */}
-        {formData.instruments.length > 0 && (
+        {formData.instruments.length > 0 && !isLoadingInstruments && (
           <div className="space-y-2 mt-6">
             <p className="text-sm font-medium text-gray-700">Current Instruments:</p>
             {formData.instruments.map((inst, index) => (
@@ -257,7 +255,23 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                 <div className="flex items-center space-x-3">
                   <div>
                     <div className="flex items-center space-x-2">
-                      <strong className="text-sm">{inst.displayName || inst.instrument}</strong>
+                      <strong className="text-sm">
+                        {(() => {
+                          console.log('Looking for instrument:', inst.instrument);
+                          console.log(
+                            'Available instruments:',
+                            instruments.map((i) => i.name),
+                          );
+                          const instrumentData = instruments.find(
+                            (instr) => instr.name === inst.instrument,
+                          );
+                          console.log('Found instrument data:', instrumentData);
+                          if (instrumentData) {
+                            return locale === 'en' ? instrumentData.nameEn : instrumentData.nameFr;
+                          }
+                          return inst.instrument;
+                        })()}
+                      </strong>
                       <span className="text-xs text-gray-500">
                         ({inst.level}
                         {inst.yearsPlaying && inst.yearsPlaying > 0
@@ -325,7 +339,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                       : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  {genre.nameEn}
+                  {locale === 'en' ? genre.nameEn : genre.nameFr}
                 </button>
               ))}
             </div>
@@ -335,7 +349,7 @@ export default function Step3Instruments({ formData, setFormData }: Step3Instrum
                 {formData.preferredGenres
                   .map((genreId) => {
                     const genre = MUSIC_GENRES.find((g) => g.id === genreId);
-                    return genre ? genre.nameEn : genreId;
+                    return genre ? (locale === 'en' ? genre.nameEn : genre.nameFr) : genreId;
                   })
                   .join(', ')}
               </p>

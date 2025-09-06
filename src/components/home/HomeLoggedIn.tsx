@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Avatar from '@/components/common/Avatar';
@@ -57,7 +57,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
   const t = useI18n();
 
   // Fetch club feed activities
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setIsLoadingFeed(true);
       setFeedError(null);
@@ -113,7 +113,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
     } finally {
       setIsLoadingFeed(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchActivities();
@@ -122,7 +122,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
     const interval = setInterval(fetchActivities, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchActivities]);
 
   // Fetch user profile data
   useEffect(() => {
@@ -274,7 +274,9 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                     </LangLink>
                   </Button>
 
-                  {userProfile?.primaryRole && (
+                  {(user?.isRoot ||
+                    user?.isFullAccess ||
+                    user?.roles?.some((userRole) => userRole.role.weight >= 70)) && (
                     <Button
                       variant="outline"
                       className="w-full justify-start text-left h-auto py-2 md:py-3 text-sm md:text-base"

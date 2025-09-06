@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus, X, Edit2 } from 'lucide-react';
 import { MUSIC_GENRES } from '@/data/musicGenres';
 import { parsePreferredGenres } from '@/utils/genreUtils';
+import { usePathname } from 'next/navigation';
 
 interface User {
   id: string;
@@ -53,6 +54,8 @@ export default function UserEditInstruments({
   setHasUnsavedChanges,
   isReadOnly = false,
 }: UserEditInstrumentsProps) {
+  const pathname = usePathname();
+  const locale = pathname.startsWith('/fr') ? 'fr' : 'en';
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [availableInstruments, setAvailableInstruments] = useState<
     Array<{
@@ -86,16 +89,19 @@ export default function UserEditInstruments({
         const data = await response.json();
         if (data.instruments) {
           setAvailableInstruments(data.instruments);
-          // Create mapping from French name to ID
+          // Create mapping from localized name to ID
           const mapping: Record<string, number> = {};
-          data.instruments.forEach((inst: { id: number; nameFr: string }) => {
-            mapping[inst.nameFr] = inst.id;
+          data.instruments.forEach((inst: { id: number; nameFr: string; nameEn: string }) => {
+            const localizedName = locale === 'en' ? inst.nameEn : inst.nameFr;
+            mapping[localizedName] = inst.id;
           });
           setInstrumentMapping(mapping);
 
           // Set default instrument name
           if (data.instruments.length > 0 && !newInstrument.name) {
-            setNewInstrument((prev) => ({ ...prev, name: data.instruments[0].nameFr }));
+            const defaultName =
+              locale === 'en' ? data.instruments[0].nameEn : data.instruments[0].nameFr;
+            setNewInstrument((prev) => ({ ...prev, name: defaultName }));
           }
         }
       } catch (error) {
@@ -103,7 +109,7 @@ export default function UserEditInstruments({
       }
     };
     fetchInstruments();
-  }, [newInstrument.name]);
+  }, [newInstrument.name, locale]);
 
   // Load real user instruments when component mounts or user changes
   useEffect(() => {
@@ -111,7 +117,9 @@ export default function UserEditInstruments({
       const userInstruments = user.instruments.map((inst) => ({
         id: inst.instrumentId?.toString() || inst.id?.toString(),
         name:
-          inst.instrument?.nameFr || inst.instrument?.nameEn || inst.instrument?.name || 'Unknown',
+          locale === 'en'
+            ? inst.instrument?.nameEn || inst.instrument?.name || 'Unknown'
+            : inst.instrument?.nameFr || inst.instrument?.name || 'Unknown',
         level: inst.skillLevel || 'Beginner',
         yearsPlaying: inst.yearsPlaying || 0,
         primary: inst.isPrimary || false,
@@ -124,7 +132,7 @@ export default function UserEditInstruments({
     // Load preferred genres from user using utility function
     const genres = parsePreferredGenres(user?.preferredGenres);
     setPreferredGenres(genres);
-  }, [user]);
+  }, [user, locale]);
 
   const addInstrument = () => {
     setErrorMessage(null); // Clear previous errors
@@ -186,15 +194,20 @@ export default function UserEditInstruments({
         instrument: {
           id: instrumentId,
           name: inst.name.toLowerCase(),
-          nameFr: inst.name,
-          nameEn: inst.name,
+          nameFr: locale === 'fr' ? inst.name : inst.name,
+          nameEn: locale === 'en' ? inst.name : inst.name,
         },
       };
     });
     setUser({ ...user, instruments: updatedUserInstruments });
 
     setNewInstrument({
-      name: availableInstruments.length > 0 ? availableInstruments[0].nameFr : '',
+      name:
+        availableInstruments.length > 0
+          ? locale === 'en'
+            ? availableInstruments[0].nameEn
+            : availableInstruments[0].nameFr
+          : '',
       level: 'Beginner',
       yearsPlaying: 0,
       primary: false,
@@ -219,8 +232,8 @@ export default function UserEditInstruments({
         instrument: {
           id: instrumentId,
           name: inst.name.toLowerCase(),
-          nameFr: inst.name,
-          nameEn: inst.name,
+          nameFr: locale === 'fr' ? inst.name : inst.name,
+          nameEn: locale === 'en' ? inst.name : inst.name,
         },
       };
     });
@@ -254,8 +267,8 @@ export default function UserEditInstruments({
         instrument: {
           id: instrumentId,
           name: inst.name.toLowerCase(),
-          nameFr: inst.name,
-          nameEn: inst.name,
+          nameFr: locale === 'fr' ? inst.name : inst.name,
+          nameEn: locale === 'en' ? inst.name : inst.name,
         },
       };
     });
@@ -283,8 +296,8 @@ export default function UserEditInstruments({
         instrument: {
           id: instrumentId,
           name: inst.name.toLowerCase(),
-          nameFr: inst.name,
-          nameEn: inst.name,
+          nameFr: locale === 'fr' ? inst.name : inst.name,
+          nameEn: locale === 'en' ? inst.name : inst.name,
         },
       };
     });
@@ -442,8 +455,11 @@ export default function UserEditInstruments({
                 className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
               >
                 {availableInstruments.map((instrument) => (
-                  <option key={instrument.id} value={instrument.nameFr}>
-                    {instrument.nameFr}
+                  <option
+                    key={instrument.id}
+                    value={locale === 'en' ? instrument.nameEn : instrument.nameFr}
+                  >
+                    {locale === 'en' ? instrument.nameEn : instrument.nameFr}
                   </option>
                 ))}
               </select>
@@ -495,7 +511,12 @@ export default function UserEditInstruments({
                   setIsAddingInstrument(false);
                   setErrorMessage(null);
                   setNewInstrument({
-                    name: availableInstruments.length > 0 ? availableInstruments[0].nameFr : '',
+                    name:
+                      availableInstruments.length > 0
+                        ? locale === 'en'
+                          ? availableInstruments[0].nameEn
+                          : availableInstruments[0].nameFr
+                        : '',
                     level: 'Beginner',
                     yearsPlaying: 0,
                     primary: false,
@@ -545,7 +566,7 @@ export default function UserEditInstruments({
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
               } ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {genre.nameFr}
+              {locale === 'en' ? genre.nameEn : genre.nameFr}
             </button>
           ))}
         </div>
@@ -557,7 +578,7 @@ export default function UserEditInstruments({
               {preferredGenres
                 .map((genreId) => {
                   const genre = MUSIC_GENRES.find((g) => g.id === genreId);
-                  return genre ? genre.nameFr : genreId;
+                  return genre ? (locale === 'en' ? genre.nameEn : genre.nameFr) : genreId;
                 })
                 .join(', ')}
             </p>

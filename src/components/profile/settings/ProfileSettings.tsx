@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
+import { useI18n } from '@/locales/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,25 +43,6 @@ interface ProfileSettingsProps {
   onPendingPhotoChange?: (file: File | null) => void;
 }
 
-// Simple validators aligned with your register page
-const validatePassword = (value: string) => {
-  if (!value) return 'Ce champ est requis';
-  if (
-    !/^.*(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/.test(
-      value,
-    )
-  ) {
-    return 'Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.';
-  }
-  return '';
-};
-
-const validateConfirmPassword = (value: string, password: string) => {
-  if (!value) return 'Ce champ est requis';
-  if (value !== password) return 'Les mots de passe ne correspondent pas.';
-  return '';
-};
-
 export function ProfileSettings({
   initialProfile,
   currentUserId,
@@ -68,7 +50,27 @@ export function ProfileSettings({
   onFormDataChange,
   onPendingPhotoChange,
 }: ProfileSettingsProps) {
+  const t = useI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Simple validators aligned with your register page - moved inside component to access t function
+  const validatePassword = (value: string) => {
+    if (!value) return t('settings.profile.security.validation.required');
+    if (
+      !/^.*(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/.test(
+        value,
+      )
+    ) {
+      return t('settings.profile.security.validation.complexity');
+    }
+    return '';
+  };
+
+  const validateConfirmPassword = (value: string, password: string) => {
+    if (!value) return t('settings.profile.security.validation.required');
+    if (value !== password) return t('settings.profile.security.validation.mismatch');
+    return '';
+  };
 
   // Loading states
   const [isUploadingPhoto] = useState(false);
@@ -143,13 +145,13 @@ export function ProfileSettings({
   function getStatusDisplay(status?: string): string {
     switch (status) {
       case 'CURRENT':
-        return 'Membre actuel';
+        return t('settings.profile.association.statusTypes.current');
       case 'FORMER':
-        return 'Ancien membre';
+        return t('settings.profile.association.statusTypes.former');
       case 'PENDING':
-        return 'En attente';
+        return t('settings.profile.association.statusTypes.pending');
       default:
-        return 'Membre';
+        return t('settings.profile.association.statusTypes.member');
     }
   }
 
@@ -163,16 +165,25 @@ export function ProfileSettings({
 
   const passwordChecklist = useMemo(
     () => [
-      { label: 'Au moins 8 caractères', ok: newPassword.length >= 8 },
-      { label: 'Une lettre minuscule', ok: /[a-z]/.test(newPassword) },
-      { label: 'Une lettre majuscule', ok: /[A-Z]/.test(newPassword) },
-      { label: 'Un chiffre', ok: /\d/.test(newPassword) },
       {
-        label: 'Un caractère spécial',
+        label: t('settings.profile.security.requirementsList.length'),
+        ok: newPassword.length >= 8,
+      },
+      {
+        label: t('settings.profile.security.requirementsList.lowercase'),
+        ok: /[a-z]/.test(newPassword),
+      },
+      {
+        label: t('settings.profile.security.requirementsList.uppercase'),
+        ok: /[A-Z]/.test(newPassword),
+      },
+      { label: t('settings.profile.security.requirementsList.number'), ok: /\d/.test(newPassword) },
+      {
+        label: t('settings.profile.security.requirementsList.special'),
         ok: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPassword),
       },
     ],
-    [newPassword],
+    [newPassword, t],
   );
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,13 +192,13 @@ export function ProfileSettings({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Veuillez sélectionner un fichier image valide.');
+      alert(t('settings.profile.alerts.invalidFile'));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('La taille du fichier ne doit pas dépasser 5 MB.');
+      alert(t('settings.profile.alerts.fileTooLarge'));
       return;
     }
 
@@ -254,10 +265,8 @@ export function ProfileSettings({
     <div className="relative">
       {/* Simple Header without background */}
       <div className="pb-4 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
-        <p className="text-muted-foreground mt-1">
-          Gérez vos informations personnelles et vos préférences.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('settings.profile.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('settings.profile.subtitle')}</p>
       </div>
 
       <div className="space-y-8">
@@ -266,13 +275,13 @@ export function ProfileSettings({
           {/* Photo de profil */}
           <Card className="lg:col-span-1">
             <CardHeader>
-              <CardTitle>Photo de profil</CardTitle>
-              <CardDescription>Représentez-vous auprès des autres membres.</CardDescription>
+              <CardTitle>{t('settings.profile.photo.title')}</CardTitle>
+              <CardDescription>{t('settings.profile.photo.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
               <CustomAvatar
                 src={photoMarkedForDeletion ? null : previewUrl || photoUrl}
-                alt="Photo de profil"
+                alt={t('settings.profile.photo.title')}
                 name={`${firstName || initialProfile?.firstName || ''} ${lastName || initialProfile?.lastName || ''}`}
                 size="xl"
                 className="h-24 w-24"
@@ -294,12 +303,12 @@ export function ProfileSettings({
                   {isUploadingPhoto ? (
                     <>
                       <Loading text="" size="sm" centered={false} />
-                      Téléchargement...
+                      {t('settings.profile.photo.uploading')}
                     </>
                   ) : (
                     <>
                       <Camera className="mr-2 h-4 w-4" />
-                      Changer la photo
+                      {t('settings.profile.photo.change')}
                     </>
                   )}
                 </Button>
@@ -311,12 +320,12 @@ export function ProfileSettings({
                     disabled={isUploadingPhoto}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Supprimer la photo
+                    {t('settings.profile.photo.delete')}
                   </Button>
                 )}
                 {photoMarkedForDeletion && (
                   <div className="text-sm text-orange-600">
-                    Photo sera supprimée lors de la sauvegarde
+                    {t('settings.profile.photo.deleteMessage')}
                   </div>
                 )}
               </div>
@@ -326,32 +335,32 @@ export function ProfileSettings({
           {/* Infos personnelles */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Informations personnelles</CardTitle>
-              <CardDescription>Mettez à jour votre nom et votre bio.</CardDescription>
+              <CardTitle>{t('settings.profile.personal.title')}</CardTitle>
+              <CardDescription>{t('settings.profile.personal.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="firstName">Prénom</Label>
+                  <Label htmlFor="firstName">{t('settings.profile.personal.firstName')}</Label>
                   <Input
                     id="firstName"
-                    placeholder="Votre prénom"
+                    placeholder={t('settings.profile.personal.firstNamePlaceholder')}
                     value={firstName}
                     onChange={(e) => handleFieldChange('firstName', e.target.value)}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="lastName">{t('settings.profile.personal.lastName')}</Label>
                   <Input
                     id="lastName"
-                    placeholder="Votre nom"
+                    placeholder={t('settings.profile.personal.lastNamePlaceholder')}
                     value={lastName}
                     onChange={(e) => handleFieldChange('lastName', e.target.value)}
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="birthDate">Date de naissance</Label>
+                <Label htmlFor="birthDate">{t('settings.profile.personal.birthDate')}</Label>
                 <Input
                   id="birthDate"
                   type="date"
@@ -360,7 +369,7 @@ export function ProfileSettings({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="pronouns">Pronoms</Label>
+                <Label htmlFor="pronouns">{t('settings.profile.personal.pronouns')}</Label>
                 <Select
                   value={pronouns === '' || pronouns === null ? 'none' : (pronouns as string)}
                   onValueChange={(value) =>
@@ -368,40 +377,50 @@ export function ProfileSettings({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez vos pronoms" />
+                    <SelectValue placeholder={t('settings.profile.personal.pronounsPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Aucun pronoms spécifié</SelectItem>
-                    <SelectItem value="he/him">he/him (il/lui)</SelectItem>
-                    <SelectItem value="she/her">she/her (elle/elle)</SelectItem>
-                    <SelectItem value="they/them">they/them (iel/ellui)</SelectItem>
-                    <SelectItem value="other">Other (autre)</SelectItem>
+                    <SelectItem value="none">
+                      {t('settings.profile.personal.pronounsOptions.none')}
+                    </SelectItem>
+                    <SelectItem value="he/him">
+                      {t('settings.profile.personal.pronounsOptions.he')}
+                    </SelectItem>
+                    <SelectItem value="she/her">
+                      {t('settings.profile.personal.pronounsOptions.she')}
+                    </SelectItem>
+                    <SelectItem value="they/them">
+                      {t('settings.profile.personal.pronounsOptions.they')}
+                    </SelectItem>
+                    <SelectItem value="other">
+                      {t('settings.profile.personal.pronounsOptions.other')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Indiquez vos pronoms pour aider les autres à s&apos;adresser à vous correctement.
+                  {t('settings.profile.personal.pronounsHelp')}
                 </p>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bio">Biographie</Label>
+                <Label htmlFor="bio">{t('settings.profile.personal.bio')}</Label>
                 <Textarea
                   id="bio"
-                  placeholder="Décrivez-vous, vos passions, votre parcours musical..."
+                  placeholder={t('settings.profile.personal.bioPlaceholder')}
                   className="min-h-[120px]"
                   value={bio}
                   onChange={(e) => handleFieldChange('biography', e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Cette biographie apparaîtra sur votre page de profil. Pas de limite de longueur.
+                  {t('settings.profile.personal.bioHelp')}
                 </p>
               </div>
 
               {isBureauMember && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="bureauQuote">Citation bureau</Label>
+                  <Label htmlFor="bureauQuote">{t('settings.profile.personal.bureauQuote')}</Label>
                   <Textarea
                     id="bureauQuote"
-                    placeholder="Une citation courte et percutante pour la page bureau..."
+                    placeholder={t('settings.profile.personal.bureauQuotePlaceholder')}
                     className="min-h-[80px]"
                     value={bureauQuote}
                     onChange={(e) => {
@@ -415,7 +434,7 @@ export function ProfileSettings({
                     }}
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Cette citation apparaîtra sur votre carte de la page bureau.</span>
+                    <span>{t('settings.profile.personal.bureauQuoteHelp')}</span>
                     <span
                       className={`${
                         bureauQuote
@@ -439,7 +458,7 @@ export function ProfileSettings({
               )}
               {/* Note: Save button moved to sticky header */}
               <div className="text-sm text-muted-foreground">
-                Les modifications seront sauvegardées avec le bouton en haut de la page.
+                {t('settings.profile.personal.saveNote')}
               </div>
             </CardContent>
           </Card>
@@ -448,13 +467,13 @@ export function ProfileSettings({
         {/* Org / school data (read-only and clean) */}
         <Card>
           <CardHeader>
-            <CardTitle>Données de l&apos;association</CardTitle>
-            <CardDescription>Informations synchronisées automatiquement.</CardDescription>
+            <CardTitle>{t('settings.profile.association.title')}</CardTitle>
+            <CardDescription>{t('settings.profile.association.subtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             {/* Email (non modifiable, sans wording "bloqué") */}
             <div className="space-y-1.5">
-              <Label htmlFor="email">Adresse email</Label>
+              <Label htmlFor="email">{t('settings.profile.association.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -463,32 +482,34 @@ export function ProfileSettings({
                 disabled
                 aria-disabled="true"
               />
-              <p className="text-xs text-muted-foreground">Adresse ISEP non modifiable.</p>
+              <p className="text-xs text-muted-foreground">
+                {t('settings.profile.association.emailHelp')}
+              </p>
             </div>
 
             {/* Statut (non modifiable) */}
             <div className="space-y-1.5">
-              <Label>Statut</Label>
+              <Label>{t('settings.profile.association.status')}</Label>
               <div className="rounded-md border border-input bg-muted/30 px-3 py-2 text-sm">
                 {currentStatus}
               </div>
               <p className="text-xs text-muted-foreground">
-                Statut du compte dans l&apos;association.
+                {t('settings.profile.association.statusHelp')}
               </p>
             </div>
 
             {/* Promotion (texte auto) */}
             <div className="space-y-1.5">
-              <Label>Promotion</Label>
+              <Label>{t('settings.profile.association.promotion')}</Label>
               <div className="flex items-center justify-between rounded-md border border-input bg-muted/30 px-3 py-2 text-sm">
                 <span>{currentPromotion}</span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <Info className="h-3.5 w-3.5" aria-hidden />
-                  Mise à jour automatiquement
+                  {t('settings.profile.association.autoUpdate')}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Contactez un membre du bureau en cas d&apos;erreur.
+                {t('settings.profile.association.promotionHelp')}
               </p>
             </div>
           </CardContent>
@@ -497,13 +518,13 @@ export function ProfileSettings({
         {/* Password section */}
         <Card>
           <CardHeader>
-            <CardTitle>Sécurité</CardTitle>
-            <CardDescription>Mettre à jour votre mot de passe.</CardDescription>
+            <CardTitle>{t('settings.profile.security.title')}</CardTitle>
+            <CardDescription>{t('settings.profile.security.subtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                <Label htmlFor="newPassword">{t('settings.profile.security.newPassword')}</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -525,7 +546,9 @@ export function ProfileSettings({
 
               {showPasswordSection && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                  <Label htmlFor="confirmPassword">
+                    {t('settings.profile.security.confirmPassword')}
+                  </Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -548,7 +571,9 @@ export function ProfileSettings({
             {/* Checklist visible only when the user starts typing a new password */}
             {showPasswordSection && (
               <div className="rounded-lg border p-3">
-                <p className="text-sm font-medium mb-2">Exigences du mot de passe</p>
+                <p className="text-sm font-medium mb-2">
+                  {t('settings.profile.security.requirements')}
+                </p>
                 <ul className="grid sm:grid-cols-2 gap-1.5 text-sm">
                   {passwordChecklist.map((item) => (
                     <li key={item.label} className="flex items-center gap-2">
@@ -569,8 +594,8 @@ export function ProfileSettings({
             <div className="flex justify-between items-center">
               <div className="text-sm text-muted-foreground">
                 {showPasswordSection
-                  ? 'Complétez les champs pour changer votre mot de passe'
-                  : 'Commencez à taper pour changer votre mot de passe'}
+                  ? t('settings.profile.security.helpText.complete')
+                  : t('settings.profile.security.helpText.start')}
               </div>
               <Button
                 onClick={handleUpdatePassword}
@@ -580,7 +605,7 @@ export function ProfileSettings({
                 variant="default"
                 className={!showPasswordSection ? 'opacity-50' : ''}
               >
-                Mettre à jour le mot de passe
+                {t('settings.profile.security.updateButton')}
               </Button>
             </div>
           </CardContent>

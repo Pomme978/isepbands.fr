@@ -358,7 +358,9 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                             <Spinner size="sm" color={style === 'transparent' ? 'white' : 'gray'} />
                           )}
                           <span>
-                            {isLoggingOut ? 'Déconnexion...' : t('navigation.mobile.signOut')}
+                            {isLoggingOut
+                              ? t('navigation.mobile.loggingOut')
+                              : t('navigation.mobile.signOut')}
                           </span>
                         </button>
                       </div>

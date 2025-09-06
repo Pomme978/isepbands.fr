@@ -1,7 +1,5 @@
 import { RegistrationData } from '@/types/registration';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { useState, useRef } from 'react';
 import { useI18n } from '@/locales/client';
 import { Eye, EyeOff } from 'lucide-react';
@@ -29,6 +27,7 @@ export default function Step1BasicInfo({
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [cycleError, setCycleError] = useState('');
+  const [pronounsError, setPronounsError] = useState('');
 
   // States pour la visibilité des mots de passe
   const [showPassword, setShowPassword] = useState(false);
@@ -96,6 +95,10 @@ export default function Step1BasicInfo({
     if (!value.trim()) return t('validator.required');
     return '';
   };
+  const validatePronouns = (value: string) => {
+    if (!value.trim()) return t('validator.required');
+    return '';
+  };
 
   // Validation globale au submit
   const validateAll = () => {
@@ -112,6 +115,7 @@ export default function Step1BasicInfo({
     setPasswordError(validatePassword(data.password));
     setConfirmPasswordError(validateConfirmPassword(data.confirmPassword, data.password));
     setCycleError(validateCycle(data.cycle));
+    setPronounsError(validatePronouns(data.pronouns));
     if (
       validateFirstName(data.firstName) ||
       validateLastName(data.lastName) ||
@@ -120,7 +124,8 @@ export default function Step1BasicInfo({
       fieldErrors.email || // Inclure les erreurs serveur
       validatePassword(data.password) ||
       validateConfirmPassword(data.confirmPassword, data.password) ||
-      validateCycle(data.cycle)
+      validateCycle(data.cycle) ||
+      validatePronouns(data.pronouns)
     ) {
       valid = false;
     }
@@ -181,7 +186,7 @@ export default function Step1BasicInfo({
             {lastNameError && <div className="text-red-500 text-xs mt-1">{lastNameError}</div>}
           </div>
 
-          <div className="md:col-span-2">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('auth.register.step1.emailLabel')}
             </label>
@@ -217,6 +222,29 @@ export default function Step1BasicInfo({
             {(emailError || fieldErrors.email) && (
               <div className="text-red-500 text-xs mt-1">{emailError || fieldErrors.email}</div>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('auth.register.step1.pronounsLabel')}
+            </label>
+            <select
+              id="pronouns"
+              value={data.pronouns}
+              onChange={(e) => {
+                onChange({ pronouns: e.target.value });
+                setPronounsError(validatePronouns(e.target.value));
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              required
+            >
+              <option value="">{t('auth.register.step1.pronounsPlaceholder')}</option>
+              <option value="he/him">{t('auth.register.step1.pronounsOptions.he')}</option>
+              <option value="she/her">{t('auth.register.step1.pronounsOptions.she')}</option>
+              <option value="they/them">{t('auth.register.step1.pronounsOptions.they')}</option>
+              <option value="other">{t('auth.register.step1.pronounsOptions.other')}</option>
+            </select>
+            {pronounsError && <div className="text-red-500 text-xs mt-1">{pronounsError}</div>}
           </div>
         </div>
       </div>

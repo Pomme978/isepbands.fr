@@ -31,7 +31,12 @@ export async function getFileBuffer(key: string, category?: string) {
   const filePath = path.join(categoryDir, key);
   return fs.readFile(filePath);
 }
-export async function uploadToStorage(file: File, userId?: string, category?: string) {
+export async function uploadToStorage(
+  file: File,
+  userId?: string,
+  category?: string,
+  compress: boolean = true,
+) {
   try {
     const originalBuffer = Buffer.from(await file.arrayBuffer());
     const originalSize = originalBuffer.length;
@@ -53,15 +58,16 @@ export async function uploadToStorage(file: File, userId?: string, category?: st
 
     let processedBuffer = originalBuffer;
 
-    // Process image if it's an image file
-    if (contentType.startsWith('image/')) {
+    // Process image if it's an image file and compression is enabled
+    if (contentType.startsWith('image/') && compress) {
       try {
         // Get image metadata
         const metadata = await sharp(originalBuffer).metadata();
 
-        // Resize and compress the image
-        const maxDimension = 800; // Max width or height
-        const quality = 85; // JPEG quality
+        // Resize and compress the image - different settings for avatars
+        const isAvatar = category === 'avatars';
+        const maxDimension = isAvatar ? 1024 : 800; // Bigger for avatars
+        const quality = isAvatar ? 95 : 85; // Higher quality for avatars
 
         let sharpInstance = sharp(originalBuffer)
           // Corriger automatiquement l'orientation EXIF
@@ -78,19 +84,34 @@ export async function uploadToStorage(file: File, userId?: string, category?: st
           });
         }
 
-        // Convert to JPEG for better compression (unless it's PNG with transparency)
-        if (contentType !== 'image/png' || !metadata.hasAlpha) {
+        // Convert to JPEG for better compression (unless it's PNG with transparency or an avatar)
+        if ((contentType !== 'image/png' || !metadata.hasAlpha) && !isAvatar) {
           processedBuffer = await sharpInstance.jpeg({ quality, progressive: true }).toBuffer();
           contentType = 'image/jpeg';
+        } else if (contentType === 'image/png') {
+          // Keep as PNG but optimize (especially for avatars to preserve quality)
+          processedBuffer = await sharpInstance
+            .png({
+              compressionLevel: isAvatar ? 6 : 9, // Less compression for avatars
+              quality: isAvatar ? 100 : 80,
+            })
+            .toBuffer();
         } else {
-          // Keep as PNG but optimize
-          processedBuffer = await sharpInstance.png({ compressionLevel: 9 }).toBuffer();
+          // For other formats (JPEG, WebP, etc.) or avatars, use high quality JPEG
+          processedBuffer = await sharpInstance
+            .jpeg({
+              quality,
+              progressive: true,
+              mozjpeg: true, // Better quality algorithm
+            })
+            .toBuffer();
+          contentType = 'image/jpeg';
         }
 
-        const compressionRatio = (
-          ((originalSize - processedBuffer.length) / originalSize) *
-          100
-        ).toFixed(1);
+        // const compressionRatio = (
+        //   ((originalSize - processedBuffer.length) / originalSize) *
+        //   100
+        // ).toFixed(1);
       } catch (imageError) {
         console.warn('Image processing failed, using original:', imageError);
         processedBuffer = originalBuffer;

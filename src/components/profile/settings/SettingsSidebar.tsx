@@ -1,5 +1,6 @@
 'use client';
 
+import { useI18n } from '@/locales/client';
 import { cn } from '@/utils/utils';
 import { User, Music, Shield, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,24 +20,6 @@ interface SettingsSidebarProps {
   hasUnsavedChanges: boolean;
 }
 
-const settingsItems: SettingsItem[] = [
-  {
-    id: 'profile',
-    title: 'Profil',
-    icon: User,
-  },
-  {
-    id: 'music',
-    title: 'Musique',
-    icon: Music,
-  },
-  {
-    id: 'privacy',
-    title: 'Confidentialité',
-    icon: Shield,
-  },
-];
-
 export function SettingsSidebar({
   activeSection,
   onSectionChange,
@@ -44,10 +27,29 @@ export function SettingsSidebar({
   isSaving,
   hasUnsavedChanges,
 }: SettingsSidebarProps) {
+  const t = useI18n();
+
+  const settingsItems: SettingsItem[] = [
+    {
+      id: 'profile',
+      title: t('settings.navigation.profile'),
+      icon: User,
+    },
+    {
+      id: 'music',
+      title: t('settings.navigation.music'),
+      icon: Music,
+    },
+    {
+      id: 'privacy',
+      title: t('settings.navigation.privacy'),
+      icon: Shield,
+    },
+  ];
   return (
     <div className="w-full md:w-64 flex-shrink-0 overflow-y-auto flex flex-col md:border-r border-gray-200">
       <div className="p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-foreground">Paramètres</h2>
+        <h2 className="text-lg font-semibold text-foreground">{t('settings.title')}</h2>
       </div>
 
       <div className="px-4 flex-1">
@@ -86,21 +88,21 @@ export function SettingsSidebar({
           {isSaving ? (
             <>
               <Loading text="" size="sm" centered={false} />
-              <span className="ml-2 hidden sm:inline">Enregistrement...</span>
+              <span className="ml-2 hidden sm:inline">{t('settings.common.saving')}</span>
               <span className="ml-2 sm:hidden">...</span>
             </>
           ) : (
             <>
               <Save className="mr-2 h-5 w-5 flex-shrink-0" />
-              <span className="hidden sm:inline">Enregistrer les modifications</span>
-              <span className="sm:hidden">Enregistrer</span>
+              <span className="hidden sm:inline">{t('settings.common.saveChanges')}</span>
+              <span className="sm:hidden">{t('settings.common.save')}</span>
             </>
           )}
         </Button>
         {hasUnsavedChanges && !isSaving && (
           <p className="text-xs text-orange-600 mt-2 text-center">
-            <span className="hidden sm:inline">Des modifications non sauvegardées</span>
-            <span className="sm:hidden">Non sauvegardé</span>
+            <span className="hidden sm:inline">{t('settings.common.unsavedChanges')}</span>
+            <span className="sm:hidden">{t('settings.common.unsavedChangesShort')}</span>
           </p>
         )}
       </div>

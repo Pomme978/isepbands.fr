@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useI18n } from '@/locales/client';
 import LangLink from '@/components/common/LangLink';
 import BackButton from '@/components/ui/back-button';
 import { SettingsContent } from '@/components/profile/settings/SettingsContent';
@@ -43,27 +44,28 @@ interface SettingsItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const settingsItems: SettingsItem[] = [
-  {
-    id: 'profile',
-    title: 'Profil',
-    icon: User,
-  },
-  {
-    id: 'music',
-    title: 'Musique',
-    icon: Music,
-  },
-  {
-    id: 'privacy',
-    title: 'Confidentialité',
-    icon: Shield,
-  },
-];
-
 export default function ProfileSettingsPage() {
+  const t = useI18n();
   const params = useParams();
   const locale = params.lang as string;
+
+  const settingsItems: SettingsItem[] = [
+    {
+      id: 'profile',
+      title: t('settings.navigation.profile'),
+      icon: User,
+    },
+    {
+      id: 'music',
+      title: t('settings.navigation.music'),
+      icon: Music,
+    },
+    {
+      id: 'privacy',
+      title: t('settings.navigation.privacy'),
+      icon: Shield,
+    },
+  ];
   const [activeSection, setActiveSection] = useState('profile');
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -97,12 +99,12 @@ export default function ProfileSettingsPage() {
           credentials: 'include',
         });
         if (!sessionResponse.ok) {
-          throw new Error('Failed to fetch session');
+          throw new Error(t('settings.messages.sessionError'));
         }
 
         const sessionData = await sessionResponse.json();
         if (!sessionData?.user) {
-          throw new Error('No user session found');
+          throw new Error(t('settings.messages.noUserSession'));
         }
 
         setUserSession(sessionData);
@@ -112,12 +114,12 @@ export default function ProfileSettingsPage() {
           credentials: 'include',
         });
         if (!profileResponse.ok) {
-          throw new Error('Failed to fetch profile');
+          throw new Error(t('settings.messages.profileError'));
         }
 
         const profileData = await profileResponse.json();
         if (!profileData.success) {
-          throw new Error(profileData.message || 'Failed to load profile');
+          throw new Error(profileData.message || t('settings.messages.profileLoadError'));
         }
 
         setUserProfile(profileData.data);
@@ -154,7 +156,7 @@ export default function ProfileSettingsPage() {
         setFormData(initialFormData);
       } catch (err) {
         console.error('Error fetching user data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : t('settings.messages.generalError'));
 
         // Redirect to login page if session is invalid
         if (
@@ -175,7 +177,7 @@ export default function ProfileSettingsPage() {
     };
 
     fetchUserData();
-  }, [locale]);
+  }, [locale, t]);
 
   // Update form data from child components
   const updateFormData = (section: string, data: Record<string, unknown>) => {
@@ -195,7 +197,7 @@ export default function ProfileSettingsPage() {
 
     // Show toast only if there were no unsaved changes before
     if (!hasUnsavedChanges) {
-      toast.info('Vous avez des modifications non sauvegardées');
+      toast.info(t('settings.messages.unsavedChanges'));
     }
     setHasUnsavedChanges(true);
   };
@@ -239,11 +241,11 @@ export default function ProfileSettingsPage() {
             // Clear pending file after successful upload
             setPendingPhotoFile(null);
           } else {
-            throw new Error(uploadResult.error || 'Photo upload failed');
+            throw new Error(uploadResult.error || t('settings.messages.photoUploadFailed'));
           }
         } catch (uploadError) {
           console.error('Error uploading photo:', uploadError);
-          toast.error('Erreur lors du téléchargement de la photo');
+          toast.error(t('settings.messages.photoUploadError'));
           return;
         }
       }
@@ -280,7 +282,7 @@ export default function ProfileSettingsPage() {
       if (!profileResponse.ok) {
         const profileError = await profileResponse.text();
         console.log('Profile error:', profileError);
-        throw new Error(`Failed to save profile: ${profileError}`);
+        throw new Error(t('settings.messages.profileSaveError') + ': ' + profileError);
       }
 
       console.log('Profile saved successfully');
@@ -313,7 +315,7 @@ export default function ProfileSettingsPage() {
             return;
           }
 
-          throw new Error(`Failed to save music settings: ${musicError}`);
+          throw new Error(t('settings.messages.musicSaveError') + ': ' + musicError);
         }
 
         console.log('Music saved successfully');
@@ -344,12 +346,12 @@ export default function ProfileSettingsPage() {
 
       setHasUnsavedChanges(false);
       // Show success toast
-      toast.success('Modifications enregistrées avec succès');
+      toast.success(t('settings.messages.saveSuccess'));
       console.log('=== SAVE COMPLETED SUCCESSFULLY ===');
     } catch (error) {
       console.error('=== SAVE FAILED ===');
       console.error('Error saving profile:', error);
-      toast.error("Erreur lors de l'enregistrement");
+      toast.error(t('settings.messages.saveError'));
     } finally {
       setIsSaving(false);
       console.log('=== HANDLE SAVE ALL END ===');
@@ -360,7 +362,7 @@ export default function ProfileSettingsPage() {
     // return <SettingsLoadingSkeleton />; // Commented out for now
     return (
       <div className="h-screen flex items-center justify-center">
-        <Loading text="Chargement..." size="lg" />
+        <Loading text={t('settings.common.loading')} size="lg" />
       </div>
     );
   }
@@ -369,9 +371,9 @@ export default function ProfileSettingsPage() {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Erreur</h2>
+          <h2 className="text-xl font-semibold mb-2">{t('settings.common.error')}</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>Réessayer</Button>
+          <Button onClick={() => window.location.reload()}>{t('settings.common.retry')}</Button>
         </div>
       </div>
     );
@@ -381,10 +383,10 @@ export default function ProfileSettingsPage() {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Session expirée</h2>
-          <p className="text-muted-foreground mb-4">Veuillez vous reconnecter.</p>
+          <h2 className="text-xl font-semibold mb-2">{t('settings.common.sessionExpired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('settings.common.pleaseReconnect')}</p>
           <Button asChild>
-            <LangLink href="/login">Se connecter</LangLink>
+            <LangLink href="/login">{t('settings.common.signIn')}</LangLink>
           </Button>
         </div>
       </div>
@@ -398,17 +400,15 @@ export default function ProfileSettingsPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header avec navigation sticky */}
           <div className="border-b border-gray-200 pb-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              {/* Back button à gauche */}
-              <div>
+            <div className="relative flex items-center mb-6">
+              {/* Back button à gauche, position absolue */}
+              <div className="absolute left-0">
                 {typeof window !== 'undefined' && window.history.length > 1 && (
                   <BackButton
                     variant="ghost"
                     onClick={() => {
                       if (hasUnsavedChanges) {
-                        const confirmLeave = window.confirm(
-                          'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?',
-                        );
+                        const confirmLeave = window.confirm(t('settings.common.unsavedWarning'));
                         if (!confirmLeave) return;
                       }
                       window.history.back();
@@ -417,11 +417,10 @@ export default function ProfileSettingsPage() {
                 )}
               </div>
 
-              {/* Titre au centre */}
-              <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
-
-              {/* Empty space to maintain header balance */}
-              <div className="w-[120px]"></div>
+              {/* Titre vraiment centré */}
+              <div className="w-full text-center">
+                <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
+              </div>
             </div>
 
             {/* Navigation sections - tabs style */}
@@ -470,12 +469,12 @@ export default function ProfileSettingsPage() {
             {isSaving ? (
               <>
                 <Loading text="" size="sm" centered={false} />
-                <span className="ml-2">Enregistrement...</span>
+                <span className="ml-2">{t('settings.common.saving')}</span>
               </>
             ) : (
               <>
                 <Save className="mr-2 h-5 w-5" />
-                <span>Enregistrer</span>
+                <span>{t('settings.common.save')}</span>
               </>
             )}
           </Button>

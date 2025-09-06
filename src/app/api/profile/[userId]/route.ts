@@ -25,6 +25,7 @@ const updateProfileSchema = z.object({
     )
     .optional(),
   photoUrl: z.string().nullable().optional(),
+  photoDeleted: z.boolean().optional(), // Flag to indicate explicit photo deletion
   isLookingForGroup: z.boolean().optional(),
   pronouns: z.string().nullable().optional(),
   birthDate: z
@@ -364,12 +365,61 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Handle photo deletion - either explicit deletion flag or photoUrl change
+    const shouldDeleteOldPhoto =
+      validatedData.photoDeleted === true ||
+      (validatedData.photoUrl !== undefined &&
+        existingUser.photoUrl &&
+        validatedData.photoUrl !== existingUser.photoUrl);
+
+    if (shouldDeleteOldPhoto && existingUser.photoUrl) {
+      // Clean up old photo if we're removing it (null) or changing to a different URL
+      const oldPhotoUrl = existingUser.photoUrl;
+      if (oldPhotoUrl && oldPhotoUrl.includes('/api/storage')) {
+        try {
+          // Try to find and delete the storage object
+          const oldStorageObject = await prisma.storageObject.findFirst({
+            where: {
+              userId,
+              url: oldPhotoUrl,
+            },
+          });
+
+          if (oldStorageObject) {
+            console.log('🗑️ Deleting old avatar file:', oldStorageObject.id);
+
+            // Import delete function and remove old file
+            const { deleteFromStorage } = await import('@/lib/storageService');
+            await deleteFromStorage(oldStorageObject.id);
+            console.log('✅ Old avatar deleted successfully');
+          } else {
+            // Fallback: try to extract file ID from URL and delete directly
+            const urlParts = oldPhotoUrl.split('id=');
+            if (urlParts.length > 1) {
+              const oldFileId = urlParts[1];
+              console.log('🗑️ Fallback: deleting old avatar file by ID:', oldFileId);
+
+              const { deleteFromStorage } = await import('@/lib/storageService');
+              await deleteFromStorage(oldFileId);
+              console.log('✅ Old avatar deleted successfully (fallback)');
+            }
+          }
+        } catch (error) {
+          console.error('⚠️ Error deleting old avatar (continuing with update):', error);
+          // Don't fail the profile update if old file deletion fails
+        }
+      }
+    }
+
+    // Prepare data for database update (remove photoDeleted flag)
+    const { photoDeleted: _photoDeleted, ...dbUpdateData } = validatedData;
+
     // Update the user profile
-    console.log('🔄 Updating user profile with data:', validatedData);
+    console.log('🔄 Updating user profile with data:', dbUpdateData);
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: validatedData,
+      data: dbUpdateData,
       select: {
         id: true,
         firstName: true,

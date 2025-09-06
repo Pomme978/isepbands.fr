@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatPreferredGenres } from '@/utils/genreUtils';
 import { calculateAge } from '@/utils/schoolUtils';
 import Loading from '@/components/ui/Loading';
+import { usePathname } from 'next/navigation';
 import {
   User,
   Mail,
@@ -35,6 +36,8 @@ export default function Step6Confirmation({
   isSubmitting = false,
 }: Step6ConfirmationProps) {
   const t = useI18n();
+  const pathname = usePathname();
+  const locale = pathname.startsWith('/fr') ? 'fr' : 'en';
 
   const skillLevelLabels: Record<string, string> = {
     BEGINNER: 'Débutant',
@@ -169,6 +172,18 @@ export default function Step6Confirmation({
                   </Badge>
                 </div>
               </div>
+
+              {data.pronouns && (
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-gray-500">Pronoms</p>
+                    <p className="font-medium">{data.pronouns}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -194,7 +209,9 @@ export default function Step6Confirmation({
                       <Music className="w-4 h-4 text-gray-600" />
                       <div>
                         <p className="font-medium">
-                          {instrument?.nameFr || instrument?.name || 'Instrument'}
+                          {locale === 'en'
+                            ? instrument?.nameEn || instrument?.name || 'Instrument'
+                            : instrument?.nameFr || instrument?.name || 'Instrument'}
                         </p>
                         {inst.yearsPlaying && (
                           <p className="text-sm text-gray-500">

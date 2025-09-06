@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/middlewares/admin';
 import { prisma } from '@/lib/prisma';
-import { z, ZodIssue } from 'zod';
-import fs from 'fs/promises';
-import path from 'path';
+import { z } from 'zod';
 import { logAdminAction } from '@/services/activityLogService';
 import { autoUnsubscribeUser, autoSubscribeUser } from '@/services/newsletterService';
 import { EmailService } from '@/services/emailService';
+import { deleteFromStorage } from '@/lib/storageService';
 
 // Schema pour la validation des données utilisateur
 const updateUserSchema = z.object({
@@ -22,6 +21,7 @@ const updateUserSchema = z.object({
   phone: z.string().nullable().optional(),
   pronouns: z.string().nullable().optional(),
   photoUrl: z.string().nullable().optional(),
+  photoDeleted: z.boolean().optional(),
   status: z
     .string()
     .optional()
@@ -244,53 +244,46 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (validatedData.biography !== undefined) baseUpdateData.biography = validatedData.biography;
       if (validatedData.phone !== undefined) baseUpdateData.phone = validatedData.phone;
       if (validatedData.pronouns !== undefined) baseUpdateData.pronouns = validatedData.pronouns;
-      // Handle photo URL changes and cleanup
-      if (validatedData.photoUrl !== undefined) {
-        // If we're removing/changing the photo, clean up the old one
-        // Only clean up if we're explicitly removing (null/'') OR changing to a different URL
-        if (
+      // Handle photo changes and cleanup
+      const { photoDeleted } = validatedData;
+      const shouldDeleteOldPhoto =
+        validatedData.photoDeleted === true ||
+        (validatedData.photoUrl !== undefined &&
           existingUser.photoUrl &&
-          (validatedData.photoUrl === null ||
-            validatedData.photoUrl === '' ||
-            (validatedData.photoUrl && validatedData.photoUrl !== existingUser.photoUrl))
-        ) {
-          try {
-            // Find the storage object for the old photo
-            const oldStorageObject = await tx.storageObject.findFirst({
-              where: {
-                userId,
-                url: existingUser.photoUrl,
-              },
-            });
+          validatedData.photoUrl !== existingUser.photoUrl);
 
-            if (oldStorageObject) {
-              // Delete the storage object record
-              await tx.storageObject.delete({
-                where: { id: oldStorageObject.id },
-              });
+      if (shouldDeleteOldPhoto && existingUser.photoUrl) {
+        try {
+          // Extract the storage ID from the photo URL
+          const photoUrl = existingUser.photoUrl;
+          let storageId = null;
 
-              // Delete the physical file
-              const filePath = path.join(
-                process.cwd(),
-                'public',
-                'storage',
-                'uploads',
-                oldStorageObject.key,
-              );
-              try {
-                await fs.unlink(filePath);
-              } catch (fileError) {
-                console.warn(
-                  `Failed to delete old profile picture file ${oldStorageObject.key}:`,
-                  fileError,
-                );
-              }
-            }
-          } catch (cleanupError) {
-            console.warn('Failed to cleanup old profile picture:', cleanupError);
-            // Continue with the update even if cleanup fails
+          if (photoUrl.includes('/api/storage?id=')) {
+            storageId = photoUrl.split('/api/storage?id=')[1];
+          } else if (photoUrl.includes('/storage/avatars/')) {
+            storageId = photoUrl.split('/storage/avatars/')[1];
+          } else if (photoUrl.includes('/storage/uploads/')) {
+            // Legacy uploads folder format
+            storageId = photoUrl.split('/storage/uploads/')[1];
+          } else if (photoUrl.includes('id=')) {
+            // Generic extraction for any URL with id parameter
+            const urlParams = new URLSearchParams(photoUrl.split('?')[1] || '');
+            storageId = urlParams.get('id');
           }
+
+          if (storageId) {
+            await deleteFromStorage(storageId);
+            console.log('Old profile picture deleted successfully:', storageId);
+          } else {
+            console.warn('Could not extract storage ID from photo URL:', photoUrl);
+          }
+        } catch (cleanupError) {
+          console.warn('Failed to cleanup old profile picture:', cleanupError);
+          // Continue with the update even if cleanup fails
         }
+      }
+
+      if (validatedData.photoUrl !== undefined) {
         baseUpdateData.photoUrl = validatedData.photoUrl;
       }
       if (validatedData.status !== undefined) baseUpdateData.status = validatedData.status;
@@ -718,7 +711,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // Send email notifications based on status changes
     if (validatedData.status !== undefined && validatedData.status !== existingUser.status) {
       try {
-        const userFullName = `${transformedUser.firstName} ${transformedUser.lastName}`;
+        // const userFullName = `${transformedUser.firstName} ${transformedUser.lastName}`;
 
         // Handle different status changes
         switch (validatedData.status) {

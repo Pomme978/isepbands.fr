@@ -14,6 +14,7 @@ import { useSession, useAuth } from '@/lib/auth-client';
 import { useRouter, useParams } from 'next/navigation';
 import { Spinner } from '@/components/ui/spinner';
 import { useState } from 'react';
+import { useI18n } from '@/locales/client';
 
 interface UserMenuProps {
   variant?: 'default' | 'white';
@@ -25,6 +26,7 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
   const router = useRouter();
   const params = useParams();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const t = useI18n();
 
   // Get the current language from params (assuming it's stored as 'lang' or 'locale')
   const currentLang = params?.lang || params?.locale || 'fr'; // default to 'fr' if not found
@@ -42,7 +44,7 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
               : ''
           }
         >
-          <a href={`/${currentLang}/login`}>Se connecter</a>
+          <a href={`/${currentLang}/login`}>{t('navigation.mobile.signIn')}</a>
         </Button>
       </div>
     );
@@ -129,21 +131,21 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
           side="bottom"
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('navigation.userMenu.myAccount')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
-            Mon profil
+            {t('navigation.mobile.profile')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleGroupSpaceClick} className="cursor-pointer">
-            Mon espace groupe
+            {t('navigation.mobile.groupSpace')}
           </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem onClick={handleAdminClick} className="cursor-pointer">
-              Tableau de bord admin
+              {t('navigation.mobile.adminDashboard')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer">
-            Paramètres
+            {t('navigation.mobile.settings')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -153,7 +155,9 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
           >
             <div className="flex items-center space-x-2">
               {isLoggingOut && <Spinner size="sm" color="gray" />}
-              <span>{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}</span>
+              <span>
+                {isLoggingOut ? t('navigation.mobile.loggingOut') : t('navigation.mobile.signOut')}
+              </span>
             </div>
           </DropdownMenuItem>
         </DropdownMenuContent>

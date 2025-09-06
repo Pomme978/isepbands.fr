@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useI18n } from '@/locales/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -52,13 +53,14 @@ interface MusicSettingsProps {
 export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
   const params = useParams();
   const locale = params.lang as string;
+  const t = useI18n();
 
   // ===== Catalog / labels =====
   const levelLabels: Record<LevelKey, string> = {
-    beginner: 'Débutant',
-    intermediate: 'Intermédiaire',
-    advanced: 'Avancé',
-    expert: 'Expert',
+    beginner: t('settings.music.instruments.levels.beginner'),
+    intermediate: t('settings.music.instruments.levels.intermediate'),
+    advanced: t('settings.music.instruments.levels.advanced'),
+    expert: t('settings.music.instruments.levels.expert'),
   };
 
   // Fetch available instruments from API instead of hardcoded catalog
@@ -285,11 +287,11 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">Musique</h1>
-          <p className="mt-1">Configurez vos instruments et vos préférences musicales.</p>
+          <h1 className="text-3xl font-bold">{t('settings.music.title')}</h1>
+          <p className="mt-1">{t('settings.music.subtitle')}</p>
         </div>
         <div className="flex justify-center items-center p-8">
-          <div className="animate-pulse text-gray-500">Chargement des données musicales...</div>
+          <div className="animate-pulse text-gray-500">{t('settings.music.loading')}</div>
         </div>
       </div>
     );
@@ -298,32 +300,36 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Musique</h1>
-        <p className="mt-1">Configurez vos instruments et vos préférences musicales.</p>
+        <h1 className="text-3xl font-bold">{t('settings.music.title')}</h1>
+        <p className="mt-1">{t('settings.music.subtitle')}</p>
       </div>
 
       {/* Instruments */}
       <Card>
         <CardHeader>
-          <CardTitle>Mes instruments</CardTitle>
-          <CardDescription>
-            Gérez vos instruments, votre niveau, et définissez l’instrument principal.
-          </CardDescription>
+          <CardTitle>{t('settings.music.instruments.title')}</CardTitle>
+          <CardDescription>{t('settings.music.instruments.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Current primary */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Instrument principal :</span>
+            <span className="text-sm font-medium">{t('settings.music.instruments.primary')} :</span>
             <Badge>
-              {userMusic.instruments.find((i) => i.id === userMusic.primaryInstrumentId)?.name ||
-                '—'}
+              {(() => {
+                const primaryInst = userMusic.instruments.find(
+                  (i) => i.id === userMusic.primaryInstrumentId,
+                );
+                if (!primaryInst) return '—';
+                const availableInst = availableInstruments.find((ai) => ai.id === primaryInst.id);
+                return availableInst?.name || primaryInst.name;
+              })()}
             </Badge>
           </div>
 
           {/* Add instrument — Combobox */}
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex-1">
-              <Label className="sr-only">Ajouter un instrument</Label>
+              <Label className="sr-only">{t('settings.music.instruments.add')}</Label>
               <Popover open={openAdd} onOpenChange={setOpenAdd}>
                 <PopoverTrigger asChild>
                   <Button
@@ -334,7 +340,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                   >
                     {instrumentToAdd
                       ? availableToAdd.find((i) => i.id === instrumentToAdd)?.name
-                      : 'Ajouter un instrument'}
+                      : t('settings.music.instruments.add')}
                     <ChevronsUpDown className="h-4 w-4 opacity-70" />
                   </Button>
                 </PopoverTrigger>
@@ -344,8 +350,8 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                   className="w-[var(--radix-popover-trigger-width)] p-0"
                 >
                   <Command>
-                    <CommandInput placeholder="Rechercher…" />
-                    <CommandEmpty>Aucun instrument</CommandEmpty>
+                    <CommandInput placeholder={t('settings.music.instruments.search')} />
+                    <CommandEmpty>{t('settings.music.instruments.noInstruments')}</CommandEmpty>
                     <CommandGroup>
                       {availableToAdd.map((inst) => (
                         <CommandItem
@@ -375,7 +381,9 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
               ) : (
                 <Plus className="mr-2 h-4 w-4" />
               )}
-              {isAddingInstrument ? 'Ajout...' : 'Ajouter'}
+              {isAddingInstrument
+                ? t('settings.music.instruments.adding')
+                : t('settings.music.instruments.addButton')}
             </Button>
           </div>
 
@@ -383,10 +391,8 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
           <div className="space-y-3">
             {userMusic.instruments.length === 0 ? (
               <div className="text-center p-8 text-gray-500">
-                <p className="text-lg font-medium">Aucun instrument ajouté</p>
-                <p className="text-sm">
-                  Ajoutez vos instruments pour commencer à personnaliser votre profil musical.
-                </p>
+                <p className="text-lg font-medium">{t('settings.music.instruments.empty.title')}</p>
+                <p className="text-sm">{t('settings.music.instruments.empty.subtitle')}</p>
               </div>
             ) : (
               userMusic.instruments.map((instrument) => {
@@ -397,14 +403,21 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                     className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-lg border p-3"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="font-medium">{instrument.name}</span>
+                      <span className="font-medium">
+                        {(() => {
+                          const availableInst = availableInstruments.find(
+                            (ai) => ai.id === instrument.id,
+                          );
+                          return availableInst?.name || instrument.name;
+                        })()}
+                      </span>
                       <LevelBadge level={levelLabels[instrument.level]} size="sm" />
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 md:min-w-[480px]">
                       {/* Level — shadcn Select */}
                       <div className="flex items-center gap-2">
-                        <Label className="text-sm">Niveau</Label>
+                        <Label className="text-sm">{t('settings.music.instruments.level')}</Label>
                         <Select
                           value={instrument.level}
                           onValueChange={(v) => updateLevel(instrument.id, v as LevelKey)}
@@ -414,7 +427,9 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                             {updatingLevelId === instrument.id ? (
                               <Spinner size="sm" color="gray" className="mr-2" />
                             ) : null}
-                            <SelectValue placeholder="Sélectionner" />
+                            <SelectValue
+                              placeholder={t('settings.music.instruments.selectLevel')}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="beginner">{levelLabels.beginner}</SelectItem>
@@ -427,7 +442,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
 
                       {/* Years of practice */}
                       <div className="flex items-center gap-2">
-                        <Label className="text-sm">Années</Label>
+                        <Label className="text-sm">{t('settings.music.instruments.years')}</Label>
                         <Select
                           value={String(instrument.yearsPlaying || 0)}
                           onValueChange={(v) => updateYears(instrument.id, parseInt(v))}
@@ -461,7 +476,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                           {updatingPrimary && <Spinner size="sm" color="gray" />}
                         </div>
                         <Label htmlFor={`primary-${instrument.id}`} className="text-sm">
-                          Principal
+                          {t('settings.music.instruments.isPrimary')}
                         </Label>
                       </div>
 
@@ -470,7 +485,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                         size="sm"
                         onClick={() => removeInstrument(instrument.id)}
                         disabled={removingInstrumentId === instrument.id}
-                        aria-label={`Retirer ${instrument.name}`}
+                        aria-label={`${t('settings.music.instruments.remove')} ${instrument.name}`}
                       >
                         {removingInstrumentId === instrument.id ? (
                           <Spinner size="sm" color="gray" />
@@ -490,14 +505,14 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
       {/* Preferences (no time slots; fixed styles) */}
       <Card>
         <CardHeader>
-          <CardTitle>Préférences</CardTitle>
-          <CardDescription>Recherche de groupe et styles favoris.</CardDescription>
+          <CardTitle>{t('settings.music.preferences.title')}</CardTitle>
+          <CardDescription>{t('settings.music.preferences.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <Label htmlFor="seeking-band">Recherche un groupe</Label>
-              <p>Votre profil pourra apparaître dans les recommandations.</p>
+              <Label htmlFor="seeking-band">{t('settings.music.preferences.seekingBand')}</Label>
+              <p>{t('settings.music.preferences.seekingBandHelp')}</p>
             </div>
             <div className="flex items-center gap-2">
               <Switch
@@ -518,7 +533,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label>Styles musicaux</Label>
+            <Label>{t('settings.music.preferences.musicalStyles')}</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {MUSIC_GENRES.map((genre) => {
                 const checked = userMusic.styles.includes(genre.id);
@@ -537,7 +552,7 @@ export function MusicSettings({ onFormDataChange }: MusicSettingsProps) {
                       htmlFor={genre.id}
                       className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      {genre.nameFr}
+                      {locale === 'en' ? genre.nameEn : genre.nameFr}
                     </Label>
                   </div>
                 );

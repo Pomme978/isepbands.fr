@@ -114,11 +114,13 @@ const CardContent: React.FC<{
             </h3>
           </div>
 
-          <div className="text-center mb-2">
-            <p className="text-md italic font-handrawn text-gray-700 leading-tight break-words">
-              &#34;{user?.motto || 'Motto à définir'}&#34;
-            </p>
-          </div>
+          {user?.motto && (
+            <div className="text-center mb-2">
+              <p className="text-md italic font-handrawn text-gray-700 leading-tight break-words">
+                &#34;{user.motto}&#34;
+              </p>
+            </div>
+          )}
 
           <div className="text-center">
             <p className="text-sm text-primary underline break-all leading-tight">

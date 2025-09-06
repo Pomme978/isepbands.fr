@@ -3,6 +3,7 @@
 import { Guitar } from 'lucide-react';
 import InstrumentsSection from '@/components/profile/InstrumentsSection';
 import { getSkillLevelFr } from '@/utils/skillLevelUtils';
+import { usePathname } from 'next/navigation';
 
 // Shared types for consistency
 export interface ApiInstrument {
@@ -32,14 +33,16 @@ interface InstrumentsDisplayProps {
 }
 
 export function InstrumentsDisplay({ instruments }: InstrumentsDisplayProps) {
+  const pathname = usePathname();
+  const locale = pathname.startsWith('/fr') ? 'fr' : 'en';
+
   // Transform API instruments to display format with consistent logic
   const displayInstruments: DisplayInstrument[] = instruments.map((inst) => ({
     id: inst.instrument?.id?.toString() || inst.instrumentId?.toString() || '',
     name:
-      inst.instrument?.nameFr ||
-      inst.instrument?.nameEn ||
-      inst.instrument?.name ||
-      'Instrument inconnu',
+      locale === 'en'
+        ? inst.instrument?.nameEn || inst.instrument?.name || 'Unknown instrument'
+        : inst.instrument?.nameFr || inst.instrument?.name || 'Instrument inconnu',
     level: getSkillLevelFr(inst.skillLevel || 'BEGINNER'), // Always translate to French
     icon: Guitar,
     isPrimary: Boolean(inst.isPrimary),
