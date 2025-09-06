@@ -3,6 +3,10 @@ export interface PublicFeedUser {
   name: string;
   avatar: string;
   role?: string;
+  roleColors?: {
+    gradientStart?: string;
+    gradientEnd?: string;
+  };
 }
 
 export interface PublicFeedType {

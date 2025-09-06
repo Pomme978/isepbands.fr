@@ -180,21 +180,21 @@ export default function BadgeDisplay({
   // Get role colors with database colors if available
   const roleColorConfig = getRoleColor(role, roleCustomColors);
 
-  // Get localized role name based on language and gender
-  const localizedRoleName = getRoleDisplayName(role, pronouns, currentLocale);
+  // Get localized role name - API already returns French translation
+  // Only translate if we need English or if API returned raw role name
+  const localizedRoleName =
+    currentLocale === 'en' ? getRoleDisplayName(role, pronouns, currentLocale) : role; // Use API translation for French
 
   return (
     <div className={`flex ${config.gap} flex-wrap items-center ${className}`}>
       {/* Badge de rôle principal */}
       <span
         className={`inline-flex items-center ${config.padding} rounded-full ${finalTextSize} shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 ease-in-out ${
-          !roleColorConfig.gradient ? `${roleColorConfig.bg} ${roleColorConfig.text}` : ''
+          !roleColorConfig.gradient
+            ? `${roleColorConfig.bg} ${roleColorConfig.text}`
+            : 'text-white font-bold'
         }`}
-        style={
-          roleColorConfig.gradient
-            ? { background: roleColorConfig.gradient, color: 'white', fontWeight: 'bold' }
-            : undefined
-        }
+        style={roleColorConfig.gradient ? { background: roleColorConfig.gradient } : undefined}
       >
         {localizedRoleName}
       </span>

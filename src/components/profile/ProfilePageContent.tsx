@@ -94,6 +94,10 @@ interface ApiUserData {
   eventsAttended?: number;
   concertsPlayed?: number;
   primaryRole?: string | null;
+  roleColors?: {
+    gradientStart?: string;
+    gradientEnd?: string;
+  } | null;
   isOutOfSchool?: boolean;
   preferredGenres?: string[] | string | null;
 }
@@ -309,6 +313,7 @@ export default function ProfilePageContent({
             isOutOfSchool: user.isOutOfSchool ?? false,
             promotion: user.promotion || '',
             role: user.primaryRole || 'Membre',
+            roleColors: user.roleColors,
             badges: user.badges || [],
             bio: user.biography || '',
             age: calculateAge(user.birthDate),

@@ -128,6 +128,7 @@ const ActivityItem = ({ activity }: { activity: ActivityType }) => {
                     badges={[]}
                     isLookingForGroup={false}
                     pronouns="they/them"
+                    roleCustomColors={activity.user.roleColors}
                     size="xs"
                   />
                 )}

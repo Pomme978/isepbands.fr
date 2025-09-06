@@ -12,6 +12,8 @@ import {
 } from '../ui/dropdown-menu';
 import { useSession, useAuth } from '@/lib/auth-client';
 import { useRouter, useParams } from 'next/navigation';
+import { Spinner } from '@/components/ui/spinner';
+import { useState } from 'react';
 
 interface UserMenuProps {
   variant?: 'default' | 'white';
@@ -22,6 +24,7 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
   const { signOut } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Get the current language from params (assuming it's stored as 'lang' or 'locale')
   const currentLang = params?.lang || params?.locale || 'fr'; // default to 'fr' if not found
@@ -73,8 +76,15 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
     router.push(`/${currentLang}/group`);
   };
 
-  const handleSignOut = () => {
-    signOut(() => router.push(`/${currentLang}/login`));
+  const handleSignOut = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      router.push(`/${currentLang}/login`);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const triggerClasses =
@@ -136,8 +146,15 @@ export default function UserMenu({ variant = 'default' }: UserMenuProps) {
             Paramètres
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-            Se déconnecter
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            disabled={isLoggingOut}
+            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center space-x-2">
+              {isLoggingOut && <Spinner size="sm" color="gray" />}
+              <span>{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}</span>
+            </div>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

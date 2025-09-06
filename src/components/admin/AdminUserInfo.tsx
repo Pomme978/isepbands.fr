@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth-client';
 import { getPrimaryRoleName } from '@/utils/roleUtils';
 import { useRouter, useParams } from 'next/navigation';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AdminUserInfoProps {
   user?: {
@@ -55,6 +56,7 @@ export default function AdminUserInfo({ user }: AdminUserInfoProps) {
       : 'Member';
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   return (
     <div className="p-4 border-t border-gray-200">
@@ -99,13 +101,20 @@ export default function AdminUserInfo({ user }: AdminUserInfoProps) {
 
           <button
             onClick={async () => {
-              await signOut();
-              router.push(`/${lang}`);
+              if (isLoggingOut) return;
+              setIsLoggingOut(true);
+              try {
+                await signOut();
+                router.push(`/${lang}`);
+              } finally {
+                setIsLoggingOut(false);
+              }
             }}
-            className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors w-full text-left cursor-pointer"
+            disabled={isLoggingOut}
+            className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors w-full text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <LogOut size={16} />
-            <span>Logout</span>
+            {isLoggingOut ? <Spinner size="sm" color="gray" /> : <LogOut size={16} />}
+            <span>{isLoggingOut ? 'Déconnexion...' : 'Logout'}</span>
           </button>
         </div>
       )}

@@ -127,12 +127,15 @@ const DEFAULT_ROLE_COLOR: RoleColorConfig = {
  * Récupère la configuration de couleur pour un rôle donné
  * Supporte maintenant les couleurs personnalisées depuis la base de données
  */
-export function getRoleColor(roleName: string | null | undefined, customColors?: { gradientStart?: string; gradientEnd?: string }): RoleColorConfig {
+export function getRoleColor(
+  roleName: string | null | undefined,
+  customColors?: { gradientStart?: string; gradientEnd?: string },
+): RoleColorConfig {
   if (!roleName) {
     return DEFAULT_ROLE_COLOR;
   }
 
-  // Si des couleurs personnalisées sont fournies, les utiliser
+  // Si des couleurs personnalisées sont fournies, les utiliser (priorité absolue)
   if (customColors?.gradientStart && customColors?.gradientEnd) {
     return {
       bg: `bg-gradient-to-r`,

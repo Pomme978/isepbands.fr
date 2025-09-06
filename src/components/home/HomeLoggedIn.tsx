@@ -30,6 +30,10 @@ interface UserProfile {
   promotion?: string;
   birthDate?: string;
   primaryRole?: string;
+  roleColors?: {
+    gradientStart?: string;
+    gradientEnd?: string;
+  } | null;
   isLookingForGroup?: boolean;
   pronouns?: string;
 }
@@ -75,6 +79,10 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
               userName?: string;
               userAvatar?: string;
               userRole?: string;
+              userRoleColors?: {
+                gradientStart?: string;
+                gradientEnd?: string;
+              } | null;
             }) => ({
               id: activity.id,
               type: activity.type === 'custom' ? 'post' : (activity.type as PublicFeedType['type']),
@@ -85,6 +93,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                 name: activity.userName || 'Utilisateur',
                 avatar: activity.userAvatar || '/avatars/default.jpg',
                 role: activity.userRole || undefined, // Use real role from API
+                roleColors: activity.userRoleColors || undefined,
               },
             }),
           ) || [];
@@ -135,6 +144,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
               promotion: data.data.promotion,
               birthDate: data.data.birthDate,
               primaryRole: data.data.primaryRole,
+              roleColors: data.data.roleColors,
               isLookingForGroup: data.data.isLookingForGroup,
               pronouns: data.data.pronouns,
             });
@@ -231,6 +241,7 @@ export default function HomeLoggedIn({ user, lang, onLogout, loading }: HomeLogg
                               | 'they/them'
                               | 'other') || 'they/them'
                           }
+                          roleCustomColors={userProfile.roleColors}
                           size="sm"
                         />
                       )}

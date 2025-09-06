@@ -30,6 +30,13 @@ export async function GET() {
         userName: item.user ? `${item.user.firstName} ${item.user.lastName}` : null,
         userAvatar: item.user?.photoUrl,
         userRole: userRole,
+        userRoleColors:
+          item.user?.roles && item.user.roles.length > 0
+            ? {
+                gradientStart: sortedRoles[0].role.gradientStart,
+                gradientEnd: sortedRoles[0].role.gradientEnd,
+              }
+            : null,
         metadata: item.metadata,
         createdAt: item.createdAt,
         createdBy: item.userId, // User who created this public feed item

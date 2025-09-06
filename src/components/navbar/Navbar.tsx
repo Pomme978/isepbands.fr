@@ -12,6 +12,7 @@ import Avatar from '../common/Avatar';
 import { useRouter, useParams } from 'next/navigation';
 import LangLink from '@/components/common/LangLink';
 import { useI18n } from '@/locales/client';
+import { Spinner } from '@/components/ui/spinner';
 
 interface NavbarProps {
   mode?: 'scroll' | 'static' | 'fixed';
@@ -24,6 +25,7 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
   const [isVisible, setIsVisible] = useState(mode === 'static' || mode === 'fixed');
   const [lastScrollY, setLastScrollY] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const { loading: authLoading } = useAuth();
   const { user } = useSession();
@@ -56,9 +58,16 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
     setIsOpen(false);
   };
 
-  const handleMobileSignOut = () => {
-    signOut(() => router.push(`/${currentLang}/login`));
+  const handleMobileSignOut = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     setIsOpen(false);
+    try {
+      await signOut();
+      router.push(`/${currentLang}/login`);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const handleMobileLogin = () => {
@@ -338,13 +347,19 @@ export default function Navbar({ mode = 'scroll', style = 'default', className }
                       >
                         <button
                           onClick={handleMobileSignOut}
-                          className={`w-full text-left px-3 py-2 rounded text-sm ${
+                          disabled={isLoggingOut}
+                          className={`w-full flex items-center space-x-2 px-3 py-2 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                             style === 'transparent'
                               ? 'text-red-400 hover:bg-white/10'
                               : 'text-red-600 hover:bg-gray-100'
                           }`}
                         >
-                          {t('navigation.mobile.signOut')}
+                          {isLoggingOut && (
+                            <Spinner size="sm" color={style === 'transparent' ? 'white' : 'gray'} />
+                          )}
+                          <span>
+                            {isLoggingOut ? 'Déconnexion...' : t('navigation.mobile.signOut')}
+                          </span>
                         </button>
                       </div>
                     </div>

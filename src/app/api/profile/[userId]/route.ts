@@ -243,11 +243,14 @@ export async function GET(req: NextRequest) {
       activeGroups,
       eventsAttended,
       concertsPlayed,
+      role: getRoleDisplayName(primaryRole?.role, user.pronouns) || null,
       primaryRole: getRoleDisplayName(primaryRole?.role, user.pronouns) || null,
-      roleColors: primaryRole?.role ? {
-        gradientStart: primaryRole.role.gradientStart,
-        gradientEnd: primaryRole.role.gradientEnd,
-      } : null,
+      roleColors: primaryRole?.role
+        ? {
+            gradientStart: primaryRole.role.gradientStart,
+            gradientEnd: primaryRole.role.gradientEnd,
+          }
+        : null,
       groupMemberships: user.groupMemberships
         .filter((gm) => gm.group)
         .map((gm) => ({
