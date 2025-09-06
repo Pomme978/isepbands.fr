@@ -90,6 +90,7 @@ model User {
   roles                         UserRole[]
   votes                         Vote[]
   wishlistItems                 WishlistItem[]
+  passwordChangeTokens          PasswordChangeToken[]
 }
 
 model StorageObject {
@@ -105,6 +106,19 @@ model StorageObject {
 
   @@index([userId], map: "StorageObject_userId_fkey")
   @@index([category])
+}
+
+model PasswordChangeToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([token])
 }
 
 model Instrument {
